@@ -1,0 +1,36 @@
+dataset:
+  scene_boundary: [-1.5, -1.5, -1.5, 1.5, 1.5, 1.5]
+  colmap_dir: "d:/Projects/NeuralRecon/Test_data/OBL_L7/Test_imgs2_colmap_neural/sparse_align"
+  only_train_target: false
+  id_viz_face: [320,321,1476,291,293]
+#  id_viz_face: [1476]
+  id_viz_edge: 9118
+
+trainer:
+  check_val_every_n_epoch: 10
+  learning_rate: 1e-5
+  gpu: 1
+  num_worker: 0
+  batch_size: 256
+  resume_from_checkpoint: output/img_field_test/epoch=39-step=2040.ckpt
+#  resume_from_checkpoint: none
+  evaluate: false
+  output: imgs_log
+
+  loss_weight: [1, 0.01, 0] # similarity_weight, normal_weight, normalization_weight
+  num_sample: 1000 # number of gaussian sample
+  img_model: "sample" # ["model", "sample"]
+#  img_model: "sample" # ["model", "sample"]
+
+model:
+  img_model_dir: "output/neural_recon/ngp_models"
+  regress_normal: false
+
+hydra:
+  run:
+    dir: ./outputs/${now:%Y_%m_%d_%H_%M_%S}
+  job:
+    chdir: False
+#  output_subdir: null
+#  job_logging: disabled
+#  hydra_logging: disabled

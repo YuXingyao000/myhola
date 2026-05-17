@@ -1,0 +1,76 @@
+dataset:
+  dataset_name: "AutoEncoder_dataset"
+
+  train_dataset: D:/img2brep/deepcad_whole_test_v3
+  val_dataset: D:/img2brep/deepcad_whole_test_v3
+  test_dataset: D:/img2brep/deepcad_whole_test_v3
+  train_feature_dataset:
+  val_feature_dataset:
+
+  bbox_discrete_dim: 256
+  coor_discrete_dim: 128
+
+  # Diffusion
+  num_max_faces: 36
+  length_scaling_factors: 100
+  face_embedding_batch_size: 512
+  is_map: true
+
+trainer:
+  train_mode: 0
+  output_validation_model: true
+
+  gpu: 1
+  num_worker: 0
+  batch_size: 4
+  learning_rate: 1e-4
+  check_val_every_n_epoch: 1
+#  accelerator: "16-mixed"
+  accelerator: "32-true"
+
+  # Evaluation
+  evaluate: false
+  save_face_embedding: false
+  test_output_dir:
+  resume_from_checkpoint:
+
+  max_epochs: 10000000
+  spawn: false
+  output: .
+  exp_name:
+
+model:
+  model_name: "AutoEncoder_inter"
+
+  # Dimension
+  dim_latent: 8
+  dim_shape: 256
+  dim_decoder: 256
+  bbox_discrete_dim: 256
+  coor_discrete_dim: 128
+  # Flags
+  with_quantization: false
+  finetune_decoder: false
+  with_vae: false
+  vae_weight: 0.1
+
+  encoder: "Separate_encoder" # "Separate_encoder", "Separate_encoder_late_proj", "Fused_encoder"
+  decoder: "Small_decoder" # "Small_decoder",
+  fuser: "Attn_fuser_cross" # "Attn_fuser_cross", "Attn_fuser_cross_big",
+  intersector: "Attn_intersector_classifier"  # "Attn_intersector", "Proj_intersector"
+  graphconv: "GAT" # "SAGE", "GAT"
+
+  # For generative model
+  checkpoint_autoencoder:
+  num_max_faces: 64
+  diffusion_objective: pred_noise # pred_noise, pred_x0, pred_v
+  diffusion_causal: false #
+
+hydra:
+  run:
+    dir: ./outputs_img2brep/${now:%Y_%m_%d_%H_%M_%S}
+  job:
+    chdir: False
+#  output_subdir: null
+#  job_logging: disabled
+#  hydra_logging: disabled

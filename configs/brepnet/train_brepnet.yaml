@@ -1,0 +1,63 @@
+dataset:
+  dataset_name: "AutoEncoder_dataset"
+
+  data_root: /mnt/d/abc_v0
+  train_dataset: src/brepnet/data/list/deduplicated_abc_training_brepnet.txt
+  val_dataset: src/brepnet/data/list/deduplicated_abc_validation_brepnet.txt
+  test_dataset: src/brepnet/data/list/deduplicated_abc_testing_brepnet.txt
+  disable_half: false
+
+  is_aug: 0
+  is_overfit: true
+  scale_factor: 10
+
+  cond_root: 
+  condition: []
+  cached_condition: false
+  num_points: 10000
+
+trainer:
+  gpu: 1
+  num_worker: 0
+  batch_size: 4
+  learning_rate: 1e-4
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: 2
+#  accelerator: "16-mixed"
+  accelerator: "32-true"
+
+  wandb: 
+  compile: false
+  evaluate: false
+  test_output_dir:
+  resume_from_checkpoint:
+
+  max_epochs: 10000000
+  spawn: false
+  output: .
+  exp_name: test
+
+model:
+  name: AutoEncoder_featuredv2
+  norm: "layer"
+  fixed_gaussian: 1
+  loss: "l2"
+  
+  encoderdecoder_weight: 
+  encoder_decoder_sigmoid: false
+  in_channels: 3
+  dim_latent: 8
+  dim_shape: 768
+  
+  with_intersection: false
+  stage: 0
+  sigmoid: false
+  gaussian_weights: 1e-6
+
+  condition: []
+
+hydra:
+  run:
+    dir: ./outputs_brepnet
+  job:
+    chdir: False

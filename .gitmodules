@@ -1,0 +1,39 @@
+[submodule "thirdparty/visualDet3D"]
+	path = thirdparty/visualDet3D
+	url = https://github.com/whatseven/visualDet3D
+[submodule "thirdparty/kitti-object-eval-python"]
+	path = thirdparty/kitti-object-eval-python
+	url = https://github.com/traveller59/kitti-object-eval-python
+[submodule "thirdparty/AA_RMVSNet"]
+	path = thirdparty/AA_RMVSNet
+	url = https://github.com/qt-zhu/aa-rmvsnet
+	branch = main
+[submodule "thirdparty/CasMVSNet_pl"]
+	path = thirdparty/CasMVSNet_pl
+	url = https://github.com/kwea123/CasMVSNet_pl
+[submodule "thirdparty/faiss"]
+	path = thirdparty/faiss
+	url = https://github.com/facebookresearch/faiss
+	branch = main
+[submodule "thirdparty/tiny-cuda-nn"]
+	path = thirdparty/tiny-cuda-nn
+	url = https://github.com/NVlabs/tiny-cuda-nn
+	branch = master
+[submodule "thirdparty/bvh-distance-queries"]
+	path = thirdparty/bvh-distance-queries
+	url = https://github.com/YuliangXiu/bvh-distance-queries
+[submodule "thirdparty/pvcnn"]
+	path = thirdparty/pvcnn
+	url = https://github.com/mit-han-lab/pvcnn
+[submodule "thirdparty/Pointnet2_PyTorch"]
+	path = thirdparty/Pointnet2_PyTorch
+	url = https://github.com/erikwijmans/Pointnet2_PyTorch
+[submodule "thirdparty/triposr"]
+	path = thirdparty/triposr
+	url = https://github.com/VAST-AI-Research/TripoSR
+[submodule "thirdparty/PointTransformerV3"]
+	path = thirdparty/PointTransformerV3
+	url = https://github.com/Pointcept/PointTransformerV3
+[submodule "thirdparty/Pointnet_Pointnet2_pytorch"]
+	path = thirdparty/Pointnet_Pointnet2_pytorch
+	url = https://github.com/yanx27/Pointnet_Pointnet2_pytorch

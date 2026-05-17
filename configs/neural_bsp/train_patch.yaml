@@ -1,0 +1,46 @@
+dataset:
+#  root: E:/GSP_v10_50k/training.h5
+  root: G:/Dataset/GSP/v16_quadric_whole_60k/training.h5
+  training_root: G:/Dataset/GSP/v15_parsenet_26k/validation_split.h5
+  validation_root: G:/Dataset/GSP/v15_parsenet_26k/validation_split.h5
+  dataset_name: ABC_patch2
+  is_bool_flag: true
+  mini_batch_size: 16
+
+  test_list: []
+
+trainer:
+  learning_rate: 1e-4
+  gpu: 1
+  num_worker: 0
+
+  spawn: false
+  num_samples: -1
+  batch_size: 1
+  resume_from_checkpoint:
+  evaluate: false
+  output: .
+  check_val_every_n_epoch: 1
+  accelerator: "32-true"
+
+model:
+  model_name: Base_model_UNet
+  base_channel: 16
+  with_bn: true
+  channels: 4
+  output_channels: 1
+  need_normalize: true
+
+  test_threshold: 0.5
+  focal_alpha: 0.75
+  augment: true
+
+
+hydra:
+  run:
+    dir: ./outputs/${now:%Y_%m_%d_%H_%M_%S}
+  job:
+    chdir: False
+#  output_subdir: null
+#  job_logging: disabled
+#  hydra_logging: disabled
