@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:arxiv.org)",
+      "Bash(grep -E \"\\\\.py$|\\\\.sh$|\\\\.yaml$|\\\\.yml$|^d\")",
+      "Bash(awk '{print $NF}')",
+      "Bash(grep \"\\\\.py$\")"
+    ]
+  }
+}

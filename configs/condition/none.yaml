@@ -1,0 +1,6 @@
+# @package _global_
+model:
+  condition:
+    modalities: []
+dataset:
+  condition_names: []

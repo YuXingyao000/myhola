@@ -1,0 +1,12 @@
+# @package _global_
+strategy:
+  name: FeatureDomainMapper
+  mapper:
+    num_layers: 6
+    dim_model: 1024
+    nhead: 16
+    feedforward_dim: 2048
+    dropout: 0.1
+  training:
+    loss: combined
+    cosine_weight: 0.5

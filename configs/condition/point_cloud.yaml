@@ -1,0 +1,16 @@
+# @package _global_
+model:
+  condition:
+    modalities: [pc]
+    point_cloud:
+      encoder: pointnet
+      output_dim: 1024
+      augmentation:
+        crop_prob: 0.5
+        noise_std: 0.02
+        downsample: true
+        normal_dropout: 0.5
+        rotation: true
+dataset:
+  condition_names: [pc]
+  num_points: 10000

@@ -1,0 +1,7 @@
+defaults:
+  - base
+  - model: ???
+  - condition: none
+  - strategy: none
+  - scheduler: cosine
+  - _self_

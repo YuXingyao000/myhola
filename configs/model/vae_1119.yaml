@@ -1,0 +1,19 @@
+# @package _global_
+model:
+  name: AutoEncoder_1119
+  stage: vae
+  in_channels: 6
+  dim_latent: 8
+  dim_shape: 768
+  norm: layer
+  gaussian_weights: 1.0e-6
+  sigmoid: false
+  num_gat_layers: 10
+  bottleneck_dim: 768
+  num_encoder_layers: 12
+  num_decoder_layers: 12
+  nhead: 16
+  with_intersection: true
+  intersection_dim: 768
+  intersection_layers: 12
+  loss: l1

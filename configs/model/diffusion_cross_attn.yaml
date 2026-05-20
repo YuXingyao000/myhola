@@ -1,0 +1,32 @@
+# @package _global_
+model:
+  name: DiffusionCrossAttn
+  stage: diffusion
+  dim_input: 32
+  dim_latent: 768
+  num_layers: 24
+  nhead_divisor: 64
+  feedforward_dim: 2048
+  dropout: 0.1
+  cross_attn_dim: 1024
+  cross_attn_layers: 4
+  align_dim: 256
+  lambda_align: 1.0
+  layerwise_adapter:
+    enabled: false
+    every_n: 2
+  prediction_type: epsilon
+  beta_schedule: squaredcos_cap_v2
+  beta_start: 0.0001
+  beta_end: 0.02
+  variance_type: fixed_small
+  autoencoder:
+    name: AutoEncoder_1119_light
+    weights: ???
+  num_max_faces: 30
+  pad_method: random
+  stored_z: true
+  use_mean: true
+  train_decoder: false
+  loss: l2
+  is_aug: true

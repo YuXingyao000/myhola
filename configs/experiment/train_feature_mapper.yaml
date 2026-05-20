@@ -1,0 +1,18 @@
+defaults:
+  - override /model: diffusion_cross_attn
+  - override /condition: single_img
+  - override /strategy: feature_mapper
+  - _self_
+
+model:
+  stage: strategy
+
+trainer:
+  batch_size: 64
+  learning_rate: 1.0e-4
+  max_epochs: 100
+  exp_name: feature_mapper_training
+
+dataset:
+  name: PairedImageDataset
+  real_photo_ratio: 1.0

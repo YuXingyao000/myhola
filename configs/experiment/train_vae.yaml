@@ -1,0 +1,14 @@
+defaults:
+  - override /model: vae_1119
+  - override /condition: none
+  - override /strategy: none
+  - _self_
+
+trainer:
+  batch_size: 4
+  learning_rate: 1.0e-4
+  max_epochs: 1000000
+  exp_name: train_vae
+
+dataset:
+  dataset_name: AutoEncoder_dataset3
