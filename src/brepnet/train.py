@@ -137,6 +137,8 @@ class UnifiedTrainer(pl.LightningModule):
         # --- Build model ---
         logger.info("Building model for stage='%s'", self.stage)
         self.model = build_model(cfg.model)
+        self._init_model_from_checkpoint()
+        self._apply_trainable_scope()
 
         # --- Condition extractor (diffusion / strategy stages) ---
         self.condition_extractor = None
@@ -165,6 +167,70 @@ class UnifiedTrainer(pl.LightningModule):
 
         # --- Visualization state ---
         self.viz: Dict[str, Any] = {}
+
+    def _init_model_from_checkpoint(self):
+        """Load model weights without restoring optimizer/trainer state."""
+        ckpt_path = (
+            self.cfg.trainer.get("init_from_checkpoint", None)
+            or self.cfg.model.get("init_from_checkpoint", None)
+        )
+        if not ckpt_path or str(ckpt_path).lower() in {"none", "null"}:
+            return
+
+        checkpoint = torch.load(str(ckpt_path), map_location="cpu")
+        state_dict = checkpoint.get("state_dict", checkpoint)
+        model_state = {}
+        for key, value in state_dict.items():
+            if key.startswith("model."):
+                model_state[key[len("model."):]] = value
+            elif not key.startswith(("strategy.", "condition_extractor.")):
+                model_state[key] = value
+
+        missing, unexpected = self.model.load_state_dict(model_state, strict=False)
+        logger.info(
+            "Initialized model from %s (missing=%d, unexpected=%d)",
+            ckpt_path,
+            len(missing),
+            len(unexpected),
+        )
+        if missing:
+            logger.warning("Missing model keys while loading %s: %s", ckpt_path, missing[:20])
+        if unexpected:
+            logger.warning("Unexpected model keys while loading %s: %s", ckpt_path, unexpected[:20])
+
+    def _apply_trainable_scope(self):
+        """Optionally freeze the model to a named trainable scope."""
+        scope = self.cfg.model.get("trainable_scope", "all")
+        if scope is None or str(scope).lower() in {"all", "none", "null"}:
+            return
+
+        if scope == "intersection":
+            trainable_prefixes = self.cfg.model.get(
+                "trainable_module_prefixes", ["inter", "classifier"]
+            )
+        else:
+            trainable_prefixes = scope if isinstance(scope, (list, tuple)) else [scope]
+
+        for param in self.model.parameters():
+            param.requires_grad = False
+
+        trainable_count = 0
+        for name, param in self.model.named_parameters():
+            if any(name == prefix or name.startswith(f"{prefix}.") for prefix in trainable_prefixes):
+                param.requires_grad = True
+                trainable_count += param.numel()
+
+        if trainable_count == 0:
+            raise ValueError(
+                f"model.trainable_scope={scope!r} matched no parameters. "
+                f"Available top-level modules: {sorted({n.split('.')[0] for n, _ in self.model.named_parameters()})}"
+            )
+        logger.info(
+            "Applied trainable scope '%s': %d parameters remain trainable (%s)",
+            scope,
+            trainable_count,
+            ", ".join(trainable_prefixes),
+        )
 
     # ------------------------------------------------------------------
     # Data
@@ -381,7 +447,11 @@ class UnifiedTrainer(pl.LightningModule):
     def _forward_step(self, batch: Dict[str, Any], is_training: bool) -> Dict[str, Any]:
         """Dispatch forward pass based on stage."""
         if self.stage == "vae":
-            loss, _data = self.model(batch, v_test=not is_training)
+            run_validation_inference = self.cfg.trainer.get("vae_validation_inference", False)
+            loss, _data = self.model(
+                batch,
+                v_test=(not is_training and run_validation_inference),
+            )
             return loss
 
         elif self.stage == "diffusion":
@@ -481,7 +551,7 @@ class UnifiedTrainer(pl.LightningModule):
 # Main Entry Point
 # ---------------------------------------------------------------------------
 
-@hydra.main(version_base="1.3", config_path="../../../configs", config_name="__init__")
+@hydra.main(version_base="1.3", config_path="../../configs", config_name="__init__")
 def main(cfg: DictConfig):
     """Unified training entry point for HoLa-BRep."""
     # --- Reproducibility ---
@@ -499,9 +569,7 @@ def main(cfg: DictConfig):
     log_dir = str(Path(output_dir) / exp_name)
     Path(log_dir).mkdir(parents=True, exist_ok=True)
 
-    # Inject output_dir back into config for the module
-    with hydra.core.global_hydra.GlobalHydra.instance().clear():
-        pass  # handled via OmegaConf below
+    # Inject output_dir back into config for the module.
     OmegaConf.update(cfg, "trainer.output_dir", log_dir, force_add=True)
 
     # --- Logger ---

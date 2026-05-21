@@ -38,25 +38,25 @@ def _lazy_import(module_path: str, class_name: str):
 
 _MODEL_LOADERS: Dict[str, Any] = {
     "AutoEncoder_1119": _lazy_import(
-        "brepnet.models.autoencoder", "AutoEncoder_1119"
+        "src.brepnet.models.vae", "AutoEncoder_1119"
     ),
-    "AutoEncoder_face": _lazy_import(
-        "brepnet.models.autoencoder", "AutoEncoder_face"
+    "AutoEncoder_1119_light": _lazy_import(
+        "src.brepnet.models.vae", "AutoEncoder_1119_light"
     ),
-    "AutoEncoder_edge": _lazy_import(
-        "brepnet.models.autoencoder", "AutoEncoder_edge"
+    "AutoEncoder_1119_TokenVAE": _lazy_import(
+        "src.brepnet.models.vae", "AutoEncoder_1119_TokenVAE"
+    ),
+    "AutoEncoder_1119_TokenEncConvDecVAE": _lazy_import(
+        "src.brepnet.models.vae", "AutoEncoder_1119_TokenEncConvDecVAE"
+    ),
+    "AutoEncoder_1225": _lazy_import(
+        "src.brepnet.models.vae", "AutoEncoder_1225"
     ),
     "DiffusionCrossAttn": _lazy_import(
-        "brepnet.models.diffusion", "DiffusionCrossAttn"
+        "src.brepnet.models.diffusion", "DiffusionCrossAttn"
     ),
     "DiffusionConcat": _lazy_import(
-        "brepnet.models.diffusion", "DiffusionConcat"
-    ),
-    "DiffusionUncond": _lazy_import(
-        "brepnet.models.diffusion", "DiffusionUncond"
-    ),
-    "LatentDiffusion": _lazy_import(
-        "brepnet.models.diffusion", "LatentDiffusion"
+        "src.brepnet.models.diffusion", "DiffusionConcat"
     ),
 }
 
@@ -64,6 +64,7 @@ _MODEL_LOADERS: Dict[str, Any] = {
 _MODEL_ALIASES: Dict[str, str] = {
     "AutoEncoder_0925": "AutoEncoder_1119",
     "AutoEncoder_featuredv2": "AutoEncoder_1119",
+    "AutoEncoder_1119_Light": "AutoEncoder_1119_light",
     "Diffusion_condition": "DiffusionCrossAttn",
     "Diffusion_condition_mm": "DiffusionConcat",
 }
@@ -198,6 +199,18 @@ def build_model(cfg) -> Any:
         }
 
     logger.info("Building model '%s' with %d config keys", canonical_name, len(kwargs))
+    import inspect
+
+    init_params = list(inspect.signature(model_cls.__init__).parameters.values())[1:]
+    if (
+        len(init_params) == 1
+        and init_params[0].kind in (
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            inspect.Parameter.KEYWORD_ONLY,
+        )
+        and init_params[0].name in {"cfg", "conf", "v_conf"}
+    ):
+        return model_cls(kwargs)
     return model_cls(**kwargs)
 
 
@@ -344,3 +357,26 @@ def available_strategies() -> list[str]:
     """Return sorted list of all registered strategy names."""
     _ensure_strategy_registry()
     return sorted(STRATEGY_REGISTRY.keys())
+
+
+def __getattr__(name: str) -> Any:
+    """Lazy class exports, e.g. ``from src.brepnet.models import AutoEncoder_1119``."""
+    canonical_name = _resolve_model_name(name)
+    if canonical_name in _MODEL_LOADERS:
+        model_cls = _MODEL_LOADERS[canonical_name]()
+        globals()[name] = model_cls
+        if canonical_name == name:
+            MODEL_REGISTRY[canonical_name] = model_cls
+        return model_cls
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+__all__ = [
+    "build_model",
+    "build_strategy",
+    "build_condition_extractor",
+    "available_models",
+    "available_strategies",
+    *_MODEL_LOADERS.keys(),
+    *_MODEL_ALIASES.keys(),
+]

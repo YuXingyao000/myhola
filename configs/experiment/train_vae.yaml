@@ -1,3 +1,4 @@
+# @package _global_
 defaults:
   - override /model: vae_1119
   - override /condition: none

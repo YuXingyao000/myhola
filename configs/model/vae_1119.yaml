@@ -16,4 +16,7 @@ model:
   with_intersection: true
   intersection_dim: 768
   intersection_layers: 12
+  intersection_noise_std: 0.0
+  trainable_scope: all
+  trainable_module_prefixes: [inter, classifier]
   loss: l1

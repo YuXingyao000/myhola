@@ -1,14 +1,21 @@
 dataset:
   data_root: ???
-  train_list: ???
-  val_list: ???
-  test_list: ???
+  train_list: null
+  val_list: null
+  test_list: null
+  train_dataset: ???
+  val_dataset: ???
+  test_dataset: ???
   face_z_dir: null
   cond_root: null
   cached_condition: false
+  condition: []
+  is_aug: 0
+  is_overfit: false
   num_max_faces: 30
   pad_method: random
   num_points: 10000
+  scale_factor: 1
   real_photo_ratio: 0.2
   augmentation:
     enabled: true
@@ -25,12 +32,15 @@ trainer:
   max_steps: -1
   precision: bf16-mixed
   check_val_every_n_epoch: 1
+  num_sanity_val_steps: 2
+  vae_validation_inference: false
   gradient_clip_val: 1.0
   wandb:
     enabled: false
     project: hola-brep
     name: null
   resume_from: null
+  init_from_checkpoint: null
   output_dir: ./outputs
   exp_name: default
 

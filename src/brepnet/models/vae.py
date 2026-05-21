@@ -97,6 +97,7 @@ class AutoEncoder_1119(nn.Module):
 
         self.in_channels = v_conf["in_channels"]
         self.with_intersection = v_conf["with_intersection"]
+        self.intersection_noise_std = float(v_conf.get("intersection_noise_std", 0.0))
 
         self.face_coords = nn.Sequential(
             nn.Conv2d(self.in_channels, ds // 8, kernel_size=3, stride=1, padding=1),
@@ -255,6 +256,11 @@ class AutoEncoder_1119(nn.Module):
 
         self.loss_fn = nn.L1Loss() if v_conf["loss"] == "l1" else nn.MSELoss()
 
+    def _add_intersection_training_noise(self, feature_pair: Tensor) -> Tensor:
+        if self.training and self.intersection_noise_std > 0:
+            return feature_pair + torch.randn_like(feature_pair) * self.intersection_noise_std
+        return feature_pair
+
     def sample(self, v_fused_face_features, v_is_test=False):
         if self.gaussian_weights <= 0:
             return self.gaussian_proj(v_fused_face_features), torch.zeros_like(v_fused_face_features[0,0])
@@ -374,6 +380,7 @@ class AutoEncoder_1119(nn.Module):
             id_false_start = true_intersection_embedding.shape[0]
             feature_pair = torch.cat((true_intersection_embedding, false_intersection_embedding), dim=0)
 
+            feature_pair = self._add_intersection_training_noise(feature_pair)
             feature_pair = self.inter(feature_pair)
             pred = self.classifier(feature_pair)
 

@@ -1,6 +1,6 @@
 # @package _global_
 model:
-  name: AutoEncoder_1119
+  name: AutoEncoder_1119_light
   stage: vae
   in_channels: 6
   dim_latent: 8
@@ -16,4 +16,7 @@ model:
   with_intersection: true
   intersection_dim: 512
   intersection_layers: 8
+  intersection_noise_std: 0.0
+  trainable_scope: all
+  trainable_module_prefixes: [inter, classifier]
   loss: l1

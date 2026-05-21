@@ -4,4 +4,5 @@ defaults:
   - condition: none
   - strategy: none
   - scheduler: cosine
+  - optional experiment: null
   - _self_
