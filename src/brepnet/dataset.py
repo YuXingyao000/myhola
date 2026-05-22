@@ -577,6 +577,8 @@ class Diffusion_dataset(torch.utils.data.Dataset):
         scale_factor = int(v_conf["scale_factor"])
         self.max_intersection = 500
         self.latent_root = Path(v_conf['face_z'])
+        self.data_root = Path(v_conf["data_root"]) if v_conf.get("data_root") else None
+        self.load_topology = bool(v_conf.get("load_topology", False))
         if v_training_mode == "testing":
             self.data_split = Path(v_conf['test_dataset'])
             scale_factor = 1
@@ -664,6 +666,27 @@ class Diffusion_dataset(torch.utils.data.Dataset):
             padded_face_features = face_features[index]
         else:
             raise ValueError("Invalid pad method")
+
+        # --- Topology: load GT adjacency and map to padded space ---
+        padded_adj = None
+        if self.load_topology and self.data_root is not None:
+            brep_path = self.data_root / folder_path / "data.npz"
+            if brep_path.exists():
+                brep_data = np.load(str(brep_path))
+                face_adj = torch.from_numpy(brep_data["face_adj"]).float()  # [num_faces_orig, num_faces_orig]
+                # Clip to actual num_faces (in case data has more faces than features)
+                n = min(face_adj.shape[0], num_faces)
+                face_adj_clipped = torch.zeros(num_faces, num_faces)
+                face_adj_clipped[:n, :n] = face_adj[:n, :n]
+                # Map to padded space using the same index used for face_features
+                if self.pad_method == "random":
+                    padded_adj = face_adj_clipped[index][:, index]  # [max_faces, max_faces]
+                else:  # zero padding
+                    padded_adj = torch.zeros(self.max_faces, self.max_faces)
+                    padded_adj[:num_faces, :num_faces] = face_adj_clipped
+            if padded_adj is None:
+                padded_adj = torch.zeros(self.max_faces, self.max_faces)
+
         # prepare_condition indexes Blender-rendered views, so pass the
         # cube-id directly (not the Euler-id used for the face-z cache).
         condition = prepare_condition(self.condition, self.conditional_data_root, folder_path, cube_id,
@@ -672,17 +695,24 @@ class Diffusion_dataset(torch.utils.data.Dataset):
             folder_path,
             padded_face_features,
             condition,
-            id_aug
+            id_aug,
+            padded_adj,
         )
 
     @staticmethod
     def collate_fn(batch):
         (
-            v_prefix, v_face_features, conditions, id_aug
+            v_prefix, v_face_features, conditions, id_aug, face_adj
         ) = zip(*batch)
 
         face_features = torch.stack(v_face_features, dim=0)
         id_aug = torch.tensor(id_aug)
+
+        # Topology: stack adjacency matrices (None if not loaded)
+        if face_adj[0] is not None:
+            face_adj_batch = torch.stack(face_adj, dim=0)  # [B, max_faces, max_faces]
+        else:
+            face_adj_batch = None
 
         keys = conditions[0].keys()
         condition_out = {key: [] for key in keys}
@@ -694,12 +724,15 @@ class Diffusion_dataset(torch.utils.data.Dataset):
             condition_out[key] = torch.stack(condition_out[key], dim=0) if isinstance(condition_out[key][0], torch.Tensor) else \
                 condition_out[key]
 
-        return {
+        result = {
             "v_prefix"     : v_prefix,
             "face_features": face_features,
             "conditions"   : condition_out,
             "id_aug"       : id_aug,
         }
+        if face_adj_batch is not None:
+            result["face_adj"] = face_adj_batch
+        return result
 
 
 class Diffusion_dataset_mm(Diffusion_dataset):

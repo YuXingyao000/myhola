@@ -12,6 +12,8 @@ dataset:
   condition: []
   is_aug: 0
   is_overfit: false
+  overfit: false
+  load_topology: false
   num_max_faces: 30
   pad_method: random
   num_points: 10000

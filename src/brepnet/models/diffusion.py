@@ -197,6 +197,7 @@ class DiffusionCrossAttn(nn.Module):
         self.dim_total = self.dim_latent
         self.time_statics = [0 for _ in range(10)]
         self.lambda_align = 1.0
+        self.topo_scale = float(cfg.get("topo_scale", 2.0))
         self.num_diffusion_layers = int(cfg.get("num_diffusion_layers", 24))
         self.layerwise_img_adapter = bool(cfg.get("layerwise_img_adapter", False))
         self.layerwise_img_adapter_every = max(1, int(cfg.get("layerwise_img_adapter_every", 2)))
@@ -403,7 +404,8 @@ class DiffusionCrossAttn(nn.Module):
                 data["padded_face_z"] = face_features[indices]
         return data
 
-    def apply_denoising_backbone(self, noise_features: Tensor, img_memory: Tensor) -> Tensor:
+    def apply_denoising_backbone(self, noise_features: Tensor, img_memory: Tensor,
+                                   topo_bias: Optional[Tensor] = None) -> Tensor:
         """Run the TransformerEncoder backbone with optional per-layer adapters.
 
         When ``layerwise_img_adapter`` is enabled, image adapters are inserted
@@ -414,19 +416,39 @@ class DiffusionCrossAttn(nn.Module):
             noise_features: Input features of shape ``(B, S, dim_total)``.
             img_memory: Condition memory tokens of shape ``(B, T, dim_condition)``
                 used by image adapters.  Ignored when adapters are disabled.
+            topo_bias: Optional topology attention bias of shape ``(B, S, S)``.
+                Positive values encourage attention between face pairs (adjacent
+                faces), zero means no bias.  Applied as additive mask to self-
+                attention logits.  When provided, we manually iterate over layers
+                instead of calling ``self.net1(...)`` directly.
 
         Returns:
             Denoised features of shape ``(B, S, dim_total)``.
         """
-        if not self.layerwise_img_adapter:
+        # Fast path: no adapters and no topology bias
+        if not self.layerwise_img_adapter and topo_bias is None:
             return self.net1(noise_features)
+
+        # Prepare topology mask for PyTorch's MultiheadAttention format
+        # nn.TransformerEncoderLayer expects src_mask of shape [S, S] or [B*nhead, S, S]
+        attn_mask = None
+        if topo_bias is not None:
+            B, S, _ = topo_bias.shape
+            nhead = self.dim_total // 64  # same as nhead in TransformerEncoderLayer
+            # Expand: [B, S, S] → [B*nhead, S, S]
+            attn_mask = topo_bias.unsqueeze(1).expand(-1, nhead, -1, -1)
+            attn_mask = attn_mask.reshape(B * nhead, S, S)
 
         output = noise_features
         adapter_idx = 0
         for layer_idx, layer in enumerate(self.net1.layers):
-            output = layer(output)
-            if (layer_idx + 1) % self.layerwise_img_adapter_every == 0:
+            output = layer(output, src_mask=attn_mask)
+            if self.layerwise_img_adapter and (layer_idx + 1) % self.layerwise_img_adapter_every == 0:
                 output = self.img_adapters[adapter_idx](output, img_memory)
+                adapter_idx += 1
+        if self.net1.norm is not None:
+            output = self.net1.norm(output)
+        return output
                 adapter_idx += 1
         if self.net1.norm is not None:
             output = self.net1.norm(output)
@@ -438,6 +460,7 @@ class DiffusionCrossAttn(nn.Module):
         v_timesteps: Tensor,
         v_condition: Optional[Tensor] = None,
         v_align_feature: Optional[Tensor] = None,
+        topo_bias: Optional[Tensor] = None,
     ) -> tuple[Tensor, Tensor]:
         """Perform a single denoising step with cross-attention conditioning.
 
@@ -456,6 +479,9 @@ class DiffusionCrossAttn(nn.Module):
                 or ``(B, T, dim_condition)``.
             v_align_feature: Clean face latents for alignment branch,
                 shape ``(B, num_faces, dim_input)``.
+            topo_bias: Optional topology attention bias, shape ``(B, num_faces, num_faces)``.
+                Values in [0, 1] representing adjacency probability.  Applied with
+                timestep-dependent weighting (stronger at high noise levels).
 
         Returns:
             Tuple of (predicted_x0, alignment_loss).
@@ -508,7 +534,18 @@ class DiffusionCrossAttn(nn.Module):
 
         noise_features = noise_features_add_cond + time_embeds
 
-        pred_x0 = self.apply_denoising_backbone(noise_features, img_memory)
+        # --- Apply topology bias with timestep-dependent weighting ---
+        weighted_topo_bias = None
+        if topo_bias is not None:
+            # Higher noise (larger t) → stronger topology guidance
+            # Lower noise (smaller t) → weaker guidance (let geometry refine freely)
+            t_normalized = v_timesteps.float() / 1000.0  # [B], range 0~1
+            topo_weight = t_normalized[:, None, None]  # [B, 1, 1]
+            # Scale: adjacency (0~1) → attention bias magnitude
+            topo_scale = getattr(self, 'topo_scale', 2.0)
+            weighted_topo_bias = topo_bias * topo_weight * topo_scale  # [B, S, S]
+
+        pred_x0 = self.apply_denoising_backbone(noise_features, img_memory, weighted_topo_bias)
         pred_x0 = self.fc_out(pred_x0)
 
         return pred_x0, align_loss
@@ -617,6 +654,7 @@ class DiffusionCrossAttn(nn.Module):
             timesteps,
             condition,
             v_align_feature=face_z,  # Alignment branch uses clean latent
+            topo_bias=v_data.get("face_adj", None),  # Topology bias if available
         )
 
         loss = {}

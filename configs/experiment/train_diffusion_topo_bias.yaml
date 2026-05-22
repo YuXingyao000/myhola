@@ -1,0 +1,21 @@
+# @package _global_
+defaults:
+  - override /model: diffusion_cross_attn
+  - override /condition: single_img
+  - override /strategy: none
+  - _self_
+
+model:
+  topo_scale: 2.0
+
+trainer:
+  batch_size: 64
+  learning_rate: 1.0e-4
+  gpus: 8
+  exp_name: diffusion_topo_bias
+
+dataset:
+  name: Diffusion_dataset
+  load_topology: true
+  real_photo_ratio: 0.0
+  cached_condition: true
