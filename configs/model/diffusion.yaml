@@ -1,0 +1,62 @@
+name: Diffusion
+stage: diffusion
+loss: l2
+
+latent:
+  dim: 32
+  use_cached_latents: true
+  use_mean: true
+
+padding:
+  type: zero
+  max_faces: 30
+  valid_loss_weight: 0.01
+
+noise:
+  prediction_type: epsilon
+  beta_schedule: squaredcos_cap_v2
+  beta_start: 0.0001
+  beta_end: 0.02
+  variance_type: fixed_small
+  num_train_timesteps: 1000
+
+denoiser:
+  hidden_dim: 768
+  num_layers: 24
+  nhead_divisor: 64
+  feedforward_dim: 2048
+  dropout: 0.1
+
+condition_fuser:
+  type: cross_attention
+  condition_dim: 1024
+  hidden_dim: 1024
+  num_layers: 4
+
+topology_bias:
+  enabled: false
+  scale: 2.0
+
+autoencoder:
+  name: AutoEncoder_light
+  stage: vae
+  mode: frozen_inference
+  checkpoint: null
+  in_channels: 6
+  latent_channels: 8
+  hidden_channels: 768
+  norm: layer
+  gaussian_weights: 1.0e-6
+  sigmoid: false
+  num_gat_layers: 5
+  bottleneck_dim: 768
+  num_encoder_layers: 8
+  num_decoder_layers: 8
+  nhead: 16
+  with_intersection: true
+  intersection_dim: 512
+  intersection_layers: 8
+  intersection_noise_std: 0.0
+  trainable_scope: all
+  trainable_module_prefixes: [inter, classifier]
+  loss: l1

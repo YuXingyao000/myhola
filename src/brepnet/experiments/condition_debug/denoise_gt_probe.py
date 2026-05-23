@@ -80,24 +80,24 @@ def main() -> None:
             break
         batch = move_to_device(batch, device)
         with torch.no_grad():
-            face_z = model.get_z(batch, v_test=True)["padded_face_z"]
+            latent_sequence = model.latent_provider(batch).values
             condition = model.extract_condition(batch)
-        batch_size = face_z.shape[0]
+        batch_size = latent_sequence.shape[0]
         prefixes = list(batch["v_prefix"])
 
         for timestep in args.timesteps:
             set_seed(args.base_seed + timestep + batch_idx * 10000)
             timesteps = torch.full((batch_size,), int(timestep), device=device, dtype=torch.long)
-            noise = torch.randn_like(face_z)
-            zt = model.noise_scheduler.add_noise(face_z, noise, timesteps)
+            noise = torch.randn_like(latent_sequence)
+            zt = model.noise_scheduler.add_noise(latent_sequence, noise, timesteps)
             for mode in args.condition_modes:
                 with torch.no_grad():
                     cond_mode = condition_from_mode(condition, mode)
-                    pred, _ = model.diffuse(zt, timesteps, cond_mode, v_align_feature=face_z)
+                    pred = model.diffuse(zt, timesteps, cond_mode)
                     x0_pred = predict_x0(model, zt, timesteps, pred)
                 epsilon_mse = ((pred - noise) ** 2).mean(dim=(1, 2)).detach().cpu().numpy()
-                x0_l1 = (x0_pred - face_z).abs().mean(dim=(1, 2)).detach().cpu().numpy()
-                x0_mse = ((x0_pred - face_z) ** 2).mean(dim=(1, 2)).detach().cpu().numpy()
+                x0_l1 = (x0_pred - latent_sequence).abs().mean(dim=(1, 2)).detach().cpu().numpy()
+                x0_mse = ((x0_pred - latent_sequence) ** 2).mean(dim=(1, 2)).detach().cpu().numpy()
                 for item_idx, prefix in enumerate(prefixes):
                     rows.append(
                         {
@@ -124,4 +124,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

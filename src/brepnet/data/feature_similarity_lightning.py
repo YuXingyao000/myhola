@@ -26,7 +26,7 @@ def build_predict_dataloader(v_cfg: DictConfig, split: str) -> DataLoader:
     dataset_cls = resolve_dataset_cls(v_cfg["dataset"]["name"])
     dataset = dataset_cls(split, v_cfg["dataset"])
 
-    requested_workers = int(v_cfg["trainer"]["num_worker"])
+    requested_workers = int(v_cfg["trainer"]["num_workers"])
     force_zero_workers = dataset_cls.__name__ == Diffusion_dataset_fidelity.__name__
     num_workers = 0 if force_zero_workers else requested_workers
     if force_zero_workers and requested_workers != 0 and os.environ.get("LOCAL_RANK", "0") == "0":

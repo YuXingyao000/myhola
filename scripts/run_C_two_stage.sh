@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# Strategy C: Two-Stage Pipeline (Image → Point Cloud → BRep)
+# Two-Stage Pipeline (Image → Point Cloud → BRep)
 # ============================================================
 # 兜底方案：用外部模型先把图片变成点云，再用已有的PC-conditioned diffusion
 # 不需要训练，只需要推理
@@ -41,7 +41,7 @@ echo "============================================"
 # 方式2: InstantMesh
 # python third_party/InstantMesh/run.py \
 #     --input_dir "$INPUT_IMAGES" \
-#     --output_dir "$PC_OUTPUT" \
+#     --output-dir "$PC_OUTPUT" \
 #     --export_pointcloud
 
 # 方式3: 如果你已经有其他方式生成的点云，直接放到 PC_OUTPUT 目录下
@@ -64,12 +64,12 @@ echo " 使用 PC-conditioned Diffusion"
 echo "============================================"
 
 python -m src.brepnet.inference \
-    --checkpoint "$PC_DIFFUSION_CKPT" \
-    --autoencoder_weights "$VAE_CKPT" \
-    --condition pc \
+    --diffusion-weights "$PC_DIFFUSION_CKPT" \
+    --autoencoder-weights "$VAE_CKPT" \
+    --condition point_cloud \
     --input "$PC_OUTPUT" \
-    --output "$BREP_OUTPUT/raw" \
-    --num_samples 1
+    --output-dir "$BREP_OUTPUT/raw" \
+    --num-samples 1
 
 # ============================================================
 # Post-processing: 控制点 → STEP 文件

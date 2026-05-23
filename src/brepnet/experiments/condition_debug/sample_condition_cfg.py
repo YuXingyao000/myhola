@@ -49,45 +49,19 @@ def scale_for_timestep(args: argparse.Namespace, timestep: int) -> float:
     return args.cfg_low_scale
 
 
-def decode_face_features(model, face_features: torch.Tensor) -> list[dict]:
-    face_z = face_features
-    if model.pad_method == "zero":
-        label = torch.sigmoid(model.classifier(face_features))[..., 0]
-        mask = label > 0.5
-    else:
-        mask = torch.ones_like(face_z[:, :, 0]).to(bool)
+def decode_latent_sequence(model, latent_sequence: torch.Tensor) -> list[dict]:
+    mask = model.face_padder.inference_mask(latent_sequence)
 
     recon_data = []
-    for item_idx in range(face_z.shape[0]):
-        face_z_item = face_z[item_idx:item_idx + 1][mask[item_idx:item_idx + 1]]
-        if model.addition_tag:
-            flag = face_z_item[..., -1] > 0
-            face_z_item = face_z_item[flag][:, :-1]
-        if model.pad_method == "random":
-            threshold = 1e-2
-            max_faces = face_z_item.shape[0]
-            index = torch.stack(
-                torch.meshgrid(torch.arange(max_faces), torch.arange(max_faces), indexing="ij"),
-                dim=2,
-            ).to(face_z_item.device)
-            features = face_z_item[index]
-            distance = (features[:, :, 0] - features[:, :, 1]).abs().mean(dim=-1)
-            final_face_z = []
-            for face_idx in range(max_faces):
-                valid = True
-                for kept_idx in final_face_z:
-                    if distance[face_idx, kept_idx] < threshold:
-                        valid = False
-                        break
-                if valid:
-                    final_face_z.append(face_idx)
-            face_z_item = face_z_item[final_face_z]
-        recon_data.append(model.ae_model.inference(face_z_item))
+    for item_idx in range(latent_sequence.shape[0]):
+        face_latents = latent_sequence[item_idx:item_idx + 1][mask[item_idx:item_idx + 1]]
+        face_latents = model.face_padder.postprocess(face_latents)
+        recon_data.append(model.autoencoder.decode_latents(face_latents))
     return recon_data
 
 
 def inference_cfg(model, batch_size: int, device: torch.device, batch: dict, args: argparse.Namespace) -> list[dict]:
-    face_features = torch.randn((batch_size, model.num_max_faces, model.dim_input), device=device)
+    latent_sequence = torch.randn((batch_size, model.max_faces, model.latent_dim), device=device)
     condition = model.extract_condition(batch)[:batch_size]
     zero_condition = torch.zeros_like(condition)
 
@@ -96,22 +70,20 @@ def inference_cfg(model, batch_size: int, device: torch.device, batch: dict, arg
         timesteps = timestep_tensor.reshape(-1).to(device)
         scale = scale_for_timestep(args, timestep_value)
 
-        pred_cond, _ = model.diffuse(
-            face_features,
+        pred_cond = model.diffuse(
+            latent_sequence,
             timesteps,
-            v_condition=condition,
-            v_align_feature=face_features,
+            condition=condition,
         )
-        pred_zero, _ = model.diffuse(
-            face_features,
+        pred_zero = model.diffuse(
+            latent_sequence,
             timesteps,
-            v_condition=zero_condition,
-            v_align_feature=face_features,
+            condition=zero_condition,
         )
         pred = pred_zero + scale * (pred_cond - pred_zero)
-        face_features = model.noise_scheduler.step(pred, timestep_tensor, face_features).prev_sample
+        latent_sequence = model.noise_scheduler.step(pred, timestep_tensor, latent_sequence).prev_sample
 
-    return decode_face_features(model, face_features)
+    return decode_latent_sequence(model, latent_sequence)
 
 
 def main() -> None:

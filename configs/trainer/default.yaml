@@ -1,0 +1,23 @@
+devices: 1
+accelerator: gpu
+precision: bf16-mixed
+num_workers: 4
+batch_size: 32
+learning_rate: 1.0e-4
+max_epochs: 1000000
+max_steps: -1
+check_val_every_n_epoch: 1
+num_sanity_val_steps: 2
+vae_validation_inference: false
+gradient_clip_val: 1.0
+log_every_n_steps: 50
+wandb:
+  enabled: false
+  project: hola-brep
+  name: null
+resume_from_checkpoint: null
+init_from_checkpoint: null
+evaluate: false
+test_output_dir: null
+output_dir: ./outputs
+exp_name: default

@@ -1,16 +1,11 @@
-# @package _global_
-model:
-  condition:
-    modalities: [single_img]
-    image:
-      backbone: dinov2
-      backbone_variant: vitl
-      feature_dim: 1024
-      projection_dim: 1024
-      freeze: true
-    camera_embedding:
-      num_views: 8
-      embed_dim: 256
-dataset:
-  condition_names: [single_img]
-  cached_condition: true
+type: single_img
+dataset_names: [single_img]
+cached_features: false
+output_dim: 1024
+image:
+  backbone: dinov2
+  depth_anything_v2_ckpt: null
+  augment_probability: 0.0
+point_cloud:
+  encoder: pointnet
+  augment_probability: 0.0

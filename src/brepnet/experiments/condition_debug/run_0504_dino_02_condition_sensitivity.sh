@@ -6,7 +6,7 @@ set -euo pipefail
 ROOT="${ROOT:-/mnt/d/data/new_cond_results/exp_plan_0504_dino}"
 CKPT="${CKPT:-/mnt/d/data/new_cond_ckpt/0504_deepcad_flux_single_view_align_dino.ckpt}"
 AE="${AE:-/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt}"
-FACE_Z="${FACE_Z:-/mnt/d/data/ae_cache/1119_deepcad_aug1_11k}"
+LATENT_ROOT="${LATENT_ROOT:-/mnt/d/data/ae_cache/1119_deepcad_aug1_11k}"
 COND_ROOT="${COND_ROOT:-/mnt/d/data/deepcad_v6_cond}"
 TEST_LIST="${TEST_LIST:-src/brepnet/data/list/deduplicated_deepcad_testing_7_30_sample_100.txt}"
 BATCH_SIZE="${BATCH_SIZE:-64}"
@@ -43,7 +43,7 @@ for mode in normal shuffle zero; do
   python -m src.brepnet.experiments.condition_debug.sample_condition \
     --checkpoint "$CKPT" \
     --autoencoder-weights "$AE" \
-    --face-z "$FACE_Z" \
+    --latent-root "$LATENT_ROOT" \
     --cond-root "$COND_ROOT" \
     --test-list "$TEST_LIST" \
     --output-root "$OUT" \

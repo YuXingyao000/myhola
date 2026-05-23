@@ -20,13 +20,12 @@ cd ../../..
 
 echo "[4/4] Verifying imports..."
 python -c "
-from src.brepnet.models import build_model, build_strategy, build_condition_extractor
-from src.brepnet.models.vae import AutoEncoder_1119
-from src.brepnet.models.diffusion import DiffusionCrossAttn
-from src.brepnet.models.strategies import KnowledgeDistillation, FeatureDomainMapper
+from src.brepnet.models import build_model
+from src.brepnet.models.vae import AutoEncoder
+from src.brepnet.models.diffusion import Diffusion
 from src.brepnet.models.condition_encoders import ConditionExtractor
 print('All imports OK!')
 "
 
 echo "Setup complete. Edit scripts/train.sh paths, then run:"
-echo "  bash scripts/train.sh feature_mapper"
+echo "  bash scripts/train.sh diffusion_white"

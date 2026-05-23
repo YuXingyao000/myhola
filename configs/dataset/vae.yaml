@@ -1,0 +1,13 @@
+name: AutoEncoder_dataset3
+data_root: ???
+train_dataset: ???
+val_dataset: ???
+test_dataset: ???
+is_aug: 0
+is_overfit: false
+overfit: false
+scale_factor: 1
+condition_names: ${condition.dataset_names}
+condition_root: null
+cached_condition: ${condition.cached_features}
+num_points: 10000

@@ -26,8 +26,21 @@ for var in "${variables[@]}"; do
     fi
 done
 
-echo -e "\n${GREEN}STep0 Sample${NC}"
-python -m src.brepnet.train_diffusion model.name=Diffusion_condition model.diffusion_latent=768 trainer.resume_from_checkpoint=${ckpt} trainer.evaluate=true trainer.accelerator=16-mixed trainer.batch_size=1024 model.num_max_faces=30 dataset.num_max_faces=30 trainer.test_output_dir=${fake_sample_feature_root} model.gaussian_weights=${gaussian_weights} model.diffusion_type=${diffusion_type} model.pad_method=random model.sigmoid=false dataset.name=Dummy_dataset dataset.length=${sample_size} || exit 1
+echo -e "\n${GREEN}STEP0 Sample${NC}"
+python -m src.brepnet.train --config-name train condition=none dataset=dummy \
+    model.denoiser.hidden_dim=768 \
+    trainer.resume_from_checkpoint=${ckpt} \
+    trainer.evaluate=true \
+    trainer.precision=16-mixed \
+    trainer.batch_size=1024 \
+    model.padding.max_faces=30 \
+    dataset.max_faces=30 \
+    trainer.test_output_dir=${fake_sample_feature_root} \
+    model.autoencoder.gaussian_weights=${gaussian_weights} \
+    model.noise.prediction_type=${diffusion_type} \
+    model.padding.type=random \
+    model.autoencoder.sigmoid=false \
+    dataset.length=${sample_size} || exit 1
 
 echo -e "\n${GREEN}STEP1 Build Brep${NC}"
 python -m src.brepnet.post.construct_brep --data_root ${fake_sample_feature_root} --out_root ${fake_post_root} --use_ray --use_cuda --num_cpus 40 || exit 1

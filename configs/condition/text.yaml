@@ -1,9 +1,11 @@
-# @package _global_
-model:
-  condition:
-    modalities: [txt]
-    text:
-      model_path: Alibaba-NLP/gte-large-en-v1.5
-      output_dim: 1024
-dataset:
-  condition_names: [txt]
+type: text
+dataset_names: [txt]
+cached_features: false
+output_dim: 1024
+image:
+  backbone: dinov2
+  depth_anything_v2_ckpt: null
+  augment_probability: 0.0
+point_cloud:
+  encoder: pointnet
+  augment_probability: 0.0

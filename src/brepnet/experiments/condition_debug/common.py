@@ -17,14 +17,14 @@ from torch.utils.data import DataLoader
 from lightning_fabric import seed_everything
 
 from src.brepnet.dataset import Diffusion_dataset
-from src.brepnet.diffusion_model import Diffusion_condition
+from src.brepnet.models.diffusion import Diffusion
 from src.brepnet.post.utils import export_edges
 
 
 DEFAULT_RESULT_ROOT = "/mnt/d/data/new_cond_results/exp_plan_0502_depth"
 DEFAULT_CHECKPOINT = "/mnt/d/data/new_cond_ckpt/0502_deepcad_flux_single_view_align_depth.ckpt"
 DEFAULT_AUTOENCODER = "/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt"
-DEFAULT_FACE_Z = "/mnt/d/data/ae_cache/1119_deepcad_aug1_11k"
+DEFAULT_LATENT_ROOT = "/mnt/d/data/ae_cache/1119_deepcad_aug1_11k"
 DEFAULT_COND_ROOT = "/mnt/d/data/deepcad_v6_cond"
 DEFAULT_TEST_LIST = "src/brepnet/data/list/deduplicated_deepcad_testing_7_30_sample_100.txt"
 
@@ -32,7 +32,7 @@ DEFAULT_TEST_LIST = "src/brepnet/data/list/deduplicated_deepcad_testing_7_30_sam
 def add_common_model_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--checkpoint", default=DEFAULT_CHECKPOINT)
     parser.add_argument("--autoencoder-weights", default=DEFAULT_AUTOENCODER)
-    parser.add_argument("--face-z", default=DEFAULT_FACE_Z)
+    parser.add_argument("--latent-root", default=DEFAULT_LATENT_ROOT)
     parser.add_argument("--cond-root", default=DEFAULT_COND_ROOT)
     parser.add_argument("--test-list", default=DEFAULT_TEST_LIST)
     parser.add_argument("--output-root", default=DEFAULT_RESULT_ROOT)
@@ -45,34 +45,86 @@ def add_common_model_args(parser: argparse.ArgumentParser) -> None:
 
 def build_model_conf(args: argparse.Namespace) -> dict[str, Any]:
     return {
-        "name": "Diffusion_condition",
-        "train_decoder": False,
-        "stored_z": True,
-        "use_mean": True,
-        "diffusion_latent": 768,
-        "diffusion_type": "epsilon",
+        "name": "Diffusion",
+        "stage": "diffusion",
         "loss": "l2",
-        "pad_method": "random",
-        "num_max_faces": 30,
-        "beta_schedule": "squaredcos_cap_v2",
-        "beta_start": 0.0001,
-        "beta_end": 0.02,
-        "variance_type": "fixed_small",
-        "addition_tag": False,
-        "autoencoder": "AutoEncoder_1119_light",
-        "with_intersection": True,
-        "dim_latent": 8,
-        "dim_shape": 768,
-        "sigmoid": False,
-        "in_channels": 6,
-        "gaussian_weights": 1e-6,
-        "norm": "layer",
-        "autoencoder_weights": args.autoencoder_weights,
-        "is_aug": False,
-        "condition": ["single_img"],
-        "cond_prob": [],
-        "point_encoder": "pointnet1",
-        "aug_points_prob": 0.5,
+        "latent": {
+            "dim": 32,
+            "use_cached_latents": True,
+            "use_mean": True,
+        },
+        "padding": {
+            "type": "zero",
+            "max_faces": 30,
+            "valid_loss_weight": 0.01,
+        },
+        "noise": {
+            "prediction_type": "epsilon",
+            "beta_schedule": "squaredcos_cap_v2",
+            "beta_start": 0.0001,
+            "beta_end": 0.02,
+            "variance_type": "fixed_small",
+            "num_train_timesteps": 1000,
+        },
+        "denoiser": {
+            "hidden_dim": 768,
+            "num_layers": 24,
+            "nhead_divisor": 64,
+            "feedforward_dim": 2048,
+            "dropout": 0.1,
+        },
+        "condition_fuser": {
+            "type": "cross_attention",
+            "condition_dim": 1024,
+            "hidden_dim": 1024,
+            "num_layers": 4,
+        },
+        "topology_bias": {
+            "enabled": False,
+            "scale": 2.0,
+        },
+        "autoencoder": {
+            "name": "AutoEncoder_light",
+            "stage": "vae",
+            "mode": "frozen_inference",
+            "checkpoint": args.autoencoder_weights,
+            "in_channels": 6,
+            "latent_channels": 8,
+            "hidden_channels": 768,
+            "norm": "layer",
+            "gaussian_weights": 1e-6,
+            "sigmoid": False,
+            "num_gat_layers": 5,
+            "bottleneck_dim": 768,
+            "num_encoder_layers": 8,
+            "num_decoder_layers": 8,
+            "nhead": 16,
+            "with_intersection": True,
+            "intersection_dim": 512,
+            "intersection_layers": 8,
+            "intersection_noise_std": 0.0,
+            "trainable_scope": "all",
+            "trainable_module_prefixes": ["inter", "classifier"],
+            "loss": "l1",
+        },
+    }
+
+
+def build_condition_conf() -> dict[str, Any]:
+    return {
+        "type": "single_img",
+        "dataset_names": ["single_img"],
+        "cached_features": False,
+        "output_dim": 1024,
+        "image": {
+            "backbone": "dinov2",
+            "depth_anything_v2_ckpt": None,
+            "augment_probability": 0.0,
+        },
+        "point_cloud": {
+            "encoder": "pointnet",
+            "augment_probability": 0.0,
+        },
     }
 
 
@@ -82,23 +134,27 @@ def build_dataset_conf(args: argparse.Namespace) -> dict[str, Any]:
         "train_dataset": args.test_list,
         "val_dataset": args.test_list,
         "test_dataset": args.test_list,
-        "data_root": "",
-        "face_z": args.face_z,
-        "deduplicate_list": 0,
-        "pad_method": "random",
+        "data_root": None,
+        "latent_root": args.latent_root,
+        "padding": "zero",
         "cached_condition": False,
-        "scale_factor": 1,
+        "scale_factor": 200,
         "overfit": False,
         "is_overfit": False,
         "is_aug": 0,
         "length": 1000,
-        "num_max_faces": 30,
-        "addition_tag": False,
-        "condition": ["single_img"],
-        "cond_prob": [],
-        "cond_root": args.cond_root,
+        "max_faces": 30,
+        "load_topology": False,
+        "condition_names": ["single_img"],
+        "condition_root": args.cond_root,
         "num_points": 10000,
-        "point_aug": 0,
+        "real_photo_ratio": 0.0,
+        "augmentation": {
+            "enabled": False,
+            "random_rotate": False,
+            "random_scale": False,
+            "scale_range": [1.0, 1.0],
+        },
     }
 
 
@@ -164,11 +220,11 @@ def create_dataloader(args: argparse.Namespace) -> DataLoader:
     )
 
 
-def load_model(args: argparse.Namespace, device: torch.device) -> tuple[Diffusion_condition, dict[str, Any]]:
+def load_model(args: argparse.Namespace, device: torch.device) -> tuple[Diffusion, dict[str, Any]]:
     ensure_exists(args.checkpoint, "diffusion checkpoint")
     ensure_exists(args.autoencoder_weights, "autoencoder checkpoint")
     model_conf = build_model_conf(args)
-    model = Diffusion_condition(model_conf)
+    model = Diffusion(model_conf, build_condition_conf())
 
     checkpoint = torch.load(args.checkpoint, map_location="cpu", weights_only=False)
     state_dict = checkpoint["state_dict"] if "state_dict" in checkpoint else checkpoint
@@ -201,7 +257,7 @@ def condition_from_mode(condition: torch.Tensor, mode: str) -> torch.Tensor:
     raise ValueError(f"Unknown condition mode: {mode}")
 
 
-def install_condition_mode(model: Diffusion_condition, mode: str) -> None:
+def install_condition_mode(model: Diffusion, mode: str) -> None:
     original_extract_condition = model.extract_condition
 
     def extract_condition_with_mode(v_data):
@@ -376,4 +432,3 @@ def summarize_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
         summary[f"{key}_mean"] = mean_or_none(values)
         summary[f"{key}_median"] = median_or_none(values)
     return summary
-

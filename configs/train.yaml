@@ -1,0 +1,17 @@
+defaults:
+  - trainer: default
+  - dataset: diffusion
+  - model: diffusion
+  - condition: none
+
+eval:
+  enabled: false
+  output_dir: null
+  num_samples: 100
+  post_process: true
+
+hydra:
+  run:
+    dir: ${trainer.output_dir}/${trainer.exp_name}
+  job:
+    chdir: false

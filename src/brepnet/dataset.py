@@ -135,14 +135,14 @@ def downsample_pc(v_pc, v_num_points):
 
 # -----------------------------------------------------------------------------
 # Rotation-id mapping between the Blender cube-24 render system and the
-# legacy 4x4x4 = 64 Euler-id system used to cache AE face-z features.
+# legacy 4x4x4 = 64 Euler-id system used to cache AE face latent stats.
 #
 # The condition images (imgs.npz / feat caches) are now produced by
 # `render_dataset_cube24_single_material.py`, which enumerates the 24 proper
 # rotations of the cube via orthonormal axis pairs picked from the 6 signed
 # axis directions (see `generate_cube_rotations` in that script).
 #
-# The stored face-z cache (`<model>_{0..63}/features.npy`) was produced by
+# The stored latent cache (`<model>_{0..63}/features.npy`) was produced by
 # `AutoEncoder_dataset3`, which applies:
 #     angles = [id % 4, id // 4 % 4, id // 16] * pi/2
 #     R      = scipy.Rotation.from_euler('xyz', angles).as_matrix()
@@ -346,9 +346,7 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
         self.mode = v_training_mode
         self.conf = v_conf
         self.max_intersection = 500
-        self.scale_factor = 1
-        if "scale_factor" in v_conf:
-            self.scale_factor = int(v_conf["scale_factor"])
+        self.scale_factor = int(v_conf["scale_factor"])
         if v_training_mode == "testing":
             listfile = v_conf['test_dataset']
         elif v_training_mode == "training":
@@ -363,8 +361,8 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
 
         # Cond related
         self.is_aug = v_conf["is_aug"]
-        self.condition = v_conf["condition"]
-        self.conditional_data_root = Path(v_conf["cond_root"]) if v_conf["cond_root"] is not None else None
+        self.condition = list(v_conf["condition_names"])
+        self.conditional_data_root = Path(v_conf["condition_root"]) if self.condition else None
         self.cached_condition = v_conf["cached_condition"]
         if v_training_mode == "validation":
             self.is_aug = 0
@@ -505,7 +503,7 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
         bs = len(prefix)
 
         flat_zero_positions = []
-        num_face_record = []
+        face_counts = []
 
         num_faces = 0
         num_edges = 0
@@ -517,8 +515,8 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
             flat_zero_positions.append(zero_positions[i] + num_faces)
             num_faces += face_norm[i].shape[0]
             num_edges += edge_norm[i].shape[0]
-            num_face_record.append(face_norm[i].shape[0])
-        num_face_record = torch.tensor(num_face_record, dtype=torch.long)
+            face_counts.append(face_norm[i].shape[0])
+        face_counts = torch.tensor(face_counts, dtype=torch.long)
         num_sum_edges = sum(edge_conn_num)
         edge_attn_mask = torch.ones((num_sum_edges, num_sum_edges), dtype=bool)
         id_cur = 0
@@ -526,10 +524,10 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
             edge_attn_mask[id_cur:id_cur + edge_conn_num[i], id_cur:id_cur + edge_conn_num[i]] = False
             id_cur += edge_conn_num[i]
 
-        num_max_faces = num_face_record.max()
-        valid_mask = torch.zeros((bs, num_max_faces), dtype=bool)
+        max_faces_in_batch = face_counts.max()
+        valid_mask = torch.zeros((bs, max_faces_in_batch), dtype=bool)
         for i in range(bs):
-            valid_mask[i, :num_face_record[i]] = True
+            valid_mask[i, :face_counts[i]] = True
         attn_mask = torch.ones((num_faces, num_faces), dtype=bool)
         id_cur = 0
         for i in range(bs):
@@ -563,7 +561,7 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
             "attn_mask"             : attn_mask,
             "edge_attn_mask"        : edge_attn_mask,
 
-            "num_face_record"       : num_face_record,
+            "face_counts"           : face_counts,
             "valid_mask"            : valid_mask,
             "conditions"            : condition_out
         }
@@ -576,9 +574,9 @@ class Diffusion_dataset(torch.utils.data.Dataset):
         self.conf = v_conf
         scale_factor = int(v_conf["scale_factor"])
         self.max_intersection = 500
-        self.latent_root = Path(v_conf['face_z'])
-        self.data_root = Path(v_conf["data_root"]) if v_conf.get("data_root") else None
-        self.load_topology = bool(v_conf.get("load_topology", False))
+        self.latent_root = Path(v_conf["latent_root"])
+        self.data_root = Path(v_conf["data_root"]) if v_conf["data_root"] is not None else None
+        self.load_topology = bool(v_conf["load_topology"])
         if v_training_mode == "testing":
             self.data_split = Path(v_conf['test_dataset'])
             scale_factor = 1
@@ -590,8 +588,8 @@ class Diffusion_dataset(torch.utils.data.Dataset):
         else:
             raise
 
-        self.pad_method = v_conf["pad_method"]
-        self.max_faces = v_conf["num_max_faces"]
+        self.padding = v_conf["padding"]
+        self.max_faces = v_conf["max_faces"]
         print("Use deduplicate list ", self.data_split)
         filelist = [item.strip() for item in open(self.data_split).readlines()]
         filelist.sort()
@@ -602,8 +600,8 @@ class Diffusion_dataset(torch.utils.data.Dataset):
         if v_training_mode == "validation":
             self.is_aug = False
             self.cached_condition = False
-        self.condition = list(v_conf["condition"])
-        self.conditional_data_root = Path(v_conf["cond_root"])
+        self.condition_names = list(v_conf["condition_names"])
+        self.conditional_data_root = Path(v_conf["condition_root"]) if self.condition_names else None
         self.transform = T.Compose([
             T.ToPILImage(),
             T.Resize((224, 224)),
@@ -611,10 +609,10 @@ class Diffusion_dataset(torch.utils.data.Dataset):
             T.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
         ])
         # Check cond data
-        if len(self.condition) > 0:
+        if len(self.condition_names) > 0:
             data_folders = []
             for item in filelist:
-                if has_required_condition_files(self.condition, self.conditional_data_root / item, self.cached_condition):
+                if has_required_condition_files(self.condition_names, self.conditional_data_root / item, self.cached_condition):
                     data_folders.append(item)
             print("Filter out {} folders without feat".format(len(filelist) - len(data_folders)))
             filelist = data_folders
@@ -635,7 +633,7 @@ class Diffusion_dataset(torch.utils.data.Dataset):
         folder_path = self.data_folders[idx]
         # Sample a cube-24 rotation id (matches the Blender-rendered condition
         # images) and translate it to the Euler-64 id used to name the cached
-        # face-z tensors on disk. cube_id=0 means the first Blender cube24
+        # latent tensors on disk. cube_id=0 means the first Blender cube24
         # view, not necessarily the identity rotation.
         if self.is_aug != 0:
             cube_id = int(np.random.randint(0, NUM_CUBE24_VIEWS))
@@ -643,13 +641,15 @@ class Diffusion_dataset(torch.utils.data.Dataset):
             cube_id = 0
         id_aug = cube24_to_euler64(cube_id)
         data_npz = np.load(self.latent_root / (folder_path + f"_{id_aug}") / "features.npy")
-        face_features = torch.from_numpy(data_npz)
-        num_faces = face_features.shape[0]
+        latent_stats = torch.from_numpy(data_npz)
+        num_faces = latent_stats.shape[0]
 
-        if self.pad_method == "zero":
-            padded_face_features = torch.zeros((self.max_faces, face_features.shape[-1]), dtype=face_features.dtype)
-            padded_face_features[:num_faces] = face_features
-        elif self.pad_method == "random":
+        if self.padding == "zero":
+            cached_latent_stats = torch.zeros((self.max_faces, latent_stats.shape[-1]), dtype=latent_stats.dtype)
+            cached_latent_stats[:num_faces] = latent_stats
+            face_mask = torch.zeros((self.max_faces,), dtype=torch.bool)
+            face_mask[:num_faces] = True
+        elif self.padding == "random":
             if False:
                 index = torch.randperm(num_faces)
                 num_repeats = math.ceil(self.max_faces / index.shape[0])
@@ -657,15 +657,16 @@ class Diffusion_dataset(torch.utils.data.Dataset):
                 index2 = torch.randperm(self.max_faces)
                 index = index[index2]
             else:
-                positions = torch.arange(self.max_faces, device=face_features.device)
+                positions = torch.arange(self.max_faces, device=latent_stats.device)
                 mandatory_mask = positions < num_faces
-                random_indices = (torch.rand((self.max_faces,), device=face_features.device) * num_faces).long()
+                random_indices = (torch.rand((self.max_faces,), device=latent_stats.device) * num_faces).long()
                 indices = torch.where(mandatory_mask, positions, random_indices)
-                r_indices = torch.argsort(torch.rand((self.max_faces,), device=face_features.device), dim=0)
+                r_indices = torch.argsort(torch.rand((self.max_faces,), device=latent_stats.device), dim=0)
                 index = indices.gather(0, r_indices)
-            padded_face_features = face_features[index]
+            cached_latent_stats = latent_stats[index]
+            face_mask = torch.ones((self.max_faces,), dtype=torch.bool)
         else:
-            raise ValueError("Invalid pad method")
+            raise ValueError("Invalid padding method")
 
         # --- Topology: load GT adjacency and map to padded space ---
         padded_adj = None
@@ -678,8 +679,8 @@ class Diffusion_dataset(torch.utils.data.Dataset):
                 n = min(face_adj.shape[0], num_faces)
                 face_adj_clipped = torch.zeros(num_faces, num_faces)
                 face_adj_clipped[:n, :n] = face_adj[:n, :n]
-                # Map to padded space using the same index used for face_features
-                if self.pad_method == "random":
+                # Map to padded space using the same index used for latent stats.
+                if self.padding == "random":
                     padded_adj = face_adj_clipped[index][:, index]  # [max_faces, max_faces]
                 else:  # zero padding
                     padded_adj = torch.zeros(self.max_faces, self.max_faces)
@@ -688,12 +689,13 @@ class Diffusion_dataset(torch.utils.data.Dataset):
                 padded_adj = torch.zeros(self.max_faces, self.max_faces)
 
         # prepare_condition indexes Blender-rendered views, so pass the
-        # cube-id directly (not the Euler-id used for the face-z cache).
-        condition = prepare_condition(self.condition, self.conditional_data_root, folder_path, cube_id,
+        # cube-id directly (not the Euler-id used for the latent cache).
+        condition = prepare_condition(self.condition_names, self.conditional_data_root, folder_path, cube_id,
                                       self.cached_condition, self.transform, self.conf["num_points"])
         return (
             folder_path,
-            padded_face_features,
+            cached_latent_stats,
+            face_mask,
             condition,
             id_aug,
             padded_adj,
@@ -702,10 +704,11 @@ class Diffusion_dataset(torch.utils.data.Dataset):
     @staticmethod
     def collate_fn(batch):
         (
-            v_prefix, v_face_features, conditions, id_aug, face_adj
+            v_prefix, v_cached_latent_stats, face_mask, conditions, id_aug, face_adj
         ) = zip(*batch)
 
-        face_features = torch.stack(v_face_features, dim=0)
+        cached_latent_stats = torch.stack(v_cached_latent_stats, dim=0)
+        face_mask = torch.stack(face_mask, dim=0)
         id_aug = torch.tensor(id_aug)
 
         # Topology: stack adjacency matrices (None if not loaded)
@@ -725,10 +728,11 @@ class Diffusion_dataset(torch.utils.data.Dataset):
                 condition_out[key]
 
         result = {
-            "v_prefix"     : v_prefix,
-            "face_features": face_features,
-            "conditions"   : condition_out,
-            "id_aug"       : id_aug,
+            "v_prefix"           : v_prefix,
+            "cached_latent_stats": cached_latent_stats,
+            "face_mask"          : face_mask,
+            "conditions"         : condition_out,
+            "id_aug"             : id_aug,
         }
         if face_adj_batch is not None:
             result["face_adj"] = face_adj_batch
@@ -746,7 +750,7 @@ class Diffusion_dataset_mm(Diffusion_dataset):
         # idx = 0
         folder_path = self.data_folders[idx]
         # Sample a cube-24 rotation id; map it to the Euler-64 id used by the
-        # cached face-z tensors. When augmentation is disabled we use the fixed
+        # cached latent tensors. When augmentation is disabled we use the fixed
         # first Blender cube24 view so feature and condition indexing match.
         if self.is_aug != 0:
             cube_id = int(np.random.randint(0, NUM_CUBE24_VIEWS))
@@ -757,13 +761,15 @@ class Diffusion_dataset_mm(Diffusion_dataset):
             id_aug = cube24_to_euler64(cube_id)
             cond_id = -1
         data_npz = np.load(self.latent_root / (folder_path + f"_{id_aug}") / "features.npy")
-        face_features = torch.from_numpy(data_npz)
-        num_faces = face_features.shape[0]
+        latent_stats = torch.from_numpy(data_npz)
+        num_faces = latent_stats.shape[0]
 
-        if self.pad_method == "zero":
-            padded_face_features = torch.zeros((self.max_faces, face_features.shape[-1]), dtype=face_features.dtype)
-            padded_face_features[:num_faces] = face_features
-        elif self.pad_method == "random":
+        if self.padding == "zero":
+            cached_latent_stats = torch.zeros((self.max_faces, latent_stats.shape[-1]), dtype=latent_stats.dtype)
+            cached_latent_stats[:num_faces] = latent_stats
+            face_mask = torch.zeros((self.max_faces,), dtype=torch.bool)
+            face_mask[:num_faces] = True
+        elif self.padding == "random":
             if False:
                 index = torch.randperm(num_faces)
                 num_repeats = math.ceil(self.max_faces / index.shape[0])
@@ -771,37 +777,39 @@ class Diffusion_dataset_mm(Diffusion_dataset):
                 index2 = torch.randperm(self.max_faces)
                 index = index[index2]
             else:
-                positions = torch.arange(self.max_faces, device=face_features.device)
+                positions = torch.arange(self.max_faces, device=latent_stats.device)
                 mandatory_mask = positions < num_faces
                 random_indices = (
-                        torch.rand((self.max_faces,), device=face_features.device) * num_faces).long()
+                        torch.rand((self.max_faces,), device=latent_stats.device) * num_faces).long()
                 indices = torch.where(mandatory_mask, positions, random_indices)
-                r_indices = torch.argsort(torch.rand((self.max_faces,), device=face_features.device), dim=0)
+                r_indices = torch.argsort(torch.rand((self.max_faces,), device=latent_stats.device), dim=0)
                 index = indices.gather(0, r_indices)
-            padded_face_features = face_features[index]
+            cached_latent_stats = latent_stats[index]
+            face_mask = torch.ones((self.max_faces,), dtype=torch.bool)
         else:
-            raise ValueError("Invalid pad method")
+            raise ValueError("Invalid padding method")
 
         sampled_prob = np.random.rand()
         idx = self.cond_prob_acc.shape[0] - (sampled_prob < self.cond_prob_acc).sum(axis=-1)
         used_condition = []
-        if self.condition[idx] == "mm":
-            available_condition = [item for item in self.condition if item != "uncond" and item != "mm"]
+        if self.condition_names[idx] == "mm":
+            available_condition = [item for item in self.condition_names if item != "uncond" and item != "mm"]
             num_condition = len(available_condition)
             rand_onehot = np.random.rand(num_condition) > 0.5
             used_condition = [available_condition[i] for i in range(num_condition) if rand_onehot[i]]
         else:
-            used_condition.append(self.condition[idx])
+            used_condition.append(self.condition_names[idx])
 
         # Use the cube-id for image indexing; cond_id == -1 disables aug and
         # prepare_condition will fall back to view 0 internally.
         condition = prepare_condition(used_condition, self.conditional_data_root, folder_path, cond_id,
                                       self.cached_condition, self.transform, self.conf["num_points"])
-        condition["name"] = self.condition[idx]
+        condition["name"] = self.condition_names[idx]
 
         return (
             folder_path,
-            padded_face_features,
+            cached_latent_stats,
+            face_mask,
             condition,
             id_aug
         )
@@ -809,10 +817,11 @@ class Diffusion_dataset_mm(Diffusion_dataset):
     @staticmethod
     def collate_fn(batch):
         (
-            v_prefix, v_face_features, conditions, id_aug
+            v_prefix, v_cached_latent_stats, face_mask, conditions, id_aug
         ) = zip(*batch)
 
-        face_features = torch.stack(v_face_features, dim=0)
+        cached_latent_stats = torch.stack(v_cached_latent_stats, dim=0)
+        face_mask = torch.stack(face_mask, dim=0)
         id_aug = torch.tensor(id_aug)
 
         keys = conditions[0].keys()
@@ -898,8 +907,9 @@ class Diffusion_dataset_mm(Diffusion_dataset):
 
         condition_out["id_batch"] = id_condition
         return {
-            "v_prefix"     : v_prefix,
-            "face_features": face_features,
-            "conditions"   : condition_out,
-            "id_aug"       : id_aug,
+            "v_prefix"           : v_prefix,
+            "cached_latent_stats": cached_latent_stats,
+            "face_mask"          : face_mask,
+            "conditions"         : condition_out,
+            "id_aug"             : id_aug,
         }

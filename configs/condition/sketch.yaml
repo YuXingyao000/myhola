@@ -1,0 +1,11 @@
+type: sketch
+dataset_names: [sketch]
+cached_features: false
+output_dim: 1024
+image:
+  backbone: dinov2
+  depth_anything_v2_ckpt: null
+  augment_probability: 0.0
+point_cloud:
+  encoder: pointnet
+  augment_probability: 0.0

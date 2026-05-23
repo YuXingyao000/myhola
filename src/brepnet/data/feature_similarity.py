@@ -28,13 +28,14 @@ class Diffusion_dataset_fidelity(Diffusion_dataset):
             dataset_conf = OmegaConf.to_container(v_conf, resolve=False)
         else:
             dataset_conf = dict(v_conf)
-        dataset_conf["condition"] = []
+        dataset_conf["condition_names"] = []
+        dataset_conf["condition_root"] = None
         super().__init__(v_training_mode, dataset_conf)
 
-        self.conditional_data_root = Path(v_conf["cond_root"]) if v_conf["cond_root"] is not None else None
+        self.conditional_data_root = Path(v_conf["condition_root"]) if v_conf["condition_root"] is not None else None
         self.combined_filename = v_conf.get("combined_filename", "combined_imgs.npz")
         if self.conditional_data_root is None:
-            raise ValueError("cond_root must point to the combined image root.")
+            raise ValueError("condition_root must point to the combined image root.")
 
         base_folders = self.data_folders
         filtered_folders = [
@@ -57,9 +58,9 @@ class Diffusion_dataset_fidelity(Diffusion_dataset):
             }
 
     def __getitem__(self, idx):
-        prefix, face_features, _, id_aug = super().__getitem__(idx)
+        prefix, cached_latent_stats, face_mask, _, id_aug, face_adj = super().__getitem__(idx)
         condition = self.load_combined_condition(prefix)
-        return prefix, face_features, condition, id_aug
+        return prefix, cached_latent_stats, face_mask, condition, id_aug, face_adj
 
 
 class DiffusionImageEncoder(nn.Module):
@@ -174,7 +175,7 @@ def build_dataloader(v_cfg: DictConfig, split: str) -> DataLoader:
         dataset,
         batch_size=v_cfg["trainer"]["batch_size"],
         collate_fn=dataset_cls.collate_fn,
-        num_workers=v_cfg["trainer"]["num_worker"],
+        num_workers=v_cfg["trainer"]["num_workers"],
         pin_memory=True,
     )
 

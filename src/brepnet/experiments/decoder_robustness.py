@@ -38,11 +38,11 @@ def load_vae(checkpoint_path, device="cuda"):
         cfg = ckpt["hyper_parameters"]
         model_cfg = cfg.get("model", cfg)
     else:
-        # Fallback: assume AutoEncoder_1119_light with default config
+        # Fallback: assume AutoEncoder_light with default config
         model_cfg = {
-            "name": "AutoEncoder_1119_light",
-            "dim_latent": 8,
-            "dim_shape": 768,
+            "name": "AutoEncoder_light",
+            "latent_channels": 8,
+            "hidden_channels": 768,
             "norm": "layer",
             "in_channels": 6,
             "with_intersection": True,
@@ -52,7 +52,7 @@ def load_vae(checkpoint_path, device="cuda"):
         }
 
     # Load model class
-    model_name = model_cfg.get("name", "AutoEncoder_1119_light")
+    model_name = model_cfg.get("name", "AutoEncoder_light")
     model_mod = importlib.import_module("src.brepnet.models.vae")
     model_cls = getattr(model_mod, model_name)
     model = model_cls(model_cfg)
@@ -114,9 +114,9 @@ def compute_chamfer_batch(pred_faces, gt_faces):
 def run_robustness_test(model, dataloader, noise_levels, device="cuda"):
     """
     For each sample:
-      1. Encode → get clean face_z
+      1. Encode and sample clean face latents
       2. Add noise at various levels
-      3. Decode perturbed face_z
+      3. Decode perturbed face latents
       4. Compute CD between decoded and GT
     """
     from src.brepnet.dataset import denormalize_coord1112
@@ -131,14 +131,17 @@ def run_robustness_test(model, dataloader, noise_levels, device="cuda"):
 
         # Encode
         encoding_result = model.encode(batch, v_test=True)
-        face_z_clean, _, _ = model.sample(encoding_result["face_features"], v_is_test=True)
-        # face_z_clean: [total_faces_in_batch, 32]
+        face_latents_clean, _, _ = model.sample(encoding_result["face_features"], v_is_test=True)
+        # face_latents_clean: [total_faces_in_batch, 32]
 
         # GT face points
         gt_face_points = batch["face_points"][..., :3]  # [total_faces, 16, 16, 3]
 
         # Decode clean (baseline)
-        encoding_result_clean = {"face_z": face_z_clean, "edge_features": encoding_result["edge_features"]}
+        encoding_result_clean = {
+            "face_latents": face_latents_clean,
+            "edge_features": encoding_result["edge_features"],
+        }
         decoded_clean = model.decode(encoding_result_clean, batch)
         pred_clean = denormalize_coord1112(
             decoded_clean["face_points_local"],
@@ -149,10 +152,13 @@ def run_robustness_test(model, dataloader, noise_levels, device="cuda"):
 
         # Test each noise level
         for noise_level in noise_levels:
-            noise = torch.randn_like(face_z_clean) * noise_level
-            face_z_noisy = face_z_clean + noise
+            noise = torch.randn_like(face_latents_clean) * noise_level
+            face_latents_noisy = face_latents_clean + noise
 
-            encoding_result_noisy = {"face_z": face_z_noisy, "edge_features": encoding_result["edge_features"]}
+            encoding_result_noisy = {
+                "face_latents": face_latents_noisy,
+                "edge_features": encoding_result["edge_features"],
+            }
             decoded_noisy = model.decode(encoding_result_noisy, batch)
             pred_noisy = denormalize_coord1112(
                 decoded_noisy["face_points_local"],

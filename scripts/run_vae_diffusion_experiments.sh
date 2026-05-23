@@ -27,8 +27,6 @@ COMMON_VAE=(
     dataset.val_dataset="$DATA_ROOT/list/val.txt"
     dataset.test_dataset="$DATA_ROOT/list/test.txt"
     trainer.precision="bf16-mixed"
-    model=vae_1119
-    experiment=train_vae
 )
 
 case "$MODE" in
@@ -42,10 +40,10 @@ import numpy as np
 from pathlib import Path
 from scipy.stats import kurtosis, shapiro
 
-# 加载缓存的 latent features
-face_z_dir = '${FACE_Z_DIR:-/path/to/cached_latents}'
+# 加载缓存的 latent stats
+latent_root = '${LATENT_ROOT:-/path/to/cached_latents}'
 all_z = []
-for npz in sorted(Path(face_z_dir).glob('**/*.npy')):
+for npz in sorted(Path(latent_root).glob('**/*.npy')):
     z = np.load(npz)
     if z.ndim == 2:  # [num_faces, 32] or [num_faces, 64]
         all_z.append(z[:, :32])  # take mean only (first 32 dims)
@@ -100,6 +98,7 @@ if dead_dims > 0:
         echo ""
         echo "──── Training VAE with gaussian_weights=$KL ────"
         python -m src.brepnet.train \
+            --config-name train_vae \
             "${COMMON_VAE[@]}" \
             model.gaussian_weights=$KL \
             trainer.exp_name="vae_kl_${KL_TAG}" \
@@ -115,19 +114,19 @@ if dead_dims > 0:
   # ─── V2: Zero-Pad + Classifier Diffusion ─────────────
   v2_zero_pad)
     VAE_CKPT="${VAE_CKPT:-/path/to/vae.ckpt}"
-    FACE_Z_DIR="${FACE_Z_DIR:-/path/to/cached_latents}"
+    LATENT_ROOT="${LATENT_ROOT:-/path/to/cached_latents}"
     echo "[V2] Training Diffusion with zero-padding + classifier"
     python -m src.brepnet.train \
-        model=diffusion_cross_attn \
-        model.pad_method=zero \
-        model.autoencoder.weights="$VAE_CKPT" \
+        --config-name train_diffusion_white \
+        model.padding.type=zero \
+        model.autoencoder.checkpoint="$VAE_CKPT" \
         condition=single_img \
         dataset.name=Diffusion_dataset \
-        dataset.face_z_dir="$FACE_Z_DIR" \
-        dataset.cond_root="$COND_ROOT" \
+        dataset.latent_root="$LATENT_ROOT" \
+        dataset.condition_root="$COND_ROOT" \
         dataset.data_root="$DATA_ROOT" \
-        dataset.num_max_faces=30 \
-        dataset.pad_method=zero \
+        dataset.max_faces=30 \
+        dataset.padding=zero \
         trainer.exp_name="diffusion_zero_pad" \
         trainer.output_dir="$OUTPUT_DIR/v2_zero_pad" \
         trainer.batch_size=64 \
@@ -137,22 +136,23 @@ if dead_dims > 0:
   # ─── D1: Diffusion on Best VAE ──────────────────────
   d1_best_vae)
     BEST_VAE_CKPT="${BEST_VAE_CKPT:-$OUTPUT_DIR/v1_kl_sweep/vae_kl_1em3/checkpoints/last.ckpt}"
-    FACE_Z_DIR="${FACE_Z_DIR:-$OUTPUT_DIR/d1_cached_latents}"
+    LATENT_ROOT="${LATENT_ROOT:-$OUTPUT_DIR/d1_cached_latents}"
     echo "[D1] Step 1: Re-extract latents from best VAE..."
-    echo "     (需要你先手动用 best VAE 提取新的 face_z cache)"
+    echo "     (需要你先手动用 best VAE 提取新的 latent cache)"
     echo "     VAE checkpoint: $BEST_VAE_CKPT"
-    echo "     Output cache dir: $FACE_Z_DIR"
+    echo "     Output cache dir: $LATENT_ROOT"
     echo ""
     echo "[D1] Step 2: Train diffusion on new latents..."
     python -m src.brepnet.train \
-        model=diffusion_cross_attn \
-        model.autoencoder.weights="$BEST_VAE_CKPT" \
+        --config-name train_diffusion_white \
+        model.padding.type=random \
+        model.autoencoder.checkpoint="$BEST_VAE_CKPT" \
         condition=single_img \
         dataset.name=Diffusion_dataset \
-        dataset.face_z_dir="$FACE_Z_DIR" \
-        dataset.cond_root="$COND_ROOT" \
+        dataset.latent_root="$LATENT_ROOT" \
+        dataset.condition_root="$COND_ROOT" \
         dataset.data_root="$DATA_ROOT" \
-        dataset.pad_method=random \
+        dataset.padding=random \
         trainer.exp_name="diffusion_best_vae" \
         trainer.output_dir="$OUTPUT_DIR/d1_best_vae" \
         trainer.batch_size=64 \
@@ -162,19 +162,19 @@ if dead_dims > 0:
   # ─── D2: Zero-pad + Best VAE ────────────────────────
   d2_zero_pad_best)
     BEST_VAE_CKPT="${BEST_VAE_CKPT:-$OUTPUT_DIR/v1_kl_sweep/vae_kl_1em3/checkpoints/last.ckpt}"
-    FACE_Z_DIR="${FACE_Z_DIR:-$OUTPUT_DIR/d1_cached_latents}"
+    LATENT_ROOT="${LATENT_ROOT:-$OUTPUT_DIR/d1_cached_latents}"
     echo "[D2] Diffusion: Best VAE + Zero-pad + Classifier"
     python -m src.brepnet.train \
-        model=diffusion_cross_attn \
-        model.pad_method=zero \
-        model.autoencoder.weights="$BEST_VAE_CKPT" \
+        --config-name train_diffusion_white \
+        model.padding.type=zero \
+        model.autoencoder.checkpoint="$BEST_VAE_CKPT" \
         condition=single_img \
         dataset.name=Diffusion_dataset \
-        dataset.face_z_dir="$FACE_Z_DIR" \
-        dataset.cond_root="$COND_ROOT" \
+        dataset.latent_root="$LATENT_ROOT" \
+        dataset.condition_root="$COND_ROOT" \
         dataset.data_root="$DATA_ROOT" \
-        dataset.pad_method=zero \
-        dataset.num_max_faces=30 \
+        dataset.padding=zero \
+        dataset.max_faces=30 \
         trainer.exp_name="diffusion_best_vae_zero_pad" \
         trainer.output_dir="$OUTPUT_DIR/d2_zero_pad_best" \
         trainer.batch_size=64 \

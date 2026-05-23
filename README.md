@@ -115,19 +115,20 @@ To prepare your own data, see scripts in `src/brepnet/data/`:
 All training is managed through a single entry point with Hydra config composition:
 
 ```bash
-python -m src.brepnet.train model=<model> condition=<condition> [overrides...]
+python -m src.brepnet.train --config-name <train_config> [overrides...]
 ```
 
 ### Stage 1: VAE Training
 
 ```bash
 python -m src.brepnet.train \
-    model=vae_1119 \
-    experiment=train_vae \
+    --config-name train_vae \
+    model=vae_light \
     dataset.data_root=/path/to/brep_data \
     dataset.train_dataset=/path/to/train.txt \
     dataset.val_dataset=/path/to/val.txt \
-    trainer.gpus=1 \
+    dataset.test_dataset=/path/to/test.txt \
+    trainer.devices=1 \
     trainer.batch_size=4
 ```
 
@@ -135,13 +136,11 @@ python -m src.brepnet.train \
 
 ```bash
 python -m src.brepnet.train \
-    model=diffusion_cross_attn \
-    condition=single_img \
-    experiment=train_diffusion_white \
-    dataset.face_z_dir=/path/to/cached_latents \
-    dataset.cond_root=/path/to/condition_data \
-    model.autoencoder.weights=/path/to/vae.ckpt \
-    trainer.gpus=8 \
+    --config-name train_diffusion_white \
+    dataset.latent_root=/path/to/cached_latents \
+    dataset.condition_root=/path/to/condition_data \
+    model.autoencoder.checkpoint=/path/to/vae.ckpt \
+    trainer.devices=8 \
     trainer.batch_size=64
 ```
 
@@ -149,10 +148,9 @@ python -m src.brepnet.train \
 
 | Config Group | Options |
 |---|---|
-| `model` | `vae_1119`, `vae_1119_light`, `diffusion_cross_attn`, `diffusion_concat` |
-| `condition` | `none`, `single_img`, `point_cloud`, `text` |
-| `strategy` | `none`, `distillation`, `feature_mapper` |
-| `experiment` | `train_vae`, `train_diffusion_white`, `train_diffusion_real`, `train_distill`, `train_feature_mapper` |
+| `model` | `vae`, `vae_light`, `vae_light_exp`, `diffusion` |
+| `condition` | `none`, `single_img`, `multi_img`, `sketch`, `point_cloud`, `text` |
+| top-level config | `train`, `train_vae`, `train_diffusion_white`, `train_diffusion_real`, `train_diffusion_topo_bias` |
 
 ### Quick Start Scripts
 
@@ -160,8 +158,6 @@ python -m src.brepnet.train \
 # Edit paths in scripts/train.sh, then:
 bash scripts/train.sh vae
 bash scripts/train.sh diffusion_white
-bash scripts/train.sh feature_mapper
-bash scripts/train.sh distill
 ```
 
 ---
@@ -170,11 +166,11 @@ bash scripts/train.sh distill
 
 ```bash
 python -m src.brepnet.inference \
-    --checkpoint /path/to/diffusion.ckpt \
-    --autoencoder_weights /path/to/vae.ckpt \
+    --diffusion-weights /path/to/diffusion.ckpt \
+    --autoencoder-weights /path/to/vae.ckpt \
     --condition single_img \
     --input /path/to/images/ \
-    --output /path/to/output/
+    --output-dir /path/to/output/
 ```
 
 The inference pipeline:
@@ -211,15 +207,14 @@ HoLa-BRep/
 ├── configs/                   # Hydra configuration (composable)
 │   ├── model/                 #   Model architectures
 │   ├── condition/             #   Conditioning modalities
-│   ├── strategy/              #   Training strategies
-│   └── experiment/            #   Complete experiment recipes
+│   ├── dataset/               #   Dataset protocols
+│   └── trainer/               #   Lightning trainer protocol
 ├── src/brepnet/
 │   ├── models/                # Core model code
 │   │   ├── blocks.py          #   Shared building blocks
 │   │   ├── vae.py             #   B-Rep VAE (encoder + decoder)
 │   │   ├── diffusion.py       #   Conditional diffusion backbone
 │   │   ├── condition_encoders.py  #   DINOv2 / PointNet / Text
-│   │   └── strategies.py     #   KD, Feature Mapper, Two-stage
 │   ├── dataset.py             # Dataset classes
 │   ├── train.py               # Unified training entry
 │   ├── inference.py           # Inference pipeline

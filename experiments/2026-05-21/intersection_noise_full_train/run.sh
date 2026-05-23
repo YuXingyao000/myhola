@@ -13,7 +13,7 @@ TEST_LIST="${TEST_LIST:-src/brepnet/data/list/deduplicated_deepcad_testing_7_30_
 INIT_CKPT="${INIT_CKPT:-/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt}"
 OUTPUT_DIR="${OUTPUT_DIR:-/mnt/d/data/vae_intersection_experiments}"
 
-MODEL_CONFIG="${MODEL_CONFIG:-vae_1119_light}"
+MODEL_CONFIG="${MODEL_CONFIG:-vae_light}"
 NOISE_STD="${NOISE_STD:-0.1}"
 GPUS="${GPUS:-8}"
 BATCH_SIZE="${BATCH_SIZE:-32}"
@@ -21,12 +21,12 @@ LR="${LR:-1e-4}"
 MAX_STEPS="${MAX_STEPS:-20000}"
 
 python -m src.brepnet.train \
+    --config-name train_vae \
     model="${MODEL_CONFIG}" \
-    experiment=train_vae \
     trainer.init_from_checkpoint="${INIT_CKPT}" \
     trainer.output_dir="${OUTPUT_DIR}" \
     trainer.exp_name="20260521_intersection_noise_${NOISE_STD}_${MODEL_CONFIG}" \
-    trainer.gpus="${GPUS}" \
+    trainer.devices="${GPUS}" \
     trainer.batch_size="${BATCH_SIZE}" \
     trainer.learning_rate="${LR}" \
     trainer.max_steps="${MAX_STEPS}" \
@@ -38,15 +38,14 @@ python -m src.brepnet.train \
     trainer.wandb.name="20260521_intersection_noise_${NOISE_STD}_${MODEL_CONFIG}" \
     model.trainable_scope=intersection \
     model.intersection_noise_std="${NOISE_STD}" \
-    dataset.dataset_name=AutoEncoder_dataset3 \
+    dataset.name=AutoEncoder_dataset3 \
     dataset.data_root="${DATA_ROOT}" \
     dataset.train_dataset="${TRAIN_LIST}" \
     dataset.val_dataset="${VAL_LIST}" \
     dataset.test_dataset="${TEST_LIST}" \
     dataset.is_overfit=false \
     dataset.is_aug=0 \
-    'dataset.condition=[]' \
-    dataset.cond_root=null \
+    dataset.condition_root=null \
     dataset.cached_condition=false \
     dataset.num_points=10000 \
     dataset.scale_factor=1 \

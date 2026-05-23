@@ -1,0 +1,23 @@
+defaults:
+  - trainer: default
+  - dataset: vae
+  - model: vae
+  - condition: none
+
+trainer:
+  batch_size: 4
+  learning_rate: 1.0e-4
+  max_epochs: 1000000
+  exp_name: train_vae
+
+eval:
+  enabled: false
+  output_dir: null
+  num_samples: 100
+  post_process: true
+
+hydra:
+  run:
+    dir: ${trainer.output_dir}/${trainer.exp_name}
+  job:
+    chdir: false

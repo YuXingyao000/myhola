@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 sys.path.append('../../../')
 from src.brepnet.post.utils import export_edges
-from src.brepnet.diffusion_model import Diffusion_condition
+from src.brepnet.models.diffusion import Diffusion
 from src.brepnet.post.construct_brep import construct_brep_from_datanpz
 
 import torch
@@ -19,63 +19,142 @@ from lightning_fabric import seed_everything
 os.environ["HTTP_PROXY"] = "http://172.31.178.126:7890"
 os.environ["HTTPS_PROXY"] = "http://172.31.178.126:7890"
 
-if __name__ == '__main__':
-    conf = {
-        "name": "Diffusion_condition",
-        "train_decoder": False,
-        "stored_z": False,
-        "use_mean": True,
-        "diffusion_latent": 768,
-        "diffusion_type": "epsilon",
-        "loss": "l2",
-        "pad_method": "random",
-        "num_max_faces": 30,
-        "beta_schedule": "squaredcos_cap_v2",
-        "beta_start": 0.0001,
-        "beta_end": 0.02,
-        "variance_type": "fixed_small",
-        "addition_tag": False,
-        "autoencoder": "AutoEncoder_1119_light",
-        "with_intersection": True,
-        "dim_latent": 8,
-        "dim_shape": 768,
-        "sigmoid": False,
-        "in_channels": 6,
-        "gaussian_weights": 1e-6,
-        "norm": "layer",
-        "autoencoder_weights": "",
-        "is_aug": False,
-        "condition": [],
-        "cond_prob": []
+
+def normalize_condition_type(condition: str) -> str:
+    aliases = {
+        "pc": "point_cloud",
+        "txt": "text",
+    }
+    return aliases.get(condition, condition)
+
+
+def condition_dataset_name(condition_type: str) -> str:
+    names = {
+        "point_cloud": "pc",
+        "text": "txt",
+    }
+    return names.get(condition_type, condition_type)
+
+
+def build_condition_conf(condition_type: str) -> dict:
+    return {
+        "type": condition_type,
+        "dataset_names": [condition_dataset_name(condition_type)],
+        "cached_features": False,
+        "output_dim": 1024,
+        "image": {
+            "backbone": "dinov2",
+            "depth_anything_v2_ckpt": None,
+            "augment_probability": 0.0,
+        },
+        "point_cloud": {
+            "encoder": "pointnet",
+            "augment_probability": 0.0,
+        },
     }
 
+
+def build_model_conf(autoencoder_checkpoint: str) -> dict:
+    return {
+        "name": "Diffusion",
+        "stage": "diffusion",
+        "loss": "l2",
+        "latent": {
+            "dim": 32,
+            "use_cached_latents": False,
+            "use_mean": True,
+        },
+        "padding": {
+            "type": "random",
+            "max_faces": 30,
+            "valid_loss_weight": 0.01,
+        },
+        "noise": {
+            "prediction_type": "epsilon",
+            "beta_schedule": "squaredcos_cap_v2",
+            "beta_start": 0.0001,
+            "beta_end": 0.02,
+            "variance_type": "fixed_small",
+            "num_train_timesteps": 1000,
+        },
+        "denoiser": {
+            "hidden_dim": 768,
+            "num_layers": 24,
+            "nhead_divisor": 64,
+            "feedforward_dim": 2048,
+            "dropout": 0.1,
+        },
+        "condition_fuser": {
+            "type": "cross_attention",
+            "condition_dim": 1024,
+            "hidden_dim": 1024,
+            "num_layers": 4,
+        },
+        "topology_bias": {
+            "enabled": False,
+            "scale": 2.0,
+        },
+        "autoencoder": {
+            "name": "AutoEncoder_light",
+            "stage": "vae",
+            "mode": "frozen_inference",
+            "checkpoint": autoencoder_checkpoint,
+            "in_channels": 6,
+            "latent_channels": 8,
+            "hidden_channels": 768,
+            "norm": "layer",
+            "gaussian_weights": 1e-6,
+            "sigmoid": False,
+            "num_gat_layers": 5,
+            "bottleneck_dim": 768,
+            "num_encoder_layers": 8,
+            "num_decoder_layers": 8,
+            "nhead": 16,
+            "with_intersection": True,
+            "intersection_dim": 512,
+            "intersection_layers": 8,
+            "intersection_noise_std": 0.0,
+            "trainable_scope": "all",
+            "trainable_module_prefixes": ["inter", "classifier"],
+            "loss": "l1",
+        },
+    }
+
+
+def load_diffusion_weights(model: Diffusion, checkpoint_path: str, device: torch.device) -> None:
+    checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    state_dict = checkpoint["state_dict"] if "state_dict" in checkpoint else checkpoint
+    weights = {}
+    for key, value in state_dict.items():
+        if key.startswith("model."):
+            key = key[len("model."):]
+        if key.startswith("autoencoder.") or key.startswith("latent_codec.autoencoder.") or key.startswith("ae_model."):
+            continue
+        weights[key] = value
+    model.load_state_dict(weights, strict=False)
+
+
+if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='Inference')
-    parser.add_argument('--autoencoder_weights', type=str, required=True)
-    parser.add_argument('--diffusion_weights', type=str, required=True)
-    parser.add_argument('--condition', nargs='+', required=True)
-    parser.add_argument('--input', nargs='+', type=str)
-    parser.add_argument('--output_dir', type=str, default="./inference_output")
+    parser.add_argument('--autoencoder-weights', type=str, required=True)
+    parser.add_argument('--diffusion-weights', type=str, required=True)
+    parser.add_argument('--condition', type=str, required=True)
+    parser.add_argument('--input', nargs='+', type=str, required=True)
+    parser.add_argument('--output-dir', type=str, default="./inference_output")
+    parser.add_argument('--num-samples', type=int, default=32)
 
     args = parser.parse_args()
-    conf["autoencoder_weights"] = args.autoencoder_weights
-    conf["diffusion_weights"] = args.diffusion_weights
-    conf["condition"] = args.condition
+    condition_type = normalize_condition_type(args.condition)
+    model_conf = build_model_conf(args.autoencoder_weights)
+    condition_conf = build_condition_conf(condition_type)
 
     seed_everything(0)
     torch.backends.cudnn.benchmark = False
     torch.set_float32_matmul_precision("medium")
 
-    model = Diffusion_condition(conf)
+    model = Diffusion(model_conf, condition_conf)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    diffusion_weights = torch.load(conf["diffusion_weights"], map_location=device, weights_only=False)["state_dict"]
-    diffusion_weights = {k: v for k, v in diffusion_weights.items() if "ae_model" not in k}
-    diffusion_weights = {k[6:]: v for k, v in diffusion_weights.items() if "model" in k}
-    autoencoder_weights = torch.load(conf["autoencoder_weights"], map_location=device, weights_only=False)["state_dict"]
-    autoencoder_weights = {k[6:]: v for k, v in autoencoder_weights.items() if "model" in k}
-    autoencoder_weights = {"ae_model."+k: v for k, v in autoencoder_weights.items()}
-    diffusion_weights.update(autoencoder_weights)
-    diffusion_weights = {k: v for k, v in diffusion_weights.items() if "camera_embedding" not in k}
-    model.load_state_dict(diffusion_weights, strict=False)
+    load_diffusion_weights(model, args.diffusion_weights, device)
     model.to(device)
     model.eval()
 
@@ -88,8 +167,8 @@ if __name__ == '__main__':
             "conditions": {
             }
         }
-        num_proposals = 32
-        if "pc" in conf["condition"]:
+        num_proposals = args.num_samples
+        if condition_type == "point_cloud":
             input_file = Path(fileitem)
             name = input_file.stem
             if not input_file.exists():
@@ -118,10 +197,10 @@ if __name__ == '__main__':
             points = points[index]
             points_tensor = torch.tensor(points, dtype=torch.float32).to(device)
             data["conditions"]["points"] = points_tensor[None, None, :, :].repeat(num_proposals, 1, 1, 1)
-        elif "txt" in conf["condition"]:
+        elif condition_type == "text":
             data["conditions"]["txt"] = [fileitem for item in range(num_proposals)]
             name = f"{id_item:02d}"
-        elif "sketch" in conf["condition"]:
+        elif condition_type in ("single_img", "sketch"):
             input_file = Path(fileitem)
             name = input_file.stem
             if not input_file.exists():
@@ -142,10 +221,9 @@ if __name__ == '__main__':
             img = transform(img).to(device)
             img = img[None, None, :].repeat(num_proposals, 1, 1, 1, 1)
             data["conditions"]["imgs"] = img
-            data["conditions"]["img_id"] = torch.tensor([[0]], device=device).repeat(num_proposals, 1)
+            data["conditions"]["img_id"] = torch.zeros((num_proposals, 1), dtype=torch.long, device=device)
         else:
-            print("Unknown condition")
-            exit(1)
+            raise ValueError(f"Unknown condition type: {condition_type}")
 
         with torch.no_grad():
             network_preds = model.inference(num_proposals, device, v_data=data, v_log=True)

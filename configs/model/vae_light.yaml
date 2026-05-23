@@ -1,0 +1,22 @@
+name: AutoEncoder_light
+stage: vae
+mode: train
+checkpoint: null
+in_channels: 6
+latent_channels: 8
+hidden_channels: 768
+norm: layer
+gaussian_weights: 1.0e-6
+sigmoid: false
+num_gat_layers: 5
+bottleneck_dim: 768
+num_encoder_layers: 8
+num_decoder_layers: 8
+nhead: 16
+with_intersection: true
+intersection_dim: 512
+intersection_layers: 8
+intersection_noise_std: 0.0
+trainable_scope: all
+trainable_module_prefixes: [inter, classifier]
+loss: l1

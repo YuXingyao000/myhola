@@ -185,7 +185,7 @@ class PointNetEncoder(nn.Module):
 
     Parameters
     ----------
-    v_conf : dict
+    config : dict
         Configuration dictionary containing:
           - point_encoder: str, backend name
           - is_aug: bool, whether to apply rotation augmentation
@@ -194,12 +194,12 @@ class PointNetEncoder(nn.Module):
         Output feature dimension (default 1024).
     """
 
-    def __init__(self, v_conf: dict, output_dim: int = 1024):
+    def __init__(self, config: dict, output_dim: int = 1024):
         super().__init__()
-        self.conf = v_conf
-        self.aug_points_prob = v_conf["aug_points_prob"]
-        self.aug_rotate = v_conf["is_aug"]
-        self.backend = v_conf["point_encoder"]
+        self.conf = config
+        self.aug_points_prob = config["aug_points_prob"]
+        self.aug_rotate = config["is_aug"]
+        self.backend = config["point_encoder"]
 
         if self.backend == "pointnet":
             from thirdparty.Pointnet2_PyTorch.pointnet2_ops_lib.pointnet2_ops.pointnet2_modules import (
@@ -594,7 +594,7 @@ class ConditionExtractor(nn.Module):
 
     Parameters
     ----------
-    v_conf : dict
+    config : dict
         Configuration dictionary. Expected keys:
           - condition: list of modality strings, e.g. ["single_img"], ["multi_img"],
             ["sketch"], ["pc"], ["txt"]
@@ -607,21 +607,21 @@ class ConditionExtractor(nn.Module):
         Unified output dimension for all encoders (default 1024).
     """
 
-    def __init__(self, v_conf: dict, projection_dim: int = 1024):
+    def __init__(self, config: dict, projection_dim: int = 1024):
         super().__init__()
         self.projection_dim = projection_dim
         self.with_img = False
         self.with_pc = False
         self.with_txt = False
 
-        condition = v_conf.get("condition", [])
+        condition = config["condition"]
 
         # --- Image encoder ---
         if ("single_img" in condition or "multi_img" in condition
                 or "sketch" in condition):
             self.with_img = True
-            backbone = v_conf.get("backbone", "dinov2")
-            da_ckpt = v_conf.get("depth_anything_v2_ckpt", None)
+            backbone = config["backbone"]
+            da_ckpt = config["depth_anything_v2_ckpt"]
             self.image_encoder = DINOv2ImageEncoder(
                 projection_dim=projection_dim,
                 backbone=backbone,
@@ -635,7 +635,7 @@ class ConditionExtractor(nn.Module):
         # --- Point cloud encoder ---
         if "pc" in condition:
             self.with_pc = True
-            self.point_encoder = PointNetEncoder(v_conf, output_dim=projection_dim)
+            self.point_encoder = PointNetEncoder(config, output_dim=projection_dim)
 
         # --- Text encoder ---
         if "txt" in condition:
@@ -682,6 +682,7 @@ class ConditionExtractor(nn.Module):
                 # Pre-cached image features: [B, num_imgs, 257, 1024] or [B*num_imgs, 257, 1024]
                 img_feature = conditions["img_features"]
                 num_imgs = img_feature.shape[1]
+                img_feature = self.image_encoder.projection(img_feature)
             else:
                 imgs = conditions["imgs"]
                 num_imgs = imgs.shape[1]
@@ -690,19 +691,16 @@ class ConditionExtractor(nn.Module):
 
             img_idx = conditions["img_id"]
 
-            # img_feature is already projected by the encoder
-            # For pre-cached features, apply projection manually
-            if "img_features" in conditions:
-                img_feature = self.image_encoder.projection(img_feature)
+            # Normalize image features to [B, V, T, D] so cached and raw paths
+            # preserve patch tokens consistently.
+            if img_feature.dim() == 3:
+                img_feature = img_feature.reshape(img_idx.shape[0], num_imgs, *img_feature.shape[1:])
 
             if img_idx.shape[-1] > 1:
-                # Multi-view: add camera embeddings and average
-                camera_emb = self.camera_embedding(img_idx)
-                img_feature = (
-                    img_feature.reshape(-1, num_imgs, self.projection_dim) + camera_emb
-                ).mean(dim=1)
+                camera_emb = self.camera_embedding(img_idx).unsqueeze(2)
+                img_feature = (img_feature + camera_emb).mean(dim=1)
             else:
-                img_feature = img_feature
+                img_feature = img_feature[:, 0]
 
             condition = img_feature[:, None]
 

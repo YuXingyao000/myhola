@@ -1,35 +1,28 @@
 """
 Unified Training Entry Point for HoLa-BRep.
 
-Single Lightning module that handles ALL training modes (VAE, Diffusion,
-Strategy) from one entry point, dispatching based on ``cfg.model.stage``.
+Single Lightning module for VAE and diffusion training, dispatching by
+``cfg.model.stage``.
 
 Usage Examples
 --------------
 .. code-block:: bash
 
     # VAE training (Stage 1)
-    python -m src.brepnet.train_unified model=vae_1119 experiment=train_vae \
+    python -m src.brepnet.train --config-name train_vae \
         dataset.data_root=/path/to/data
 
     # Diffusion with single-image condition (Stage 2)
-    python -m src.brepnet.train_unified model=diffusion_cross_attn \
-        condition=single_img trainer.gpus=8
+    python -m src.brepnet.train --config-name train_diffusion_white \
+        trainer.devices=8
 
-    # Knowledge Distillation via strategy
-    python -m src.brepnet.train_unified model=diffusion_cross_attn \
-        condition=single_img strategy=distillation \
-        strategy.teacher.checkpoint=/path/to/white.ckpt
-
-    # Feature Mapper training
-    python -m src.brepnet.train_unified strategy=feature_mapper \
-        experiment=train_feature_mapper
 """
 
 from __future__ import annotations
 
 import importlib
 import logging
+import warnings
 from functools import partial
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -50,13 +43,16 @@ from pytorch_lightning.callbacks import (
 )
 from pytorch_lightning.loggers import TensorBoardLogger, WandbLogger
 
-from src.brepnet.models import (
-    build_condition_extractor,
-    build_model,
-    build_strategy,
-)
+from src.brepnet.models import build_model
 
 logger = logging.getLogger(__name__)
+
+warnings.filterwarnings(
+    "ignore",
+    message=r"In '.*': Defaults list is missing `_self_`.*",
+    category=UserWarning,
+    module=r"hydra\._internal\.defaults_list",
+)
 
 
 # ---------------------------------------------------------------------------
@@ -77,26 +73,9 @@ def _load_dataset_class(cfg: DictConfig):
     """
     Dynamically load a dataset class based on config.
 
-    Resolution order:
-      1. cfg.dataset._target_ (Hydra-style full path)
-      2. cfg.dataset.dataset_name (legacy, from src.brepnet.dataset module)
-      3. cfg.dataset.name (fallback, from src.brepnet.dataset module)
+    Dataset classes are resolved by the stable ``dataset.name`` config field.
     """
-    # Hydra _target_ takes priority
-    target = cfg.dataset.get("_target_", None)
-    if target:
-        parts = target.rsplit(".", 1)
-        mod = importlib.import_module(parts[0])
-        return getattr(mod, parts[1])
-
-    # Legacy: look for dataset_name or name in the dataset module
-    name = cfg.dataset.get("dataset_name", None) or cfg.dataset.get("name", None)
-    if name is None:
-        raise ValueError(
-            "Dataset config must specify '_target_', 'dataset_name', or 'name'. "
-            f"Got keys: {list(cfg.dataset.keys())}"
-        )
-
+    name = cfg.dataset.name
     dataset_mod = importlib.import_module("src.brepnet.dataset")
     if not hasattr(dataset_mod, name):
         raise AttributeError(
@@ -116,7 +95,6 @@ class UnifiedTrainer(pl.LightningModule):
     Mode determined by ``cfg.model.stage``:
       - ``"vae"``: trains AutoEncoder (stage 1)
       - ``"diffusion"``: trains diffusion model (stage 2)
-      - ``"strategy"``: trains via strategy module (KD, feature mapper)
     """
 
     def __init__(self, cfg: DictConfig):
@@ -125,41 +103,20 @@ class UnifiedTrainer(pl.LightningModule):
         self.save_hyperparameters(OmegaConf.to_container(cfg, resolve=True))
 
         # --- Core configuration ---
-        self.stage: str = cfg.model.get("stage", "vae")
-        self.batch_size: int = cfg.trainer.get("batch_size", 32)
-        self.num_workers: int = cfg.trainer.get("num_workers", cfg.trainer.get("num_worker", 4))
-        self.learning_rate: float = cfg.trainer.get("learning_rate", 1e-4)
+        self.stage: str = cfg.model.stage
+        self.batch_size: int = cfg.trainer.batch_size
+        self.num_workers: int = cfg.trainer.num_workers
+        self.learning_rate: float = cfg.trainer.learning_rate
 
         # --- Output directory ---
-        self.log_root = Path(cfg.trainer.get("output_dir", "./outputs"))
+        self.log_root = Path(cfg.trainer.output_dir)
         self.log_root.mkdir(parents=True, exist_ok=True)
 
         # --- Build model ---
         logger.info("Building model for stage='%s'", self.stage)
-        self.model = build_model(cfg.model)
+        self.model = build_model(cfg.model, cfg.condition)
         self._init_model_from_checkpoint()
         self._apply_trainable_scope()
-
-        # --- Condition extractor (diffusion / strategy stages) ---
-        self.condition_extractor = None
-        if self.stage in ("diffusion", "strategy"):
-            cond_cfg = cfg.model.get("condition", None)
-            if cond_cfg is not None:
-                self.condition_extractor = build_condition_extractor(cond_cfg)
-                logger.info("Condition extractor built: %s", type(self.condition_extractor).__name__)
-
-        # --- Strategy (KD, FeatureMapper, etc.) ---
-        self.strategy = None
-        if self.stage == "strategy":
-            strategy_cfg = cfg.get("strategy", None)
-            if strategy_cfg is not None:
-                self.strategy = build_strategy(strategy_cfg)
-                logger.info("Strategy built: %s", type(self.strategy).__name__)
-            else:
-                raise ValueError(
-                    "Stage is 'strategy' but no strategy config provided. "
-                    "Set strategy=distillation or strategy=feature_mapper"
-                )
 
         # --- Dataset class (lazy loaded) ---
         self.dataset_cls = _load_dataset_class(cfg)
@@ -171,8 +128,7 @@ class UnifiedTrainer(pl.LightningModule):
     def _init_model_from_checkpoint(self):
         """Load model weights without restoring optimizer/trainer state."""
         ckpt_path = (
-            self.cfg.trainer.get("init_from_checkpoint", None)
-            or self.cfg.model.get("init_from_checkpoint", None)
+            self.cfg.trainer.init_from_checkpoint
         )
         if not ckpt_path or str(ckpt_path).lower() in {"none", "null"}:
             return
@@ -183,7 +139,7 @@ class UnifiedTrainer(pl.LightningModule):
         for key, value in state_dict.items():
             if key.startswith("model."):
                 model_state[key[len("model."):]] = value
-            elif not key.startswith(("strategy.", "condition_extractor.")):
+            else:
                 model_state[key] = value
 
         missing, unexpected = self.model.load_state_dict(model_state, strict=False)
@@ -200,16 +156,16 @@ class UnifiedTrainer(pl.LightningModule):
 
     def _apply_trainable_scope(self):
         """Optionally freeze the model to a named trainable scope."""
-        scope = self.cfg.model.get("trainable_scope", "all")
-        if scope is None or str(scope).lower() in {"all", "none", "null"}:
+        if self.stage != "vae":
+            return
+        scope = self.cfg.model.trainable_scope
+        if scope == "all":
             return
 
         if scope == "intersection":
-            trainable_prefixes = self.cfg.model.get(
-                "trainable_module_prefixes", ["inter", "classifier"]
-            )
+            trainable_prefixes = self.cfg.model.trainable_module_prefixes
         else:
-            trainable_prefixes = scope if isinstance(scope, (list, tuple)) else [scope]
+            trainable_prefixes = [scope]
 
         for param in self.model.parameters():
             param.requires_grad = False
@@ -267,9 +223,10 @@ class UnifiedTrainer(pl.LightningModule):
 
     def test_dataloader(self) -> DataLoader:
         dataset = self.dataset_cls("testing", self.cfg.dataset)
+        batch_size = self.batch_size if self.stage == "diffusion" else 1
         return DataLoader(
             dataset,
-            batch_size=1,
+            batch_size=batch_size,
             shuffle=False,
             collate_fn=self.dataset_cls.collate_fn,
             num_workers=self.num_workers,
@@ -281,57 +238,8 @@ class UnifiedTrainer(pl.LightningModule):
     # ------------------------------------------------------------------
 
     def configure_optimizers(self):
-        # Collect only trainable parameters
-        trainable_params = [p for p in self.parameters() if p.requires_grad]
-        optimizer = torch.optim.AdamW(
-            trainable_params,
-            lr=self.learning_rate,
-            weight_decay=self.cfg.trainer.get("weight_decay", 0.0),
-        )
-
-        # Scheduler
-        scheduler_name = self.cfg.get("scheduler", {})
-        if isinstance(scheduler_name, str):
-            scheduler_name = {"name": scheduler_name}
-
-        sched_type = scheduler_name.get("name", "cosine") if hasattr(scheduler_name, "get") else "cosine"
-
-        if sched_type == "cosine":
-            max_steps = self.cfg.trainer.get("max_steps", -1)
-            if max_steps <= 0:
-                # Estimate from max_epochs (approximate)
-                max_steps = self.cfg.trainer.get("max_epochs", 100000) * 1000
-            scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-                optimizer,
-                T_max=max_steps,
-                eta_min=self.learning_rate * 0.01,
-            )
-            return {
-                "optimizer": optimizer,
-                "lr_scheduler": {
-                    "scheduler": scheduler,
-                    "interval": "step",
-                    "frequency": 1,
-                },
-            }
-        elif sched_type == "linear":
-            warmup_steps = scheduler_name.get("warmup_steps", 1000) if hasattr(scheduler_name, "get") else 1000
-            scheduler = torch.optim.lr_scheduler.LinearLR(
-                optimizer,
-                start_factor=0.01,
-                total_iters=warmup_steps,
-            )
-            return {
-                "optimizer": optimizer,
-                "lr_scheduler": {
-                    "scheduler": scheduler,
-                    "interval": "step",
-                    "frequency": 1,
-                },
-            }
-        else:
-            # Constant LR
-            return {"optimizer": optimizer}
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
+        return optimizer
 
     # ------------------------------------------------------------------
     # Training
@@ -405,20 +313,23 @@ class UnifiedTrainer(pl.LightningModule):
     def test_step(self, batch: Dict[str, Any], batch_idx: int) -> Optional[torch.Tensor]:
         """Run full inference and save predictions to NPZ."""
         output_dir = Path(
-            self.cfg.eval.get("output_dir", None)
-            or self.cfg.trainer.get("test_output_dir", self.log_root / "test_outputs")
+            self.cfg.eval.output_dir
+            or self.cfg.trainer.test_output_dir
+            or self.log_root / "test_outputs"
         )
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Compute test loss
-        loss_dict = self._forward_step(batch, is_training=False)
-        total_loss = loss_dict["total_loss"]
-        self.log(
-            "test/loss", total_loss,
-            prog_bar=True, logger=True,
-            on_step=False, on_epoch=True,
-            sync_dist=True, batch_size=1,
-        )
+        total_loss = None
+        loss_dict = {}
+        if self.stage == "vae" or "cached_latent_stats" in batch:
+            loss_dict = self._forward_step(batch, is_training=False)
+            total_loss = loss_dict["total_loss"]
+            self.log(
+                "test/loss", total_loss,
+                prog_bar=True, logger=True,
+                on_step=False, on_epoch=True,
+                sync_dist=True, batch_size=self.batch_size,
+            )
 
         # Run model inference for generation
         if self.stage == "vae":
@@ -427,16 +338,10 @@ class UnifiedTrainer(pl.LightningModule):
 
         elif self.stage == "diffusion":
             num_items = len(batch.get("v_prefix", [None]))
-            condition = self._extract_condition(batch)
             results = self.model.inference(
                 num_items, self.device, v_data=batch,
-                condition_features=condition,
             )
             self._save_diffusion_predictions(batch, results, output_dir)
-
-        elif self.stage == "strategy":
-            if hasattr(self.strategy, "test_step"):
-                self.strategy.test_step(batch, output_dir)
 
         return total_loss
 
@@ -447,7 +352,7 @@ class UnifiedTrainer(pl.LightningModule):
     def _forward_step(self, batch: Dict[str, Any], is_training: bool) -> Dict[str, Any]:
         """Dispatch forward pass based on stage."""
         if self.stage == "vae":
-            run_validation_inference = self.cfg.trainer.get("vae_validation_inference", False)
+            run_validation_inference = self.cfg.trainer.vae_validation_inference
             loss, _data = self.model(
                 batch,
                 v_test=(not is_training and run_validation_inference),
@@ -455,27 +360,11 @@ class UnifiedTrainer(pl.LightningModule):
             return loss
 
         elif self.stage == "diffusion":
-            condition = self._extract_condition(batch)
-            loss = self.model(batch, condition_features=condition, v_test=not is_training)
-            return loss
-
-        elif self.stage == "strategy":
-            loss = self.strategy.training_step(
-                batch=batch,
-                model=self.model,
-                condition_extractor=self.condition_extractor,
-                is_training=is_training,
-            )
+            loss = self.model(batch, v_test=not is_training)
             return loss
 
         else:
-            raise ValueError(f"Unknown stage: '{self.stage}'. Must be 'vae', 'diffusion', or 'strategy'.")
-
-    def _extract_condition(self, batch: Dict[str, Any]) -> Optional[Dict[str, torch.Tensor]]:
-        """Extract conditioning features from the batch."""
-        if self.condition_extractor is None:
-            return None
-        return self.condition_extractor(batch)
+            raise ValueError(f"Unknown stage: '{self.stage}'. Must be 'vae' or 'diffusion'.")
 
     # ------------------------------------------------------------------
     # Visualization & I/O helpers
@@ -484,8 +373,7 @@ class UnifiedTrainer(pl.LightningModule):
     def _diffusion_viz(self, batch: Dict[str, Any]):
         """Quick generation visualization during validation (rank 0 only)."""
         try:
-            condition = self._extract_condition(batch)
-            results = self.model.inference(1, self.device, v_data=batch, condition_features=condition)
+            results = self.model.inference(1, self.device, v_data=batch)
             if results and "pred_face" in results[0]:
                 pred_faces = results[0]["pred_face"]
                 import trimesh
@@ -551,11 +439,11 @@ class UnifiedTrainer(pl.LightningModule):
 # Main Entry Point
 # ---------------------------------------------------------------------------
 
-@hydra.main(version_base="1.3", config_path="../../configs", config_name="__init__")
+@hydra.main(version_base="1.3", config_path="../../configs", config_name="train")
 def main(cfg: DictConfig):
     """Unified training entry point for HoLa-BRep."""
     # --- Reproducibility ---
-    seed_everything(cfg.trainer.get("seed", 42), workers=True)
+    seed_everything(42, workers=True)
     torch.set_float32_matmul_precision("medium")
     torch.backends.cudnn.benchmark = True
 
@@ -565,25 +453,22 @@ def main(cfg: DictConfig):
     # --- Output directory ---
     hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
     output_dir = hydra_cfg["runtime"]["output_dir"]
-    exp_name = cfg.trainer.get("exp_name", "default")
-    log_dir = str(Path(output_dir) / exp_name)
+    exp_name = cfg.trainer.exp_name
+    log_dir = str(Path(output_dir))
     Path(log_dir).mkdir(parents=True, exist_ok=True)
 
     # Inject output_dir back into config for the module.
     OmegaConf.update(cfg, "trainer.output_dir", log_dir, force_add=True)
 
     # --- Logger ---
-    wandb_cfg = cfg.trainer.get("wandb", {})
-    use_wandb = wandb_cfg.get("enabled", False) if isinstance(wandb_cfg, dict) else False
-    if hasattr(wandb_cfg, "get"):
-        use_wandb = wandb_cfg.get("enabled", False)
+    wandb_cfg = cfg.trainer.wandb
+    use_wandb = wandb_cfg.enabled
 
     if use_wandb:
         pl_logger = WandbLogger(
-            project=wandb_cfg.get("project", "hola-brep"),
-            name=wandb_cfg.get("name", exp_name),
+            project=wandb_cfg.project,
+            name=wandb_cfg.name or exp_name,
             save_dir=log_dir,
-            entity=wandb_cfg.get("entity", None),
         )
     else:
         pl_logger = TensorBoardLogger(save_dir=log_dir, name="tb_logs")
@@ -603,39 +488,38 @@ def main(cfg: DictConfig):
     ]
 
     # --- Trainer ---
-    num_gpus = cfg.trainer.get("gpus", 1)
-    strategy = "ddp_find_unused_parameters_true" if num_gpus > 1 else "auto"
+    strategy = "ddp_find_unused_parameters_true" if cfg.trainer.devices > 1 else "auto"
 
     trainer = Trainer(
         default_root_dir=log_dir,
         logger=pl_logger,
-        accelerator="gpu",
+        accelerator=cfg.trainer.accelerator,
         strategy=strategy,
-        devices=num_gpus,
+        devices=cfg.trainer.devices,
         callbacks=callbacks,
-        max_epochs=cfg.trainer.get("max_epochs", 1000000),
-        max_steps=cfg.trainer.get("max_steps", -1),
-        precision=cfg.trainer.get("precision", "bf16-mixed"),
-        check_val_every_n_epoch=cfg.trainer.get("check_val_every_n_epoch", 1),
-        num_sanity_val_steps=cfg.trainer.get("num_sanity_val_steps", 2),
+        max_epochs=cfg.trainer.max_epochs,
+        max_steps=cfg.trainer.max_steps,
+        precision=cfg.trainer.precision,
+        check_val_every_n_epoch=cfg.trainer.check_val_every_n_epoch,
+        num_sanity_val_steps=cfg.trainer.num_sanity_val_steps,
         gradient_clip_algorithm="norm",
-        gradient_clip_val=cfg.trainer.get("gradient_clip_val", 1.0),
+        gradient_clip_val=cfg.trainer.gradient_clip_val,
         enable_model_summary=True,
-        log_every_n_steps=cfg.trainer.get("log_every_n_steps", 50),
+        log_every_n_steps=cfg.trainer.log_every_n_steps,
     )
 
     # --- Module ---
     module = UnifiedTrainer(cfg)
 
     # --- Resume from checkpoint ---
-    resume_from = cfg.trainer.get("resume_from", None)
+    resume_from = cfg.trainer.resume_from_checkpoint
     ckpt_path = None
     if resume_from and resume_from != "none":
         ckpt_path = resume_from
         logger.info("Resuming training from: %s", ckpt_path)
 
     # --- Evaluate or Train ---
-    if cfg.eval.get("enabled", False):
+    if cfg.eval.enabled or cfg.trainer.evaluate:
         eval_ckpt = ckpt_path or "best"
         logger.info("Running evaluation with checkpoint: %s", eval_ckpt)
         trainer.test(module, ckpt_path=eval_ckpt if eval_ckpt != "best" else None)

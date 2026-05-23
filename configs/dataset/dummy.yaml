@@ -1,0 +1,24 @@
+name: Dummy_dataset
+length: 1000
+data_root: null
+train_dataset: null
+val_dataset: null
+test_dataset: null
+latent_root: null
+condition_root: null
+condition_names: []
+cached_condition: false
+is_aug: 0
+is_overfit: false
+overfit: false
+load_topology: false
+max_faces: ${model.padding.max_faces}
+padding: ${model.padding.type}
+num_points: 10000
+scale_factor: 1
+real_photo_ratio: 0.0
+augmentation:
+  enabled: false
+  random_rotate: false
+  random_scale: false
+  scale_range: [1.0, 1.0]

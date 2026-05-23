@@ -1,0 +1,29 @@
+defaults:
+  - trainer: default
+  - dataset: diffusion
+  - model: diffusion
+  - condition: single_img
+
+trainer:
+  batch_size: 64
+  learning_rate: 1.0e-4
+  devices: 8
+  exp_name: diffusion_white_model
+
+dataset:
+  name: Diffusion_dataset
+  real_photo_ratio: 0.0
+  load_topology: false
+  scale_factor: 200
+
+eval:
+  enabled: false
+  output_dir: null
+  num_samples: 100
+  post_process: true
+
+hydra:
+  run:
+    dir: ${trainer.output_dir}/${trainer.exp_name}
+  job:
+    chdir: false

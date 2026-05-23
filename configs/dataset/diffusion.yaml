@@ -1,0 +1,23 @@
+name: Diffusion_dataset
+data_root: ???
+train_dataset: ???
+val_dataset: ???
+test_dataset: ???
+latent_root: null
+condition_root: null
+condition_names: ${condition.dataset_names}
+cached_condition: ${condition.cached_features}
+is_aug: 0
+is_overfit: false
+overfit: false
+load_topology: false
+max_faces: ${model.padding.max_faces}
+padding: ${model.padding.type}
+num_points: 10000
+scale_factor: 200
+real_photo_ratio: 0.2
+augmentation:
+  enabled: true
+  random_rotate: true
+  random_scale: true
+  scale_range: [0.9, 1.1]

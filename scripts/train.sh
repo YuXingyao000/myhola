@@ -8,13 +8,10 @@
 #   vae              - Train VAE (Stage 1)
 #   diffusion_white  - Train diffusion on white-model images
 #   diffusion_real   - Train diffusion on real photos (100%)
-#   feature_mapper   - Train Feature Domain Mapper (Strategy B)
-#   distill          - Knowledge Distillation (Strategy A)
 #
 # Examples:
 #   bash scripts/train.sh vae dataset.data_root=/data/deepcad
-#   bash scripts/train.sh feature_mapper trainer.gpus=2
-#   bash scripts/train.sh distill strategy.teacher.checkpoint=/ckpt/white.ckpt
+#   bash scripts/train.sh diffusion_white trainer.devices=8
 # ============================================================
 
 set -e
@@ -24,10 +21,9 @@ shift  # remaining args become hydra overrides
 
 # ─── Paths (modify these for your machine) ─────────────────
 DATA_ROOT="${DATA_ROOT:-/path/to/your/data}"
-FACE_Z_DIR="${FACE_Z_DIR:-/path/to/cached_latents}"
+LATENT_ROOT="${LATENT_ROOT:-/path/to/cached_latents}"
 COND_ROOT="${COND_ROOT:-/path/to/condition_data}"
 VAE_CKPT="${VAE_CKPT:-/path/to/vae_checkpoint.ckpt}"
-TEACHER_CKPT="${TEACHER_CKPT:-/path/to/white_model_diffusion.ckpt}"
 
 # ─── Common args ───────────────────────────────────────────
 COMMON=(
@@ -43,7 +39,7 @@ case "$MODE" in
   vae)
     echo "[*] Training VAE (Stage 1)"
     python -m src.brepnet.train \
-        experiment=train_vae \
+        --config-name train_vae \
         "${COMMON[@]}" \
         "$@"
     ;;
@@ -51,10 +47,10 @@ case "$MODE" in
   diffusion_white)
     echo "[*] Training Diffusion - white model images"
     python -m src.brepnet.train \
-        experiment=train_diffusion_white \
-        dataset.face_z_dir="$FACE_Z_DIR" \
-        dataset.cond_root="$COND_ROOT" \
-        model.autoencoder.weights="$VAE_CKPT" \
+        --config-name train_diffusion_white \
+        dataset.latent_root="$LATENT_ROOT" \
+        dataset.condition_root="$COND_ROOT" \
+        model.autoencoder.checkpoint="$VAE_CKPT" \
         "${COMMON[@]}" \
         "$@"
     ;;
@@ -62,38 +58,17 @@ case "$MODE" in
   diffusion_real)
     echo "[*] Training Diffusion - real photos (100%)"
     python -m src.brepnet.train \
-        experiment=train_diffusion_real \
-        dataset.face_z_dir="$FACE_Z_DIR" \
-        dataset.cond_root="$COND_ROOT" \
-        model.autoencoder.weights="$VAE_CKPT" \
-        "${COMMON[@]}" \
-        "$@"
-    ;;
-
-  feature_mapper)
-    echo "[*] Training Feature Domain Mapper (Strategy B)"
-    python -m src.brepnet.train \
-        experiment=train_feature_mapper \
-        dataset.cond_root="$COND_ROOT" \
-        "${COMMON[@]}" \
-        "$@"
-    ;;
-
-  distill)
-    echo "[*] Training Knowledge Distillation (Strategy A)"
-    python -m src.brepnet.train \
-        experiment=train_distill \
-        strategy.teacher.checkpoint="$TEACHER_CKPT" \
-        dataset.face_z_dir="$FACE_Z_DIR" \
-        dataset.cond_root="$COND_ROOT" \
-        model.autoencoder.weights="$VAE_CKPT" \
+        --config-name train_diffusion_real \
+        dataset.latent_root="$LATENT_ROOT" \
+        dataset.condition_root="$COND_ROOT" \
+        model.autoencoder.checkpoint="$VAE_CKPT" \
         "${COMMON[@]}" \
         "$@"
     ;;
 
   *)
     echo "Unknown mode: $MODE"
-    echo "Available: vae | diffusion_white | diffusion_real | feature_mapper | distill"
+    echo "Available: vae | diffusion_white | diffusion_real"
     exit 1
     ;;
 esac

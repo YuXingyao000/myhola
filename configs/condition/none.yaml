@@ -1,6 +1,4 @@
-# @package _global_
-model:
-  condition:
-    modalities: []
-dataset:
-  condition_names: []
+type: none
+dataset_names: []
+cached_features: false
+output_dim: 1024

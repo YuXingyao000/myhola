@@ -304,7 +304,7 @@ Timesteps:
 
 Protocol:
 
-1. Load GT face latent from cached `face_z`.
+1. Load GT face latent from cached `face_latents`.
 2. Add scheduler noise at each timestep.
 3. Predict epsilon or x0 using:
 
@@ -568,7 +568,7 @@ checkpoint path
 autoencoder checkpoint path
 test list path
 condition root
-face_z root
+face_latents root
 CUDA_VISIBLE_DEVICES
 seed
 K value
