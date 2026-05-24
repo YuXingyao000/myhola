@@ -145,7 +145,6 @@ dmypy.json
 wandb/
 src/brepnet/results/
 src/brepnet/data/DataGeneration/
-src/brepnet/data/DataGenerationRefactored/
 thirdparty/Depth_Anything_V2/
 .cursor/
 check.png
