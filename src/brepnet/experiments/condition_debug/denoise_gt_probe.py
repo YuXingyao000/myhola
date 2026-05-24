@@ -93,7 +93,7 @@ def main() -> None:
             for mode in args.condition_modes:
                 with torch.no_grad():
                     cond_mode = condition_from_mode(condition, mode)
-                    pred = model.diffuse(zt, timesteps, cond_mode)
+                    pred, _ = model.diffuse(zt, timesteps, cond_mode, latent_sequence)
                     x0_pred = predict_x0(model, zt, timesteps, pred)
                 epsilon_mse = ((pred - noise) ** 2).mean(dim=(1, 2)).detach().cpu().numpy()
                 x0_l1 = (x0_pred - latent_sequence).abs().mean(dim=(1, 2)).detach().cpu().numpy()

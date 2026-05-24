@@ -70,15 +70,17 @@ def inference_cfg(model, batch_size: int, device: torch.device, batch: dict, arg
         timesteps = timestep_tensor.reshape(-1).to(device)
         scale = scale_for_timestep(args, timestep_value)
 
-        pred_cond = model.diffuse(
+        pred_cond, _ = model.diffuse(
             latent_sequence,
             timesteps,
             condition=condition,
+            clean_latent_sequence=latent_sequence,
         )
-        pred_zero = model.diffuse(
+        pred_zero, _ = model.diffuse(
             latent_sequence,
             timesteps,
             condition=zero_condition,
+            clean_latent_sequence=latent_sequence,
         )
         pred = pred_zero + scale * (pred_cond - pred_zero)
         latent_sequence = model.noise_scheduler.step(pred, timestep_tensor, latent_sequence).prev_sample

@@ -78,9 +78,19 @@ def build_model_conf(args: argparse.Namespace) -> dict[str, Any]:
             "condition_dim": 1024,
             "hidden_dim": 1024,
             "num_layers": 4,
+            "alignment": {
+                "enabled": True,
+                "weight": 1.0,
+                "temperature": 0.07,
+                "projection_dim": 256,
+            },
         },
         "topology_bias": {
             "enabled": False,
+            "source": "gt_adjacency",
+            "target": "self_attention",
+            "mode": "soft_bias",
+            "timestep_weight": "linear_high_noise",
             "scale": 2.0,
         },
         "autoencoder": {

@@ -1,0 +1,40 @@
+defaults:
+  - trainer: default
+  - dataset: diffusion
+  - model: diffusion
+  - condition: single_img
+
+trainer:
+  batch_size: 64
+  learning_rate: 1.0e-4
+  devices: 8
+  exp_name: oracle_topology_upper_bound
+
+dataset:
+  name: Diffusion_dataset
+  load_topology: true
+  real_photo_ratio: 0.0
+  scale_factor: 200
+
+model:
+  padding:
+    type: random
+  topology_bias:
+    enabled: true
+    source: gt_adjacency
+    target: self_attention
+    mode: soft_bias
+    timestep_weight: linear_high_noise
+    scale: 2.0
+
+eval:
+  enabled: false
+  output_dir: null
+  num_samples: 100
+  post_process: true
+
+hydra:
+  run:
+    dir: ${trainer.output_dir}/${trainer.exp_name}
+  job:
+    chdir: false
