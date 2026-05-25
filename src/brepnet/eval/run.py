@@ -10,7 +10,6 @@ from typing import Any
 import numpy as np
 
 from src.brepnet.eval.io import flatten_scalar_result, save_npz_result, write_csv, write_json, write_text
-from src.brepnet.eval.metrics import complexity, condition, lfd, uniqueness, validity
 from src.brepnet.eval.parallel import run_tasks
 from src.brepnet.eval.protocol import EvalSample, condition_result_path, error_path, iter_eval_samples
 
@@ -31,6 +30,8 @@ def summarize_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def run_condition_metric(args, samples: list[EvalSample]) -> dict[str, Any]:
+    from src.brepnet.eval.metrics import condition
+
     jobs = [sample for sample in samples if args.from_scratch or condition.load_condition_result(sample.pred_dir) is None]
 
     def worker(sample: EvalSample):
@@ -63,6 +64,8 @@ def run_condition_metric(args, samples: list[EvalSample]) -> dict[str, Any]:
 
 
 def run_validity_metric(args, samples: list[EvalSample]) -> dict[str, Any]:
+    from src.brepnet.eval.metrics import validity
+
     results = run_tasks(samples, validity.evaluate_sample, use_ray=args.use_ray, num_cpus=args.num_cpus, desc="Validity")
     rows = []
     for sample, result in zip(samples, results):
@@ -77,6 +80,8 @@ def run_validity_metric(args, samples: list[EvalSample]) -> dict[str, Any]:
 
 
 def run_complexity_metric(args, samples: list[EvalSample]) -> dict[str, Any]:
+    from src.brepnet.eval.metrics import complexity
+
     results = run_tasks(samples, complexity.evaluate_sample, use_ray=args.use_ray, num_cpus=args.num_cpus, desc="Complexity")
     rows = []
     for sample, result in zip(samples, results):
@@ -91,6 +96,8 @@ def run_complexity_metric(args, samples: list[EvalSample]) -> dict[str, Any]:
 
 
 def run_unique_metric(args) -> dict[str, Any]:
+    from src.brepnet.eval.metrics import uniqueness
+
     summary = uniqueness.evaluate_unique(
         args.pred_root,
         args.pred_post_root or args.pred_root,
@@ -104,6 +111,8 @@ def run_unique_metric(args) -> dict[str, Any]:
 
 
 def run_lfd_metric(args) -> dict[str, Any]:
+    from src.brepnet.eval.metrics import lfd
+
     if not args.lfd_pkl:
         raise ValueError("--lfd-pkl is required when metrics includes lfd")
     report_dir = Path(args.pred_root) / "reports"
@@ -129,8 +138,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--timeout", type=int, default=180)
     parser.add_argument("--only-valid", "--only_valid", dest="only_valid", action="store_true")
 
-    parser.add_argument("--rotation-policy", choices=["none", "known", "search24"], default="none")
-    parser.add_argument("--rotation-id", type=int, default=0)
+    # TEMP 2026-05-25: current single-view FLUX view0 predictions are in dataset cube0 pose.
+    # dataset cube0 maps to eval rotation_id=12, not identity. Do not treat this as final protocol.
+    parser.add_argument("--rotation-policy", choices=["none", "known", "search24"], default="known")
+    parser.add_argument("--rotation-id", type=int, default=12)
     parser.add_argument("--write-legacy-eval", action="store_true")
 
     parser.add_argument("--is-point2cad", "--is_point2cad", dest="is_point2cad", action="store_true")

@@ -37,3 +37,15 @@
 1. `dataset.py` 的 `real_photo_ratio` 从未被代码读取（硬编码 0.2）→ 已修
 2. Blender 相机 FOV 和归一化比例与 OCC 不一致 → 已修
 3. `DataGenerationRefactored` 重命名为 `datagen`，Hydra 化配置
+
+
+## 结果
+chamferdist包不见了
+eval中shared.occ_utils不见了
+evaluation脚本还是有问题，需要依照main分支继续重构，恢复单一接口construct_brep和eval
+diffusion训练和inference脚本得按日期集中化管理
+结果不错
+
+## 重要发现：evaluation 结果姿态错配
+
+详见 [EVALUATION_ISSUES.md](EVALUATION_ISSUES.md)。核心结论：`dataset.py` 中 cube24 的 view 0 不是 identity，当前默认 eval 用 identity GT 比较会系统性拉低指标；legacy `eval_brep.py` 也不适配当前 `construct_brep` 输出。之前相关实验需要按统一 rotation protocol 重新评估。

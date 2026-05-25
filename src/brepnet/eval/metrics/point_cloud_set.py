@@ -16,7 +16,6 @@ from typing import Any
 
 import numpy as np
 import torch
-from chamfer_distance import ChamferDistance
 from plyfile import PlyData
 from scipy.stats import entropy
 from sklearn.neighbors import NearestNeighbors
@@ -84,6 +83,8 @@ def load_point_clouds(root: str | Path, suffix: str = ".ply") -> tuple[list[Path
 
 
 def _pairwise_cd(sample_pcs: torch.Tensor, ref_pcs: torch.Tensor, batch_size: int) -> torch.Tensor:
+    from chamfer_distance import ChamferDistance
+
     n_sample, n_ref = sample_pcs.shape[0], ref_pcs.shape[0]
     chamfer_dist = ChamferDistance()
     all_cd = []

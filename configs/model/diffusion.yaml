@@ -8,7 +8,7 @@ latent:
   use_mean: true
 
 padding:
-  type: zero
+  type: random
   max_faces: 30
   valid_loss_weight: 0.01
 

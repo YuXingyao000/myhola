@@ -102,9 +102,9 @@ python -m src.brepnet.train --config-name train_diffusion_baseline_real \
 
 # 把 checkpoint 路径替换为实际训练出来的
 python -m src.brepnet.train --config-name train_diffusion_topo_bias \
-    trainer.evaluate=true trainer.devices=1 trainer.batch_size=16 \
-    trainer.resume_from_checkpoint=/mnt/d/data/diffusion_topo_experiments/20260525_topo_bias_white_corrected/checkpoints/last.ckpt \
-    trainer.test_output_dir=/mnt/d/data/diffusion_topo_experiments/inference/topo_bias_white \
+    trainer.evaluate=true trainer.devices=1 trainer.batch_size=64 \
+    trainer.resume_from_checkpoint=/mnt/d/data/new_cond_ckpt/0524_oracle_topology_soft_bias.ckpt \
+    trainer.test_output_dir=/mnt/d/data/new_cond_results/inference/topo_bias_white \
     model.autoencoder.checkpoint=/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt \
     model.latent.use_cached_latents=true model.denoiser.hidden_dim=768 \
     model.padding.max_faces=30 model.autoencoder.in_channels=6 \
@@ -113,6 +113,6 @@ python -m src.brepnet.train --config-name train_diffusion_topo_bias \
     dataset.latent_root=/mnt/d/data/ae_cache/1119_deepcad_aug1_11k \
     dataset.condition_root=/mnt/d/data/deepcad_v6_cond \
     dataset.test_dataset=src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt \
-    dataset.real_photo_ratio=0.0 dataset.load_topology=true \
+    dataset.real_photo_ratio=1.0 dataset.load_topology=true \
     dataset.cached_condition=false dataset.is_aug=0 dataset.scale_factor=1 \
     hydra.job.chdir=false
