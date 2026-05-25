@@ -12,6 +12,70 @@
 
 ---
 
+## 2026-05-25 紧急修复：real_photo_ratio 配置失效
+
+### 发现的问题
+
+1. **`real_photo_ratio` config 从未被代码使用！**
+   - `configs/dataset/diffusion.yaml` 定义了 `real_photo_ratio: 0.2`
+   - `train_diffusion_topo_bias.yaml` 覆盖为 `real_photo_ratio: 0.0`
+   - 但 `dataset.py` 第 289-292 行 **硬编码** `if pick_natural < 0.2`
+   - 结果：无论 config 怎么设，都以 20% 概率加载 FLUX 图
+
+2. **之前所有 topo_bias 实验可能混入了 20% 真实照片**
+   - 如果 `condition_root/{model_id}/single_view.npz` 存在 → 实际 20% 用真实图
+   - 如果不存在 → 模型被 `has_required_condition_files` 过滤掉
+
+3. **Blender 相机参数与 OCC 不一致**
+   - OCC: FOVy=45°, normalize_scale=0.9
+   - Blender (旧): FOV≈39.6° (默认 lens=50mm), normalize_scale=0.8
+
+### 修复内容
+
+**`src/brepnet/dataset.py`:**
+- `has_required_condition_files()` 新增 `v_real_photo_ratio` 参数
+  - 当 ratio=0.0 时，不检查 `single_view.npz` 是否存在
+- `prepare_condition()` 新增 `v_real_photo_ratio` 参数
+  - 替换硬编码 `0.2` 为配置值
+- `Diffusion_dataset.__init__()` 读取 `v_conf["real_photo_ratio"]` 并存为 `self.real_photo_ratio`
+- 所有 `prepare_condition` 调用点传入 `v_real_photo_ratio=self.real_photo_ratio`
+
+**`blender_scripts/render_cube24.py`:**
+- 归一化比例 0.8 → 0.9（对齐 OCC `normalize_shape(shape, 0.9)`）
+- 相机 FOV 设为 45°（`sensor_fit='VERTICAL'`, `lens = 24/(2*tan(22.5°)) ≈ 28.97mm`）
+
+**`blender_scripts/render_single_view.py`:**
+- 同样修改归一化比例和相机 FOV
+
+**新增 configs:**
+- `configs/train_diffusion_topo_bias_real.yaml` — ratio=1.0 + topo_bias
+- `configs/train_diffusion_baseline_real.yaml` — ratio=1.0 无 topo_bias
+
+**新增实验脚本:**
+- `experiments/2026-05-25/run_real_photo_topo_bias.sh`
+
+### 实验计划
+
+```
+# 先做 sanity check (验证代码修改没问题)
+bash experiments/2026-05-25/run_real_photo_topo_bias.sh sanity
+
+# 然后正式跑 (需要确认 FLUX 数据已生成!)
+bash experiments/2026-05-25/run_real_photo_topo_bias.sh baseline-real
+bash experiments/2026-05-25/run_real_photo_topo_bias.sh topo-bias-real
+
+# 可选：用修正后的代码重跑白模实验确认之前结果
+bash experiments/2026-05-25/run_real_photo_topo_bias.sh topo-bias-white
+```
+
+### 注意事项
+
+- **FLUX 数据前置条件**: ratio=1.0 要求所有训练模型的 `{condition_root}/{model_id}/single_view.npz` 存在且包含 "flux" key
+- **已跑实验影响**: 之前 2026-05-22 的 topo_bias 实验如果模型有 `single_view.npz`，实际是在 20% real photo 下训练的（不是纯白模）
+- **Blender 重渲染**: 相机参数修改后，之前生成的 Blender 图和 FLUX 图需要重新生成才能与 OCC 对齐。对于**已有数据的实验不需要重跑**，新实验生效即可。
+
+---
+
 ## 实验0：Intrinsic Decomposition (Normal Map 作为条件输入)
 
 ### 动机

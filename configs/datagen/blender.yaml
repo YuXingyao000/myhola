@@ -1,0 +1,8 @@
+blender_bin: blender
+num_gpus: 8
+samples: 32
+png_compression: 0
+device: GPU
+require_gpu: true
+skip_existing: true
+material_subdir: Metal010_1K-JPG

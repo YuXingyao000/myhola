@@ -1,0 +1,32 @@
+mode: dynamic
+pre_encode_text: false
+base_positive: >-
+  Generate a natural-looking photo placing this CAD part on a desk,
+  as if shot on iPhone. Make it look realistic, and ensure the material
+  and surface texture match a real-world {material} CAD part that
+  has been used, including believable wear and aging.
+negative: >-
+  deformed geometry, distorted shape, incorrect proportions, warped structure,
+  missing parts, extra parts, altered topology,
+  wood grain, wicker, woven fabric, knitted texture, leather, plush,
+  ceramic craft surfaces, toy-like plastic, fantasy environment
+materials:
+  - aluminum alloy
+  - stainless steel
+  - titanium
+  - carbon steel
+  - brushed metal
+finishes:
+  - brushed finish
+  - matte finish
+  - polished finish
+  - satin finish
+processes:
+  - CNC-machined
+  - precision-milled
+  - machined
+conditions:
+  - with subtle machining marks
+  - with minor surface imperfections
+  - clean and new
+  - with fine tool marks

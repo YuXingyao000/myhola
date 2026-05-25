@@ -1,0 +1,23 @@
+model_root: /mnt/d/data/deepcad_v6
+mesh_name: mesh.stl
+
+# Model lists — canonical shared files
+train_list: src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt
+
+# Blender output (relative to DATAGEN_ROOT, or absolute)
+blender_cube24_out: outputs/blender_cube24
+blender_single_view_out: outputs/blender_single_view
+
+# FLUX output
+flux_cube24_out: outputs/flux_cube24_dynamic
+flux_single_view_out: outputs/flux_single_view
+
+# Training data target (packed npz destination)
+cond_target: /mnt/d/data/deepcad_v6_cond
+
+# FLUX model weights
+transformer_path: /mnt/d/model/Flux1_Kontext_dev_GGUF/flux1-kontext-dev-Q8_0.gguf
+base_model_path: /mnt/d/model/Flux1_Kontext_dev
+
+# Logs
+logs_root: logs

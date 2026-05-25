@@ -232,7 +232,7 @@ def _resize_condition_imgs_np(imgs_np: np.ndarray, height: int = 224, width: int
     return np.stack(out, axis=0)
 
 
-def has_required_condition_files(v_condition_names, v_cond_dir: Path, v_cached_condition: bool) -> bool:
+def has_required_condition_files(v_condition_names, v_cond_dir: Path, v_cached_condition: bool, v_real_photo_ratio: float = 0.0) -> bool:
     if not v_cond_dir.exists():
         return False
 
@@ -242,17 +242,19 @@ def has_required_condition_files(v_condition_names, v_cond_dir: Path, v_cached_c
 
         if not (v_cond_dir / "imgs.npz").is_file():
             return False
-        if "single_img" in v_condition_names and not (v_cond_dir / "single_view.npz").is_file():
-            return False
-        if "sketch" in v_condition_names and not (v_cond_dir / "sketch_and_natural.npz").is_file():
-            return False
+        # Only require FLUX data when real_photo_ratio > 0
+        if v_real_photo_ratio > 0:
+            if "single_img" in v_condition_names and not (v_cond_dir / "single_view.npz").is_file():
+                return False
+            if "sketch" in v_condition_names and not (v_cond_dir / "sketch_and_natural.npz").is_file():
+                return False
 
     return True
 
 
 def prepare_condition(v_condition_names, v_cond_root, v_folder_path, v_id_aug,
                       v_cache_data=None, v_transform=None,
-                      v_num_points=None):
+                      v_num_points=None, v_real_photo_ratio=0.0):
     condition = {
 
     }
@@ -287,7 +289,7 @@ def prepare_condition(v_condition_names, v_cond_root, v_folder_path, v_id_aug,
             if "single_img" in v_condition_names:
                 imgs = ori_data["svr_imgs"][v_id_aug][None, :]
                 pick_natural = np.random.rand()   # uniform in [0, 1)
-                if pick_natural < 0.2:
+                if pick_natural < v_real_photo_ratio:
                     natural_data = np.load(v_cond_root / v_folder_path / "single_view.npz")
                     imgs = natural_data["flux"][None, :]
                 img_id = np.array([0], dtype=np.int64)
@@ -298,7 +300,7 @@ def prepare_condition(v_condition_names, v_cond_root, v_folder_path, v_id_aug,
             else:
                 imgs = ori_data["sketch_imgs"][v_id_aug][None, :]
                 pick_natural = np.random.rand()   # uniform in [0, 1)
-                if pick_natural < 0.2:
+                if pick_natural < v_real_photo_ratio:
                     sketch_data = np.load(v_cond_root / v_folder_path / "sketch_and_natural.npz")
                     imgs = sketch_data["sketch_img"][None, :]
                 img_id = np.array([0], dtype=np.int64)
@@ -597,6 +599,7 @@ class Diffusion_dataset(torch.utils.data.Dataset):
         # Cond related
         self.is_aug = v_conf["is_aug"]
         self.cached_condition = v_conf["cached_condition"]
+        self.real_photo_ratio = float(v_conf.get("real_photo_ratio", 0.0))
         if v_training_mode == "validation":
             self.is_aug = False
             self.cached_condition = False
@@ -612,7 +615,7 @@ class Diffusion_dataset(torch.utils.data.Dataset):
         if len(self.condition_names) > 0:
             data_folders = []
             for item in filelist:
-                if has_required_condition_files(self.condition_names, self.conditional_data_root / item, self.cached_condition):
+                if has_required_condition_files(self.condition_names, self.conditional_data_root / item, self.cached_condition, self.real_photo_ratio):
                     data_folders.append(item)
             print("Filter out {} folders without feat".format(len(filelist) - len(data_folders)))
             filelist = data_folders
@@ -691,7 +694,8 @@ class Diffusion_dataset(torch.utils.data.Dataset):
         # prepare_condition indexes Blender-rendered views, so pass the
         # cube-id directly (not the Euler-id used for the latent cache).
         condition = prepare_condition(self.condition_names, self.conditional_data_root, folder_path, cube_id,
-                                      self.cached_condition, self.transform, self.conf["num_points"])
+                                      self.cached_condition, self.transform, self.conf["num_points"],
+                                      v_real_photo_ratio=self.real_photo_ratio)
         return (
             folder_path,
             cached_latent_stats,
@@ -803,7 +807,8 @@ class Diffusion_dataset_mm(Diffusion_dataset):
         # Use the cube-id for image indexing; cond_id == -1 disables aug and
         # prepare_condition will fall back to view 0 internally.
         condition = prepare_condition(used_condition, self.conditional_data_root, folder_path, cond_id,
-                                      self.cached_condition, self.transform, self.conf["num_points"])
+                                      self.cached_condition, self.transform, self.conf["num_points"],
+                                      v_real_photo_ratio=self.real_photo_ratio)
         condition["name"] = self.condition_names[idx]
 
         return (

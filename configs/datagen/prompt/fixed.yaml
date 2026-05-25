@@ -1,0 +1,10 @@
+mode: fixed
+pre_encode_text: true
+positive: >-
+  Generate a natural-looking photo placing this CAD part on a desk,
+  as if shot on iPhone. Make it look realistic, and ensure the material
+  and surface texture match a real-world aluminum alloy CAD part that
+  has been used, including believable wear and aging.
+negative: >-
+  deformed geometry, distorted shape, incorrect proportions, warped structure,
+  missing parts, extra parts, altered topology

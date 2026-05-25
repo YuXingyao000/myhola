@@ -1,0 +1,13 @@
+defaults:
+  - datagen/paths
+  - datagen/blender
+  - datagen/flux
+  - datagen/prompt: dynamic
+
+mode: cube24
+
+hydra:
+  run:
+    dir: .
+  job:
+    chdir: false
