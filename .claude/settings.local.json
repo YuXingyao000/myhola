@@ -5,7 +5,11 @@
       "WebFetch(domain:arxiv.org)",
       "Bash(grep -E \"\\\\.py$|\\\\.sh$|\\\\.yaml$|\\\\.yml$|^d\")",
       "Bash(awk '{print $NF}')",
-      "Bash(grep \"\\\\.py$\")"
+      "Bash(grep \"\\\\.py$\")",
+      "Bash(conda env *)",
+      "Bash(conda run *)",
+      "Bash(D:/Miniconda/envs/torch/python.exe tools/debug_rotation_migration.py --model-id 00261287 --output debug_output/00261287)",
+      "Bash(D:/Miniconda/envs/torch/python.exe -m pip install scipy --quiet)"
     ]
   }
 }
