@@ -154,3 +154,8 @@ image   = imgs.npz["svr_imgs"][0]             ← euler64=0 = cube24_id=18 的�
 - [ ] 修改 `dataset.py` 让代码读新目录
 - [ ] VAE 补充缺失的 ae_cache（对 excluded.txt 中 `missing_ae_cache` 的模型）
 - [ ] 验证通过后删除旧数据释放磁盘空间
+
+## 结论
+发现blender和svr cube24 的0号旋转直接还是有偏差，现在怀疑是blender的坐标系，和OCC的坐标系不一致导致的，似乎把OCC图片向顺时针方向旋转90度就对的上了。不对并没有这么简单。
+blender的0号旋转对应的是cube24的18号旋转
+这就比较难办，可能必须考虑从新生成svr，blender和FLUX数据集太重了，没法从新生成，svr可以在1小时内从新生成完成，不过应该还是迁移会更方便

@@ -23,7 +23,7 @@ import numpy as np
 from pathlib import Path
 
 OLD_DATA = Path("/mnt/d/data/deepcad_v6")
-NEW_DATA = Path("/mnt/d/data/deepcad_v2")
+NEW_DATA = Path("/mnt/d/data/deepcad_v7")
 
 # data.npz 中要保留的 key (去掉 imgs)
 KEEP_NPZ_KEYS = [
