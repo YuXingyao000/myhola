@@ -14,11 +14,15 @@
 
 新数据结构（迁移后）：
 ```
-/mnt/d/data/deepcad_v2/{model_id}/           ← GT 数据 (只保留有用的)
+/mnt/d/data/deepcad_v7/{model_id}/           ← GT 数据 (只保留有用的)
   normalized_shape.step, mesh.ply, data.npz(无imgs)
 
-/mnt/d/data/deepcad_cond_v2/{model_id}/      ← 条件数据 (24旋转, 清晰命名)
-  svr.npz, sketch.npz, mvr.npz, real_photo.npz, pc.ply, text.npz
+/mnt/d/data/deepcad_v7_cond/{model_id}/      ← 条件数据 (24旋转, blender cube24 order)
+  imgs.npz                 ← svr_imgs[24], sketch_imgs[24], mvr_imgs[192]
+  natural.npz              ← FLUX/Blender cube24 图 (直接复制, 已是正确顺序)
+  single_view.npz          ← identity view = blender24 id 18 (直接复制)
+  img_feature_dinov2.npz   ← features[240, 1024] (从 640 重排)
+  text.npz, pc.ply, rotation_meta.json
 
 /mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/{model}_{cube24_id}/  ← Latent cache
   features.npy, data.npz
@@ -79,8 +83,10 @@ python tools/clean_deepcad_v6.py --num-cpus 32
 ### Step 4: 迁移条件数据 + ae_cache (64→24)
 
 **目的**：
-- 从 `imgs.npz[64]` 提取 24 张独立图 → 拆分为 `svr.npz` + `sketch.npz` + `mvr.npz`
-- `single_view.npz` → `real_photo.npz`
+- 从 `imgs.npz[64]` 提取 24 张独立图 → 输出为新 `imgs.npz`（同 key 名, 24-view）
+- 复制 `natural.npz`（已是 blender24 顺序，无需重排）
+- 复制 `single_view.npz`（identity view = blender24 id 18）
+- `img_feature_dinov2.npy` → `img_feature_dinov2.npz`（640→240 重排）
 - `text.txt` + `text_feat.npy` → `text.npz`
 - 复制 `pc.ply`
 - `ae_cache/{model}_{euler64_id}/` → `ae_cache_24/{model}_{cube24_id}/`
@@ -114,8 +120,8 @@ python tools/migrate_64_to_24.py --num-cpus 32
 
 | 新数据 | 路径 |
 |--------|------|
-| GT 数据 | `/mnt/d/data/deepcad_v2/{model_id}/` |
-| 条件数据 | `/mnt/d/data/deepcad_cond_v2/{model_id}/` |
+| GT 数据 | `/mnt/d/data/deepcad_v7/{model_id}/` |
+| 条件数据 | `/mnt/d/data/deepcad_v7_cond/{model_id}/` |
 | Latent cache | `/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/{model_id}_{cube24_id}/` |
 | 新 model lists | `src/brepnet/data/list/{train.txt, val.txt, test.txt}` |
 | 排除模型 | `src/brepnet/data/list/excluded.txt` |

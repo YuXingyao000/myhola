@@ -1,4 +1,4 @@
-"""复制 deepcad_v6 中有用的数据到新目录 (不修改原数据)。
+"""复制 deepcad_v6 中有用的 GT 数据到新目录 (不修改原数据)。
 
 从 /mnt/d/data/deepcad_v6/{model_id}/ 中只复制:
   - normalized_shape.step  (GT CAD 模型)
@@ -8,9 +8,9 @@
 不复制:
   - pc.ply                 (点云, 可从 mesh.ply 按需生成)
   - post_processed_shape.step (验证中间产物)
-  - img_feature_dinov2.npy    (旧缓存)
+  - img_feature_dinov2.npy    (旧缓存, 已迁移到 deepcad_v7_cond)
 
-输出到: /mnt/d/data/deepcad_v2/{model_id}/
+输出到: /mnt/d/data/deepcad_v7/{model_id}/
 
 用法:
     python tools/clean_deepcad_v6.py --dry-run

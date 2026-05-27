@@ -156,23 +156,37 @@ img_feature_dinov2.npy
 
 否则开启 `cached_condition=True` 时，虽然图片迁移对了，DINO feature 仍会按旧 euler64 顺序错配。
 
-## 当前 tools 的风险记录
+## 当前 tools 的风险记录（已修复 2026-05-27）
 
-今天对下面两个文件做过修改，但最后发现输出结构不符合你想要的“Blender id 作为所有数据共同 index”的直觉语义：
+之前发现的问题已在重写 `tools/migrate_64_to_24.py` 时修复：
+
+- ~~迁移脚本曾输出 `svr.npz/sketch.npz/mvr.npz/real_photo.npz`~~
+  → 改为输出 `imgs.npz`（同 key 名，24-view），兼容当前 dataset.py 读取路径
+- ~~`real_photo.npz` 复制自 `single_view.npz`~~
+  → `single_view.npz` 原样保留，不改名
+- ~~还没有完成对 `natural.npz` 和 `img_feature_dinov2.npy` 的迁移处理~~
+  → `natural.npz` 直接复制（已是 blender24 顺序）
+  → `img_feature_dinov2.npy` 重排为 240 行，输出为 `img_feature_dinov2.npz`
+
+修改后的输出格式：
 
 ```text
-tools/migrate_64_to_24.py
-tools/debug_rotation_migration.py
+deepcad_v7_cond/{model_id}/imgs.npz
+  svr_imgs:    (24, 224, 224, 3), index = Blender id
+  sketch_imgs: (24, 224, 224, 3), index = Blender id
+  mvr_imgs:    (192, 224, 224, 3), layout = camera_id * 24 + Blender id
+
+deepcad_v7_cond/{model_id}/natural.npz
+  直接复制, index 已是 Blender id
+
+deepcad_v7_cond/{model_id}/single_view.npz
+  直接复制, identity view = Blender id 18
+
+deepcad_v7_cond/{model_id}/img_feature_dinov2.npz
+  features: (240, 1024), layout = 24 svr + 24 sketch + 8*24 mvr
+
+ae_cache_24/{model_id}_{blender_id}/features.npy
 ```
-
-主要问题：
-
-- 迁移脚本曾输出 `svr.npz/sketch.npz/mvr.npz/real_photo.npz`，但当前 dataset 更自然使用 `imgs.npz/natural.npz/single_view.npz`。
-- `real_photo.npz` 复制自 `single_view.npz`，这会把 single-view identity 的语义和 cube24 数据混在一起。
-- debug 输出里把 single_view 标成 `blender24_18` 是事实记录，但不应该让迁移后的 24-view 主数据也围绕 single_view 组织。
-- 还没有完成对 `natural.npz` 和 `img_feature_dinov2.npy` 的迁移处理。
-
-因此，在继续正式迁移前，应先审查或恢复这两个 tools，再按本文件里的目标格式重写。
 
 ## dry-run / debug 结果
 

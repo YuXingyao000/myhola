@@ -5,17 +5,27 @@ Input:
         keys: svr_imgs[64], sketch_imgs[64], mvr_imgs[512]
     /mnt/d/data/deepcad_v6_cond/{model_id}/single_view.npz
         keys: blender, flux, flux_masked
+    /mnt/d/data/deepcad_v6_cond/{model_id}/natural.npz
+        keys: natural_imgs[24], natural_imgs_compress[24],
+              blender_natural_imgs[24], blender_natural_imgs_compress[24]
+    /mnt/d/data/deepcad_v6_cond/{model_id}/img_feature_dinov2.npy
+        shape: (640, 1024), layout: 64 svr + 64 sketch + 8*64 mvr
     /mnt/d/data/ae_cache/1119_deepcad_aug1_11k/{model_id}_{euler64_id}/features.npy
 
 Output:
-    /mnt/d/data/deepcad_v7_cond/{model_id}/svr.npz
-        key: images[24, 224, 224, 3], Blender cube24 order
-    /mnt/d/data/deepcad_v7_cond/{model_id}/sketch.npz
-        key: images[24, 224, 224, 3], Blender cube24 order
-    /mnt/d/data/deepcad_v7_cond/{model_id}/mvr.npz
-        key: images[192, 224, 224, 3], [8 multi-view cameras, 24 Blender rotations]
-    /mnt/d/data/deepcad_v7_cond/{model_id}/real_photo.npz
-        copied from single_view.npz
+    /mnt/d/data/deepcad_v7_cond/{model_id}/imgs.npz
+        keys: svr_imgs[24, 224, 224, 3], sketch_imgs[24, 224, 224, 3],
+              mvr_imgs[192, 224, 224, 3]
+        All indexed by Blender cube24 id.
+    /mnt/d/data/deepcad_v7_cond/{model_id}/natural.npz
+        Copied directly (already in Blender cube24 order).
+    /mnt/d/data/deepcad_v7_cond/{model_id}/single_view.npz
+        Copied directly. This is the identity view (Blender cube24 id 18).
+    /mnt/d/data/deepcad_v7_cond/{model_id}/img_feature_dinov2.npz
+        key: features[240, 1024], layout: 24 svr + 24 sketch + 8*24 mvr
+    /mnt/d/data/deepcad_v7_cond/{model_id}/text.npz
+        keys: description, feature
+    /mnt/d/data/deepcad_v7_cond/{model_id}/pc.ply
     /mnt/d/data/deepcad_v7_cond/{model_id}/rotation_meta.json
     /mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/{model_id}_{blender24_id}/features.npy
 
@@ -25,6 +35,7 @@ Rotation contract:
     - Legacy OCC/SVR and AE cache use euler64 ids, so this script indexes them
       with BLENDER24_TO_EULER64.
     - single_view.npz is the identity view: Blender/OCC cube24 id 18, not id 0.
+    - natural.npz is already in Blender cube24 order (00..23), copy directly.
 
 Usage:
     python tools/migrate_64_to_24.py --dry-run
@@ -54,6 +65,8 @@ TEST_MODEL_LIST = Path("src/brepnet/data/list/deduplicated_deepcad_testing_7_30.
 DEFAULT_MODEL_LISTS = (TRAIN_MODEL_LIST, VAL_MODEL_LIST, TEST_MODEL_LIST)
 
 NUM_BLENDER24_VIEWS = 24
+NUM_EULER64_VIEWS = 64
+NUM_MVR_CAMERAS = 8
 BLENDER24_TO_OCC24 = tuple(range(NUM_BLENDER24_VIEWS))
 SINGLE_VIEW_BLENDER_ID = 18
 
@@ -117,7 +130,9 @@ def build_rotation_meta() -> dict[str, object]:
         "single_view_euler64_id": BLENDER24_TO_EULER64[SINGLE_VIEW_BLENDER_ID],
         "notes": (
             "Blender cube24 00.png..23.png is canonical. single_view.npz is the "
-            "identity view, which is Blender/OCC cube24 id 18."
+            "identity view, which is Blender/OCC cube24 id 18. "
+            "imgs.npz keys are reindexed from euler64 to blender24 order. "
+            "natural.npz is copied directly (already in blender24 order)."
         ),
     }
 
@@ -146,7 +161,7 @@ def load_model_ids(model_list: Path | None, train_only: bool) -> list[str]:
 
 
 def has_complete_legacy_cache(model_id: str) -> bool:
-    for blender_id, euler64_id in enumerate(BLENDER24_TO_EULER64):
+    for euler64_id in BLENDER24_TO_EULER64:
         feat_path = AE_CACHE_OLD / f"{model_id}_{euler64_id}" / "features.npy"
         if not feat_path.is_file():
             return False
@@ -170,6 +185,40 @@ def copy_cache_dir(src_dir: Path, dst_dir: Path, overwrite_cache: bool) -> None:
             shutil.copy2(src_file, dst_file)
 
 
+def migrate_dino_features(old_dir: Path, new_dir: Path) -> None:
+    """Reindex img_feature_dinov2.npy from euler64 (640) to blender24 (240) layout.
+
+    Old layout: [64 svr, 64 sketch, 8 * 64 mvr] = 640 rows
+    New layout: [24 svr, 24 sketch, 8 * 24 mvr] = 240 rows
+    """
+    feat_path = old_dir / "img_feature_dinov2.npy"
+    if not feat_path.is_file():
+        return
+
+    features = np.load(feat_path)  # (640, 1024)
+    if features.shape[0] != NUM_EULER64_VIEWS + NUM_EULER64_VIEWS + NUM_MVR_CAMERAS * NUM_EULER64_VIEWS:
+        # Unexpected shape, skip
+        return
+
+    dim = features.shape[1]
+
+    # Split into sections
+    svr_feats = features[:NUM_EULER64_VIEWS]  # (64, 1024)
+    sketch_feats = features[NUM_EULER64_VIEWS : 2 * NUM_EULER64_VIEWS]  # (64, 1024)
+    mvr_feats = features[2 * NUM_EULER64_VIEWS :]  # (512, 1024)
+    mvr_feats = mvr_feats.reshape(NUM_MVR_CAMERAS, NUM_EULER64_VIEWS, dim)  # (8, 64, 1024)
+
+    # Reindex by EULER64_IDS (blender24 -> euler64 mapping)
+    new_svr = svr_feats[EULER64_IDS]  # (24, 1024)
+    new_sketch = sketch_feats[EULER64_IDS]  # (24, 1024)
+    new_mvr = mvr_feats[:, EULER64_IDS].reshape(NUM_MVR_CAMERAS * NUM_BLENDER24_VIEWS, dim)  # (192, 1024)
+
+    # Stack: [24 svr, 24 sketch, 192 mvr] = 240
+    new_features = np.concatenate([new_svr, new_sketch, new_mvr], axis=0)  # (240, 1024)
+
+    np.savez_compressed(new_dir / "img_feature_dinov2.npz", features=new_features)
+
+
 def migrate_one_model(model_id: str, dry_run: bool = False, overwrite_cache: bool = False) -> str:
     old_dir = OLD_COND / model_id
     new_dir = NEW_COND / model_id
@@ -189,24 +238,39 @@ def migrate_one_model(model_id: str, dry_run: bool = False, overwrite_cache: boo
 
     new_dir.mkdir(parents=True, exist_ok=True)
 
+    # --- imgs.npz: reindex from euler64 to blender24 order ---
     old = np.load(imgs_path)
+    new_data = {}
     if "svr_imgs" in old:
-        np.savez_compressed(new_dir / "svr.npz", images=old["svr_imgs"][EULER64_IDS])
+        new_data["svr_imgs"] = old["svr_imgs"][EULER64_IDS]  # (24, 224, 224, 3)
     if "sketch_imgs" in old:
-        np.savez_compressed(new_dir / "sketch.npz", images=old["sketch_imgs"][EULER64_IDS])
+        new_data["sketch_imgs"] = old["sketch_imgs"][EULER64_IDS]  # (24, 224, 224, 3)
     if "mvr_imgs" in old:
-        mvr = old["mvr_imgs"].reshape(8, 64, 224, 224, 3)
-        mvr = mvr[:, EULER64_IDS].reshape(8 * NUM_BLENDER24_VIEWS, 224, 224, 3)
-        np.savez_compressed(new_dir / "mvr.npz", images=mvr)
+        mvr = old["mvr_imgs"].reshape(NUM_MVR_CAMERAS, NUM_EULER64_VIEWS, 224, 224, 3)
+        mvr = mvr[:, EULER64_IDS].reshape(NUM_MVR_CAMERAS * NUM_BLENDER24_VIEWS, 224, 224, 3)
+        new_data["mvr_imgs"] = mvr  # (192, 224, 224, 3)
+    if new_data:
+        np.savez_compressed(new_dir / "imgs.npz", **new_data)
 
+    # --- natural.npz: copy directly (already in blender24 order) ---
+    natural_path = old_dir / "natural.npz"
+    if natural_path.is_file():
+        shutil.copy2(natural_path, new_dir / "natural.npz")
+
+    # --- single_view.npz: copy directly (identity view = blender24 id 18) ---
     single_view_path = old_dir / "single_view.npz"
     if single_view_path.is_file():
-        shutil.copy2(single_view_path, new_dir / "real_photo.npz")
+        shutil.copy2(single_view_path, new_dir / "single_view.npz")
 
+    # --- img_feature_dinov2.npy: reindex from 640 to 240 ---
+    migrate_dino_features(old_dir, new_dir)
+
+    # --- pc.ply: copy directly ---
     pc_path = old_dir / "pc.ply"
     if pc_path.is_file():
         shutil.copy2(pc_path, new_dir / "pc.ply")
 
+    # --- text.txt + text_feat.npy -> text.npz ---
     text_path = old_dir / "text.txt"
     text_feat_path = old_dir / "text_feat.npy"
     if text_path.is_file():
@@ -218,11 +282,13 @@ def migrate_one_model(model_id: str, dry_run: bool = False, overwrite_cache: boo
         )
         np.savez_compressed(new_dir / "text.npz", description=np.array(description), feature=feature)
 
+    # --- AE cache: copy with blender24 id naming ---
     for blender_id, euler64_id in enumerate(BLENDER24_TO_EULER64):
         src_dir = AE_CACHE_OLD / f"{model_id}_{euler64_id}"
         dst_dir = AE_CACHE_NEW / f"{model_id}_{blender_id}"
         copy_cache_dir(src_dir, dst_dir, overwrite_cache=overwrite_cache)
 
+    # --- rotation_meta.json ---
     write_rotation_meta(new_dir)
     return "ok"
 
@@ -259,6 +325,13 @@ def main() -> None:
         "single_view blender/flux id: "
         f"{SINGLE_VIEW_BLENDER_ID} (euler64={BLENDER24_TO_EULER64[SINGLE_VIEW_BLENDER_ID]})"
     )
+    print()
+    print("Output format:")
+    print("  imgs.npz: svr_imgs[24], sketch_imgs[24], mvr_imgs[192] — blender24 order")
+    print("  natural.npz: copied directly (already blender24 order)")
+    print("  single_view.npz: copied directly (identity = blender24 id 18)")
+    print("  img_feature_dinov2.npz: features[240, 1024] — reindexed")
+    print("  ae_cache: {model}_{blender24_id}/features.npy")
     print()
 
     stats = {

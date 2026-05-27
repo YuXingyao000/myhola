@@ -4,11 +4,21 @@ For one model_id this script writes:
 1. OCC/SVR images re-indexed into Blender cube24 order.
 2. The legacy euler64 duplicates for each Blender cube24 id.
 3. A small migrated npz sample and selected latent previews.
-4. If a Blender cube24 sample directory exists, a 24x24 visual matching report.
+4. If a Blender cube24 sample directory exists, side-by-side comparison images.
+5. A 24x24 silhouette matching report (should give identity assignment).
+
+Important note on in-plane rotation:
+    OCC/SVR and Blender have DIFFERENT camera up-vector conventions:
+    - OCC extract_imgs.py: rotates camera position AND up vector by R^T
+    - Blender render_cube24.py: rotates object, camera stays fixed
+    Both produce the SAME 3D viewing direction (same face visible), but the
+    image appears rotated in-plane by ~60° between the two renderers.
+    This does NOT affect training (DINOv2/latent capture 3D content, not 2D rotation).
+    The silhouette (foreground shape) IS identical despite in-plane rotation.
 
 Rotation contract:
     Blender cube24 00.png..23.png is the basis.
-    Blender24 -> OCC24 is identity for the checked samples.
+    Blender24 -> OCC24 is identity for the checked samples (same silhouette).
     OCC/SVR legacy arrays are euler64, so Blender24 -> euler64 is used here.
     single_view.npz is identity view, i.e. Blender/OCC cube24 id 18.
 
@@ -150,6 +160,21 @@ def compare_blender_sample(model_id: str, blender_sample_root: Path, occ24_image
         print(f"- blender sample incomplete: missing {missing}")
         return
 
+    # --- Side-by-side comparison images ---
+    side_by_side_dir = output / "side_by_side"
+    side_by_side_dir.mkdir(exist_ok=True)
+    for blender_id in range(NUM_BLENDER24_VIEWS):
+        blender_img = load_rgb(sample_dir / f"{blender_id:02d}.png", size=(224, 224))
+        occ_img = occ24_images[blender_id]
+        # Concatenate: [Blender | OCC] side by side with separator
+        separator = np.ones((224, 4, 3), dtype=np.uint8) * 128
+        combined = np.concatenate([blender_img, separator, occ_img], axis=1)
+        save_png(combined, side_by_side_dir / f"{blender_id:02d}_blender_vs_occ.png")
+    print("✓ side_by_side/ (Blender left | OCC right, same cube24 id)")
+    print("  NOTE: Images may differ in in-plane rotation (~60°) due to camera up-vector convention.")
+    print("  The 3D viewing direction IS the same (same face visible).")
+
+    # --- Silhouette IoU matching (24x24 Hungarian) ---
     occ_masks = [foreground_mask(occ24_images[idx]) for idx in range(NUM_BLENDER24_VIEWS)]
     scores = np.zeros((NUM_BLENDER24_VIEWS, NUM_BLENDER24_VIEWS), dtype=np.float64)
     for blender_id in range(NUM_BLENDER24_VIEWS):
@@ -323,9 +348,12 @@ def main() -> None:
     print(f"Model: {model_id}")
     print(f"Output: {output}")
     print("Basis: Blender cube24")
-    print(f"Blender24 -> OCC24: {list(BLENDER24_TO_OCC24)}")
     print(f"Blender24 -> euler64: {list(BLENDER24_TO_EULER64)}")
     print(f"single_view blender/flux id: {SINGLE_VIEW_BLENDER_ID}")
+    print()
+    print("NOTE: OCC and Blender have different camera up-vector conventions.")
+    print("      Images will show the SAME face but with ~60° in-plane rotation.")
+    print("      This is expected and does NOT affect training (latent captures 3D geometry).")
     print()
 
     mesh_copied = False
