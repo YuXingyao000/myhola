@@ -1,46 +1,29 @@
-"""Migrate legacy euler64 condition/cache data to the Blender cube24 basis.
+"""Migrate legacy euler64 assets to an identity-first 24-rotation basis.
 
-Input:
+The target basis is NOT the raw Blender cube24 file order. It is a reordered
+cube24 basis where id 0 is the identity view, matching the current single-view
+FLUX image that is written as real_photo.npz["flux"].
+
+Key contract:
+    identity24 id 0 = legacy euler64 id 0 = old Blender cube24 id 18
+
+Inputs:
     /mnt/d/data/deepcad_v6_cond/{model_id}/imgs.npz
-        keys: svr_imgs[64], sketch_imgs[64], mvr_imgs[512]
+        svr_imgs[64], sketch_imgs[64], mvr_imgs[8 * 64]
     /mnt/d/data/deepcad_v6_cond/{model_id}/single_view.npz
-        keys: blender, flux, flux_masked
-    /mnt/d/data/deepcad_v6_cond/{model_id}/natural.npz
-        keys: natural_imgs[24], natural_imgs_compress[24],
-              blender_natural_imgs[24], blender_natural_imgs_compress[24]
+        optional single-view data; this is identity24 id 0
     /mnt/d/data/deepcad_v6_cond/{model_id}/img_feature_dinov2.npy
-        shape: (640, 1024), layout: 64 svr + 64 sketch + 8*64 mvr
-    /mnt/d/data/ae_cache/1119_deepcad_aug1_11k/{model_id}_{euler64_id}/features.npy
+        optional cached image features, old layout: 64 + 64 + 8 * 64
+    /mnt/d/data/ae_cache/1119_deepcad_aug1_11k/{model_id}_{euler64_id}/
 
-Output:
+Outputs:
     /mnt/d/data/deepcad_v7_cond/{model_id}/imgs.npz
-        keys: svr_imgs[24, 224, 224, 3], sketch_imgs[24, 224, 224, 3],
-              mvr_imgs[192, 224, 224, 3]
-        All indexed by Blender cube24 id.
-    /mnt/d/data/deepcad_v7_cond/{model_id}/natural.npz
-        Copied directly (already in Blender cube24 order).
-    /mnt/d/data/deepcad_v7_cond/{model_id}/single_view.npz
-        Copied directly. This is the identity view (Blender cube24 id 18).
-    /mnt/d/data/deepcad_v7_cond/{model_id}/img_feature_dinov2.npz
-        key: features[240, 1024], layout: 24 svr + 24 sketch + 8*24 mvr
-    /mnt/d/data/deepcad_v7_cond/{model_id}/text.npz
-        keys: description, feature
-    /mnt/d/data/deepcad_v7_cond/{model_id}/pc.ply
-    /mnt/d/data/deepcad_v7_cond/{model_id}/rotation_meta.json
-    /mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/{model_id}_{blender24_id}/features.npy
-
-Rotation contract:
-    - Blender render_cube24.py 00.png..23.png is the canonical basis.
-    - The two checked blender_cube24_sample models match OCC cube24 with identity mapping.
-    - Legacy OCC/SVR and AE cache use euler64 ids, so this script indexes them
-      with BLENDER24_TO_EULER64.
-    - single_view.npz is the identity view: Blender/OCC cube24 id 18, not id 0.
-    - natural.npz is already in Blender cube24 order (00..23), copy directly.
-
-Usage:
-    python tools/migrate_64_to_24.py --dry-run
-    python tools/migrate_64_to_24.py --no-ray
-    python tools/migrate_64_to_24.py --max-models 10
+        svr_imgs[24], sketch_imgs[24], identity24 order
+    /mnt/d/data/deepcad_v7_cond/{model_id}/real_photo.npz
+        optional FLUX data; current shape [H,W,3], future shape [24,H,W,3]
+    /mnt/d/data/deepcad_v7_cond/{model_id}/img_feature_dinov2.npy
+        optional cached features, new layout: 24 + 24
+    /mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/{model_id}_{identity24_id}/
 """
 
 from __future__ import annotations
@@ -64,75 +47,118 @@ VAL_MODEL_LIST = Path("src/brepnet/data/list/deduplicated_deepcad_validation_7_3
 TEST_MODEL_LIST = Path("src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt")
 DEFAULT_MODEL_LISTS = (TRAIN_MODEL_LIST, VAL_MODEL_LIST, TEST_MODEL_LIST)
 
-NUM_BLENDER24_VIEWS = 24
+NUM_IDENTITY24_VIEWS = 24
 NUM_EULER64_VIEWS = 64
 NUM_MVR_CAMERAS = 8
-BLENDER24_TO_OCC24 = tuple(range(NUM_BLENDER24_VIEWS))
-SINGLE_VIEW_BLENDER_ID = 18
+SINGLE_VIEW_IDENTITY24_ID = 0
+
+AXIS_DIRECTIONS = (
+    np.array([1.0, 0.0, 0.0]),
+    np.array([-1.0, 0.0, 0.0]),
+    np.array([0.0, 1.0, 0.0]),
+    np.array([0.0, -1.0, 0.0]),
+    np.array([0.0, 0.0, 1.0]),
+    np.array([0.0, 0.0, -1.0]),
+)
 
 
-def build_blender24_to_euler64() -> tuple[int, ...]:
-    """Map Blender cube24 ids to the first equivalent legacy euler64 id."""
+def matrix_key(matrix: np.ndarray) -> tuple[int, ...]:
+    return tuple(int(v) for v in np.rint(matrix).astype(np.int8).reshape(-1))
 
-    dirs = (
-        np.array([1.0, 0.0, 0.0]),
-        np.array([-1.0, 0.0, 0.0]),
-        np.array([0.0, 1.0, 0.0]),
-        np.array([0.0, -1.0, 0.0]),
-        np.array([0.0, 0.0, 1.0]),
-        np.array([0.0, 0.0, -1.0]),
-    )
 
-    blender_mats = []
-    seen = set()
-    for z_axis in dirs:
-        for y_axis in dirs:
+def build_blender24_matrices() -> list[np.ndarray]:
+    """Raw Blender render_cube24.py order: 00.png..23.png."""
+
+    matrices: list[np.ndarray] = []
+    seen: set[tuple[int, ...]] = set()
+    for z_axis in AXIS_DIRECTIONS:
+        for y_axis in AXIS_DIRECTIONS:
             if abs(float(np.dot(z_axis, y_axis))) > 1e-6:
                 continue
             x_axis = np.cross(y_axis, z_axis)
             matrix = np.stack([x_axis, y_axis, z_axis], axis=1)
-            key = tuple(int(round(v)) for v in matrix.flatten())
+            key = matrix_key(matrix)
             if key in seen:
                 continue
             seen.add(key)
-            blender_mats.append(matrix)
-    if len(blender_mats) != NUM_BLENDER24_VIEWS:
-        raise RuntimeError(f"Expected 24 Blender rotations, got {len(blender_mats)}")
+            matrices.append(matrix)
 
-    euler_mats = []
-    for idx in range(64):
+    if len(matrices) != NUM_IDENTITY24_VIEWS:
+        raise RuntimeError(f"Expected 24 Blender rotations, got {len(matrices)}")
+    return matrices
+
+
+def build_euler64_matrices() -> list[np.ndarray]:
+    matrices = []
+    for idx in range(NUM_EULER64_VIEWS):
         angles = np.array([idx % 4, idx // 4 % 4, idx // 16], dtype=np.float32)
-        euler_mats.append(Rotation.from_euler("xyz", angles * np.pi / 2).as_matrix())
+        matrices.append(Rotation.from_euler("xyz", angles * np.pi / 2).as_matrix())
+    return matrices
 
-    mapping = []
-    for blender_matrix in blender_mats:
-        for euler_id, euler_matrix in enumerate(euler_mats):
-            if np.allclose(blender_matrix, euler_matrix, atol=1e-6):
-                mapping.append(euler_id)
+
+def build_identity24_tables() -> tuple[tuple[int, ...], tuple[int, ...], tuple[int, ...]]:
+    """Build identity24 -> euler64 / raw Blender24 / inverse Blender24 mapping.
+
+    identity24 order is the first occurrence of each unique cube rotation while
+    scanning legacy euler64 ids from 0 to 63. This makes id 0 the identity view.
+    """
+
+    blender_mats = build_blender24_matrices()
+    euler_mats = build_euler64_matrices()
+
+    identity_to_euler: list[int] = []
+    seen: set[tuple[int, ...]] = set()
+    for euler_id, euler_matrix in enumerate(euler_mats):
+        key = matrix_key(euler_matrix)
+        if key in seen:
+            continue
+        seen.add(key)
+        identity_to_euler.append(euler_id)
+
+    if len(identity_to_euler) != NUM_IDENTITY24_VIEWS:
+        raise RuntimeError(f"Expected 24 unique euler64 rotations, got {len(identity_to_euler)}")
+    if identity_to_euler[0] != 0:
+        raise RuntimeError("identity24 id 0 must map to euler64 id 0")
+
+    identity_to_blender: list[int] = []
+    for euler_id in identity_to_euler:
+        euler_matrix = euler_mats[euler_id]
+        for blender_id, blender_matrix in enumerate(blender_mats):
+            if np.allclose(euler_matrix, blender_matrix, atol=1e-6):
+                identity_to_blender.append(blender_id)
                 break
         else:
-            raise RuntimeError("Blender cube24 rotation has no euler64 counterpart")
-    return tuple(mapping)
+            raise RuntimeError(f"euler64 id {euler_id} has no raw Blender24 counterpart")
+
+    blender_to_identity = [-1] * NUM_IDENTITY24_VIEWS
+    for identity_id, blender_id in enumerate(identity_to_blender):
+        blender_to_identity[blender_id] = identity_id
+
+    if any(value < 0 for value in blender_to_identity):
+        raise RuntimeError("Failed to invert raw Blender24 -> identity24 mapping")
+    if identity_to_blender[0] != 18:
+        raise RuntimeError("identity24 id 0 should be raw Blender24 id 18")
+
+    return tuple(identity_to_euler), tuple(identity_to_blender), tuple(blender_to_identity)
 
 
-BLENDER24_TO_EULER64 = build_blender24_to_euler64()
-EULER64_IDS = np.array(BLENDER24_TO_EULER64, dtype=np.int64)
+IDENTITY24_TO_EULER64, IDENTITY24_TO_BLENDER24, BLENDER24_TO_IDENTITY24 = build_identity24_tables()
+EULER64_IDS = np.array(IDENTITY24_TO_EULER64, dtype=np.int64)
 
 
 def build_rotation_meta() -> dict[str, object]:
     return {
-        "rotation_basis": "blender_cube24",
-        "num_views": NUM_BLENDER24_VIEWS,
-        "blender24_to_occ24": list(BLENDER24_TO_OCC24),
-        "blender24_to_euler64": list(BLENDER24_TO_EULER64),
-        "single_view_blender_id": SINGLE_VIEW_BLENDER_ID,
-        "single_view_occ24_id": BLENDER24_TO_OCC24[SINGLE_VIEW_BLENDER_ID],
-        "single_view_euler64_id": BLENDER24_TO_EULER64[SINGLE_VIEW_BLENDER_ID],
+        "rotation_basis": "identity_first_cube24",
+        "num_views": NUM_IDENTITY24_VIEWS,
+        "identity24_to_euler64": list(IDENTITY24_TO_EULER64),
+        "identity24_to_blender24": list(IDENTITY24_TO_BLENDER24),
+        "blender24_to_identity24": list(BLENDER24_TO_IDENTITY24),
+        "real_photo_identity24_id": SINGLE_VIEW_IDENTITY24_ID,
+        "real_photo_blender24_id": IDENTITY24_TO_BLENDER24[SINGLE_VIEW_IDENTITY24_ID],
+        "real_photo_euler64_id": IDENTITY24_TO_EULER64[SINGLE_VIEW_IDENTITY24_ID],
         "notes": (
-            "Blender cube24 00.png..23.png is canonical. single_view.npz is the "
-            "identity view, which is Blender/OCC cube24 id 18. "
-            "imgs.npz keys are reindexed from euler64 to blender24 order. "
-            "natural.npz is copied directly (already in blender24 order)."
+            "identity24 id 0 is the identity view and matches real_photo.npz['flux']. "
+            "It corresponds to legacy euler64 id 0 and raw Blender cube24 id 18."
         ),
     }
 
@@ -154,14 +180,14 @@ def load_model_ids(model_list: Path | None, train_only: bool) -> list[str]:
         return list(dict.fromkeys(load_ids_from_list(model_list)))
 
     lists = (TRAIN_MODEL_LIST,) if train_only else DEFAULT_MODEL_LISTS
-    ids = []
+    ids: list[str] = []
     for path in lists:
         ids.extend(load_ids_from_list(path))
     return list(dict.fromkeys(ids))
 
 
 def has_complete_legacy_cache(model_id: str) -> bool:
-    for euler64_id in BLENDER24_TO_EULER64:
+    for euler64_id in IDENTITY24_TO_EULER64:
         feat_path = AE_CACHE_OLD / f"{model_id}_{euler64_id}" / "features.npy"
         if not feat_path.is_file():
             return False
@@ -185,49 +211,50 @@ def copy_cache_dir(src_dir: Path, dst_dir: Path, overwrite_cache: bool) -> None:
             shutil.copy2(src_file, dst_file)
 
 
-def migrate_dino_features(old_dir: Path, new_dir: Path) -> None:
-    """Reindex img_feature_dinov2.npy from euler64 (640) to blender24 (240) layout.
+def migrate_imgs_npz(old_dir: Path, new_dir: Path) -> None:
+    with np.load(old_dir / "imgs.npz") as old:
+        new_data = {}
+        if "svr_imgs" in old:
+            new_data["svr_imgs"] = old["svr_imgs"][EULER64_IDS]
+        if "sketch_imgs" in old:
+            new_data["sketch_imgs"] = old["sketch_imgs"][EULER64_IDS]
 
-    Old layout: [64 svr, 64 sketch, 8 * 64 mvr] = 640 rows
-    New layout: [24 svr, 24 sketch, 8 * 24 mvr] = 240 rows
-    """
+    if new_data:
+        np.savez_compressed(new_dir / "imgs.npz", **new_data)
+
+
+def migrate_dino_features(old_dir: Path, new_dir: Path) -> None:
     feat_path = old_dir / "img_feature_dinov2.npy"
     if not feat_path.is_file():
         return
 
-    features = np.load(feat_path)  # (640, 1024)
-    if features.shape[0] != NUM_EULER64_VIEWS + NUM_EULER64_VIEWS + NUM_MVR_CAMERAS * NUM_EULER64_VIEWS:
-        # Unexpected shape, skip
+    features = np.load(feat_path)
+    expected_rows = NUM_EULER64_VIEWS + NUM_EULER64_VIEWS + NUM_MVR_CAMERAS * NUM_EULER64_VIEWS
+    if features.ndim != 2 or features.shape[0] != expected_rows:
         return
 
     dim = features.shape[1]
+    svr_feats = features[:NUM_EULER64_VIEWS]
+    sketch_feats = features[NUM_EULER64_VIEWS : 2 * NUM_EULER64_VIEWS]
 
-    # Split into sections
-    svr_feats = features[:NUM_EULER64_VIEWS]  # (64, 1024)
-    sketch_feats = features[NUM_EULER64_VIEWS : 2 * NUM_EULER64_VIEWS]  # (64, 1024)
-    mvr_feats = features[2 * NUM_EULER64_VIEWS :]  # (512, 1024)
-    mvr_feats = mvr_feats.reshape(NUM_MVR_CAMERAS, NUM_EULER64_VIEWS, dim)  # (8, 64, 1024)
-
-    # Reindex by EULER64_IDS (blender24 -> euler64 mapping)
-    new_svr = svr_feats[EULER64_IDS]  # (24, 1024)
-    new_sketch = sketch_feats[EULER64_IDS]  # (24, 1024)
-    new_mvr = mvr_feats[:, EULER64_IDS].reshape(NUM_MVR_CAMERAS * NUM_BLENDER24_VIEWS, dim)  # (192, 1024)
-
-    # Stack: [24 svr, 24 sketch, 192 mvr] = 240
-    new_features = np.concatenate([new_svr, new_sketch, new_mvr], axis=0)  # (240, 1024)
-
-    np.savez_compressed(new_dir / "img_feature_dinov2.npz", features=new_features)
+    new_features = np.concatenate(
+        [
+            svr_feats[EULER64_IDS],
+            sketch_feats[EULER64_IDS],
+        ],
+        axis=0,
+    )
+    np.save(new_dir / "img_feature_dinov2.npy", new_features)
 
 
-def migrate_one_model(model_id: str, dry_run: bool = False, overwrite_cache: bool = False) -> str:
+def migrate_one_model(model_id: str, dry_run: bool = False, overwrite_cache: bool = True) -> str:
     old_dir = OLD_COND / model_id
     new_dir = NEW_COND / model_id
 
     if not old_dir.is_dir():
         return "skip_no_dir"
 
-    imgs_path = old_dir / "imgs.npz"
-    if not imgs_path.is_file():
+    if not (old_dir / "imgs.npz").is_file():
         return "skip_missing_imgs"
 
     if not has_complete_legacy_cache(model_id):
@@ -237,40 +264,22 @@ def migrate_one_model(model_id: str, dry_run: bool = False, overwrite_cache: boo
         return "ok"
 
     new_dir.mkdir(parents=True, exist_ok=True)
+    for legacy_name in ("single_view.npz", "natural.npz", "sketch_and_natural.npz"):
+        legacy_path = new_dir / legacy_name
+        if legacy_path.exists():
+            legacy_path.unlink()
 
-    # --- imgs.npz: reindex from euler64 to blender24 order ---
-    old = np.load(imgs_path)
-    new_data = {}
-    if "svr_imgs" in old:
-        new_data["svr_imgs"] = old["svr_imgs"][EULER64_IDS]  # (24, 224, 224, 3)
-    if "sketch_imgs" in old:
-        new_data["sketch_imgs"] = old["sketch_imgs"][EULER64_IDS]  # (24, 224, 224, 3)
-    if "mvr_imgs" in old:
-        mvr = old["mvr_imgs"].reshape(NUM_MVR_CAMERAS, NUM_EULER64_VIEWS, 224, 224, 3)
-        mvr = mvr[:, EULER64_IDS].reshape(NUM_MVR_CAMERAS * NUM_BLENDER24_VIEWS, 224, 224, 3)
-        new_data["mvr_imgs"] = mvr  # (192, 224, 224, 3)
-    if new_data:
-        np.savez_compressed(new_dir / "imgs.npz", **new_data)
-
-    # --- natural.npz: copy directly (already in blender24 order) ---
-    natural_path = old_dir / "natural.npz"
-    if natural_path.is_file():
-        shutil.copy2(natural_path, new_dir / "natural.npz")
-
-    # --- single_view.npz: copy directly (identity view = blender24 id 18) ---
-    single_view_path = old_dir / "single_view.npz"
-    if single_view_path.is_file():
-        shutil.copy2(single_view_path, new_dir / "single_view.npz")
-
-    # --- img_feature_dinov2.npy: reindex from 640 to 240 ---
+    migrate_imgs_npz(old_dir, new_dir)
     migrate_dino_features(old_dir, new_dir)
 
-    # --- pc.ply: copy directly ---
+    single_view_path = old_dir / "single_view.npz"
+    if single_view_path.is_file():
+        shutil.copy2(single_view_path, new_dir / "real_photo.npz")
+
     pc_path = old_dir / "pc.ply"
     if pc_path.is_file():
         shutil.copy2(pc_path, new_dir / "pc.ply")
 
-    # --- text.txt + text_feat.npy -> text.npz ---
     text_path = old_dir / "text.txt"
     text_feat_path = old_dir / "text_feat.npy"
     if text_path.is_file():
@@ -282,13 +291,11 @@ def migrate_one_model(model_id: str, dry_run: bool = False, overwrite_cache: boo
         )
         np.savez_compressed(new_dir / "text.npz", description=np.array(description), feature=feature)
 
-    # --- AE cache: copy with blender24 id naming ---
-    for blender_id, euler64_id in enumerate(BLENDER24_TO_EULER64):
+    for identity_id, euler64_id in enumerate(IDENTITY24_TO_EULER64):
         src_dir = AE_CACHE_OLD / f"{model_id}_{euler64_id}"
-        dst_dir = AE_CACHE_NEW / f"{model_id}_{blender_id}"
+        dst_dir = AE_CACHE_NEW / f"{model_id}_{identity_id}"
         copy_cache_dir(src_dir, dst_dir, overwrite_cache=overwrite_cache)
 
-    # --- rotation_meta.json ---
     write_rotation_meta(new_dir)
     return "ok"
 
@@ -302,9 +309,14 @@ def main() -> None:
     parser.add_argument("--model-list", type=Path, default=None, help="Explicit model id list")
     parser.add_argument("--train-only", action="store_true", help="Use only the legacy training list")
     parser.add_argument(
+        "--skip-existing-cache",
+        action="store_true",
+        help="Do not overwrite files in existing migrated AE cache folders",
+    )
+    parser.add_argument(
         "--overwrite-cache",
         action="store_true",
-        help="Overwrite files in existing migrated AE cache folders",
+        help="Compatibility option; cache overwriting is already the default",
     )
     args = parser.parse_args()
 
@@ -312,26 +324,19 @@ def main() -> None:
     if args.max_models is not None:
         model_ids = model_ids[: args.max_models]
 
+    overwrite_cache = args.overwrite_cache or not args.skip_existing_cache
+
     list_label = args.model_list if args.model_list else ("train only" if args.train_only else "train+val+test")
     print(f"Models: {len(model_ids)}")
     print(f"Dry run: {args.dry_run}")
     print(f"Model list: {list_label}")
     print(f"Output cond: {NEW_COND}")
     print(f"Output cache: {AE_CACHE_NEW}")
-    print("Basis: Blender cube24")
-    print("Blender24 -> OCC24: identity")
-    print(f"Blender24 -> euler64: {list(BLENDER24_TO_EULER64)}")
-    print(
-        "single_view blender/flux id: "
-        f"{SINGLE_VIEW_BLENDER_ID} (euler64={BLENDER24_TO_EULER64[SINGLE_VIEW_BLENDER_ID]})"
-    )
-    print()
-    print("Output format:")
-    print("  imgs.npz: svr_imgs[24], sketch_imgs[24], mvr_imgs[192] — blender24 order")
-    print("  natural.npz: copied directly (already blender24 order)")
-    print("  single_view.npz: copied directly (identity = blender24 id 18)")
-    print("  img_feature_dinov2.npz: features[240, 1024] — reindexed")
-    print("  ae_cache: {model}_{blender24_id}/features.npy")
+    print("Basis: identity_first_cube24")
+    print(f"identity24 -> euler64: {list(IDENTITY24_TO_EULER64)}")
+    print(f"identity24 -> raw Blender24: {list(IDENTITY24_TO_BLENDER24)}")
+    print("real_photo.npz['flux'] / single-view FLUX id: identity24 0")
+    print(f"Overwrite cache: {overwrite_cache}")
     print()
 
     stats = {
@@ -344,7 +349,7 @@ def main() -> None:
 
     if args.no_ray or args.dry_run:
         for index, model_id in enumerate(model_ids, start=1):
-            result = migrate_one_model(model_id, dry_run=args.dry_run, overwrite_cache=args.overwrite_cache)
+            result = migrate_one_model(model_id, dry_run=args.dry_run, overwrite_cache=overwrite_cache)
             stats[result] = stats.get(result, 0) + 1
             if result == "skip_incomplete_cache":
                 incomplete_models.append(model_id)
@@ -365,7 +370,7 @@ def main() -> None:
                         migrate_one_model(
                             batch_model_id,
                             dry_run=False,
-                            overwrite_cache=args.overwrite_cache,
+                            overwrite_cache=overwrite_cache,
                         ),
                     )
                 )

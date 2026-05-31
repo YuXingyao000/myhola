@@ -1,30 +1,10 @@
-"""Debug Blender cube24 based migration from legacy euler64 assets.
+"""Debug identity-first 24-rotation migration from legacy euler64 assets.
 
-For one model_id this script writes:
-1. OCC/SVR images re-indexed into Blender cube24 order.
-2. The legacy euler64 duplicates for each Blender cube24 id.
-3. A small migrated npz sample and selected latent previews.
-4. If a Blender cube24 sample directory exists, side-by-side comparison images.
-5. A 24x24 silhouette matching report (should give identity assignment).
+The debug output is organized by identity24 id, where:
+    identity24 id 0 = legacy euler64 id 0 = raw Blender cube24 id 18
 
-Important note on in-plane rotation:
-    OCC/SVR and Blender have DIFFERENT camera up-vector conventions:
-    - OCC extract_imgs.py: rotates camera position AND up vector by R^T
-    - Blender render_cube24.py: rotates object, camera stays fixed
-    Both produce the SAME 3D viewing direction (same face visible), but the
-    image appears rotated in-plane by ~60° between the two renderers.
-    This does NOT affect training (DINOv2/latent capture 3D content, not 2D rotation).
-    The silhouette (foreground shape) IS identical despite in-plane rotation.
-
-Rotation contract:
-    Blender cube24 00.png..23.png is the basis.
-    Blender24 -> OCC24 is identity for the checked samples (same silhouette).
-    OCC/SVR legacy arrays are euler64, so Blender24 -> euler64 is used here.
-    single_view.npz is identity view, i.e. Blender/OCC cube24 id 18.
-
-Usage:
-    python tools/debug_rotation_migration.py --model-id 00000797
-    python tools/debug_rotation_migration.py --model-id 00000797 --blender-sample-root blender_cube24_sample
+This is the basis requested for migration: the current single-view FLUX image is
+written as real_photo.npz["flux"] and treated as rotation id 0.
 """
 
 from __future__ import annotations
@@ -48,87 +28,120 @@ AE_CACHE_NEW = Path("/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24")
 OUTPUT_ROOT = Path("debug_output")
 DEFAULT_BLENDER_SAMPLE_ROOT = Path("blender_cube24_sample")
 
-NUM_BLENDER24_VIEWS = 24
-BLENDER24_TO_OCC24 = tuple(range(NUM_BLENDER24_VIEWS))
-SINGLE_VIEW_BLENDER_ID = 18
+NUM_IDENTITY24_VIEWS = 24
+NUM_EULER64_VIEWS = 64
+SINGLE_VIEW_IDENTITY24_ID = 0
+
+AXIS_DIRECTIONS = (
+    np.array([1.0, 0.0, 0.0]),
+    np.array([-1.0, 0.0, 0.0]),
+    np.array([0.0, 1.0, 0.0]),
+    np.array([0.0, -1.0, 0.0]),
+    np.array([0.0, 0.0, 1.0]),
+    np.array([0.0, 0.0, -1.0]),
+)
 
 
-def build_blender24_mappings() -> tuple[tuple[int, ...], tuple[int | None, ...], dict[int, list[int]]]:
-    """Return Blender24->euler64, euler64->Blender24, and duplicate groups."""
+def matrix_key(matrix: np.ndarray) -> tuple[int, ...]:
+    return tuple(int(v) for v in np.rint(matrix).astype(np.int8).reshape(-1))
 
-    dirs = (
-        np.array([1.0, 0.0, 0.0]),
-        np.array([-1.0, 0.0, 0.0]),
-        np.array([0.0, 1.0, 0.0]),
-        np.array([0.0, -1.0, 0.0]),
-        np.array([0.0, 0.0, 1.0]),
-        np.array([0.0, 0.0, -1.0]),
-    )
 
-    blender_mats = []
-    seen = set()
-    for z_axis in dirs:
-        for y_axis in dirs:
+def build_blender24_matrices() -> list[np.ndarray]:
+    matrices: list[np.ndarray] = []
+    seen: set[tuple[int, ...]] = set()
+    for z_axis in AXIS_DIRECTIONS:
+        for y_axis in AXIS_DIRECTIONS:
             if abs(float(np.dot(z_axis, y_axis))) > 1e-6:
                 continue
             x_axis = np.cross(y_axis, z_axis)
             matrix = np.stack([x_axis, y_axis, z_axis], axis=1)
-            key = tuple(int(round(v)) for v in matrix.flatten())
+            key = matrix_key(matrix)
             if key in seen:
                 continue
             seen.add(key)
-            blender_mats.append(matrix)
-    if len(blender_mats) != NUM_BLENDER24_VIEWS:
-        raise RuntimeError(f"Expected 24 Blender rotations, got {len(blender_mats)}")
+            matrices.append(matrix)
+    if len(matrices) != NUM_IDENTITY24_VIEWS:
+        raise RuntimeError(f"Expected 24 Blender rotations, got {len(matrices)}")
+    return matrices
 
-    euler_mats = []
-    for idx in range(64):
+
+def build_euler64_matrices() -> list[np.ndarray]:
+    matrices = []
+    for idx in range(NUM_EULER64_VIEWS):
         angles = np.array([idx % 4, idx // 4 % 4, idx // 16], dtype=np.float32)
-        euler_mats.append(Rotation.from_euler("xyz", angles * np.pi / 2).as_matrix())
+        matrices.append(Rotation.from_euler("xyz", angles * np.pi / 2).as_matrix())
+    return matrices
 
-    blender_to_euler = []
-    for blender_matrix in blender_mats:
-        for euler_id, euler_matrix in enumerate(euler_mats):
-            if np.allclose(blender_matrix, euler_matrix, atol=1e-6):
-                blender_to_euler.append(euler_id)
-                break
-        else:
-            raise RuntimeError("Blender cube24 rotation has no euler64 counterpart")
 
-    euler_to_blender: list[int | None] = [None] * 64
+def build_identity24_tables() -> tuple[tuple[int, ...], tuple[int, ...], tuple[int, ...], dict[int, list[int]]]:
+    blender_mats = build_blender24_matrices()
+    euler_mats = build_euler64_matrices()
+
+    identity_to_euler: list[int] = []
+    key_to_identity: dict[tuple[int, ...], int] = {}
     for euler_id, euler_matrix in enumerate(euler_mats):
+        key = matrix_key(euler_matrix)
+        if key in key_to_identity:
+            continue
+        key_to_identity[key] = len(identity_to_euler)
+        identity_to_euler.append(euler_id)
+
+    if len(identity_to_euler) != NUM_IDENTITY24_VIEWS:
+        raise RuntimeError(f"Expected 24 unique euler64 rotations, got {len(identity_to_euler)}")
+    if identity_to_euler[0] != 0:
+        raise RuntimeError("identity24 id 0 must map to euler64 id 0")
+
+    identity_to_blender: list[int] = []
+    for euler_id in identity_to_euler:
+        euler_matrix = euler_mats[euler_id]
         for blender_id, blender_matrix in enumerate(blender_mats):
             if np.allclose(euler_matrix, blender_matrix, atol=1e-6):
-                euler_to_blender[euler_id] = blender_id
+                identity_to_blender.append(blender_id)
                 break
+        else:
+            raise RuntimeError(f"euler64 id {euler_id} has no raw Blender24 counterpart")
 
-    blender_to_all_euler = {blender_id: [] for blender_id in range(NUM_BLENDER24_VIEWS)}
-    for euler_id, blender_id in enumerate(euler_to_blender):
-        if blender_id is not None:
-            blender_to_all_euler[blender_id].append(euler_id)
+    blender_to_identity = [-1] * NUM_IDENTITY24_VIEWS
+    for identity_id, blender_id in enumerate(identity_to_blender):
+        blender_to_identity[blender_id] = identity_id
+    if any(value < 0 for value in blender_to_identity):
+        raise RuntimeError("Failed to invert raw Blender24 -> identity24 mapping")
+    if identity_to_blender[0] != 18:
+        raise RuntimeError("identity24 id 0 should be raw Blender24 id 18")
 
-    return tuple(blender_to_euler), tuple(euler_to_blender), blender_to_all_euler
+    identity_to_all_euler = {identity_id: [] for identity_id in range(NUM_IDENTITY24_VIEWS)}
+    for euler_id, euler_matrix in enumerate(euler_mats):
+        identity_id = key_to_identity[matrix_key(euler_matrix)]
+        identity_to_all_euler[identity_id].append(euler_id)
+
+    return tuple(identity_to_euler), tuple(identity_to_blender), tuple(blender_to_identity), identity_to_all_euler
 
 
-BLENDER24_TO_EULER64, EULER64_TO_BLENDER24, BLENDER24_TO_ALL_EULER64 = build_blender24_mappings()
-EULER64_IDS = np.array(BLENDER24_TO_EULER64, dtype=np.int64)
+IDENTITY24_TO_EULER64, IDENTITY24_TO_BLENDER24, BLENDER24_TO_IDENTITY24, IDENTITY24_TO_ALL_EULER64 = (
+    build_identity24_tables()
+)
+EULER64_IDS = np.array(IDENTITY24_TO_EULER64, dtype=np.int64)
 
 
 def build_rotation_meta() -> dict[str, object]:
     return {
-        "rotation_basis": "blender_cube24",
-        "num_views": NUM_BLENDER24_VIEWS,
-        "blender24_to_occ24": list(BLENDER24_TO_OCC24),
-        "blender24_to_euler64": list(BLENDER24_TO_EULER64),
-        "single_view_blender_id": SINGLE_VIEW_BLENDER_ID,
-        "single_view_occ24_id": BLENDER24_TO_OCC24[SINGLE_VIEW_BLENDER_ID],
-        "single_view_euler64_id": BLENDER24_TO_EULER64[SINGLE_VIEW_BLENDER_ID],
+        "rotation_basis": "identity_first_cube24",
+        "num_views": NUM_IDENTITY24_VIEWS,
+        "identity24_to_euler64": list(IDENTITY24_TO_EULER64),
+        "identity24_to_blender24": list(IDENTITY24_TO_BLENDER24),
+        "blender24_to_identity24": list(BLENDER24_TO_IDENTITY24),
+        "real_photo_identity24_id": SINGLE_VIEW_IDENTITY24_ID,
+        "real_photo_blender24_id": IDENTITY24_TO_BLENDER24[SINGLE_VIEW_IDENTITY24_ID],
+        "real_photo_euler64_id": IDENTITY24_TO_EULER64[SINGLE_VIEW_IDENTITY24_ID],
     }
 
 
-def save_png(array: np.ndarray, path: Path) -> None:
+def save_png(array: np.ndarray, path: Path, size: tuple[int, int] | None = None) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    Image.fromarray(array).save(path)
+    image = Image.fromarray(array.astype(np.uint8)).convert("RGB")
+    if size is not None and image.size != size:
+        image = image.resize(size, Image.BILINEAR)
+    image.save(path)
 
 
 def load_rgb(path: Path, size: tuple[int, int] | None = None) -> np.ndarray:
@@ -137,6 +150,10 @@ def load_rgb(path: Path, size: tuple[int, int] | None = None) -> np.ndarray:
         if size is not None and image.size != size:
             image = image.resize(size, Image.BILINEAR)
         return np.asarray(image, dtype=np.uint8)
+
+
+def resize_array(array: np.ndarray, size: tuple[int, int] = (224, 224)) -> np.ndarray:
+    return np.asarray(Image.fromarray(array.astype(np.uint8)).convert("RGB").resize(size, Image.BILINEAR), dtype=np.uint8)
 
 
 def foreground_mask(image: np.ndarray) -> np.ndarray:
@@ -149,109 +166,146 @@ def mask_iou(mask_a: np.ndarray, mask_b: np.ndarray) -> float:
     return float(intersection / union) if union else 0.0
 
 
-def compare_blender_sample(model_id: str, blender_sample_root: Path, occ24_images: np.ndarray, output: Path) -> None:
+def write_mapping_table(output: Path) -> None:
+    lines = [
+        "identity24_id | old_blender24_id | old_euler64_id | all_euler64_duplicates | role",
+        "-" * 92,
+    ]
+    for identity_id in range(NUM_IDENTITY24_VIEWS):
+        role = "real_photo_flux_zero" if identity_id == SINGLE_VIEW_IDENTITY24_ID else ""
+        lines.append(
+            f"{identity_id:13d} | {IDENTITY24_TO_BLENDER24[identity_id]:16d} | "
+            f"{IDENTITY24_TO_EULER64[identity_id]:14d} | "
+            f"{IDENTITY24_TO_ALL_EULER64[identity_id]} | {role}"
+        )
+    (output / "mapping_table.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def compare_blender_sample(model_id: str, blender_sample_root: Path, identity_images: np.ndarray, output: Path) -> None:
     sample_dir = blender_sample_root / model_id
     if not sample_dir.is_dir():
         print(f"- blender sample not found: {sample_dir}")
         return
 
-    missing = [idx for idx in range(NUM_BLENDER24_VIEWS) if not (sample_dir / f"{idx:02d}.png").is_file()]
+    missing = [idx for idx in range(NUM_IDENTITY24_VIEWS) if not (sample_dir / f"{idx:02d}.png").is_file()]
     if missing:
         print(f"- blender sample incomplete: missing {missing}")
         return
 
-    # --- Side-by-side comparison images ---
-    side_by_side_dir = output / "side_by_side"
+    reordered_dir = output / "blender_reordered_identity24"
+    side_by_side_dir = output / "side_by_side_identity24"
+    reordered_dir.mkdir(exist_ok=True)
     side_by_side_dir.mkdir(exist_ok=True)
-    for blender_id in range(NUM_BLENDER24_VIEWS):
-        blender_img = load_rgb(sample_dir / f"{blender_id:02d}.png", size=(224, 224))
-        occ_img = occ24_images[blender_id]
-        # Concatenate: [Blender | OCC] side by side with separator
+
+    for identity_id in range(NUM_IDENTITY24_VIEWS):
+        old_blender_id = IDENTITY24_TO_BLENDER24[identity_id]
+        blender_img = load_rgb(sample_dir / f"{old_blender_id:02d}.png", size=(224, 224))
+        occ_img = identity_images[identity_id]
+        save_png(blender_img, reordered_dir / f"{identity_id:02d}_from_blender24_{old_blender_id:02d}.png")
         separator = np.ones((224, 4, 3), dtype=np.uint8) * 128
         combined = np.concatenate([blender_img, separator, occ_img], axis=1)
-        save_png(combined, side_by_side_dir / f"{blender_id:02d}_blender_vs_occ.png")
-    print("✓ side_by_side/ (Blender left | OCC right, same cube24 id)")
-    print("  NOTE: Images may differ in in-plane rotation (~60°) due to camera up-vector convention.")
-    print("  The 3D viewing direction IS the same (same face visible).")
+        save_png(
+            combined,
+            side_by_side_dir
+            / f"identity24_{identity_id:02d}_blender24_{old_blender_id:02d}_euler64_{IDENTITY24_TO_EULER64[identity_id]:02d}.png",
+        )
+    print("✓ blender_reordered_identity24/ (00.png is old Blender 18)")
+    print("✓ side_by_side_identity24/ (left: reordered Blender, right: migrated SVR/OCC)")
 
-    # --- Silhouette IoU matching (24x24 Hungarian) ---
-    occ_masks = [foreground_mask(occ24_images[idx]) for idx in range(NUM_BLENDER24_VIEWS)]
-    scores = np.zeros((NUM_BLENDER24_VIEWS, NUM_BLENDER24_VIEWS), dtype=np.float64)
-    for blender_id in range(NUM_BLENDER24_VIEWS):
-        blender_img = load_rgb(sample_dir / f"{blender_id:02d}.png", size=(224, 224))
-        blender_mask = foreground_mask(blender_img)
-        for occ_id in range(NUM_BLENDER24_VIEWS):
-            scores[blender_id, occ_id] = mask_iou(blender_mask, occ_masks[occ_id])
+    blender_masks = [foreground_mask(load_rgb(sample_dir / f"{idx:02d}.png", size=(224, 224))) for idx in range(24)]
+    occ_masks = [foreground_mask(identity_images[idx]) for idx in range(24)]
+    scores = np.zeros((24, 24), dtype=np.float64)
+    for identity_id in range(24):
+        for blender_id in range(24):
+            scores[identity_id, blender_id] = mask_iou(occ_masks[identity_id], blender_masks[blender_id])
 
     row_ind, col_ind = linear_sum_assignment(-scores)
-    assignment = [None] * NUM_BLENDER24_VIEWS
+    assignment = [None] * 24
     for row, col in zip(row_ind, col_ind):
         assignment[int(row)] = int(col)
 
     lines = [
         f"model_id: {model_id}",
         f"blender_sample_root: {blender_sample_root}",
-        "note: single-model silhouette matching may be ambiguous for symmetric shapes.",
-        f"one_to_one_assignment_blender24_to_occ24: {assignment}",
-        "expected_identity: " + str(list(BLENDER24_TO_OCC24)),
+        "rows are new identity24 ids; columns are raw Blender24 file ids.",
+        f"expected_identity24_to_blender24: {list(IDENTITY24_TO_BLENDER24)}",
+        f"one_to_one_assignment_identity24_to_blender24: {assignment}",
+        "note: symmetric models can make one-model matching ambiguous; inspect side_by_side_identity24.",
         "",
-        "blender_id | assigned_occ_id | assigned_iou | top5_occ_id_iou_euler64",
-        "-" * 86,
+        "identity24_id | expected_blender24 | assigned_blender24 | assigned_iou | top5_blender24_iou",
+        "-" * 100,
     ]
-    for blender_id in range(NUM_BLENDER24_VIEWS):
-        top_ids = np.argsort(scores[blender_id])[::-1][:5]
-        top_text = [
-            (int(occ_id), round(float(scores[blender_id, occ_id]), 4), BLENDER24_TO_EULER64[int(occ_id)])
-            for occ_id in top_ids
-        ]
-        assigned = assignment[blender_id]
+    for identity_id in range(24):
+        top_ids = np.argsort(scores[identity_id])[::-1][:5]
+        top_text = [(int(idx), round(float(scores[identity_id, idx]), 4)) for idx in top_ids]
+        assigned = assignment[identity_id]
         lines.append(
-            f"{blender_id:10d} | {assigned:15d} | "
-            f"{scores[blender_id, assigned]:12.4f} | {top_text}"
+            f"{identity_id:13d} | {IDENTITY24_TO_BLENDER24[identity_id]:18d} | "
+            f"{assigned:18d} | {scores[identity_id, assigned]:12.4f} | {top_text}"
         )
+    (output / "identity24_to_blender24_match.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"✓ identity24_to_blender24_match.txt assignment={assignment}")
 
-    (output / "blender24_to_occ24_match.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"✓ blender24_to_occ24_match.txt assignment={assignment}")
 
-
-def compare_single_view(model_id: str, blender_sample_root: Path, output: Path) -> None:
-    sample_dir = blender_sample_root / model_id
+def compare_real_photo(model_id: str, blender_sample_root: Path, identity_images: np.ndarray, output: Path) -> None:
     single_view_path = OLD_COND / model_id / "single_view.npz"
-    if not sample_dir.is_dir() or not single_view_path.is_file():
+    sample_dir = blender_sample_root / model_id
+    if not single_view_path.is_file():
         return
 
-    single_data = np.load(single_view_path)
-    if "blender" not in single_data:
-        return
-
-    single_blender = np.asarray(
-        Image.fromarray(single_data["blender"]).resize((224, 224), Image.BILINEAR),
-        dtype=np.uint8,
-    )
-    single_mask = foreground_mask(single_blender)
-    scores = []
-    for blender_id in range(NUM_BLENDER24_VIEWS):
-        sample_path = sample_dir / f"{blender_id:02d}.png"
-        if not sample_path.is_file():
+    with np.load(single_view_path) as single_data:
+        if "blender" in single_data:
+            single_img = resize_array(single_data["blender"])
+            single_key = "blender"
+        elif "flux" in single_data:
+            single_img = resize_array(single_data["flux"])
+            single_key = "flux"
+        else:
             return
-        sample_mask = foreground_mask(load_rgb(sample_path, size=(224, 224)))
-        scores.append(mask_iou(single_mask, sample_mask))
 
+        result_dir = output / "result_sample"
+        save_png(single_img, result_dir / f"real_photo_{single_key}_identity24_00.png")
+        for key in ("flux", "flux_masked"):
+            if key in single_data:
+                save_png(resize_array(single_data[key]), result_dir / f"real_photo_{key}_identity24_00.png")
+
+    if sample_dir.is_dir() and all((sample_dir / f"{idx:02d}.png").is_file() for idx in range(24)):
+        reference_images = [
+            load_rgb(sample_dir / f"{IDENTITY24_TO_BLENDER24[identity_id]:02d}.png", size=(224, 224))
+            for identity_id in range(24)
+        ]
+        reference_label = "reordered Blender sample"
+    else:
+        reference_images = [identity_images[identity_id] for identity_id in range(24)]
+        reference_label = "migrated SVR/OCC fallback"
+
+    single_mask = foreground_mask(single_img)
+    scores = [mask_iou(single_mask, foreground_mask(reference_images[identity_id])) for identity_id in range(24)]
     order = np.argsort(scores)[::-1]
+
     lines = [
         f"model_id: {model_id}",
-        f"single_view_expected_blender_id: {SINGLE_VIEW_BLENDER_ID}",
+        f"real_photo_key_used_for_matching: {single_key}",
+        f"reference: {reference_label}",
+        "expected_identity24_id: 0",
+        f"identity24_0_old_blender24_id: {IDENTITY24_TO_BLENDER24[0]}",
+        f"identity24_0_old_euler64_id: {IDENTITY24_TO_EULER64[0]}",
         "top_matches:",
     ]
-    for blender_id in order[:8]:
-        lines.append(f"  blender24 {int(blender_id):02d}: iou={scores[int(blender_id)]:.4f}")
-    (output / "single_view_to_blender24_match.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"✓ single_view_to_blender24_match.txt best={int(order[0])}")
+    for identity_id in order[:8]:
+        lines.append(f"  identity24 {int(identity_id):02d}: iou={scores[int(identity_id)]:.4f}")
 
+    if sample_dir.is_dir() and (sample_dir / f"{IDENTITY24_TO_BLENDER24[0]:02d}.png").is_file():
+        blender_zero = load_rgb(sample_dir / f"{IDENTITY24_TO_BLENDER24[0]:02d}.png", size=(224, 224))
+        separator = np.ones((224, 4, 3), dtype=np.uint8) * 128
+        combined = np.concatenate([single_img, separator, blender_zero, separator, identity_images[0]], axis=1)
+        save_png(combined, output / "real_photo_vs_identity24_00.png")
+        lines.append("side_by_side: real_photo_vs_identity24_00.png = real_photo | Blender old 18 | SVR euler64 0")
+
+    (output / "real_photo_to_identity24_match.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"✓ real_photo_to_identity24_match.txt best={int(order[0])}")
 
 def compare_all_blender_samples(blender_sample_root: Path, output: Path) -> None:
-    """Aggregate Blender24->OCC24 matching over every sample dir under root."""
-
     if not blender_sample_root.is_dir():
         return
 
@@ -259,7 +313,7 @@ def compare_all_blender_samples(blender_sample_root: Path, output: Path) -> None
     if not sample_ids:
         return
 
-    aggregate_scores = np.zeros((NUM_BLENDER24_VIEWS, NUM_BLENDER24_VIEWS), dtype=np.float64)
+    aggregate_scores = np.zeros((24, 24), dtype=np.float64)
     used_model_ids = []
     per_model_assignments = {}
 
@@ -268,22 +322,21 @@ def compare_all_blender_samples(blender_sample_root: Path, output: Path) -> None
         imgs_path = OLD_COND / sample_id / "imgs.npz"
         if not imgs_path.is_file():
             continue
-        if any(not (sample_dir / f"{idx:02d}.png").is_file() for idx in range(NUM_BLENDER24_VIEWS)):
+        if any(not (sample_dir / f"{idx:02d}.png").is_file() for idx in range(24)):
             continue
 
-        svr_imgs = np.load(imgs_path)["svr_imgs"]
-        occ24_images = svr_imgs[EULER64_IDS]
-        occ_masks = [foreground_mask(occ24_images[idx]) for idx in range(NUM_BLENDER24_VIEWS)]
-        scores = np.zeros((NUM_BLENDER24_VIEWS, NUM_BLENDER24_VIEWS), dtype=np.float64)
+        with np.load(imgs_path) as data:
+            identity_images = data["svr_imgs"][EULER64_IDS]
 
-        for blender_id in range(NUM_BLENDER24_VIEWS):
-            blender_img = load_rgb(sample_dir / f"{blender_id:02d}.png", size=(224, 224))
-            blender_mask = foreground_mask(blender_img)
-            for occ_id in range(NUM_BLENDER24_VIEWS):
-                scores[blender_id, occ_id] = mask_iou(blender_mask, occ_masks[occ_id])
+        blender_masks = [foreground_mask(load_rgb(sample_dir / f"{idx:02d}.png", size=(224, 224))) for idx in range(24)]
+        occ_masks = [foreground_mask(identity_images[idx]) for idx in range(24)]
+        scores = np.zeros((24, 24), dtype=np.float64)
+        for identity_id in range(24):
+            for blender_id in range(24):
+                scores[identity_id, blender_id] = mask_iou(occ_masks[identity_id], blender_masks[blender_id])
 
         row_ind, col_ind = linear_sum_assignment(-scores)
-        assignment = [None] * NUM_BLENDER24_VIEWS
+        assignment = [None] * 24
         for row, col in zip(row_ind, col_ind):
             assignment[int(row)] = int(col)
         per_model_assignments[sample_id] = assignment
@@ -295,15 +348,15 @@ def compare_all_blender_samples(blender_sample_root: Path, output: Path) -> None
 
     aggregate_scores /= len(used_model_ids)
     row_ind, col_ind = linear_sum_assignment(-aggregate_scores)
-    aggregate_assignment = [None] * NUM_BLENDER24_VIEWS
+    aggregate_assignment = [None] * 24
     for row, col in zip(row_ind, col_ind):
         aggregate_assignment[int(row)] = int(col)
 
     lines = [
         f"blender_sample_root: {blender_sample_root}",
         f"used_model_ids: {used_model_ids}",
-        f"aggregate_assignment_blender24_to_occ24: {aggregate_assignment}",
-        "expected_identity: " + str(list(BLENDER24_TO_OCC24)),
+        f"expected_identity24_to_blender24: {list(IDENTITY24_TO_BLENDER24)}",
+        f"aggregate_assignment_identity24_to_blender24: {aggregate_assignment}",
         "",
         "per_model_assignments:",
     ]
@@ -311,26 +364,43 @@ def compare_all_blender_samples(blender_sample_root: Path, output: Path) -> None
         lines.append(f"  {sample_id}: {per_model_assignments[sample_id]}")
     lines.extend([
         "",
-        "blender_id | aggregate_occ_id | aggregate_iou | top5_occ_id_iou_euler64",
-        "-" * 90,
+        "identity24_id | expected_blender24 | aggregate_blender24 | aggregate_iou | top5_blender24_iou",
+        "-" * 100,
     ])
-    for blender_id in range(NUM_BLENDER24_VIEWS):
-        top_ids = np.argsort(aggregate_scores[blender_id])[::-1][:5]
-        top_text = [
-            (int(occ_id), round(float(aggregate_scores[blender_id, occ_id]), 4), BLENDER24_TO_EULER64[int(occ_id)])
-            for occ_id in top_ids
-        ]
-        assigned = aggregate_assignment[blender_id]
+    for identity_id in range(24):
+        top_ids = np.argsort(aggregate_scores[identity_id])[::-1][:5]
+        top_text = [(int(idx), round(float(aggregate_scores[identity_id, idx]), 4)) for idx in top_ids]
+        assigned = aggregate_assignment[identity_id]
         lines.append(
-            f"{blender_id:10d} | {assigned:16d} | "
-            f"{aggregate_scores[blender_id, assigned]:13.4f} | {top_text}"
+            f"{identity_id:13d} | {IDENTITY24_TO_BLENDER24[identity_id]:18d} | "
+            f"{assigned:18d} | {aggregate_scores[identity_id, assigned]:13.4f} | {top_text}"
         )
-
-    (output / "blender24_to_occ24_match_all_samples.txt").write_text(
+    (output / "identity24_to_blender24_match_all_samples.txt").write_text(
         "\n".join(lines) + "\n",
         encoding="utf-8",
     )
-    print(f"✓ blender24_to_occ24_match_all_samples.txt assignment={aggregate_assignment}")
+    print(f"✓ identity24_to_blender24_match_all_samples.txt assignment={aggregate_assignment}")
+
+
+def write_dino_feature_debug(model_id: str, output: Path) -> None:
+    feat_path = OLD_COND / model_id / "img_feature_dinov2.npy"
+    if not feat_path.is_file():
+        return
+
+    features = np.load(feat_path)
+    expected_rows = 64 + 64 + 8 * 64
+    if features.ndim != 2 or features.shape[0] != expected_rows:
+        return
+
+    dim = features.shape[1]
+    svr_feats = features[:64]
+    sketch_feats = features[64:128]
+    new_features = np.concatenate(
+        [svr_feats[EULER64_IDS], sketch_feats[EULER64_IDS]],
+        axis=0,
+    )
+    np.save(output / "result_sample" / "img_feature_dinov2.npy", new_features)
+    print(f"✓ result_sample/img_feature_dinov2.npy {new_features.shape}")
 
 
 def main() -> None:
@@ -347,13 +417,10 @@ def main() -> None:
 
     print(f"Model: {model_id}")
     print(f"Output: {output}")
-    print("Basis: Blender cube24")
-    print(f"Blender24 -> euler64: {list(BLENDER24_TO_EULER64)}")
-    print(f"single_view blender/flux id: {SINGLE_VIEW_BLENDER_ID}")
-    print()
-    print("NOTE: OCC and Blender have different camera up-vector conventions.")
-    print("      Images will show the SAME face but with ~60° in-plane rotation.")
-    print("      This is expected and does NOT affect training (latent captures 3D geometry).")
+    print("Basis: identity_first_cube24")
+    print(f"identity24 -> euler64: {list(IDENTITY24_TO_EULER64)}")
+    print(f"identity24 -> raw Blender24: {list(IDENTITY24_TO_BLENDER24)}")
+    print("real_photo.npz['flux'] / single-view FLUX id: identity24 0")
     print()
 
     mesh_copied = False
@@ -364,106 +431,89 @@ def main() -> None:
             mesh_copied = True
             print(f"✓ {mesh_name}")
     if not mesh_copied:
-        print(f"✗ mesh not found under {DATA_ROOT / model_id}")
+        print(f"- mesh not found under {DATA_ROOT / model_id}")
 
     imgs_path = OLD_COND / model_id / "imgs.npz"
     if not imgs_path.is_file():
         print(f"✗ imgs.npz not found: {imgs_path}")
         return
 
-    data = np.load(imgs_path)
-    svr_imgs = data["svr_imgs"]
+    with np.load(imgs_path) as data:
+        svr_imgs = data["svr_imgs"]
+        identity_images = svr_imgs[EULER64_IDS]
+        result_data = {"svr_imgs": identity_images}
+        if "sketch_imgs" in data:
+            result_data["sketch_imgs"] = data["sketch_imgs"][EULER64_IDS]
     print(f"✓ imgs.npz loaded: svr_imgs {svr_imgs.shape}")
 
-    occ24_images = svr_imgs[EULER64_IDS]
-
-    rotation_meta = build_rotation_meta()
     (output / "rotation_meta.json").write_text(
-        json.dumps(rotation_meta, indent=2) + "\n",
+        json.dumps(build_rotation_meta(), indent=2) + "\n",
         encoding="utf-8",
     )
     print("✓ rotation_meta.json")
 
-    occ_dir = output / "blender24_occ_images"
-    occ_dir.mkdir(exist_ok=True)
-    for blender_id, euler64_id in enumerate(BLENDER24_TO_EULER64):
+    image_dir = output / "identity24_svr_images"
+    image_dir.mkdir(exist_ok=True)
+    for identity_id, euler64_id in enumerate(IDENTITY24_TO_EULER64):
         save_png(
-            occ24_images[blender_id],
-            occ_dir / f"blender24_{blender_id:02d}_occ24_{blender_id:02d}_euler64_{euler64_id:02d}.png",
+            identity_images[identity_id],
+            image_dir
+            / f"identity24_{identity_id:02d}_euler64_{euler64_id:02d}_blender24_{IDENTITY24_TO_BLENDER24[identity_id]:02d}.png",
         )
-    print("✓ blender24_occ_images/ (24 OCC/SVR images in Blender basis)")
+    print("✓ identity24_svr_images/")
 
-    mapping_dir = output / "euler64_duplicates_by_blender24"
-    mapping_dir.mkdir(exist_ok=True)
-    for blender_id in range(NUM_BLENDER24_VIEWS):
-        duplicate_dir = mapping_dir / f"blender24_{blender_id:02d}"
-        duplicate_dir.mkdir(exist_ok=True)
-        for euler64_id in BLENDER24_TO_ALL_EULER64[blender_id]:
-            save_png(svr_imgs[euler64_id], duplicate_dir / f"euler64_{euler64_id:02d}.png")
-    print("✓ euler64_duplicates_by_blender24/")
+    duplicate_dir = output / "euler64_duplicates_by_identity24"
+    duplicate_dir.mkdir(exist_ok=True)
+    for identity_id in range(24):
+        view_dir = duplicate_dir / f"identity24_{identity_id:02d}"
+        view_dir.mkdir(exist_ok=True)
+        for euler64_id in IDENTITY24_TO_ALL_EULER64[identity_id]:
+            save_png(svr_imgs[euler64_id], view_dir / f"euler64_{euler64_id:02d}.png")
+    print("✓ euler64_duplicates_by_identity24/")
 
     result_dir = output / "result_sample"
     result_dir.mkdir(exist_ok=True)
-    np.savez_compressed(result_dir / "svr.npz", images=occ24_images)
-    for blender_id in [0, 1, 12, SINGLE_VIEW_BLENDER_ID, 23]:
-        save_png(occ24_images[blender_id], result_dir / f"svr_blender24_{blender_id:02d}.png")
-    print("✓ result_sample/svr.npz + selected pngs")
+    for legacy_name in ("single_view.npz", "natural.npz", "sketch_and_natural.npz"):
+        legacy_path = result_dir / legacy_name
+        if legacy_path.exists():
+            legacy_path.unlink()
+    np.savez_compressed(result_dir / "imgs.npz", **result_data)
+    for identity_id in (0, 1, 12, 23):
+        save_png(
+            identity_images[identity_id],
+            result_dir
+            / f"svr_identity24_{identity_id:02d}_euler64_{IDENTITY24_TO_EULER64[identity_id]:02d}.png",
+        )
+    print("✓ result_sample/imgs.npz + selected SVR pngs")
+
+    write_dino_feature_debug(model_id, output)
 
     single_view_path = OLD_COND / model_id / "single_view.npz"
     if single_view_path.is_file():
-        single_data = np.load(single_view_path)
         shutil.copy2(single_view_path, result_dir / "real_photo.npz")
-        key_to_name = {
-            "blender": "single_view_blender_blender24_18.png",
-            "flux": "single_view_flux_blender24_18.png",
-            "flux_masked": "single_view_flux_masked_blender24_18.png",
-        }
-        for key, filename in key_to_name.items():
-            if key in single_data:
-                save_png(single_data[key], result_dir / filename)
-        print("✓ result_sample/real_photo.npz + single_view_*_blender24_18.png")
-
-    text_path = OLD_COND / model_id / "text.txt"
-    text_feat_path = OLD_COND / model_id / "text_feat.npy"
-    if text_path.is_file():
-        description = text_path.read_text(encoding="utf-8").strip()
-        feature = np.load(text_feat_path) if text_feat_path.is_file() else np.zeros((4, 1024), dtype=np.float32)
-        np.savez_compressed(result_dir / "text.npz", description=np.array(description), feature=feature)
-        (result_dir / "text_content.txt").write_text(description, encoding="utf-8")
-        print("✓ result_sample/text.npz")
+        print("✓ result_sample/real_photo.npz")
 
     latent_dir = result_dir / "latent"
     latent_dir.mkdir(exist_ok=True)
-    for blender_id in [0, 1, 12, SINGLE_VIEW_BLENDER_ID, 23]:
-        euler64_id = BLENDER24_TO_EULER64[blender_id]
+    for identity_id in (0, 1, 12, 23):
+        euler64_id = IDENTITY24_TO_EULER64[identity_id]
         src = AE_CACHE_OLD / f"{model_id}_{euler64_id}" / "features.npy"
         if src.is_file():
             feature = np.load(src)
             np.savetxt(
-                latent_dir / f"blender24_{blender_id:02d}_euler64_{euler64_id:02d}.txt",
+                latent_dir / f"identity24_{identity_id:02d}_from_euler64_{euler64_id:02d}.txt",
                 feature[:3],
                 fmt="%.6f",
                 header=f"shape={feature.shape}",
             )
     print("✓ result_sample/latent/")
 
-    table_lines = [
-        "blender24_id | occ24_id | euler64_canonical | all_euler64_duplicates | role",
-        "-" * 86,
-    ]
-    for blender_id in range(NUM_BLENDER24_VIEWS):
-        role = "single_view_identity" if blender_id == SINGLE_VIEW_BLENDER_ID else ""
-        table_lines.append(
-            f"{blender_id:12d} | {BLENDER24_TO_OCC24[blender_id]:8d} | "
-            f"{BLENDER24_TO_EULER64[blender_id]:17d} | "
-            f"{BLENDER24_TO_ALL_EULER64[blender_id]} | {role}"
-        )
-    (output / "mapping_table.txt").write_text("\n".join(table_lines) + "\n", encoding="utf-8")
+    write_mapping_table(output)
     print("✓ mapping_table.txt")
 
     if not args.skip_blender_compare:
-        compare_blender_sample(model_id, args.blender_sample_root, occ24_images, output)
-        compare_single_view(model_id, args.blender_sample_root, output)
+        compare_blender_sample(model_id, args.blender_sample_root, identity_images, output)
+        compare_real_photo(model_id, args.blender_sample_root, identity_images, output)
         compare_all_blender_samples(args.blender_sample_root, output)
 
     migrated_dir = NEW_COND / model_id

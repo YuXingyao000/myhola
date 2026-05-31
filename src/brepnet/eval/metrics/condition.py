@@ -4,9 +4,8 @@
 face、edge、vertex 的 Chamfer/precision/recall/F-score，并评估 FE
 (face-edge) 和 EV (edge-vertex) 拓扑匹配。
 
-默认协议是 `rotation_policy="none"`，即视角 0 / identity。历史数据曾用
-64 个 Euler 编号生成视图，但实际只有 24 个立方体旋转；`search24` 只作为
-旧数据修复模式保留。
+默认协议固定为 identity-first cube24 的 0 号旋转，也就是 identity GT。
+评估运行时不再搜索或接收旧 64/Euler 旋转编号。
 """
 
 from __future__ import annotations
@@ -23,14 +22,13 @@ from OCC.Core.BRep import BRep_Tool
 from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_FACE, TopAbs_VERTEX
 
 from shared.occ_utils import get_curve_length, get_points_along_edge, get_primitives, get_triangulations
-from src.brepnet.data.rotations import OCTAHEDRAL_ROTATIONS
+from src.brepnet.data.rotations import cube24_rotation_matrix
 from src.brepnet.eval.adapters.baseline import fallback_geometry, get_model_normalize, load_baseline_reconstruction
 from src.brepnet.eval.io import save_npz_result, write_text
 from src.brepnet.eval.metrics.validity import check_step_valid_soild
 from src.brepnet.eval.protocol import EvalSample, condition_result_path, error_path
 
 
-ROTATION_COMPARE_EPS = 1e-9
 CHAMFER_DEVICE: torch.device | None = None
 CHAMFER_DISTANCE: ChamferDistance | None = None
 
@@ -328,84 +326,6 @@ def build_rotation_summary(rotation_index: int, rotation_matrix: np.ndarray, res
     return summary
 
 
-def is_better_result(candidate: dict[str, Any], incumbent: dict[str, Any] | None) -> bool:
-    if incumbent is None:
-        return True
-    for key, larger_is_better in [
-        ("face_fscore", True),
-        ("edge_fscore", True),
-        ("vertex_fscore", True),
-        ("face_cd", False),
-        ("edge_cd", False),
-        ("vertex_cd", False),
-    ]:
-        lhs, rhs = float(candidate[key]), float(incumbent[key])
-        if abs(lhs - rhs) <= ROTATION_COMPARE_EPS:
-            continue
-        return lhs > rhs if larger_is_better else lhs < rhs
-    return int(candidate["best_rotation_index"]) < int(incumbent["best_rotation_index"])
-
-
-def evaluate_rotation_payload(eval_data: dict[str, Any], rotation_index: int) -> dict[str, Any]:
-    rotation_matrix = OCTAHEDRAL_ROTATIONS[rotation_index]
-    try:
-        result = evaluate_metrics(
-            eval_data["recon_face_points"],
-            eval_data["recon_edge_points"],
-            eval_data["recon_vertex_points"],
-            eval_data["recon_face_edge"],
-            eval_data["recon_edge_vertex"],
-            transform_point_sets(eval_data["gt_face_points"], rotation_matrix),
-            transform_point_sets(eval_data["gt_edge_points"], rotation_matrix),
-            transform_points(eval_data["gt_vertex_points"], rotation_matrix),
-            eval_data["gt_face_edge"],
-            eval_data["gt_edge_vertex"],
-        )
-        if not metrics_are_finite(result):
-            return {
-                "rotation_index": rotation_index,
-                "result": None,
-                "summary": build_rotation_summary(rotation_index, rotation_matrix, error="NaN/Inf metrics"),
-            }
-        result["best_rotation_index"] = rotation_index
-        result["best_rotation_matrix"] = rotation_matrix.astype(np.float32)
-        return {
-            "rotation_index": rotation_index,
-            "result": result,
-            "summary": build_rotation_summary(rotation_index, rotation_matrix, result=result),
-        }
-    except Exception:
-        return {
-            "rotation_index": rotation_index,
-            "result": None,
-            "summary": build_rotation_summary(rotation_index, rotation_matrix, error=traceback.format_exc()),
-        }
-
-
-def finalize_rotation_payloads(folder_name: str, rotation_payloads: list[dict[str, Any]]) -> dict[str, Any]:
-    payload_map = {payload["rotation_index"]: payload for payload in rotation_payloads}
-    best_results = None
-    rotation_scores = []
-    num_valid_rotations = 0
-    for rotation_index, rotation_matrix in enumerate(OCTAHEDRAL_ROTATIONS):
-        payload = payload_map.get(rotation_index)
-        if payload is None:
-            rotation_scores.append(build_rotation_summary(rotation_index, rotation_matrix, error="missing rotation result"))
-            continue
-        rotation_scores.append(payload["summary"])
-        if payload["result"] is None:
-            continue
-        num_valid_rotations += 1
-        if is_better_result(payload["result"], best_results):
-            best_results = payload["result"]
-    if best_results is None:
-        raise RuntimeError(f"All rotations failed for sample {folder_name}")
-    best_results = dict(best_results)
-    best_results["rotation_scores"] = np.array(rotation_scores, dtype=object)
-    best_results["rotation_search_status"] = "completed" if num_valid_rotations == len(OCTAHEDRAL_ROTATIONS) else "partial_failed"
-    return best_results
-
-
 def evaluate_condition(
     eval_root: str | Path,
     gt_root: str | Path,
@@ -415,8 +335,6 @@ def evaluate_condition(
     is_complexgen: bool = False,
     is_nvdnet: bool = False,
     v_num_per_m: int = 100,
-    rotation_policy: str = "none",
-    rotation_id: int = 0,
 ) -> dict[str, Any]:
     eval_data = prepare_eval_data(
         Path(eval_root),
@@ -427,21 +345,27 @@ def evaluate_condition(
         is_nvdnet=is_nvdnet,
         v_num_per_m=v_num_per_m,
     )
-    if rotation_policy == "search24":
-        results = finalize_rotation_payloads(
-            folder_name,
-            [evaluate_rotation_payload(eval_data, candidate) for candidate in range(len(OCTAHEDRAL_ROTATIONS))],
-        )
-    elif rotation_policy in {"none", "known"}:
-        payload = evaluate_rotation_payload(eval_data, rotation_id if rotation_policy == "known" else 0)
-        if payload["result"] is None:
-            raise RuntimeError(payload["summary"]["error"])
-        results = payload["result"]
-        results["rotation_scores"] = np.array([payload["summary"]], dtype=object)
-        results["rotation_search_status"] = "not_searched"
-    else:
-        raise ValueError(f"Unknown rotation_policy: {rotation_policy}")
-    results["rotation_policy"] = rotation_policy
+
+    rotation_id = 0
+    rotation_matrix = cube24_rotation_matrix(rotation_id)
+    results = evaluate_metrics(
+        eval_data["recon_face_points"],
+        eval_data["recon_edge_points"],
+        eval_data["recon_vertex_points"],
+        eval_data["recon_face_edge"],
+        eval_data["recon_edge_vertex"],
+        transform_point_sets(eval_data["gt_face_points"], rotation_matrix),
+        transform_point_sets(eval_data["gt_edge_points"], rotation_matrix),
+        transform_points(eval_data["gt_vertex_points"], rotation_matrix),
+        eval_data["gt_face_edge"],
+        eval_data["gt_edge_vertex"],
+    )
+    if not metrics_are_finite(results):
+        raise RuntimeError(f"NaN/Inf metrics for sample {folder_name}")
+    results["best_rotation_index"] = rotation_id
+    results["best_rotation_matrix"] = rotation_matrix.astype(np.float32)
+    results["rotation_scores"] = np.array([build_rotation_summary(rotation_id, rotation_matrix, result=results)], dtype=object)
+    results["rotation_search_status"] = "identity_only"
     return results
 
 
@@ -467,8 +391,6 @@ def eval_one(
     is_complexgen: bool = False,
     is_nvdnet: bool = False,
     v_num_per_m: int = 100,
-    rotation_policy: str = "none",
-    rotation_id: int = 0,
     write_legacy_eval: bool = False,
 ) -> dict[str, Any]:
     results = evaluate_condition(
@@ -479,8 +401,6 @@ def eval_one(
         is_complexgen=is_complexgen,
         is_nvdnet=is_nvdnet,
         v_num_per_m=v_num_per_m,
-        rotation_policy=rotation_policy,
-        rotation_id=rotation_id,
     )
     save_eval_results(eval_root, folder_name, results, write_legacy_eval=write_legacy_eval)
     return results

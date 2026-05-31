@@ -43,8 +43,6 @@ def run_condition_metric(args, samples: list[EvalSample]) -> dict[str, Any]:
                 is_point2cad=args.is_point2cad,
                 is_complexgen=args.is_complexgen,
                 is_nvdnet=args.is_nvdnet,
-                rotation_policy=args.rotation_policy,
-                rotation_id=args.rotation_id,
                 write_legacy_eval=args.write_legacy_eval,
             )
         except Exception:
@@ -138,10 +136,6 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--timeout", type=int, default=180)
     parser.add_argument("--only-valid", "--only_valid", dest="only_valid", action="store_true")
 
-    # Rotation policy: OCTAHEDRAL_ROTATIONS now uses Blender/dataset cube24 order.
-    # cube24_id=0 = OCTAHEDRAL_ROTATIONS[0]. No more hidden mapping needed.
-    parser.add_argument("--rotation-policy", choices=["none", "known", "search24"], default="known")
-    parser.add_argument("--rotation-id", type=int, default=0)
     parser.add_argument("--write-legacy-eval", action="store_true")
 
     parser.add_argument("--is-point2cad", "--is_point2cad", dest="is_point2cad", action="store_true")

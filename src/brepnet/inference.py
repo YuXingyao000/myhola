@@ -23,7 +23,6 @@ os.environ["HTTPS_PROXY"] = "http://172.31.178.126:7890"
 def normalize_condition_type(condition: str) -> str:
     aliases = {
         "pc": "point_cloud",
-        "txt": "text",
     }
     return aliases.get(condition, condition)
 
@@ -31,7 +30,6 @@ def normalize_condition_type(condition: str) -> str:
 def condition_dataset_name(condition_type: str) -> str:
     names = {
         "point_cloud": "pc",
-        "text": "txt",
     }
     return names.get(condition_type, condition_type)
 
@@ -155,6 +153,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     condition_type = normalize_condition_type(args.condition)
+    if condition_type in {"multi_img", "text", "txt"}:
+        raise NotImplementedError(f"{condition_type} conditioning is disabled in the single-view runtime.")
     model_conf = build_model_conf(args.autoencoder_weights)
     condition_conf = build_condition_conf(condition_type)
 
@@ -207,9 +207,6 @@ if __name__ == '__main__':
             points = points[index]
             points_tensor = torch.tensor(points, dtype=torch.float32).to(device)
             data["conditions"]["points"] = points_tensor[None, None, :, :].repeat(num_proposals, 1, 1, 1)
-        elif condition_type == "text":
-            data["conditions"]["txt"] = [fileitem for item in range(num_proposals)]
-            name = f"{id_item:02d}"
         elif condition_type in ("single_img", "sketch"):
             input_file = Path(fileitem)
             name = input_file.stem

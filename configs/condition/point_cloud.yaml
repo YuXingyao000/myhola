@@ -1,5 +1,5 @@
 type: point_cloud
-dataset_names: [pc]
+condition_name: pc
 cached_features: false
 output_dim: 1024
 image:

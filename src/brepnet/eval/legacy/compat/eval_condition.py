@@ -44,8 +44,6 @@ def main() -> None:
     parser.add_argument("--is_complexgen", action="store_true")
     parser.add_argument("--is_nvdnet", action="store_true")
     parser.add_argument("--only_valid", action="store_true")
-    parser.add_argument("--rotation_policy", choices=["none", "known", "search24"], default="none")
-    parser.add_argument("--rotation_id", type=int, default=0)
     args = parser.parse_args()
 
     samples = iter_eval_samples(args.eval_root, args.gt_root, split_list=args.list, sample=args.prefix or None)
@@ -65,8 +63,6 @@ def main() -> None:
                 args.is_complexgen,
                 args.is_nvdnet,
                 100,
-                args.rotation_policy,
-                args.rotation_id,
                 True,
             )
             for sample in jobs
@@ -83,8 +79,6 @@ def main() -> None:
                 args.is_point2cad,
                 args.is_complexgen,
                 args.is_nvdnet,
-                rotation_policy=args.rotation_policy,
-                rotation_id=args.rotation_id,
                 write_legacy_eval=True,
             )
 

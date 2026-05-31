@@ -1,5 +1,5 @@
 type: single_img
-dataset_names: [single_img]
+condition_name: single_img
 cached_features: false
 output_dim: 1024
 image:

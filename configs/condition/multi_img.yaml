@@ -1,5 +1,5 @@
 type: multi_img
-dataset_names: [multi_img]
+condition_name: multi_img
 cached_features: false
 output_dim: 1024
 image:

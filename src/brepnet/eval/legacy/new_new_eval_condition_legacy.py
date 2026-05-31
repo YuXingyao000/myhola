@@ -1,9 +1,12 @@
 import os
+import sys
 from pathlib import Path
 from itertools import permutations, product
 import traceback
 
 import matplotlib.pyplot as plt
+_old_dlopen_flags = sys.getdlopenflags()
+sys.setdlopenflags(os.RTLD_GLOBAL | os.RTLD_LAZY)
 import torch
 import numpy as np
 
@@ -13,6 +16,7 @@ import argparse
 
 # import pandas as pd
 from chamferdist import ChamferDistance
+sys.setdlopenflags(_old_dlopen_flags)
 
 from OCC.Core.TopAbs import TopAbs_VERTEX, TopAbs_EDGE, TopAbs_FACE
 from OCC.Core.BRep import BRep_Tool

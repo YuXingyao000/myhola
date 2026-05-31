@@ -17,21 +17,12 @@ python -m src.brepnet.eval.run \
 ### 几何重建指标 (Condition: CD + F1)
 
 ```bash
-# 标准评估 (当前默认 rotation-id=12, 对应 dataset cube0 pose)
+# 标准评估：GT 固定使用 identity-first cube24 的 0 号旋转
 python -m src.brepnet.eval.run \
     --pred-root /mnt/d/data/results/post_output \
     --gt-root /mnt/d/data/deepcad_v6 \
     --split-list src/brepnet/data/list/test.txt \
     --metrics condition \
-    --use-ray --num-cpus 16
-
-# 如果不确定 rotation, 用 search24 诊断
-python -m src.brepnet.eval.run \
-    --pred-root /mnt/d/data/results/post_output \
-    --gt-root /mnt/d/data/deepcad_v6 \
-    --split-list src/brepnet/data/list/test.txt \
-    --metrics condition \
-    --rotation-policy search24 \
     --use-ray --num-cpus 16
 ```
 
@@ -85,22 +76,15 @@ cd /tmp && PYTHONPATH=/mnt/d/python python -m src.brepnet.eval.quality_metrics \
 | `--gt-root` | GT 数据目录 (每个模型含 normalized_shape.step) | condition 必填 |
 | `--split-list` | model list 文本文件 | 空=扫描 pred-root 下所有文件夹 |
 | `--metrics` | 逗号分隔: condition, validity, complexity, unique, lfd | condition |
-| `--rotation-policy` | none / known / search24 | **known** |
-| `--rotation-id` | known 模式下用哪个旋转 (0-23) | **12** (= dataset cube0 pose) |
 | `--use-ray` | 启用 Ray 并行 | 关 |
 | `--num-cpus` | Ray CPU 数 | 16 |
 | `--from-scratch` | 忽略已有结果，全部重算 | 关 |
 | `--only-valid` | condition 统计时只包含 valid solid | 关 |
 
-## ⚠️ Rotation 注意事项
+## Rotation 注意事项
 
-**关键事实**: dataset.py 中 `cube_id=0` 不是 identity pose，对应 `eval rotation_id=12`。
-
-- `--rotation-policy none` → 用 identity 比较 → 结果系统性偏差大（**不推荐**）
-- `--rotation-policy known --rotation-id 12` → 正确对齐 → **当前推荐**
-- `--rotation-policy search24` → 穷搜 24 旋转取最优 → 慢但可作为诊断
-
-详见 `experiments/2026-05-25/EVALUATION_ISSUES.md`。
+运行时已统一为 identity-first cube24：`rotation_id=0` 就是 identity。评估入口不再提供
+`--rotation-policy` 或 `--rotation-id`，condition 指标固定按 identity GT 计算。
 
 ## 输出文件
 

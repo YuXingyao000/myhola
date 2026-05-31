@@ -4,7 +4,7 @@ The current dataset loader expects, per sample prefix:
 
     data_root/<prefix>/data.npz
     cond_root/<prefix>/imgs.npz         key: svr_imgs
-    cond_root/<prefix>/single_view.npz  key: flux
+    cond_root/<prefix>/real_photo.npz   key: flux
 
 This script keeps the raw photos untouched and writes a small test dataset
 under ``prepared/`` by default. Each input photo becomes one test sample, which
@@ -200,15 +200,9 @@ def write_sample(
     svr_imgs = np.repeat(image_array[None, ...], num_svr_views, axis=0)
     np.savez_compressed(sample_cond_dir / "imgs.npz", svr_imgs=svr_imgs)
 
-    # Current dataset.py requires single_view.npz for condition=[single_img].
-    # prepare_condition reads key "flux" and adds the batch dimension itself.
-    np.savez_compressed(sample_cond_dir / "single_view.npz", flux=image_array)
-
-    # Compatibility with older local scripts that looked for natural.npz.
-    np.savez_compressed(
-        sample_cond_dir / "natural.npz",
-        natural_imgs_compress=image_array[None, ...],
-    )
+    # Current real-photo captures are single identity images. Future datasets
+    # can store flux as [24, H, W, 3] in the same file.
+    np.savez_compressed(sample_cond_dir / "real_photo.npz", flux=image_array)
 
     Image.fromarray(image_array).save(processed_root / f"{prefix}.png")
     (sample_cond_dir / "source.txt").write_text(str(source_path) + "\n", encoding="utf-8")

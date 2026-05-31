@@ -1,11 +1,10 @@
 """
 Condition Encoders for HoLa-BRep Diffusion Model.
 
-Provides modular condition encoding for image, point cloud, and text modalities:
+Provides modular condition encoding for image and point cloud modalities:
   - DINOv2ImageEncoder: Frozen DINOv2 ViT-L backbone with learnable projection
   - CameraEmbedding: Learnable camera view embeddings for multi-view conditioning
   - PointNetEncoder: Point cloud encoder with multiple backend options
-  - TextEncoder: Frozen sentence-transformers encoder with projection
   - ConditionExtractor: Orchestrator that unifies all modalities into a single tensor
 """
 
@@ -16,8 +15,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from scipy.spatial.transform import Rotation
 from typing import Dict, List, Optional
+
+from src.brepnet.data.rotations import cube24_rotation_matrix
 
 
 # ---------------------------------------------------------------------------
@@ -438,7 +438,7 @@ class PointNetEncoder(nn.Module):
     def forward(
         self,
         v_points: torch.Tensor,
-        euler_id: Optional[torch.Tensor] = None,
+        rotation_id: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """Encode a point cloud into a feature vector.
 
@@ -446,23 +446,16 @@ class PointNetEncoder(nn.Module):
         ----------
         v_points : Tensor of shape [B, N, 6]
             Point cloud with XYZ coordinates and normals.
-        euler_id : LongTensor of shape [B] or None
-            Discrete rotation index for deterministic augmentation.
-            Encodes rotation as: x = id%4 * 90deg, y = (id//4)%4 * 90deg,
-            z = (id//16) * 90deg.
+        rotation_id : LongTensor of shape [B] or None
+            Identity-first cube-24 rotation id for deterministic augmentation.
 
         Returns
         -------
         Tensor of shape [B, output_dim]
         """
-        # Apply rotation augmentation based on euler_id
-        if euler_id is not None:
-            angles = torch.stack([
-                euler_id % 4 * torch.pi / 2,
-                euler_id // 4 % 4 * torch.pi / 2,
-                euler_id // 16 * torch.pi / 2,
-            ], dim=1)
-            matrix = Rotation.from_euler('xyz', angles.cpu().numpy()).as_matrix()
+        if rotation_id is not None:
+            rotation_ids = rotation_id.detach().cpu().numpy().astype(np.int64)
+            matrix = np.stack([cube24_rotation_matrix(int(item)) for item in rotation_ids], axis=0)
             rotation_3d_matrix = torch.tensor(
                 matrix, device=v_points.device, dtype=v_points.dtype
             )
@@ -588,16 +581,15 @@ class ConditionExtractor(nn.Module):
     by the diffusion model.
 
     Supports:
-      - Raw input data (images, point clouds, text)
-      - Pre-cached features (img_features, txt_features in data["conditions"])
-      - Multi-view image averaging with camera embeddings
+      - Raw input data (images, point clouds)
+      - Pre-cached image features (img_features in data["conditions"])
 
     Parameters
     ----------
     config : dict
         Configuration dictionary. Expected keys:
-          - condition: list of modality strings, e.g. ["single_img"], ["multi_img"],
-            ["sketch"], ["pc"], ["txt"]
+          - condition: list of modality strings, e.g. ["single_img"],
+            ["sketch"], ["pc"]
           - is_aug: bool, augmentation flag for point clouds
           - aug_points_prob: float, augmentation probability for point clouds
           - point_encoder: str, backend for PointNetEncoder (if "pc" in condition)
@@ -612,13 +604,15 @@ class ConditionExtractor(nn.Module):
         self.projection_dim = projection_dim
         self.with_img = False
         self.with_pc = False
-        self.with_txt = False
 
         condition = config["condition"]
+        if "multi_img" in condition:
+            raise NotImplementedError("multi_img is legacy HoLa-BRep multi-view conditioning and is disabled.")
+        if "txt" in condition:
+            raise NotImplementedError("txt conditioning is disabled until the new dataset format is defined.")
 
         # --- Image encoder ---
-        if ("single_img" in condition or "multi_img" in condition
-                or "sketch" in condition):
+        if ("single_img" in condition or "sketch" in condition):
             self.with_img = True
             backbone = config["backbone"]
             da_ckpt = config["depth_anything_v2_ckpt"]
@@ -637,18 +631,11 @@ class ConditionExtractor(nn.Module):
             self.with_pc = True
             self.point_encoder = PointNetEncoder(config, output_dim=projection_dim)
 
-        # --- Text encoder ---
-        if "txt" in condition:
-            self.with_txt = True
-            self.text_encoder = TextEncoder(output_dim=projection_dim)
-
     def train(self, mode: bool = True):
         """Keep all frozen sub-encoders in eval mode."""
         super().train(mode)
         if self.with_img:
             self.image_encoder.train(mode)  # delegates to its own override
-        if self.with_txt:
-            self.text_encoder.train(mode)  # delegates to its own override
         return self
 
     def forward(self, data: Dict) -> Optional[torch.Tensor]:
@@ -661,8 +648,7 @@ class ConditionExtractor(nn.Module):
               - For images: "imgs" ([B, V, 3, 224, 224]) or "img_features" (cached)
               - For images: "img_id" ([B, V]) camera view indices
               - For point clouds: "points" ([B, 1, N, 6])
-              - For text: "txt" (List[str]) or "txt_features" (cached)
-            May also contain "id_aug" for point cloud rotation augmentation.
+              - May also contain "rotation_id" for point cloud rotation augmentation.
 
         Returns
         -------
@@ -670,65 +656,25 @@ class ConditionExtractor(nn.Module):
             Unified condition tensor. seq_len depends on the modality:
               - Image: 257 (CLS + patches) or 1 (after multi-view averaging to global)
               - Point cloud: 1 (global feature)
-              - Text: 1 (global feature)
             Returns None if no condition modalities are active.
         """
         condition = None
 
+        conditions = data["conditions"]
         if self.with_img:
-            conditions = data["conditions"]
+            imgs = conditions["imgs"]
+            img_feature = self.image_encoder(imgs)
 
-            if "img_features" in conditions:
-                # Pre-cached image features: [B, num_imgs, 257, 1024] or [B*num_imgs, 257, 1024]
-                img_feature = conditions["img_features"]
-                num_imgs = img_feature.shape[1]
-                img_feature = self.image_encoder.projection(img_feature)
-            else:
-                imgs = conditions["imgs"]
-                num_imgs = imgs.shape[1]
-                imgs = imgs.reshape(-1, 3, 224, 224)
-                img_feature = self.image_encoder(imgs)
-
-            img_idx = conditions["img_id"]
-
+            # img_idx = conditions["img_id"]
             # Normalize image features to [B, V, T, D] so cached and raw paths
             # preserve patch tokens consistently.
-            if img_feature.dim() == 3:
-                img_feature = img_feature.reshape(img_idx.shape[0], num_imgs, *img_feature.shape[1:])
-
-            if img_idx.shape[-1] > 1:
-                camera_emb = self.camera_embedding(img_idx).unsqueeze(2)
-                img_feature = (img_feature + camera_emb).mean(dim=1)
-            else:
-                img_feature = img_feature[:, 0]
-
+            # if img_feature.dim() == 3:
+            #     img_feature = img_feature.reshape(img_idx.shape[0], num_imgs, *img_feature.shape[1:])
             condition = img_feature[:, None]
-
         elif self.with_pc:
-            pc = data["conditions"]["points"]
-            euler_id = data.get("id_aug", None)
-            feat = self.point_encoder(pc[:, 0, :, :], euler_id)
+            pc = conditions["points"]
+            rotation_id = data.get("rotation_id", None)
+            feat = self.point_encoder(pc[:, 0, :, :], rotation_id)
             condition = feat[:, None]
-
-        elif self.with_txt:
-            conditions = data["conditions"]
-
-            if "txt_features" in conditions:
-                txt_feat = conditions["txt_features"]
-                # Apply projection to pre-cached features
-                txt_feat = self.text_encoder.projection(txt_feat)
-            else:
-                txt = conditions["txt"]
-                txt_feat = self.text_encoder(txt)
-
-            condition = txt_feat[:, None]
-
-        # Reshape to [B, 1, seq_len, dim] for consistency
-        if condition is not None and condition.dim() == 3:
-            # condition is [B, 1, dim] -> [B, 1, 1, dim]
-            condition = condition.unsqueeze(2)
-        elif condition is not None and condition.dim() == 2:
-            # condition is [B, dim] -> [B, 1, 1, dim]
-            condition = condition.unsqueeze(1).unsqueeze(1)
 
         return condition

@@ -1,0 +1,47 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Train Debug: Oracle Topology identity24",
+        "type": "debugpy",
+        "request": "launch",
+        "module": "src.brepnet.train",
+        "cwd": "${workspaceFolder}",
+        "console": "integratedTerminal",
+        "justMyCode": false,
+        "env": {
+          "CUDA_VISIBLE_DEVICES": "0",
+          "HYDRA_FULL_ERROR": "1",
+          "WANDB_MODE": "disabled"
+        },
+        "args": [
+          "--config-name",
+          "train_diffusion_oracle_topology",
+          "trainer.devices=1",
+          "trainer.num_workers=0",
+          "trainer.batch_size=1",
+          "trainer.max_steps=1",
+          "trainer.num_sanity_val_steps=0",
+          "trainer.check_val_every_n_epoch=1",
+          "trainer.precision=bf16-mixed",
+          "trainer.wandb.enabled=false",
+          "trainer.output_dir=/tmp/hola_train_debug",
+          "trainer.exp_name=oracle_topology_identity24_train_debug",
+          "dataset.raw_data_root=/mnt/d/data/deepcad_v7",
+          "dataset.cached_latent_root=/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24",
+          "dataset.condition_data_root=/mnt/d/data/deepcad_v7_cond",
+          "dataset.train_dataset=/mnt/d/python/src/brepnet/data/list/deduplicated_deepcad_testing_7_30_sample_100.txt",
+          "dataset.val_dataset=/mnt/d/python/src/brepnet/data/list/deduplicated_deepcad_testing_7_30_sample_100.txt",
+          "dataset.test_dataset=/mnt/d/python/src/brepnet/data/list/deduplicated_deepcad_testing_7_30_sample_100.txt",
+          "dataset.epoch_scale_factor=1",
+          "dataset.is_aug=0",
+          "dataset.real_photo_ratio=1.0",
+          "dataset.load_topology=true",
+          "model.autoencoder.checkpoint=/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt",
+          "model.topology_bias.mode=soft_bias",
+          "hydra.job.chdir=false"
+        ]
+      }
+    ]
+  }
+  

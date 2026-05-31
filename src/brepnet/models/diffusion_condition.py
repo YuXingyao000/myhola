@@ -9,13 +9,13 @@ def build_condition_encoder(condition_cfg: dict) -> nn.Module | None:
     condition_type = condition_cfg["type"]
     if condition_type == "none":
         return None
+    if condition_type in {"multi_img", "text"}:
+        raise NotImplementedError(f"{condition_type} conditioning is disabled in the single-view runtime.")
 
     modality_by_type = {
         "single_img": ["single_img"],
-        "multi_img": ["multi_img"],
         "sketch": ["sketch"],
         "point_cloud": ["pc"],
-        "text": ["txt"],
     }
     modalities = modality_by_type[condition_type]
     _cfg = {

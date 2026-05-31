@@ -1,5 +1,5 @@
 type: sketch
-dataset_names: [sketch]
+condition_name: sketch
 cached_features: false
 output_dim: 1024
 image:

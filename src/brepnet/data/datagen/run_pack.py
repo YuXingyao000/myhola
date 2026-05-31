@@ -30,23 +30,39 @@ def main(cfg: DictConfig) -> None:
     target_root = Path(cfg.paths.cond_target)
     model_list = PROJECT_ROOT / cfg.paths.train_list
 
-    cmd = [
-        sys.executable,
-        "-m",
-        "src.brepnet.data.datagen.tools.pack_natural_npz",
-        "--render-root",
-        str(blender_root),
-        "--flux-root",
-        str(flux_root),
-        "--target-root",
-        str(target_root),
-        "--model-list",
-        str(model_list),
-        "--num-workers",
-        str(cfg.flux.pack_workers),
-    ]
     if mode == "cube24":
-        cmd.append("--cube24")
+        cmd = [
+            sys.executable,
+            "-m",
+            "src.brepnet.data.datagen.tools.pack_natural_npz",
+            "--render-root",
+            str(blender_root),
+            "--flux-root",
+            str(flux_root),
+            "--target-root",
+            str(target_root),
+            "--model-list",
+            str(model_list),
+            "--num-workers",
+            str(cfg.flux.pack_workers),
+            "--cube24",
+        ]
+    else:
+        cmd = [
+            sys.executable,
+            "-m",
+            "src.brepnet.data.datagen.tools.pack_single_view_npz",
+            "--blender-root",
+            str(blender_root),
+            "--flux-root",
+            str(flux_root),
+            "--target-root",
+            str(target_root),
+            "--model-list",
+            str(model_list),
+            "--num-workers",
+            str(cfg.flux.pack_workers),
+        ]
 
     print(" ".join(cmd))
     subprocess.run(cmd, check=True)

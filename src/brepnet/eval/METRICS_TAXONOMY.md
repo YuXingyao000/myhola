@@ -49,7 +49,7 @@
 | DINO Cosine | DINOv2 CLS token 余弦相似度 | FLUX ↔ OCC | 高 (>0.5) |
 | CLIP Realism | CLIP(FLUX, "a real photograph...") | FLUX ↔ 文字 | 高 (>0.25) |
 
-**输入**: `imgs.npz` (OCC renders) + `single_view.npz` (FLUX outputs)
+**输入**: `imgs.npz` (OCC renders) + `real_photo.npz` (FLUX outputs)
 **依赖**: SAM2, DINOv2, CLIP
 **Rotation 敏感**: 否（2D 图像指标）
 
@@ -77,10 +77,9 @@
 
 | Hidden Knowledge | 在哪里 | 坑点 |
 |-----------------|--------|------|
-| `cube_id=0` → `euler64_id=4` → 不是 identity | `dataset.py` L642 | eval 默认用 identity 比较，CD 系统性偏高 |
-| `rotation_id=12` 对应 dataset cube0 的姿态 | `data/rotations.py` | 必须手动指定，没有自动检测 |
-| `imgs.npz` 里有 64 个视角但只有 24 个是独立的 | `extract_imgs.py` | Euler xyz 组合有重复（4³=64 但 cube group 只有 24） |
-| cached latent 文件名包含 euler64_id | `ae_cache/{model}_{euler_id}/` | 如果 dataset 改为 24 旋转制，缓存命名需要同步改 |
+| `rotation_id=0` 是 identity | `data/rotations.py` | 运行时统一使用 identity-first cube24 |
+| `imgs.npz` 运行时只应有 24 个视角 | `tools/migrate_64_to_24.py` | 旧 Euler64 数据只能在迁移/调试工具里出现 |
+| cached latent 文件名包含 rotation_id | `ae_cache/{model}_{rotation_id}/` | 必须使用迁移后的 24-id cache |
 | `eval_brep.py` 读 `recon_face/*.stl`，当前 pipeline 不输出这个 | `post/legacy/eval_brep.py` | 用了就得到全 0 结果 |
 | `condition.py` 的 F1 阈值是硬编码的 | `metrics/condition.py` | 不同论文用不同 τ |
 
@@ -97,19 +96,9 @@ python -m src.brepnet.eval.run \
     --metrics condition,validity,complexity,unique \
     --output eval_results/
 
-# Rotation 通过 metadata 自动解决:
-#   inference 输出的 npz 写入 {"cube_id": 0, "rotation_id": 12}
-#   eval 读取 metadata → 自动对齐 → 用户不需要知道 rotation
-```
-
-**当前过渡方案**（在 rotation 整理完之前）:
-
-```python
-# 显式指定 rotation，至少不会坑自己
-python -m src.brepnet.eval.run \
-    --pred-root ... --gt-root ... \
-    --metrics condition,validity \
-    --rotation-policy known --rotation-id 12
+# Rotation 固定为 identity-first cube24:
+#   rotation_id=0 is identity
+#   eval condition metric always uses identity GT
 ```
 
 ---
@@ -119,13 +108,11 @@ python -m src.brepnet.eval.run \
 ```
 数据集重排 (64→24)
     ↓
-重新生成 cached latent (以 24 旋转命名)
+迁移 cached latent (以 24 旋转命名)
     ↓
 修改 dataset.py (cube_id 直接对应 latent 文件)
     ↓
-inference 输出写入 rotation metadata
+inference 默认 identity 条件
     ↓
-eval 自动读取 metadata 对齐
+eval 固定 identity GT
 ```
-
-这个链条比较长，但每一步都是可以增量做的。现在最重要的是：**eval 命令必须显式带 `--rotation-policy known --rotation-id 12`**，不能用默认值。

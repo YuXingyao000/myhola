@@ -1,4 +1,4 @@
-r"""Pack single-view Blender / FLUX / FLUX-masked PNGs into single_view.npz.
+r"""Pack single-view Blender / FLUX / FLUX-masked PNGs into real_photo.npz.
 
 For each model id, reads the single-view renders produced by
 ``run_blender.py single-view``, ``run_flux.py single-view`` and
@@ -11,7 +11,7 @@ For each model id, reads the single-view renders produced by
 Each PNG is resized to ``IMAGE_SIZE`` (default 512x512) RGB uint8 and stored as
 shape ``(IMAGE_SIZE, IMAGE_SIZE, 3)`` per key. The resulting npz is written to::
 
-    {target_root}/{model_id}/single_view.npz
+    {target_root}/{model_id}/real_photo.npz
 
 Models that are missing any of the three required PNGs are skipped (with a
 log message) unless ``--require=`` is relaxed (see ``--require``).
@@ -48,7 +48,7 @@ from ..config import PATHS, RUNTIME
 
 MODEL_DIR_PATTERN = re.compile(r"^\d{8}$")
 IMAGE_SIZE = 512
-OUTPUT_NAME = "single_view.npz"
+OUTPUT_NAME = "real_photo.npz"
 
 ALL_KEYS: tuple[str, ...] = ("blender", "flux", "flux_masked")
 
@@ -77,7 +77,7 @@ def parse_args() -> argparse.Namespace:
         "--target-root",
         type=Path,
         default=PATHS.cond_single_view_target,
-        help="Per-model output root (writes {target_root}/{model_id}/single_view.npz).",
+        help="Per-model output root (writes {target_root}/{model_id}/real_photo.npz).",
     )
     p.add_argument(
         "--model-list",
@@ -108,7 +108,7 @@ def parse_args() -> argparse.Namespace:
         "--overwrite",
         action="store_true",
         default=RUNTIME.pack_overwrite,
-        help="Overwrite existing single_view.npz files.",
+        help="Overwrite existing real_photo.npz files.",
     )
     p.add_argument(
         "--dry-run",

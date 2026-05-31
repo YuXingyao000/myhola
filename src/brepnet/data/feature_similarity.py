@@ -58,9 +58,9 @@ class Diffusion_dataset_fidelity(Diffusion_dataset):
             }
 
     def __getitem__(self, idx):
-        prefix, cached_latent_stats, face_mask, _, id_aug, face_adj = super().__getitem__(idx)
+        prefix, cached_latent_stats, face_mask, _, rotation_id, face_adj = super().__getitem__(idx)
         condition = self.load_combined_condition(prefix)
-        return prefix, cached_latent_stats, face_mask, condition, id_aug, face_adj
+        return prefix, cached_latent_stats, face_mask, condition, rotation_id, face_adj
 
 
 class DiffusionImageEncoder(nn.Module):

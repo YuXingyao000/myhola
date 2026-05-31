@@ -1,5 +1,32 @@
 # Rotation Basis Findings - 2026-05-26
 
+## 2026-05-27 correction: final chosen basis
+
+After clarification, the migration target is `identity_first_cube24`, not raw Blender `00..23` order. New id 0 is the single-view / FLUX view:
+
+```text
+identity24 id 0 = legacy euler64 id 0 = raw Blender cube24 id 18
+```
+
+The final migration/debug tools now use:
+
+```python
+IDENTITY24_TO_EULER64 = [
+    0, 1, 2, 3, 4, 5, 6, 7,
+    8, 9, 10, 11, 12, 13, 14, 15,
+    16, 17, 18, 19, 24, 25, 26, 27,
+]
+
+IDENTITY24_TO_BLENDER24 = [
+    18, 14, 23, 11, 0, 12, 5, 9,
+    22, 15, 19, 10, 4, 13, 1, 8,
+    17, 2, 20, 7, 21, 3, 16, 6,
+]
+```
+
+So `ae_cache_24/{model_id}_0` must be copied from old `ae_cache/{model_id}_0`, and `imgs.npz[0]` must come from old euler64 image 0. Raw Blender sample `18.png` becomes identity24 `00.png`.
+
+
 ## 这次真正确认的结论
 
 今天要解决的问题不是简单的“图片顺时针旋转 90 度”，而是有三套概念被混在一起了：

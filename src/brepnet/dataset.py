@@ -16,16 +16,16 @@ import open3d as o3d
 from scipy.spatial.transform import Rotation
 from shared.common_utils import export_point_cloud, check_dir
 
-from typing import Final
 from einops import rearrange
 import torchvision.transforms as T
 import networkx as nx
 
 from torch.nn.utils.rnn import pad_sequence
-from scipy.spatial.transform import Rotation
 
 import torch.nn.functional as F
 from PIL import Image
+
+from src.brepnet.data.rotations import NUM_CUBE24_VIEWS, cube24_rotation_matrix
 
 
 def normalize_coord1112(v_points):
@@ -133,212 +133,110 @@ def downsample_pc(v_pc, v_num_points):
     return v_pc[index[:v_num_points]]
 
 
-# -----------------------------------------------------------------------------
-# Rotation-id mapping between the Blender cube-24 render system and the
-# legacy 4x4x4 = 64 Euler-id system used to cache AE face latent stats.
-#
-# The condition images (imgs.npz / feat caches) are now produced by
-# `render_dataset_cube24_single_material.py`, which enumerates the 24 proper
-# rotations of the cube via orthonormal axis pairs picked from the 6 signed
-# axis directions (see `generate_cube_rotations` in that script).
-#
-# The stored latent cache (`<model>_{0..63}/features.npy`) was produced by
-# `AutoEncoder_dataset3`, which applies:
-#     angles = [id % 4, id // 4 % 4, id // 16] * pi/2
-#     R      = scipy.Rotation.from_euler('xyz', angles).as_matrix()
-#
-# All 24 cube rotations coincide with 24 of the 64 Euler rotations, so the
-# mapping below lets us pick a cube-id in [0, 24) for the condition image and
-# load the matching cached feature file using the corresponding Euler-id.
-# -----------------------------------------------------------------------------
-_CUBE24_AXIS_DIRECTIONS = (
-    np.array([1.0, 0.0, 0.0]),
-    np.array([-1.0, 0.0, 0.0]),
-    np.array([0.0, 1.0, 0.0]),
-    np.array([0.0, -1.0, 0.0]),
-    np.array([0.0, 0.0, 1.0]),
-    np.array([0.0, 0.0, -1.0]),
-)
+def _load_real_photo_flux(cond_dir: Path, rotation_id: int) -> np.ndarray:
+    real_photo_path = cond_dir / "real_photo.npz"
+    with np.load(real_photo_path) as real_photo_data:
+        flux = real_photo_data["flux"]
+
+    # Temporary bridge for the current migrated FLUX data. The intended format
+    # is [24, H, W, 3]; the existing single-image data can only be used for the
+    # identity rotation.
+    # ============ Bridge Block ============
+    if flux.ndim == 3:
+        if rotation_id != 0:
+            raise ValueError(
+                f"{real_photo_path} contains a single flux image but rotation_id={rotation_id}. "
+                "Set real_photo_ratio=0 for rotation augmentation, or provide flux with shape [24,H,W,3]."
+            )
+        return flux
+    # ============ ~Bridge Block ============
+    return flux[int(rotation_id)]
 
 
-def _build_cube24_rotation_matrices():
-    rotations = []
-    seen = set()
-    for z_axis in _CUBE24_AXIS_DIRECTIONS:
-        for y_axis in _CUBE24_AXIS_DIRECTIONS:
-            if abs(float(np.dot(z_axis, y_axis))) > 1e-6:
-                continue
-            x_axis = np.cross(y_axis, z_axis)
-            matrix = np.stack([x_axis, y_axis, z_axis], axis=1)
-            key = tuple(int(round(v)) for v in matrix.flatten())
-            if key in seen:
-                continue
-            seen.add(key)
-            rotations.append(matrix)
-    if len(rotations) != 24:
-        raise RuntimeError(f"Expected 24 cube rotations, got {len(rotations)}")
-    return rotations
-
-
-def _build_euler64_rotation_matrices():
-    matrices = []
-    for idx in range(64):
-        angles = np.array([idx % 4, idx // 4 % 4, idx // 16]) * np.pi / 2
-        matrices.append(Rotation.from_euler('xyz', angles).as_matrix())
-    return matrices
-
-
-def _build_cube24_to_euler64_mapping():
-    cube_mats = _build_cube24_rotation_matrices()
-    euler_mats = _build_euler64_rotation_matrices()
-    mapping = []
-    for cm in cube_mats:
-        matched = -1
-        for j, em in enumerate(euler_mats):
-            if np.allclose(cm, em, atol=1e-6):
-                matched = j
-                break
-        if matched < 0:
-            raise RuntimeError("Cube rotation has no Euler-64 counterpart")
-        mapping.append(matched)
-    return tuple(mapping)
-
-
-CUBE24_TO_EULER64: Final = _build_cube24_to_euler64_mapping()
-NUM_CUBE24_VIEWS: Final = 24
-CUBE24_ROTATION_MATRICES: Final = tuple(
-    matrix.astype(np.float32) for matrix in _build_cube24_rotation_matrices()
-)
-
-
-def cube24_to_euler64(cube_id):
-    """Map a cube-24 rotation id to the matching legacy Euler-64 id."""
-    return CUBE24_TO_EULER64[int(cube_id) % NUM_CUBE24_VIEWS]
-
-
-def cube24_rotation_matrix(cube_id):
-    """Return the Blender cube-24 rotation matrix for a cube-id in [0, 24)."""
-    return CUBE24_ROTATION_MATRICES[int(cube_id) % NUM_CUBE24_VIEWS]
-
-
-def _resize_condition_imgs_np(imgs_np: np.ndarray, height: int = 224, width: int = 224) -> np.ndarray:
-    """Resize each frame of imgs_np [N,H,W,C] to (height,width), matching dataset transforms."""
-
-    out = []
-    for i in range(imgs_np.shape[0]):
-        pil = T.functional.to_pil_image(imgs_np[i])
-        pil = pil.resize((width, height), Image.BILINEAR)
-        out.append(np.asarray(pil))
-    return np.stack(out, axis=0)
-
-
-def has_required_condition_files(v_condition_names, v_cond_dir: Path, v_cached_condition: bool, v_real_photo_ratio: float = 0.0) -> bool:
-    if not v_cond_dir.exists():
+def has_required_condition_files(condition_name, cond_dir: Path, cached_condition: bool, real_photo_ratio: float = 0.0) -> bool:
+    if not cond_dir.exists():
         return False
 
-    if any(name in v_condition_names for name in ("natural_img", "single_img", "multi_img", "sketch")):
-        if v_cached_condition:
-            return (v_cond_dir / "img_feature_dinov2.npy").is_file()
+    if condition_name == "multi_img":
+        raise NotImplementedError("multi_img is legacy HoLa-BRep multi-view conditioning and is disabled in this runtime.")
+    if condition_name == "txt":
+        raise NotImplementedError("txt conditioning is disabled until the new dataset format is defined.")
+    if condition_name == "natural_img":
+        raise NotImplementedError("natural_img/natural.npz is legacy data; use real_photo.npz with single_img or sketch.")
 
-        if not (v_cond_dir / "imgs.npz").is_file():
+    if condition_name == "pc" and not (cond_dir / "pc.ply").is_file():
+        return False
+
+    if condition_name == "single_img" or condition_name == "sketch":
+        if cached_condition:
+            if real_photo_ratio > 0:
+                raise ValueError("real_photo_ratio > 0 is not supported with cached_condition=True")
+            return (cond_dir / "img_feature_dinov2.npy").is_file()
+
+        if not (cond_dir / "imgs.npz").is_file():
             return False
-        # Only require FLUX data when real_photo_ratio > 0
-        if v_real_photo_ratio > 0:
-            if "single_img" in v_condition_names and not (v_cond_dir / "single_view.npz").is_file():
-                return False
-            if "sketch" in v_condition_names and not (v_cond_dir / "sketch_and_natural.npz").is_file():
-                return False
+        if real_photo_ratio > 0 and not (cond_dir / "real_photo.npz").is_file():
+            return False
 
     return True
 
 
-def prepare_condition(v_condition_names, v_cond_root, v_folder_path, v_id_aug,
+def prepare_condition(v_condition_names, v_cond_root, v_folder_path, rotation_id,
                       v_cache_data=None, v_transform=None,
                       v_num_points=None, v_real_photo_ratio=0.0):
     condition = {
 
     }
-    if "natural_img" in v_condition_names or "single_img" in v_condition_names or "multi_img" in v_condition_names or "sketch" in v_condition_names:
-        num_max_multi_view = 8
-        # Condition images are now rendered using the cube-24 proper-rotation
-        # group (see render_dataset_cube24_single_material.py). The legacy
-        # code assumed 64 single views per model; callers are expected to
-        # pass a cube-id in [0, 24) for v_id_aug.
-        num_max_single_view = NUM_CUBE24_VIEWS
-        if v_id_aug == -1:
-            v_id_aug = 0
+    if "multi_img" in v_condition_names:
+        raise NotImplementedError("multi_img is legacy HoLa-BRep multi-view conditioning and is disabled in this runtime.")
+    if "txt" in v_condition_names:
+        raise NotImplementedError("txt conditioning is disabled until the new dataset format is defined.")
+    if "natural_img" in v_condition_names:
+        raise NotImplementedError("natural_img/natural.npz is legacy data; use real_photo.npz with single_img or sketch.")
+
+    rotation_id = int(rotation_id)
+    if rotation_id < 0 or rotation_id >= NUM_CUBE24_VIEWS:
+        raise ValueError(f"rotation_id must be in [0, 23], got {rotation_id}")
+
+    if "single_img" in v_condition_names or "sketch" in v_condition_names:
+        cond_dir = v_cond_root / v_folder_path
 
         if v_cache_data:
+            if v_real_photo_ratio > 0:
+                raise ValueError("real_photo_ratio > 0 is not supported with cached_condition=True")
             ori_data = np.load(v_cond_root / v_folder_path / "img_feature_dinov2.npy")
             if "single_img" in v_condition_names:
-                img_features = torch.from_numpy(ori_data[v_id_aug][None, :]).float()
-                img_id = np.array([0], dtype=np.int64)
-            elif "sketch" in v_condition_names:
-                img_features = torch.from_numpy(ori_data[v_id_aug + num_max_single_view][None, :]).float()
+                img_features = torch.from_numpy(ori_data[rotation_id][None, :]).float()
                 img_id = np.array([0], dtype=np.int64)
             else:
-                img_id = np.random.choice(np.arange(num_max_multi_view), 4, replace=False)
-                # img_id = np.array([0,1,2,3], dtype=np.int64)
-                img_features = torch.from_numpy(
-                        ori_data[num_max_single_view + num_max_single_view + img_id * num_max_single_view + v_id_aug]).float()
+                img_features = torch.from_numpy(ori_data[rotation_id + NUM_CUBE24_VIEWS][None, :]).float()
+                img_id = np.array([0], dtype=np.int64)
 
             condition["img_id"] = torch.from_numpy(img_id)
             condition["img_features"] = img_features
         else:
             ori_data = np.load(v_cond_root / v_folder_path / "imgs.npz")
             if "single_img" in v_condition_names:
-                imgs = ori_data["svr_imgs"][v_id_aug][None, :]
-                pick_natural = np.random.rand()   # uniform in [0, 1)
-                if pick_natural < v_real_photo_ratio:
-                    natural_data = np.load(v_cond_root / v_folder_path / "single_view.npz")
-                    imgs = natural_data["flux"][None, :]
+                imgs = ori_data["svr_imgs"][rotation_id]
                 img_id = np.array([0], dtype=np.int64)
-            elif "multi_img" in v_condition_names:
-                img_id = np.random.choice(np.arange(num_max_multi_view), 4, replace=False)
-                # img_id = np.array([0,1,2,3], dtype=np.int64)
-                imgs = ori_data["mvr_imgs"][img_id * num_max_single_view + v_id_aug]
             else:
-                imgs = ori_data["sketch_imgs"][v_id_aug][None, :]
-                pick_natural = np.random.rand()   # uniform in [0, 1)
-                if pick_natural < v_real_photo_ratio:
-                    sketch_data = np.load(v_cond_root / v_folder_path / "sketch_and_natural.npz")
-                    imgs = sketch_data["sketch_img"][None, :]
+                imgs = ori_data["sketch_imgs"][rotation_id]
                 img_id = np.array([0], dtype=np.int64)
-            imgs = _resize_condition_imgs_np(imgs)
-            transformed_imgs = []
-            for id in range(imgs.shape[0]):
-                transformed_imgs.append(v_transform(imgs[id]))
-            transformed_imgs = torch.stack(transformed_imgs, dim=0)
+
+            if v_real_photo_ratio > 0:
+                real_photo = _load_real_photo_flux(cond_dir, rotation_id)
+                if np.random.rand() < v_real_photo_ratio:
+                    imgs = real_photo
+
+            transformed_imgs = v_transform(imgs)
             condition["ori_imgs"] = torch.from_numpy(imgs)
             condition["imgs"] = transformed_imgs
-            condition["img_id"] = torch.from_numpy(img_id)
+        condition["img_id"] = torch.from_numpy(img_id)
     if "pc" in v_condition_names:
         pc = o3d.io.read_point_cloud(str(v_cond_root / v_folder_path / "pc.ply"))
         points = np.concatenate((np.asarray(pc.points), np.asarray(pc.normals)), axis=-1)
         assert points.shape[0] == 10000
-        # Already move to GPU
-        # if v_id_aug != -1:
-        # angles = np.array([
-        # v_id_aug % 4,
-        # v_id_aug // 4 % 4,
-        # v_id_aug // 16
-        # ])
-        # points = rotate_pc(points, angles)
-
-        # points = crop_pc(points, 1000)
-        # points = noisy_pc(points)
-        # points = downsample_pc(points, v_num_points)
         condition["points"] = torch.from_numpy(points).float()[None,]
-    if "txt" in v_condition_names:
-        if v_cache_data:
-            difficulty = np.random.randint(0, 3)
-            ori_data = np.load(v_cond_root / v_folder_path / "text_feat.npy")[difficulty]
-            condition["txt_features"] = torch.from_numpy(ori_data).float()
-            condition["id_txt"] = difficulty
-        else:
-            difficulty = 0
-            condition["txt"] = open(v_cond_root / v_folder_path / "text.txt").readlines()[difficulty].strip()
-            condition["id_txt"] = difficulty
     return condition
 
 
@@ -347,7 +245,7 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
         super(AutoEncoder_dataset3, self).__init__()
         self.mode = v_training_mode
         self.conf = v_conf
-        self.max_intersection = 500
+        # self.max_intersection = 500
         self.scale_factor = int(v_conf["scale_factor"])
         if v_training_mode == "testing":
             listfile = v_conf['test_dataset']
@@ -416,21 +314,18 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
         face_points = torch.from_numpy(data_npz['sample_points_faces'])
         edge_points = torch.from_numpy(data_npz['sample_points_lines'])
 
-        cond_aug_id = -1
+        condition_rotation_id = 0
         if self.is_aug == 0:
             matrix = np.identity(3)
         elif self.is_aug == 1:
             if self.mode == "testing":
-                cube_id = (idx // self.ori_length) % NUM_CUBE24_VIEWS
-                cond_aug_id = cube_id
-                legacy_aug_id = cube24_to_euler64(cube_id)
-                # Keep AE feature-cache folder names compatible with the
-                # historical Euler-64 suffixes consumed by Diffusion_dataset.
-                output_prefix = "{}_{}".format(folder_path, legacy_aug_id)
+                rotation_id = (idx // self.ori_length) % NUM_CUBE24_VIEWS
+                condition_rotation_id = rotation_id
+                output_prefix = "{}_{}".format(folder_path, rotation_id)
             else:
-                cube_id = int(np.random.randint(0, NUM_CUBE24_VIEWS))
-                cond_aug_id = cube_id
-            matrix = cube24_rotation_matrix(cube_id)
+                rotation_id = int(np.random.randint(0, NUM_CUBE24_VIEWS))
+                condition_rotation_id = rotation_id
+            matrix = cube24_rotation_matrix(rotation_id)
         elif self.is_aug == 2:
             matrix = Rotation.from_euler('xyz', np.random.rand(3) * np.pi * 2).as_matrix()
         if self.is_aug != 0:
@@ -480,7 +375,7 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
         face_bbox = torch.cat((face_center, face_scale), dim=-1)
         edge_bbox = torch.cat((edge_center, edge_scale), dim=-1)
 
-        condition = prepare_condition(self.condition, self.conditional_data_root, folder_path, cond_aug_id,
+        condition = prepare_condition(self.condition, self.conditional_data_root, folder_path, condition_rotation_id,
                                       self.cached_condition, self.transform, self.conf["num_points"])
 
         return (
@@ -570,111 +465,136 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
 
 
 class Diffusion_dataset(torch.utils.data.Dataset):
-    def __init__(self, v_training_mode, v_conf):
+    def __init__(self, training_mode, config):
         super(Diffusion_dataset, self).__init__()
-        self.mode = v_training_mode
-        self.conf = v_conf
-        scale_factor = int(v_conf["scale_factor"])
-        self.max_intersection = 500
-        self.latent_root = Path(v_conf["latent_root"])
-        self.data_root = Path(v_conf["data_root"]) if v_conf["data_root"] is not None else None
-        self.load_topology = bool(v_conf["load_topology"])
-        if v_training_mode == "testing":
-            self.data_split = Path(v_conf['test_dataset'])
-            scale_factor = 1
-        elif v_training_mode == "training":
-            self.data_split = Path(v_conf['train_dataset'])
-        elif v_training_mode == "validation":
-            self.data_split = Path(v_conf['val_dataset'])
-            scale_factor = 1
-        else:
-            raise
+        self.mode = training_mode
+        self.conf = config
+        epoch_scale_factor      = int(self.conf["epoch_scale_factor"])
+        self.cached_latent_root = Path(self.conf["cached_latent_root"])
+        self.raw_data_root      = Path(self.conf["raw_data_root"]) if self.conf["raw_data_root"] is not None else None
+        self.load_topology      = bool(self.conf["load_topology"])
 
-        self.padding = v_conf["padding"]
-        self.max_faces = v_conf["max_faces"]
+        # --- Data split ---
+        if training_mode == "testing":
+            self.data_split = Path(self.conf['test_dataset'])
+        elif training_mode == "training":
+            self.data_split = Path(self.conf['train_dataset'])
+        elif training_mode == "validation":
+            self.data_split = Path(self.conf['val_dataset'])
+        else:
+            raise ValueError(f"Invalid training mode: {training_mode}")
+        epoch_scale_factor = 1 if training_mode != "training" else epoch_scale_factor
         print("Use deduplicate list ", self.data_split)
         filelist = [item.strip() for item in open(self.data_split).readlines()]
         filelist.sort()
 
-        # Cond related
-        self.is_aug = v_conf["is_aug"]
-        self.cached_condition = v_conf["cached_condition"]
-        self.real_photo_ratio = float(v_conf.get("real_photo_ratio", 0.0))
-        if v_training_mode == "validation":
+        # --- Padding Settings ---
+        self.padding            = self.conf["padding"]
+        self.max_faces          = self.conf["max_faces"]
+
+        # --- Condition Settings ---
+        self.is_aug             = self.conf["is_aug"]           # Whether to apply rotation augmentation
+        self.cached_condition   = self.conf["cached_condition"] # Whether to use cached condition features
+        self.real_photo_ratio   = self.conf["real_photo_ratio"] # Ratio of real photo to use for conditioning
+        
+        if training_mode == "validation":
             self.is_aug = False
             self.cached_condition = False
-        self.condition_names = list(v_conf["condition_names"])
-        self.conditional_data_root = Path(v_conf["condition_root"]) if self.condition_names else None
-        self.transform = T.Compose([
-            T.ToPILImage(),
-            T.Resize((224, 224)),
-            T.ToTensor(),
-            T.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-        ])
-        # Check cond data
-        if len(self.condition_names) > 0:
+            self.real_photo_ratio = 0.0
+
+        # --- Condition Names ---
+        self.condition_name         = self.conf["condition_name"]
+        self.condition_data_root  = Path(self.conf["condition_data_root"])
+        if self.condition_name == "single_img" or self.condition_name == "sketch":
+            self.img_transform = T.Compose([
+                T.ToPILImage(),
+                T.Resize((224, 224)),
+                T.ToTensor(),
+                T.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+            ])
+
+        if self.condition_name is not None:
             data_folders = []
             for item in filelist:
-                if has_required_condition_files(self.condition_names, self.conditional_data_root / item, self.cached_condition, self.real_photo_ratio):
+                if has_required_condition_files(self.condition_name, self.condition_data_root / item, self.cached_condition, self.real_photo_ratio):
                     data_folders.append(item)
             print("Filter out {} folders without feat".format(len(filelist) - len(data_folders)))
             filelist = data_folders
 
-        if v_conf["overfit"]:  # Overfitting mode
-            self.data_folders = filelist[:100] * scale_factor
+        # Display which local GPU/device (rank) this dataset is being used on.
+        # Try to get local rank for multi-GPU DDP setups; fallback to 0 if not found.
+        print("=======================================================")
+        local_rank = int(os.environ.get("LOCAL_RANK", os.environ.get("RANK", 0)))
+        print(f"===== {self.mode} mode dataset : local_rank={local_rank} ======")
+        print("Total data count:", len(filelist))
+        # --- Overfitting Training Mode ---
+        if self.conf["is_overfit"]:
+            print("\033[91m[!] OVERFIT TRAINING MODE [!]\033[0m")
+            self.data_folders = filelist[:100] * epoch_scale_factor
         else:
-            self.data_folders = filelist * scale_factor
+            self.data_folders = filelist * epoch_scale_factor
 
-        print("Total data num:", len(self.data_folders))
-        return
+        print("Epoch scale factor:", epoch_scale_factor)
+        print("Total data count:", len(self.data_folders))
+        print("=======================================================")
 
     def __len__(self):
         return len(self.data_folders)
 
-    def __getitem__(self, idx):
-        # idx = 0
-        folder_path = self.data_folders[idx]
-        # Sample a cube-24 rotation id (matches the Blender-rendered condition
-        # images) and translate it to the Euler-64 id used to name the cached
-        # latent tensors on disk. cube_id=0 means the first Blender cube24
-        # view, not necessarily the identity rotation.
-        if self.is_aug != 0:
-            cube_id = int(np.random.randint(0, NUM_CUBE24_VIEWS))
+    def _load_pc_points(self, folder_path):
+        pc = o3d.io.read_point_cloud(str(self.condition_data_root / folder_path / "pc.ply"))
+        points = np.concatenate((np.asarray(pc.points), np.asarray(pc.normals)), axis=-1)
+        assert points.shape[0] == 10000
+        return torch.from_numpy(points).float()[None,]
+
+    def _load_imgs(self, folder_path, rotation_id):
+        occ_imgs = np.load(self.condition_data_root / folder_path / "imgs.npz")
+        if self.condition_name == "single_img":
+            imgs = occ_imgs["svr_imgs"][rotation_id]
         else:
-            cube_id = 0
-        id_aug = cube24_to_euler64(cube_id)
-        data_npz = np.load(self.latent_root / (folder_path + f"_{id_aug}") / "features.npy")
-        latent_stats = torch.from_numpy(data_npz)
-        num_faces = latent_stats.shape[0]
+            imgs = occ_imgs["sketch_imgs"][rotation_id]
+        img_id = np.array([0], dtype=np.int64)
+
+        if self.real_photo_ratio > 0:
+            real_photo = _load_real_photo_flux(self.condition_data_root / folder_path, rotation_id)
+            if np.random.rand() < self.real_photo_ratio:
+                imgs = real_photo
+
+        return imgs, img_id
+
+    def __getitem__(self, idx):
+        model_id = self.data_folders[idx]
+        if self.is_aug:
+            rotation_id = int(np.random.randint(0, NUM_CUBE24_VIEWS))
+        else:
+            rotation_id = 0
+        latent_np = np.load(self.cached_latent_root / (model_id + f"_{rotation_id}") / "features.npy")
+        latent_tensor = torch.from_numpy(latent_np)
+        num_faces = latent_tensor.shape[0]
 
         if self.padding == "zero":
-            cached_latent_stats = torch.zeros((self.max_faces, latent_stats.shape[-1]), dtype=latent_stats.dtype)
-            cached_latent_stats[:num_faces] = latent_stats
+            # Zero padding
+            latent_tensor_padded = torch.zeros((self.max_faces, latent_tensor.shape[-1]), dtype=latent_tensor.dtype)
+            latent_tensor_padded[:num_faces] = latent_tensor
             face_mask = torch.zeros((self.max_faces,), dtype=torch.bool)
             face_mask[:num_faces] = True
         elif self.padding == "random":
-            if False:
-                index = torch.randperm(num_faces)
-                num_repeats = math.ceil(self.max_faces / index.shape[0])
-                index = index.repeat(num_repeats)[:self.max_faces]
-                index2 = torch.randperm(self.max_faces)
-                index = index[index2]
-            else:
-                positions = torch.arange(self.max_faces, device=latent_stats.device)
-                mandatory_mask = positions < num_faces
-                random_indices = (torch.rand((self.max_faces,), device=latent_stats.device) * num_faces).long()
-                indices = torch.where(mandatory_mask, positions, random_indices)
-                r_indices = torch.argsort(torch.rand((self.max_faces,), device=latent_stats.device), dim=0)
-                index = indices.gather(0, r_indices)
-            cached_latent_stats = latent_stats[index]
+            # Random padding
+            positions = torch.arange(self.max_faces, device=latent_tensor.device)
+            mandatory_mask = positions < num_faces
+            random_indices = (torch.rand((self.max_faces,), device=latent_tensor.device) * num_faces).long()
+            indices = torch.where(mandatory_mask, positions, random_indices)
+            r_indices = torch.argsort(torch.rand((self.max_faces,), device=latent_tensor.device), dim=0)
+            index = indices.gather(0, r_indices)
+            latent_tensor_padded = latent_tensor[index]
             face_mask = torch.ones((self.max_faces,), dtype=torch.bool)
         else:
-            raise ValueError("Invalid padding method")
+            raise ValueError(f"Invalid padding method: {self.padding}")
 
         # --- Topology: load GT adjacency and map to padded space ---
         padded_adj = None
-        if self.load_topology and self.data_root is not None:
-            brep_path = self.data_root / folder_path / "data.npz"
+        if self.load_topology and self.raw_data_root is not None:
+            brep_path = self.raw_data_root / model_id / "data.npz"
             if brep_path.exists():
                 brep_data = np.load(str(brep_path))
                 face_adj = torch.from_numpy(brep_data["face_adj"]).float()  # [num_faces_orig, num_faces_orig]
@@ -691,52 +611,63 @@ class Diffusion_dataset(torch.utils.data.Dataset):
             if padded_adj is None:
                 padded_adj = torch.zeros(self.max_faces, self.max_faces)
 
-        # prepare_condition indexes Blender-rendered views, so pass the
-        # cube-id directly (not the Euler-id used for the latent cache).
-        condition = prepare_condition(self.condition_names, self.conditional_data_root, folder_path, cube_id,
-                                      self.cached_condition, self.transform, self.conf["num_points"],
-                                      v_real_photo_ratio=self.real_photo_ratio)
+        if self.condition_name is None:
+            condition = {}
+        elif self.condition_name == "pc":
+            condition = {
+                "points": self._load_pc_points(model_id)
+            }
+        elif self.condition_name == "single_img" or self.condition_name == "sketch":
+            imgs, img_id = self._load_imgs(model_id, rotation_id)
+            condition = {
+                "ori_imgs" : torch.from_numpy(imgs),
+                "imgs" : self.img_transform(imgs),
+                "img_id" : torch.from_numpy(img_id)
+            }
+        else:
+            raise NotImplementedError(f"Invalid condition name: {self.condition_name}")
+
         return (
-            folder_path,
-            cached_latent_stats,
+            model_id,
+            latent_tensor_padded,
             face_mask,
             condition,
-            id_aug,
+            rotation_id,
             padded_adj,
         )
 
     @staticmethod
     def collate_fn(batch):
         (
-            v_prefix, v_cached_latent_stats, face_mask, conditions, id_aug, face_adj
+            model_id, latent_tensor_padded, face_mask, batch_condition, rotation_id, padded_adj
         ) = zip(*batch)
 
-        cached_latent_stats = torch.stack(v_cached_latent_stats, dim=0)
+        latent_tensor_padded = torch.stack(latent_tensor_padded, dim=0)
         face_mask = torch.stack(face_mask, dim=0)
-        id_aug = torch.tensor(id_aug)
+        rotation_id = torch.tensor(rotation_id)
 
         # Topology: stack adjacency matrices (None if not loaded)
-        if face_adj[0] is not None:
-            face_adj_batch = torch.stack(face_adj, dim=0)  # [B, max_faces, max_faces]
+        if padded_adj[0] is not None:
+            face_adj_batch = torch.stack(padded_adj, dim=0)  # [B, max_faces, max_faces]
         else:
             face_adj_batch = None
 
-        keys = conditions[0].keys()
+        keys = batch_condition[0].keys()
         condition_out = {key: [] for key in keys}
-        for idx in range(len(conditions)):
+        for one_condition in batch_condition:
             for key in keys:
-                condition_out[key].append(conditions[idx][key])
+                condition_out[key].append(one_condition[key])
 
         for key in keys:
-            condition_out[key] = torch.stack(condition_out[key], dim=0) if isinstance(condition_out[key][0], torch.Tensor) else \
-                condition_out[key]
+            if isinstance(condition_out[key][0], torch.Tensor):
+                condition_out[key] = torch.stack(condition_out[key], dim=0)
 
         result = {
-            "v_prefix"           : v_prefix,
-            "cached_latent_stats": cached_latent_stats,
+            "v_prefix"           : model_id,
+            "cached_latent_stats": latent_tensor_padded,
             "face_mask"          : face_mask,
             "conditions"         : condition_out,
-            "id_aug"             : id_aug,
+            "rotation_id"         : rotation_id,
         }
         if face_adj_batch is not None:
             result["face_adj"] = face_adj_batch
@@ -744,27 +675,20 @@ class Diffusion_dataset(torch.utils.data.Dataset):
 
 
 class Diffusion_dataset_mm(Diffusion_dataset):
-    def __init__(self, v_training_mode, v_conf):
-        super(Diffusion_dataset_mm, self).__init__(v_training_mode, v_conf)
-        self.cond_prob = list(v_conf["cond_prob"])
+    def __init__(self, training_mode, config):
+        super(Diffusion_dataset_mm, self).__init__(training_mode, config)
+        self.cond_prob = list(self.conf["cond_prob"])
         self.cond_prob_acc = np.cumsum(self.cond_prob)
         return
 
     def __getitem__(self, idx):
         # idx = 0
         folder_path = self.data_folders[idx]
-        # Sample a cube-24 rotation id; map it to the Euler-64 id used by the
-        # cached latent tensors. When augmentation is disabled we use the fixed
-        # first Blender cube24 view so feature and condition indexing match.
         if self.is_aug != 0:
-            cube_id = int(np.random.randint(0, NUM_CUBE24_VIEWS))
-            id_aug = cube24_to_euler64(cube_id)
-            cond_id = cube_id
+            rotation_id = int(np.random.randint(0, NUM_CUBE24_VIEWS))
         else:
-            cube_id = 0
-            id_aug = cube24_to_euler64(cube_id)
-            cond_id = -1
-        data_npz = np.load(self.latent_root / (folder_path + f"_{id_aug}") / "features.npy")
+            rotation_id = 0
+        data_npz = np.load(self.latent_root / (folder_path + f"_{rotation_id}") / "features.npy")
         latent_stats = torch.from_numpy(data_npz)
         num_faces = latent_stats.shape[0]
 
@@ -774,20 +698,13 @@ class Diffusion_dataset_mm(Diffusion_dataset):
             face_mask = torch.zeros((self.max_faces,), dtype=torch.bool)
             face_mask[:num_faces] = True
         elif self.padding == "random":
-            if False:
-                index = torch.randperm(num_faces)
-                num_repeats = math.ceil(self.max_faces / index.shape[0])
-                index = index.repeat(num_repeats)[:self.max_faces]
-                index2 = torch.randperm(self.max_faces)
-                index = index[index2]
-            else:
-                positions = torch.arange(self.max_faces, device=latent_stats.device)
-                mandatory_mask = positions < num_faces
-                random_indices = (
-                        torch.rand((self.max_faces,), device=latent_stats.device) * num_faces).long()
-                indices = torch.where(mandatory_mask, positions, random_indices)
-                r_indices = torch.argsort(torch.rand((self.max_faces,), device=latent_stats.device), dim=0)
-                index = indices.gather(0, r_indices)
+            positions = torch.arange(self.max_faces, device=latent_stats.device)
+            mandatory_mask = positions < num_faces
+            random_indices = (
+                    torch.rand((self.max_faces,), device=latent_stats.device) * num_faces).long()
+            indices = torch.where(mandatory_mask, positions, random_indices)
+            r_indices = torch.argsort(torch.rand((self.max_faces,), device=latent_stats.device), dim=0)
+            index = indices.gather(0, r_indices)
             cached_latent_stats = latent_stats[index]
             face_mask = torch.ones((self.max_faces,), dtype=torch.bool)
         else:
@@ -804,9 +721,7 @@ class Diffusion_dataset_mm(Diffusion_dataset):
         else:
             used_condition.append(self.condition_names[idx])
 
-        # Use the cube-id for image indexing; cond_id == -1 disables aug and
-        # prepare_condition will fall back to view 0 internally.
-        condition = prepare_condition(used_condition, self.conditional_data_root, folder_path, cond_id,
+        condition = prepare_condition(used_condition, self.conditional_data_root, folder_path, rotation_id,
                                       self.cached_condition, self.transform, self.conf["num_points"],
                                       v_real_photo_ratio=self.real_photo_ratio)
         condition["name"] = self.condition_names[idx]
@@ -816,28 +731,22 @@ class Diffusion_dataset_mm(Diffusion_dataset):
             cached_latent_stats,
             face_mask,
             condition,
-            id_aug
+            rotation_id
         )
 
     @staticmethod
     def collate_fn(batch):
         (
-            v_prefix, v_cached_latent_stats, face_mask, conditions, id_aug
+            v_prefix, v_cached_latent_stats, face_mask, conditions, rotation_id
         ) = zip(*batch)
 
         cached_latent_stats = torch.stack(v_cached_latent_stats, dim=0)
         face_mask = torch.stack(face_mask, dim=0)
-        id_aug = torch.tensor(id_aug)
-
-        keys = conditions[0].keys()
+        rotation_id = torch.tensor(rotation_id)
 
         condition_out = {
             "names"       : [],
             "points"      : [],
-
-            "txt"         : [],
-            "txt_features": [],
-            "id_txt"      : [],
 
             "img_features": [],
             "img_id"      : [],
@@ -847,13 +756,9 @@ class Diffusion_dataset_mm(Diffusion_dataset):
 
         id_condition = {
             "pc"            : [],
-            "txt"           : [],
             "single_img"    : [],
-            "multi_img"     : [],
             "sketch"        : [],
             "single_img_rec": [],
-            "multi_img_rec" : [],
-            "multi_img_rec2": [],
             "sketch_rec"    : [],
         }
         for id_batch, condition in enumerate(conditions):
@@ -861,14 +766,7 @@ class Diffusion_dataset_mm(Diffusion_dataset):
             if condition["name"] == "pc":
                 condition_out["points"].append(condition["points"])
                 id_condition["pc"].append(id_batch)
-            elif condition["name"] == "txt":
-                if "txt_features" in condition:
-                    condition_out["txt_features"].append(condition["txt_features"])
-                else:
-                    condition_out["txt"].append(condition["txt"])
-                condition_out["id_txt"].append(condition["id_txt"])
-                id_condition["txt"].append(id_batch)
-            elif condition["name"] in ["single_img", "multi_img", "sketch"]:
+            elif condition["name"] in ["single_img", "sketch"]:
                 if "img_features" in condition:
                     id_cur = sum([item.shape[0] for item in condition_out["img_features"]])
                     condition_out["img_features"].append(condition["img_features"])
@@ -879,15 +777,6 @@ class Diffusion_dataset_mm(Diffusion_dataset):
                 if condition["name"] == "single_img":
                     id_condition["single_img"].append(id_batch)
                     id_condition["single_img_rec"].append(id_cur)
-                elif condition["name"] == "multi_img":
-                    id_condition["multi_img"].append(id_batch)
-                    cur_max = 1 + (max(id_condition["multi_img_rec2"]) if len(id_condition["multi_img_rec2"]) > 0 else -1)
-                    for id_inside in range(len(condition["img_id"])):
-                        id_condition["multi_img_rec"].append(id_cur + id_inside)
-                        id_condition["multi_img_rec2"].append(cur_max)
-                    # id_condition["multi_img_rec"]+=([id_cur+i for i in range(len(condition["img_id"]))])
-                    # cur_max = 1+(max(id_condition["multi_img_rec2"]) if len(id_condition["multi_img_rec2"])>0 else -1)
-                    # id_condition["multi_img_rec2"]+=([cur_max for i in range(len(condition["img_id"]))])
                 elif condition["name"] == "sketch":
                     id_condition["sketch"].append(id_batch)
                     id_condition["sketch_rec"].append(id_cur)
@@ -897,8 +786,6 @@ class Diffusion_dataset_mm(Diffusion_dataset):
 
         if len(condition_out["points"]) > 0:
             condition_out["points"] = torch.concatenate(condition_out["points"], dim=0)
-        if len(condition_out["txt_features"]) > 0:
-            condition_out["txt_features"] = torch.stack(condition_out["txt_features"], dim=0)
         if len(condition_out["img_features"]) > 0:
             condition_out["img_features"] = torch.concatenate(condition_out["img_features"], dim=0)
         if len(condition_out["ori_imgs"]) > 0:
@@ -907,14 +794,11 @@ class Diffusion_dataset_mm(Diffusion_dataset):
             condition_out["imgs"] = torch.concatenate(condition_out["imgs"], dim=0)
         if len(condition_out["img_id"]) > 0:
             condition_out["img_id"] = torch.concatenate(condition_out["img_id"], dim=0)
-        if len(id_condition["multi_img_rec2"]) > 0:
-            id_condition["multi_img_rec2"] = torch.tensor(id_condition["multi_img_rec2"], dtype=torch.long)
-
         condition_out["id_batch"] = id_condition
         return {
             "v_prefix"           : v_prefix,
             "cached_latent_stats": cached_latent_stats,
             "face_mask"          : face_mask,
             "conditions"         : condition_out,
-            "id_aug"             : id_aug,
+            "rotation_id"         : rotation_id,
         }

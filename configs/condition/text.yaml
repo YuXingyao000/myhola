@@ -1,5 +1,5 @@
 type: text
-dataset_names: [txt]
+condition_name: txt
 cached_features: false
 output_dim: 1024
 image:
