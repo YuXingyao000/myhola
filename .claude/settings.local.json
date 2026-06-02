@@ -9,7 +9,8 @@
       "Bash(conda env *)",
       "Bash(conda run *)",
       "Bash(D:/Miniconda/envs/torch/python.exe tools/debug_rotation_migration.py --model-id 00261287 --output debug_output/00261287)",
-      "Bash(D:/Miniconda/envs/torch/python.exe -m pip install scipy --quiet)"
+      "Bash(D:/Miniconda/envs/torch/python.exe -m pip install scipy --quiet)",
+      "Bash(git diff *)"
     ]
   }
 }
