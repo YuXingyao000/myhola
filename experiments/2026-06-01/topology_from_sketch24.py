@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import sys
 import zipfile
 import zlib
 from pathlib import Path
@@ -23,6 +24,10 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 import torchvision.transforms as T
 from tqdm.auto import tqdm
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from src.brepnet.data.rotations import NUM_CUBE24_VIEWS, get_cube24_rotation_matrices
 
