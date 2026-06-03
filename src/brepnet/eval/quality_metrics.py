@@ -137,7 +137,12 @@ def compute_clip_realism(image: np.ndarray, clip_model, clip_processor, device,
     """CLIP image-text cosine similarity (realism score)."""
     import torch
     inputs = clip_processor(images=Image.fromarray(image), return_tensors="pt").to(device)
-    text_inputs = clip_processor(text=[text], return_tensors="pt", padding=True).to(device)
+    text_inputs = clip_processor(
+        text=[text],
+        return_tensors="pt",
+        padding=True,
+        truncation=True,
+    ).to(device)
     with torch.no_grad():
         img_feat = _clip_embed(clip_model.get_image_features(**inputs))
         txt_feat = _clip_embed(clip_model.get_text_features(**text_inputs))
@@ -200,13 +205,19 @@ def evaluate_model(
 
     # DINO cosine: OCC vs FLUX (semantic similarity)
     if dino_components is not None:
-        model, processor, device = dino_components
-        result["dino_cosine"] = compute_dino_cosine(occ_img, flux_img, model, processor, device)
+        try:
+            model, processor, device = dino_components
+            result["dino_cosine"] = compute_dino_cosine(occ_img, flux_img, model, processor, device)
+        except Exception as e:
+            logger.warning("model=%s dino error: %s", model_id, e)
 
     # CLIP realism: FLUX vs text anchor
     if clip_components is not None:
-        clip_model, clip_processor, device = clip_components
-        result["clip_realism"] = compute_clip_realism(flux_img, clip_model, clip_processor, device)
+        try:
+            clip_model, clip_processor, device = clip_components
+            result["clip_realism"] = compute_clip_realism(flux_img, clip_model, clip_processor, device)
+        except Exception as e:
+            logger.warning("model=%s clip error: %s", model_id, e)
 
     return result
 
@@ -402,7 +413,20 @@ def evaluate_parallel(
     import ray
     from ray.util import ActorPool
 
+    if actors_per_gpu < 1:
+        raise ValueError(f"actors_per_gpu must be >= 1, got {actors_per_gpu}")
+
     ray.init(ignore_reinit_error=True)
+
+    ray_gpus = int(ray.cluster_resources().get("GPU", 0))
+    if ray_gpus < 1:
+        raise RuntimeError("Ray cluster has no GPU resources; SAM2 evaluation needs at least one GPU.")
+    if num_gpus > ray_gpus:
+        logger.warning(
+            "Requested %d GPUs but Ray only has %d visible GPU resources; using %d GPUs.",
+            num_gpus, ray_gpus, ray_gpus,
+        )
+        num_gpus = ray_gpus
 
     gpus_per_actor = 1.0 / actors_per_gpu
     num_actors = num_gpus * actors_per_gpu
@@ -529,12 +553,18 @@ def main() -> None:
     }
     if args.compute_dino:
         d = [r["dino_cosine"] for r in results if "dino_cosine" in r]
-        report["dino_mean"] = float(np.mean(d))
-        report["dino_std"] = float(np.std(d))
+        if d:
+            report["dino_mean"] = float(np.mean(d))
+            report["dino_std"] = float(np.std(d))
+        else:
+            logger.warning("No DINO scores collected.")
     if args.compute_clip:
         c = [r["clip_realism"] for r in results if "clip_realism" in r]
-        report["clip_mean"] = float(np.mean(c))
-        report["clip_std"] = float(np.std(c))
+        if c:
+            report["clip_mean"] = float(np.mean(c))
+            report["clip_std"] = float(np.std(c))
+        else:
+            logger.warning("No CLIP scores collected.")
 
     print("\n" + "=" * 60)
     print("FLUX Quality Report")
