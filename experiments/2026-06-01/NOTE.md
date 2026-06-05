@@ -24,6 +24,68 @@ zlib.error: Error -3 while decompressing data: invalid code lengths set
   - 将 cube24 rotation matrix 投影成 rotation embedding
   - 用 attention pooling 聚合 24 个视角的 image feature
 
+
+## 模型架构图
+
+当前四个 toy model 都只训练一个 topology predictor，不接 diffusion model。DINOv2 backbone 是 frozen 的，训练参数主要集中在 image aggregation、face token head、valid head 和 edge head。
+
+### 24 视角模型：`svr24` / `sketch24`
+
+```mermaid
+flowchart TD
+    A["24 张输入图片<br/>[B,24,3,224,224]"] --> B["Frozen DINOv2<br/>逐视角提取 CLS feature"]
+    V["view_ids<br/>0..23"] --> C["Learnable view embedding"]
+    R["cube24 rotation matrix<br/>24 x 3 x 3"] --> D["Rotation projection"]
+    B --> E["逐视角 image feature"]
+    C --> E
+    D --> E
+    E --> F["Attention pooling<br/>over 24 views"]
+    F --> G["Global image feature"]
+    G --> H["Face token head"]
+    H --> I["30 个 face tokens<br/>[B,max_faces,face_dim]"]
+    I --> J["Valid head"]
+    J --> K["face 是否有效<br/>valid logits"]
+    I --> L["Pair feature<br/>fi, fj, abs(fi-fj), fi*fj"]
+    L --> M["Edge head"]
+    M --> N["Symmetrize<br/>mask diagonal"]
+    N --> O["face-adjacency logits<br/>[B,30,30]"]
+```
+
+### 单图模型：`real_photo` / `svr_single`
+
+```mermaid
+flowchart TD
+    A["1 张输入图片<br/>[B,3,224,224]"] --> B["Frozen DINOv2<br/>提取 CLS feature"]
+    B --> C["Global image feature"]
+    C --> D["Face token head"]
+    D --> E["30 个 face tokens<br/>[B,max_faces,face_dim]"]
+    E --> F["Valid head"]
+    F --> G["face 是否有效<br/>valid logits"]
+    E --> H["Pair feature<br/>fi, fj, abs(fi-fj), fi*fj"]
+    H --> I["Edge head"]
+    I --> J["Symmetrize<br/>mask diagonal"]
+    J --> K["face-adjacency logits<br/>[B,30,30]"]
+```
+
+### 共享预测头和 loss
+
+```text
+image(s)
+  -> frozen DINOv2 CLS feature
+  -> global image feature
+  -> face_head
+  -> max_faces 个 face token
+      -> valid_head -> valid_logits
+      -> pairwise edge_head -> edge_logits -> symmetric face-adjacency matrix
+
+loss = weighted_edge_bce + 0.5 * valid_bce
+```
+
+- `valid_head` 学的是哪些 face slot 是真实 face，哪些是 padding。
+- `edge_head` 只在真实 face pair 的上三角位置计算 loss，并对正样本边做 reweight，缓解 adjacency matrix 稀疏导致的类别不平衡。
+- 输出矩阵会被对称化，并把 diagonal mask 掉，因为 face 不应该和自己相邻。
+- 24 视角版本相比最初版本多了 `view embedding + rotation embedding + attention pooling`，避免简单平均 24 个视角时丢掉相机/旋转信息。
+
 ## 第一轮训练状态
 
 - `real_photo` 和 `svr_single` 已经完成训练，并生成了 validation `metrics.json`。
@@ -60,3 +122,33 @@ ModuleNotFoundError: No module named src
 
 当前解读：两个单图模型已经显示出非随机的拓扑信号，`edge_auc` 大约 0.72，`edge_f1` 大约 0.57；但它们还不是强拓扑预测器。`real_photo` 在这轮略好于 `svr_single`。`face_count_mae` 仍然在 1.6-1.7 左右，说明 face 数预测还有明显噪声。
 
+## 24 视角阶段性结果和发现
+
+`svr24` 和 `sketch24` 目前都已经跑到第 18/20 个 epoch 左右，虽然还差最后约 2 个 epoch，但 best validation checkpoint 已经比较明确。两个 24-view 模型的 best checkpoint 都出现在第 7 个 epoch 附近；后续 train loss 持续下降，但 validation loss 上升，`edge_ap`/`edge_auc` 下降，说明模型已经开始过拟合。
+
+### 24-view best validation metrics
+
+| 模型 | best epoch | val_loss | edge_ap | edge_auc | edge_f1 | edge_iou | recall@GT | face_count_mae | exact_matrix_acc |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `svr24` | 7 | 0.8042 | 0.6131 | 0.7345 | 0.5759 | 0.4044 | 0.5956 | 0.88 | 0.0297 |
+| `sketch24` | 7 | 0.8115 | 0.6092 | 0.7306 | 0.5732 | 0.4018 | 0.5932 | 1.00 | 0.0240 |
+
+### 和单图模型对比
+
+| 模型 | edge_ap | edge_auc | edge_f1 | edge_iou | face_count_mae | exact_matrix_acc |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `svr24` | 0.6131 | 0.7345 | 0.5759 | 0.4044 | 0.88 | 0.0297 |
+| `sketch24` | 0.6092 | 0.7306 | 0.5732 | 0.4018 | 1.00 | 0.0240 |
+| `real_photo` | 0.5979 | 0.7265 | 0.5723 | 0.4008 | 1.60 | 0.0026 |
+| `svr_single` | 0.5830 | 0.7200 | 0.5675 | 0.3962 | 1.74 | 0.0029 |
+
+### 结论
+
+- 增加图片数量本身带来的边分类提升不大。`svr24`/`sketch24` 的 `edge_ap`、`edge_auc`、`edge_f1` 只比单图模型略高。
+- 24-view 最明显的收益在 `face_count_mae` 和 `exact_matrix_acc`：
+  - `face_count_mae` 从单图的约 1.6-1.7 降到 0.88-1.00。
+  - `exact_matrix_acc` 从单图的约 0.002-0.003 提升到 0.024-0.030。
+- 这说明多视角更有助于判断物体整体结构复杂度和 face 数量，但对“哪些 face 两两相邻”的 topology edge 分类帮助有限。
+- 当前 toy setup 的瓶颈可能不是图片数量，而是输出表示方式：模型用固定顺序的 padded face slots 预测 adjacency matrix，本质上不是 permutation-invariant graph prediction，也没有显式建模 CAD face 实体。
+- 后续如果继续做 topology predictor，应该优先考虑更合理的拓扑输出建模，而不是单纯增加视角数量。例如：先预测 face/entity proposals，再预测 graph；或者使用 set/graph matching、permutation-invariant loss、structured graph decoder。
+- `svr24` 日志中仍然出现坏样本 `00750732` 的 `.npz` 解压错误并被跳过；`sketch24` 暂未观察到同类 skip。
