@@ -40,11 +40,19 @@ condition_fuser:
 
 topology_bias:
   enabled: false
-  source: gt_adjacency
+  source: gt_adjacency  # gt_adjacency | learned
   target: self_attention
   mode: soft_bias
   timestep_weight: linear_high_noise
   scale: 2.0
+  predictor:
+    checkpoint: null
+    max_faces: 30
+    hidden_dim: 512
+    face_dim: 128
+    dino_model: facebook/dinov2-large
+    freeze: true
+    edge_threshold: 0.5
 
 autoencoder:
   name: AutoEncoder_light

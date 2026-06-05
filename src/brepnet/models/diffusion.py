@@ -9,8 +9,10 @@ from tqdm import tqdm
 from src.brepnet.models.diffusion_condition import build_condition_encoder
 from src.brepnet.models.diffusion_denoiser import (
     BRepDenoiser,
+    LearnedTopologySelfAttentionMask,
     OracleTopologySelfAttentionMask,
     build_condition_fuser,
+    build_topology_self_attention,
 )
 from src.brepnet.models.diffusion_latents import LatentProvider
 from src.brepnet.models.diffusion_padding import build_face_padder
@@ -56,7 +58,7 @@ class Diffusion(nn.Module):
             cfg             =   cfg["denoiser"],
             condition_fuser =   condition_fuser,
         )
-        self.oracle_topology_self_attention = OracleTopologySelfAttentionMask(
+        self.oracle_topology_self_attention = build_topology_self_attention(
             cfg                 =   cfg["topology_bias"],
             num_train_timesteps =   noise_cfg["num_train_timesteps"],
         )
@@ -82,6 +84,18 @@ class Diffusion(nn.Module):
             self_attention_mask,
         )
 
+    def _topology_input(self, batch: dict) -> Tensor | None:
+        """Pick the right input for the topology self-attention module.
+
+        - OracleTopologySelfAttentionMask: needs GT face_adj from batch
+        - LearnedTopologySelfAttentionMask: needs raw images from batch
+        """
+        if not self.oracle_topology_self_attention.enabled:
+            return None
+        if isinstance(self.oracle_topology_self_attention, LearnedTopologySelfAttentionMask):
+            return batch["conditions"]["imgs"]
+        return batch["face_adj"]
+
     def forward(self, batch: dict, v_test: bool = False) -> dict[str, Tensor]:
         latent_batch = self.latent_provider(batch)
         latent_sequence = latent_batch.values
@@ -95,8 +109,8 @@ class Diffusion(nn.Module):
         condition = self.extract_condition(batch)
         noise = torch.randn(latent_sequence.shape, device=latent_sequence.device)
         noisy_latent_sequence = self.noise_scheduler.add_noise(latent_sequence, noise, timesteps)
-        face_adjacency = batch["face_adj"] if self.oracle_topology_self_attention.enabled else None
-        self_attention_mask = self.oracle_topology_self_attention(face_adjacency, timesteps)
+        topology_input = self._topology_input(batch)
+        self_attention_mask = self.oracle_topology_self_attention(topology_input, timesteps)
 
         prediction, align_loss = self.diffuse(
             noisy_latent_sequence,
@@ -135,11 +149,16 @@ class Diffusion(nn.Module):
         condition = self.extract_condition(v_data) if v_data is not None else None
         if condition is not None:
             condition = condition[:num_samples]
-        face_adjacency = v_data["face_adj"][:num_samples] if self.oracle_topology_self_attention.enabled else None
+        if not self.oracle_topology_self_attention.enabled or v_data is None:
+            topology_input = None
+        elif isinstance(self.oracle_topology_self_attention, LearnedTopologySelfAttentionMask):
+            topology_input = v_data["conditions"]["imgs"][:num_samples]
+        else:
+            topology_input = v_data["face_adj"][:num_samples]
 
         for timestep in tqdm(self.noise_scheduler.timesteps, disable=not v_log):
             timesteps = timestep.reshape(-1).to(device)
-            self_attention_mask = self.oracle_topology_self_attention(face_adjacency, timesteps)
+            self_attention_mask = self.oracle_topology_self_attention(topology_input, timesteps)
             prediction, _ = self.diffuse(
                 latent_sequence,
                 timesteps,
