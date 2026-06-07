@@ -1,0 +1,56 @@
+{
+  "data_root": "/mnt/d/data/deepcad_v7",
+  "condition_root": "/mnt/d/data/deepcad_v7_cond",
+  "latent_root": "/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24",
+  "latent_views": "all",
+  "require_imgs": true,
+  "require_real_photo": true,
+  "require_cached_condition": false,
+  "in_place": true,
+  "lists": [
+    {
+      "input_path": "src/brepnet/data/list/deduplicated_deepcad_testing_7_30_sample_100.txt",
+      "output_path": "src/brepnet/data/list/deduplicated_deepcad_testing_7_30_sample_100.txt",
+      "original_count": 100,
+      "duplicate_count": 0,
+      "checked_count": 100,
+      "kept_count": 100,
+      "removed_count": 0,
+      "removed_by_reason": {}
+    },
+    {
+      "input_path": "src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt",
+      "output_path": "src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt",
+      "original_count": 2424,
+      "duplicate_count": 0,
+      "checked_count": 2424,
+      "kept_count": 2424,
+      "removed_count": 0,
+      "removed_by_reason": {}
+    },
+    {
+      "input_path": "src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt",
+      "output_path": "src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt",
+      "original_count": 47284,
+      "duplicate_count": 0,
+      "checked_count": 47284,
+      "kept_count": 46627,
+      "removed_count": 657,
+      "removed_by_reason": {
+        "missing_condition_dir": 657
+      }
+    },
+    {
+      "input_path": "src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt",
+      "output_path": "src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt",
+      "original_count": 3517,
+      "duplicate_count": 0,
+      "checked_count": 3517,
+      "kept_count": 3505,
+      "removed_count": 12,
+      "removed_by_reason": {
+        "missing_condition_dir": 12
+      }
+    }
+  ]
+}

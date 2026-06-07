@@ -1,0 +1,10 @@
+entries: 53225
+unique_model_ids: 53225
+passed: 52556
+failed: 669
+required_issues: 16725
+warnings: 0
+
+issues_by_code:
+  missing_latent_dir: 16056
+  missing_condition_dir: 669

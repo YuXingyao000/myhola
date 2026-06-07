@@ -1,0 +1,65 @@
+{
+  "inputs": {
+    "data_root": "/mnt/d/data/deepcad_v7",
+    "condition_root": "/mnt/d/data/deepcad_v7_cond",
+    "latent_root": "/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24",
+    "lists": [
+      {
+        "split": "train",
+        "path": "src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt"
+      },
+      {
+        "split": "val",
+        "path": "src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt"
+      },
+      {
+        "split": "test",
+        "path": "src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt"
+      }
+    ],
+    "latent_views": "all",
+    "latent_model_dim": 32,
+    "latent_cache_dim": 64,
+    "check_npz_arrays": false,
+    "check_latent_shape": false,
+    "check_cached_condition_shape": false,
+    "require_imgs": true,
+    "require_sketch": false,
+    "require_real_photo": true,
+    "require_cached_condition": false,
+    "require_pc": false,
+    "max_models": null
+  },
+  "totals": {
+    "entries": 53225,
+    "unique_model_ids": 53225,
+    "passed": 52556,
+    "failed": 669,
+    "issues": 16725,
+    "required_issues": 16725,
+    "warnings": 0,
+    "duplicate_model_ids": 0
+  },
+  "by_split": {
+    "test": {
+      "entries": 2424,
+      "passed": 2424,
+      "failed": 0
+    },
+    "train": {
+      "entries": 47284,
+      "passed": 46627,
+      "failed": 657
+    },
+    "val": {
+      "entries": 3517,
+      "passed": 3505,
+      "failed": 12
+    }
+  },
+  "issues_by_code": {
+    "missing_latent_dir": 16056,
+    "missing_condition_dir": 669
+  },
+  "duplicate_examples": {}
+}

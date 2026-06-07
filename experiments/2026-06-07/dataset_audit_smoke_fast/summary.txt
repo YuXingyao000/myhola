@@ -1,0 +1,10 @@
+entries: 20
+unique_model_ids: 20
+passed: 19
+failed: 1
+required_issues: 25
+warnings: 0
+
+issues_by_code:
+  missing_latent_dir: 24
+  missing_condition_dir: 1

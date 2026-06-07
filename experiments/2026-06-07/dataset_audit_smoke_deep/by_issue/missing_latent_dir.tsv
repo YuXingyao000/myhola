@@ -1,0 +1,25 @@
+severity	split	model_id	asset	detail	path
+required	train	00000346	latent.dir	latent cache directory for rotation 0 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_0
+required	train	00000346	latent.dir	latent cache directory for rotation 1 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_1
+required	train	00000346	latent.dir	latent cache directory for rotation 2 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_2
+required	train	00000346	latent.dir	latent cache directory for rotation 3 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_3
+required	train	00000346	latent.dir	latent cache directory for rotation 4 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_4
+required	train	00000346	latent.dir	latent cache directory for rotation 5 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_5
+required	train	00000346	latent.dir	latent cache directory for rotation 6 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_6
+required	train	00000346	latent.dir	latent cache directory for rotation 7 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_7
+required	train	00000346	latent.dir	latent cache directory for rotation 8 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_8
+required	train	00000346	latent.dir	latent cache directory for rotation 9 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_9
+required	train	00000346	latent.dir	latent cache directory for rotation 10 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_10
+required	train	00000346	latent.dir	latent cache directory for rotation 11 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_11
+required	train	00000346	latent.dir	latent cache directory for rotation 12 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_12
+required	train	00000346	latent.dir	latent cache directory for rotation 13 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_13
+required	train	00000346	latent.dir	latent cache directory for rotation 14 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_14
+required	train	00000346	latent.dir	latent cache directory for rotation 15 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_15
+required	train	00000346	latent.dir	latent cache directory for rotation 16 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_16
+required	train	00000346	latent.dir	latent cache directory for rotation 17 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_17
+required	train	00000346	latent.dir	latent cache directory for rotation 18 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_18
+required	train	00000346	latent.dir	latent cache directory for rotation 19 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_19
+required	train	00000346	latent.dir	latent cache directory for rotation 20 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_20
+required	train	00000346	latent.dir	latent cache directory for rotation 21 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_21
+required	train	00000346	latent.dir	latent cache directory for rotation 22 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_22
+required	train	00000346	latent.dir	latent cache directory for rotation 23 is missing	/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000346_23

@@ -1,0 +1,21 @@
+split	model_id	status	required_issues	warnings	issue_codes
+train	00000061	pass	0	0	
+train	00000070	pass	0	0	
+train	00000168	pass	0	0	
+train	00000329	pass	0	0	
+train	00000346	fail	25	0	missing_condition_dir,missing_latent_dir
+train	00000348	pass	0	0	
+train	00000356	pass	0	0	
+train	00000413	pass	0	0	
+train	00000418	pass	0	0	
+train	00000559	pass	0	0	
+train	00000633	pass	0	0	
+train	00000638	pass	0	0	
+train	00000711	pass	0	0	
+train	00000712	pass	0	0	
+train	00000714	pass	0	0	
+train	00000802	pass	0	0	
+train	00000842	pass	0	0	
+train	00000843	pass	0	0	
+train	00000849	pass	0	0	
+train	00000954	pass	0	0	
