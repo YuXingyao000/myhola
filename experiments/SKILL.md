@@ -1,159 +1,178 @@
 ---
-name: write-experiment-commands
-description: Write runnable experiment commands into experiments/{date}/commands.sh following the project's simple copy-paste format.
+name: brepnet-experiment-notes
+description: Manage HoLa-BRep experiment folders under experiments/ with one dated folder per day, a mandatory NOTE.md, and per-experiment records that explain why, implementation, and results.
 ---
 
-# Write Experiment Commands
+# BRepNet Experiment Notes
 
-Use this skill when the user asks to add new training, inference, evaluation, or data generation commands.
+Use this skill when creating, updating, summarizing, or reorganizing anything under `experiments/`.
 
-## Format Rules
+The current project habit is note-first: commands and scripts are supporting artifacts, while `NOTE.md` is the durable experiment log.
 
-1. **One folder per date**: `experiments/YYYY-MM-DD/`
-2. **每个文件夹必须有 `NOTE.md`**: 记录当天实验目的、哪些必做、哪些可选
-3. **`commands.sh`**: 可直接复制粘贴的命令
-4. **Flat structure**: no case/esac, no functions, no variables except paths at the top
-5. **Section headers**: use `# ═══` dividers with short section titles
-6. **Each command is self-contained**: can be copied as-is to terminal
-7. **Comments above each command**: one line explaining what it does
-8. **Working directory**: always `cd /mnt/d/python` at the top
+## Core Rules
 
-## NOTE.md Template
+1. Use one folder per day: `experiments/YYYY-MM-DD/`.
+2. Every date folder must have `NOTE.md`.
+3. Record work as separate experiment entries, not only as a loose daily checklist.
+4. Each experiment entry must state:
+   - **Why**: what hypothesis, bug, ablation, or question motivated it.
+   - **Implementation**: what script/config/data/checkpoint/command changed or ran.
+   - **Result**: observed metrics, logs, failure mode, partial result, or current status.
+5. One entry can be an iteration of a previous entry. Name the relationship explicitly.
+6. If results are not available yet, write the status and where to find logs/checkpoints.
+7. When adding or changing scripts/commands, update `NOTE.md` in the same folder in the same turn.
 
-每个 `experiments/YYYY-MM-DD/` 下必须有 `NOTE.md`：
+## NOTE.md Shape
+
+Prefer this structure:
 
 ```markdown
 # YYYY-MM-DD 实验笔记
 
 ## 今日目标
-一句话说清楚今天要验证什么。
 
-## 必做
-- [ ] 实验名 — 为什么做 (一句话)
-- [ ] ...
+一句话说明今天主要想推进或验证什么。
 
-## 可选
-- [ ] 实验名 — 如果必做的结果好再做
-- [ ] ...
+## 实验记录
 
-## 依赖 / 前置条件
-- 哪些数据必须已经生成
-- 哪些 checkpoint 必须存在
+### 1. 实验名
 
-## 预期结果
-- 如果假设成立，应该看到什么
-- 如果假设不成立，说明什么
+**为什么这么做**
+
+- ...
+
+**具体实施**
+
+- 脚本/命令：
+  - `experiments/YYYY-MM-DD/xxx.py`
+  - `experiments/YYYY-MM-DD/command.sh`
+- 关键配置：
+  - data root / condition root / latent root
+  - checkpoint
+  - Hydra overrides
+
+**结果**
+
+- 指标、现象、失败日志、输出路径，或“还在跑 / 待补评估”。
+
+### 2. 实验名（上一条的迭代）
+
+**为什么这么做**
+
+- ...
+
+**具体实施**
+
+- ...
+
+**结果**
+
+- ...
+
+## 今日结论
+
+- 保留真正影响后续决策的结论。
+
+## 待办
+
+- [ ] 下一步动作。
 ```
 
-## Template
+Keep the notes factual. Prefer concrete paths, exact config names, checkpoint paths, and metric values over broad summaries.
 
-```bash
-#!/usr/bin/env bash
-# YYYY-MM-DD 实验命令
-cd /mnt/d/python
+## Command And Script Rules
 
-# ═══════════════════════════════════════════════════════════════
-# 1. Section Name
-# ═══════════════════════════════════════════════════════════════
+Commands may live in `command.sh`, `commands.sh`, or a dated run script when useful. Keep them easy to copy and trace from `NOTE.md`.
 
-# 简短说明
-python -m src.brepnet.xxx \
-    --arg1 value1 \
-    --arg2 value2
-```
+For command files:
 
-## Common Command Patterns
+1. Start with `cd /mnt/d/python`.
+2. Use short section headers for groups of related runs.
+3. Put a short comment above each command explaining what it does.
+4. Keep commands self-contained with explicit paths and Hydra overrides.
+5. Avoid wrapper indirection unless the script itself is the experiment artifact.
 
-### Training (Diffusion)
+For Python experiment scripts:
 
-```bash
-python -m src.brepnet.train --config-name train_diffusion_xxx \
-    trainer.devices=8 trainer.batch_size=64 trainer.max_steps=100000 \
-    trainer.output_dir=/mnt/d/data/diffusion_topo_experiments \
-    trainer.exp_name=YYYYMMDD_experiment_name \
-    trainer.wandb.enabled=true trainer.wandb.project=hola-brep \
-    model.autoencoder.checkpoint=/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt \
-    model.latent.use_cached_latents=true model.denoiser.hidden_dim=768 \
-    model.padding.max_faces=30 model.autoencoder.in_channels=6 \
-    model.noise.beta_schedule=squaredcos_cap_v2 \
-    dataset.data_root=/mnt/d/data/deepcad_v6 \
-    dataset.latent_root=/mnt/d/data/ae_cache/1119_deepcad_aug1_11k \
-    dataset.condition_root=/mnt/d/data/deepcad_v6_cond \
-    dataset.train_dataset=src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt \
-    dataset.val_dataset=src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt \
-    dataset.real_photo_ratio=0.0 dataset.load_topology=true \
-    dataset.cached_condition=false dataset.is_aug=0 dataset.scale_factor=200 \
-    hydra.job.chdir=false
-```
+1. Put narrow one-off experiment code in the date folder.
+2. If it becomes reusable infrastructure, move it to `tools/` or `src/brepnet/...` and record that move in `NOTE.md`.
+3. Save outputs under the same dated folder or an explicitly named external output directory.
 
-### Inference (load checkpoint → generate npz)
+## Current Data Contract
 
-```bash
-python -m src.brepnet.train --config-name train_diffusion_xxx \
-    trainer.evaluate=true trainer.devices=1 trainer.batch_size=16 \
-    trainer.resume_from_checkpoint=/path/to/checkpoints/last.ckpt \
-    trainer.test_output_dir=/path/to/inference_output \
-    model.autoencoder.checkpoint=/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt \
-    model.latent.use_cached_latents=true model.denoiser.hidden_dim=768 \
-    model.padding.max_faces=30 model.autoencoder.in_channels=6 \
-    model.noise.beta_schedule=squaredcos_cap_v2 \
-    dataset.data_root=/mnt/d/data/deepcad_v6 \
-    dataset.latent_root=/mnt/d/data/ae_cache/1119_deepcad_aug1_11k \
-    dataset.condition_root=/mnt/d/data/deepcad_v6_cond \
-    dataset.test_dataset=src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt \
-    dataset.cached_condition=false dataset.is_aug=0 dataset.scale_factor=1 \
-    hydra.job.chdir=false
-```
-
-### Data Generation (Hydra-based)
-
-```bash
-# Blender
-python -m src.brepnet.data.datagen.run_blender mode=cube24
-
-# FLUX
-python -m src.brepnet.data.datagen.run_flux mode=cube24
-
-# Pack
-python -m src.brepnet.data.datagen.run_pack mode=cube24
-```
-
-### Quality Evaluation
-
-```bash
-python -m src.brepnet.eval.quality_metrics \
-    --condition-root /mnt/d/data/deepcad_v6_cond \
-    --model-list src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt \
-    --compute-dino --compute-clip \
-    --output experiments/YYYY-MM-DD/quality_results/xxx.json
-```
-
-## Key Paths (current setup)
+For current DeepCAD v7 diffusion experiments, prefer these paths unless the user says otherwise:
 
 | What | Path |
 |------|------|
+| Raw B-Rep data | `/mnt/d/data/deepcad_v7` |
+| Condition data | `/mnt/d/data/deepcad_v7_cond` |
+| 24-view latent cache | `/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24` |
 | AE checkpoint | `/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt` |
-| Latent cache | `/mnt/d/data/ae_cache/1119_deepcad_aug1_11k` |
-| CAD data | `/mnt/d/data/deepcad_v6` |
-| Condition images | `/mnt/d/data/deepcad_v6_cond` |
 | Training list | `src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt` |
 | Validation list | `src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt` |
 | Test list | `src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt` |
-| Experiment output | `/mnt/d/data/diffusion_topo_experiments/` |
 
-## Key Config Names
+Current condition files use:
 
-| Config | Use |
-|--------|-----|
-| `train_diffusion_topo_bias` | Topo bias, ratio=0.0 (白模) |
-| `train_diffusion_topo_bias_real` | Topo bias, ratio=1.0 (真实照片) |
-| `train_diffusion_baseline_real` | 无 topo bias, ratio=1.0 (对照组) |
-| `train_diffusion_white` | 原始 HoLa-BRep 白模训练 |
-| `train_vae` | VAE 训练 |
+```text
+deepcad_v7_cond/{model_id}/imgs.npz
+  - svr_imgs
+  - sketch_imgs
 
-## DO NOT
+deepcad_v7_cond/{model_id}/real_photo.npz
+  - flux
+```
 
-- Do not use bash variables, case statements, or functions
-- Do not write wrapper scripts (run_xxx.sh calling run_yyy.sh)
-- Do not add `--help` sections or usage text
-- Do not create multiple variants of the same command with minor differences — write one canonical command with a comment noting what to change
+Do not call this `svr.npz` unless the repository actually changes back to that file contract.
+
+## Common Experiment Entry Examples
+
+### Training idea
+
+```markdown
+### 1. Learned topology bias with real-photo condition
+
+**为什么这么做**
+
+- 验证 frozen topology predictor 产生的 soft adjacency bias 是否能缩小 oracle topology 和 baseline 之间的差距。
+
+**具体实施**
+
+- 使用 `configs/train_diffusion_learned_topology.yaml`。
+- checkpoint: `experiments/2026-06-01/outputs_svr_single/best.pt`。
+- 数据使用 `deepcad_v7_cond/real_photo.npz["flux"]`，`real_photo_ratio=1.0`。
+
+**结果**
+
+- 训练日志：`...`
+- 当前状态：跑到 epoch N，val/loss=...
+```
+
+### Failed run
+
+```markdown
+### 2. AR topology transformer smoke run
+
+**为什么这么做**
+
+- 测试 edge-token 序列建模是否能替代固定 face-slot adjacency 预测。
+
+**具体实施**
+
+- 运行 `experiments/YYYY-MM-DD/topology_ar_train.py`。
+- batch size: 32，epochs: 30。
+
+**结果**
+
+- import 阶段失败：`ModuleNotFoundError: ...`。
+- 修复：在脚本开头加入 repo root 到 `sys.path`。
+- 下一步：重跑同一命令，日志写到 `...`。
+```
+
+## Do Not
+
+- Do not create an experiment folder without `NOTE.md`.
+- Do not leave a new script or command unmentioned in `NOTE.md`.
+- Do not write only “ran training” without why/implementation/result.
+- Do not bury important outcomes only in terminal output or W&B.
+- Do not create multiple nearly identical command variants without recording the experimental difference.
