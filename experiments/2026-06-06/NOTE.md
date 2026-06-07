@@ -498,3 +498,476 @@ target:
 ```
 
 因此 decoder 第一步预测 face count，第二步预测 edge count，之后按固定 upper-triangle 顺序逐个预测 pair adjacency。
+
+### Edge-count v2 结果
+
+训练输出：
+
+```text
+experiments/2026-06-06/outputs_faceadj_vae_edgecount_wl_kl001
+```
+
+配置：
+
+```text
+order_mode=wl
+wl_rounds=3
+kl_beta=0.001
+edge_count_loss_weight=0.2
+epochs=100
+batch_size=256
+d_model=256
+encoder_layers=4
+decoder_layers=4
+eval_generate_limit=256
+prior_samples=256
+```
+
+与不带 edge count 的 WL baseline 对比：
+
+```text
+WL baseline, epoch 80:
+val_loss=0.0471
+tf_f1=0.9723
+ar_f1=0.9326
+exact_adj_acc=0.7734
+ar_count_mae=0.00
+prior_conn=0.9727
+prior_density=0.2960
+kl=1.8002
+```
+
+```text
+WL + edge count, epoch 100:
+val_loss=0.0444
+tf_f1=0.9747
+ar_f1=0.9409
+exact_adj_acc=0.7852
+ar_face_count_mae=0.00
+ar_edge_count_mae=0.00
+ar_edge_count_acc=1.0000
+tf_edge_count_mae=0.00
+tf_edge_count_acc=1.0000
+prior_conn=0.7969
+prior_density=0.2918
+prior_edge_count_actual_mean=42.9141
+prior_edge_count_token_mean=42.9141
+kl=1.6987
+```
+
+后 12 个 epoch 中，edge-count 版本在 epoch 100 同时达到 best validation loss、best `ar_f1` 和 best `exact_adj_acc`：
+
+```text
+best ar_f1=0.9409 @ epoch 100
+best exact_adj_acc=0.7852 @ epoch 100
+best val_loss=0.0444 @ epoch 100
+```
+
+结论：
+
+- 显式 `N_EDGE` 对 posterior autoregressive reconstruction 有帮助，但提升幅度不大：`ar_f1` 从 `0.9326` 提到 `0.9409`，`exact_adj_acc` 从 `0.7734` 提到 `0.7852`。
+- edge-count 约束确实生效：posterior reconstruction 中 `ar_edge_count_mae=0.00`、`ar_edge_count_acc=1.0`，生成出的 actual graph edge count 与预测 edge-count token 一致。
+- 有一个明显副作用：prior sampling 的 `prior_connected_ratio` 从 baseline 的 `0.9727` 降到 `0.7969`。这说明 edge-count 预算约束让无条件 prior 采样更严格匹配边数，但可能破坏连通性；或者当前 Gaussian prior 还没有学好 `N_FACE/N_EDGE/adjacency` 的联合分布。
+- 因为当前下一步重点是 `GT face_adj -> z_topo -> face_adj` 的 posterior topology autoencoding，edge-count 版本仍然值得保留；但如果后续要做 unconditional topology prior 或 image-conditioned sampling，需要同时关注 `prior_connected_ratio`，不能只看 exact adjacency。
+
+补充：同样看 epoch 80 时，edge-count 版本还没有超过 WL baseline：
+
+```text
+WL + edge count, epoch 80:
+val_loss=0.0484
+tf_f1=0.9714
+ar_f1=0.9258
+exact_adj_acc=0.7578
+ar_edge_count_mae=0.00
+prior_conn=0.8242
+prior_density=0.3062
+kl=1.6669
+```
+
+因此 edge-count 的收益需要结合更长训练看待。它在 epoch 90/100 继续改善，并在 epoch 100 超过 WL baseline；这说明该改动可能让模型收敛更慢，但后期上限略高。
+
+## 四个 Topology VAE 的 Test Split 结果
+
+测试集：
+
+```text
+src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt
+num_samples=2424
+```
+
+四个实验均使用对应 `best.pt` 在 test split 上 eval-only，结果写在各自目录：
+
+```text
+experiments/2026-06-06/outputs_faceadj_vae/test_eval/test_metrics.json
+experiments/2026-06-06/outputs_faceadj_vae_kl001/test_eval/test_metrics.json
+experiments/2026-06-06/outputs_faceadj_vae_wl_kl001/test_eval/test_metrics.json
+experiments/2026-06-06/outputs_faceadj_vae_edgecount_wl_kl001/test_eval/test_metrics.json
+```
+
+### 1. Degree ordering + `kl_beta=0.1`
+
+```text
+loss=0.1428
+count_loss=0.0000
+pair_loss=0.1313
+kl=0.1151
+kl_beta=0.1
+
+tf_f1=0.9143
+ar_f1=0.7811
+exact_adj_acc=0.4187
+ar_count_mae=0.00
+prior_conn=0.9961
+prior_density=0.4249
+prior_count_mean=12.7090
+```
+
+这个最原始 VAE 的 test loss 最高，但不是 count loss 高。`count_loss=0.0`、`tf_count_acc=1.0`、`ar_count_acc=1.0`，说明 face count 已经学会。真正拖累的是 pair reconstruction：`pair_loss=0.1313`，以及较强 KL 正则导致 posterior latent 信息不足，因此 `ar_f1` 和 exact adjacency 明显偏低。
+
+### 2. Degree ordering + `kl_beta=0.001`
+
+```text
+loss=0.0550
+count_loss=0.0000
+pair_loss=0.0529
+kl=2.1209
+kl_beta=0.001
+
+tf_f1=0.9663
+ar_f1=0.9185
+exact_adj_acc=0.7463
+ar_count_mae=0.00
+prior_conn=0.9648
+prior_density=0.2900
+prior_count_mean=18.2773
+```
+
+降低 KL 权重后，test posterior reconstruction 大幅提升：`ar_f1` 从 `0.7811` 到 `0.9185`，exact 从 `0.4187` 到 `0.7463`。这验证了之前 validation 上的判断：当前 topology autoencoding 阶段需要弱 KL，过强 KL 会压掉拓扑重建信息。
+
+### 3. WL ordering + `kl_beta=0.001`
+
+```text
+loss=0.0508
+count_loss=0.0000
+pair_loss=0.0490
+kl=1.7691
+kl_beta=0.001
+
+tf_f1=0.9693
+ar_f1=0.9295
+exact_adj_acc=0.7706
+ar_count_mae=0.00
+prior_conn=0.9473
+prior_density=0.2915
+prior_count_mean=17.7012
+```
+
+WL ordering 在 test 上继续有效：相比 degree + low KL，`ar_f1` 从 `0.9185` 到 `0.9295`，exact 从 `0.7463` 到 `0.7706`。提升不大，但稳定，说明更强的 topology-only canonical ordering 确实减少了 face index 噪声。
+
+### 4. WL ordering + edge count + `kl_beta=0.001`
+
+```text
+loss=0.0482
+face_count_loss=0.0000
+edge_count_loss=0.0001
+pair_loss=0.0465
+kl=1.7064
+kl_beta=0.001
+
+tf_f1=0.9723
+ar_f1=0.9340
+exact_adj_acc=0.7797
+ar_face_count_mae=0.00
+ar_edge_count_mae=0.00
+ar_edge_count_acc=1.0000
+prior_conn=0.8047
+prior_density=0.3003
+prior_count_mean=18.5156
+prior_edge_count_actual_mean=41.9668
+prior_edge_count_token_mean=41.9668
+```
+
+Edge-count 版本在 test 上也有小幅收益：相比 WL baseline，`ar_f1` 从 `0.9295` 到 `0.9340`，exact 从 `0.7706` 到 `0.7797`。同时 `ar_edge_count_mae=0.00`，说明显式 `N_EDGE` 约束在 posterior reconstruction 中确实生效。
+
+但副作用同样存在：`prior_conn` 从 WL baseline 的 `0.9473` 降到 `0.8047`。因此 edge-count 版本更适合作为 posterior topology autoencoder / image-conditioned reconstruction decoder 的候选；如果目标是 unconditional prior sampling，则需要额外处理连通性或联合 prior 分布。
+
+### Test 结论
+
+- 四个实验在 test split 上的趋势与 validation 一致。
+- 最重要的改动是降低 KL：`kl_beta=0.1 -> 0.001` 带来最大提升。
+- WL ordering 带来稳定小幅提升，可以保留为默认 canonical ordering。
+- Edge count 带来更小但真实的提升，主要体现在 exact adjacency accuracy 和 edge-count consistency。
+- 最原始 VAE 的问题不是 count loss，而是 pair reconstruction 在强 KL 下不足。
+- 当前最佳 test posterior reconstruction 是 `WL + edge count + kl_beta=0.001`：`ar_f1=0.9340`，`exact_adj_acc=0.7797`。
+- 当前最佳 prior connected ratio 反而是最原始强 KL 版：`prior_conn=0.9961`，但它的 posterior reconstruction 太弱，不适合作为后续 image-conditioned topology decoder 的首选。
+
+
+
+## Edge Count 后的下一步：把边放成连通且合理的图
+
+今天观察到 `WL + edge count + kl_beta=0.001` 已经能把 posterior reconstruction 推到 `ar_f1=0.9340`、`exact_adj_acc=0.7797`，但 prior connected ratio 降到 `0.8047`。这说明显式 `N_EDGE` token 已经让模型学会了“应该生成多少条边”，但没有保证这些边被放在正确位置，也没有保证它们组成一个连通、局部合理的 face-adjacency graph。
+
+直觉上，如果能修复 edge-count 版本的连通性和局部 degree 分布问题，exact adjacency accuracy 有希望突破 `0.8`。这不是简单调参问题，而是需要给 topology generator 更强的结构约束。
+
+### 方向 1：加入 per-face degree 约束
+
+当前序列是：
+
+```text
++[N_FACE] [N_EDGE] [PAIR_0] [PAIR_1] ... [PAIR_K]
+```
+
+可以扩展为：
+
+```text
++[N_FACE] [N_EDGE] [DEG_0] [DEG_1] ... [DEG_{N-1}] [PAIR_0] [PAIR_1] ... [PAIR_K]
+```
+
+或者把 degree sequence 作为 decoder condition embedding，而不是显式 token。对应 loss 可以加入 degree CE / L1：
+
+```text
+loss = pair_bce + face_count_ce + edge_count_ce + degree_loss + beta * kl
+```
+
+这个约束比全局 edge count 更细，因为 exact adjacency 的错误往往体现在某些 face row/column 的边数错了。edge count 只约束总数，degree sequence 则约束每个 face 的局部连接预算。
+
+推理时还可以做 degree-budget constrained decoding：如果某个 face 的剩余 degree budget 已经为 0，则后续所有包含该 face 的 pair 强制为 no-edge；如果剩余 pair 数已经不足以满足某个 face 的 degree budget，则必须选择相关 edge。这个约束不需要反向传播，属于 decoding-time hard constraint。
+
+### 方向 2：AR decoding 加连通性硬约束
+
+Edge-count 版本 prior connected ratio 下降，说明模型会生成“边数正确但图断开”的 adjacency。可以在 AR sampling 中维护 union-find / DSU：
+
+```text
+current_edges -> connected components
+remaining_edge_budget = N_EDGE - selected_edges
+remaining_possible_pairs -> future edges
+```
+
+然后禁止会导致未来不可能连通的动作。例如，如果剩余 edge budget 只够把当前 components 接起来，那么后续就必须优先选择跨 component 的 pair。这个约束可以直接修 prior connected ratio，也能减少明显非法的 topology。
+
+### 方向 3：两阶段生成：先 spanning tree，再 extra edges
+
+更结构化的做法是把 face-adjacency graph 拆成：
+
+```text
+Stage 1: 生成一个 connected spanning tree，保证 N 个 face 连通
+Stage 2: 在剩余 candidate pairs 中生成 N_EDGE - (N_FACE - 1) 条 extra edges
+```
+
+这样连通性天然成立，模型不再需要从 435 个 pair 的自由 0/1 序列里自己发现连通性规则。这个方向比直接输出完整 adjacency matrix 更符合拓扑生成的结构，但实现改动较大，可以放在 degree 约束和 constrained decoding 之后。
+
+### 方向 4：soft graph loss 作为辅助项
+
+在 teacher forcing logits 上可以构造 soft adjacency `P`，再加入一些可微图约束：
+
+```text
+edge_count_loss = |sum(P_ij) - E_gt|
+degree_loss = sum_i |sum_j P_ij - deg_gt_i|
+isolated_loss = sum_i relu(1 - sum_j P_ij)
+```
+
+更激进的做法是用 graph Laplacian 的第二小特征值 `lambda_2` 约束连通性：
+
+```text
+L = D - P
+connectivity_loss = relu(tau - lambda_2(L))
+```
+
+但这个方向需要谨慎。`eigvalsh` 可以反传，但数值可能敏感，尤其是在图接近断开时。因此它适合作为后续辅助实验，不应作为第一优先级。
+
+### 方向 5：缓解 teacher-forcing 和 AR inference 的分布偏移
+
+现在 `tf_f1` 明显高于 `ar_f1`，说明 decoder 在 teacher forcing 下看到 GT prefix 时很强，但推理时吃自己生成的 prefix 会出现误差级联。可以尝试 prefix corruption / denoising training：
+
+```text
+训练时随机把一部分历史 prefix token 替换成错误 token 或模型采样 token，
+让 decoder 学会从非完美 prefix 中恢复。
+```
+
+这比普通 scheduled sampling 更容易控制，也更贴合 topology sequence 的错误累积问题。
+
+### 明天优先级
+
+优先做 `per-face degree token / degree loss / degree-budget constrained decoding`。这是 edge count 的自然升级，改动量适中，而且直接针对 exact adjacency 的 row/column 结构。第二步再加 AR decoding 的连通性 hard constraint。若仍然卡在 `0.8` 附近，再考虑 spanning-tree-first topology VAE。
+
+
+## Topology VAE 可视化工具计划
+
+导师比较重视可视化，因此 topology VAE 不能只在周报里放 `ar_f1`、`exact_adj_acc`、`prior_conn` 这些数值。当前实验非常适合做 topology-level visualization：把模型学到的 adjacency structure、错误类型、edge-count 约束的收益和连通性问题都画出来。
+
+建议明天开发一个独立脚本：
+
+```bash
+python experiments/2026-06-06/visualize_faceadj_vae.py \
+    --checkpoint experiments/2026-06-06/outputs_faceadj_vae_edgecount_wl_kl001/best.pt \
+    --output-dir experiments/2026-06-06/outputs_faceadj_vae_edgecount_wl_kl001/visuals_test \
+    --split test \
+    --num-samples 32
+```
+
+如果脚本需要同时支持原始 `topology_faceadj_vae.py` 和 edge-count 版本，可以加 `--model-type base/edgecount`，或者自动从 checkpoint/config 里判断。
+
+### 输入
+
+- checkpoint：当前 topology face-adjacency VAE 的 `best.pt`。
+- split：`train/val/test`，优先支持 `val` 和 `test`。
+- dataset list：沿用训练脚本里的 DeepCAD split list。
+- num samples：默认 32，可选随机种子。
+- output dir：输出 PNG 和 HTML gallery。
+
+### 输出
+
+建议输出：
+
+```text
+visuals_test/index.html
+visuals_test/case_000.png
+visuals_test/case_001.png
+...
+visuals_test/summary_degree.png
+visuals_test/summary_connectivity.png
+visuals_test/summary_edge_count.png
+```
+
+`index.html` 用于周报截图或直接给导师看，里面按 case 展示图和指标。
+
+### 必做可视化 1：GT / Pred / Error adjacency matrix
+
+每个样本画三张矩阵：
+
+```text
+GT face-adjacency | Pred face-adjacency | Error matrix
+```
+
+Error matrix 颜色建议：
+
+```text
+white = correct
+red = false positive edge
+blue = false negative edge
+gray = padding / invalid face
+```
+
+这张图用于解释 exact adjacency accuracy。它能直观看到模型是否只是错了少数 edge，还是整体结构错了。
+
+### 必做可视化 2：Face graph 对比
+
+把 face-adjacency matrix 转成 graph：
+
+```text
+node = face
+edge = face adjacency
+```
+
+每个样本并排画：
+
+```text
+GT graph | Pred graph | Difference graph
+```
+
+Difference graph 颜色建议：
+
+```text
+black edge = true positive
+red edge = false positive
+blue edge = false negative
+node color = per-face degree error
+component color / outline = connected component
+```
+
+这张图对当前 edge-count 实验尤其重要，因为它可以展示：
+
+```text
+edge count 对了，但边可能放错位置，甚至生成 disconnected graph。
+```
+
+这能自然支撑下一步加入 `degree constraint` 和 `connectivity constraint`。
+
+### 必做可视化 3：Case gallery
+
+不要只随机采样，应该按错误类型挑一些 representative cases：
+
+```text
+Exact reconstruction
+1-edge error / near miss
+multi-edge error
+Disconnected prediction
+high-face-count hard case
+```
+
+每个 case 标注：
+
+```text
+model_id
+faces / edges
+F1
+exact_adj
+edge_count_gt / edge_count_pred
+connected_gt / connected_pred
+degree_mae
+```
+
+这样周报里能说明：模型不是完全失败，而是在接近 exact 的地方出现结构性错误。
+
+### 必做可视化 4：Edge count 和 degree 分布
+
+Summary 图建议包含：
+
+```text
+GT edge count vs Pred edge count scatter
+per-face GT degree vs Pred degree scatter
+per-sample degree MAE histogram
+edge-count error histogram
+```
+
+当前 edge-count 版本已经做到 `edge_count_acc=1.0`，但 exact adjacency 还没突破 `0.8`。如果 degree 图显示 degree distribution 仍然有误，就能直接证明：下一步应该加入 per-face degree token / degree loss。
+
+### 必做可视化 5：Prior sample gallery
+
+从 prior 采样一些 topology graph，分成：
+
+```text
+Connected prior samples
+Disconnected prior samples
+```
+
+这张图用于解释 `prior_conn`。尤其是 edge-count 版本 test 上 `prior_conn=0.8047`，图像会比单个数字更直观：模型会生成边数正确但断开的 graph。
+
+### 可选可视化 6：Training evolution
+
+固定几个 validation samples，展示不同 epoch 的 reconstruction：
+
+```text
+epoch 10 | epoch 30 | epoch 60 | epoch 100
+```
+
+这个可以展示 topology VAE 逐步学会结构的过程。实现上需要多个 checkpoint，优先级低于 case gallery。
+
+### 可选可视化 7：Latent interpolation
+
+选两个 topology：
+
+```text
+z = (1 - t) * z_A + t * z_B
+```
+
+然后 decode 出一排 graph：
+
+```text
+A | t=0.25 | t=0.5 | t=0.75 | B
+```
+
+这个适合展示 VAE latent space 是否有连续拓扑语义，但不保证效果稳定。可以作为展示性实验，不作为主指标。
+
+### 开发优先级
+
+第一版只需要完成：
+
+```text
+1. matrix triplet: GT / Pred / Error
+2. graph triplet: GT / Pred / Diff
+3. case gallery index.html
+4. summary degree / edge count / connectivity plots
+```
+
+这套可视化足够用于周报，并且能把当前结论讲清楚：`edge count` 改进了全局边数一致性，但 exact adjacency 仍受 degree distribution 和 connectivity 影响，所以下一步应加入 per-face degree 和 constrained decoding。
