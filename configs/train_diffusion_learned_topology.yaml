@@ -12,13 +12,21 @@ trainer:
 
 dataset:
   name: Diffusion_dataset
+  raw_data_root: /mnt/d/data/deepcad_v7
+  cached_latent_root: /mnt/d/data/ae_cache/1119_deepcad_aug1_11k
+  condition_data_root: /mnt/d/data/deepcad_v7_cond
+  train_dataset: src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt
+  val_dataset: src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt
+  test_dataset: src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt
   load_topology: false
   real_photo_ratio: 0.0
-  scale_factor: 200
+  epoch_scale_factor: 200
 
 model:
   padding:
     type: random
+  autoencoder:
+    checkpoint: /mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt
   topology_bias:
     enabled: true
     source: learned

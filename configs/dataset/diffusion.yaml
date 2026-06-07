@@ -8,7 +8,7 @@ condition_data_root: null
 condition_name: ${condition.condition_name}
 cached_condition: ${condition.cached_features}
 is_aug: false
-is_overfit: false
+is_overfit: true
 load_topology: false
 max_faces: ${model.padding.max_faces}
 padding: ${model.padding.type}

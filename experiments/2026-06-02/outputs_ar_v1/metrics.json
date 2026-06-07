@@ -1,0 +1,14 @@
+{
+  "loss": 1.0777468768033114,
+  "greedy_edge_precision": 0.4704691226050489,
+  "greedy_edge_recall": 0.45873757216164207,
+  "greedy_edge_f1": 0.46452928997686027,
+  "greedy_edge_iou": 0.30253217267157106,
+  "exact_matrix_acc": 0.10156918687589159,
+  "face_count_mae": 1.496148359486448,
+  "edge_count_mae": 4.230527817403709,
+  "connected_ratio": 0.9834522111269615,
+  "sample_oracle_f1": 0.5984191093157597,
+  "sample_diversity": 0.5843690994487919,
+  "train_loss": 0.48416244539091124
+}
