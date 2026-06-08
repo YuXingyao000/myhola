@@ -1,22 +1,15 @@
 #!/usr/bin/env python3
-"""Binary face-adjacency Transformer VAE with explicit graph edge count.
+"""Topology face-adj VAE with prefix corruption (training-time only).
 
-This is a topology-prior experiment. It does not use images or HoLa latents.
-The only supervision is GT `data.npz["face_adj"]`.
+Variant of `experiments/2026-06-06/topology_faceadj_vae_edgecount.py`.
+Only difference: with probability `corrupt_prob`, NO_EDGE / EDGE pair tokens
+in the decoder input prefix are flipped, while the target sequence is kept
+clean. Special tokens (BOS, N_FACE, N_EDGE, PAD) are never corrupted. This
+is a training-only mitigation for the teacher-forcing vs autoregressive-
+inference exposure bias.
 
-Representation:
-    target[0] = N_FACE token
-    target[1] = N_EDGE token, where N_EDGE is the number of adjacent face pairs
-    target[2:] = fixed max-face upper-triangle binary adjacency tokens
-
-The explicit N_EDGE token gives the autoregressive decoder a global edge-budget
-constraint. During generation, once the predicted edge count is reached, all
-remaining valid pair tokens are forced to NO_EDGE; if all remaining valid pairs
-must be edges to hit the count, they are forced to EDGE.
-
-Loss:
-    face-count CE + edge-count CE + binary pair BCE
-    + beta * KL(q(z|topology) || N(0, I))
+Architecture, vocab, loss, generation logic are identical to the 06-06
+edge-count baseline.
 """
 
 from __future__ import annotations
@@ -121,7 +114,6 @@ def canonical_face_order(face_adj: np.ndarray, mode: str, rounds: int = 2) -> np
     n = face_adj.shape[0]
     if mode == "none":
         return np.arange(n, dtype=np.int64)
-
     adj_bool = face_adj > 0.5
     degree = adj_bool.sum(axis=1).astype(np.int64)
     order = np.lexsort((np.arange(n), degree))
@@ -129,7 +121,6 @@ def canonical_face_order(face_adj: np.ndarray, mode: str, rounds: int = 2) -> np
         return order.astype(np.int64)
     if mode != "wl":
         raise ValueError(f"Unknown canonical order mode: {mode}")
-
     labels = degree.copy()
     for _ in range(rounds):
         adj_ordered = adj_bool[:, order]
@@ -151,17 +142,11 @@ def canonical_face_order(face_adj: np.ndarray, mode: str, rounds: int = 2) -> np
     return order.astype(np.int64)
 
 
-def adj_to_target(
-    face_adj: np.ndarray,
-    max_faces: int,
-    order_mode: str,
-    wl_rounds: int,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, int, int]:
+def adj_to_target(face_adj, max_faces, order_mode, wl_rounds):
     face_adj = symmetrize_adj(face_adj)
     num_faces = int(face_adj.shape[0])
     if num_faces > max_faces:
         raise ValueError(f"num_faces={num_faces} exceeds max_faces={max_faces}")
-
     order = canonical_face_order(face_adj, order_mode, wl_rounds)
     face_adj = face_adj[order][:, order]
     edge_count = int(np.triu(face_adj[:num_faces, :num_faces], 1).sum())
@@ -176,7 +161,6 @@ def adj_to_target(
     token_mask[0] = True
     tokens[1] = edge_count_token(edge_count, max_faces)
     token_mask[1] = True
-
     for i in range(max_faces):
         for j in range(i + 1, max_faces):
             idx = edge_to_index(i, j, max_faces)
@@ -187,11 +171,10 @@ def adj_to_target(
                 token_mask[pos] = True
                 pair_targets[idx] = value
                 pair_mask[idx] = True
-
     return tokens, token_mask, pair_targets, pair_mask, num_faces, edge_count
 
 
-def target_to_adj(tokens: torch.Tensor, max_faces: int, min_faces: int = 1) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+def target_to_adj(tokens, max_faces, min_faces=1):
     device = tokens.device
     batch_size = tokens.shape[0]
     count = token_to_face_count(tokens[:, 0]).clamp(min_faces, max_faces)
@@ -209,7 +192,7 @@ def target_to_adj(tokens: torch.Tensor, max_faces: int, min_faces: int = 1) -> t
     return adj, count, edge_count
 
 
-def adjacency_stats(adj: torch.Tensor, count: torch.Tensor) -> dict[str, float]:
+def adjacency_stats(adj, count):
     adj_np = adj.detach().cpu().numpy()
     count_np = count.detach().cpu().numpy().astype(np.int64)
     connected = []
@@ -255,28 +238,18 @@ def adjacency_stats(adj: torch.Tensor, count: torch.Tensor) -> dict[str, float]:
     }
 
 
-class FaceAdjEdgeCountVAEDataset(Dataset):
-    def __init__(
-        self,
-        raw_root: str | Path,
-        model_list: str | Path,
-        max_faces: int,
-        order_mode: str,
-        wl_rounds: int,
-        max_samples: int = 0,
-    ):
+class FaceAdjVAEDataset(Dataset):
+    def __init__(self, raw_root, model_list, max_faces, order_mode, wl_rounds, max_samples=0):
         self.raw_root = Path(raw_root)
         self.max_faces = max_faces
         self.order_mode = order_mode
         self.wl_rounds = wl_rounds
-
         model_ids = [
             line.strip()
             for line in Path(model_list).read_text().splitlines()
             if line.strip() and not line.startswith("#")
         ]
         print(f"Filtering {len(model_ids)} model ids from {model_list}", flush=True)
-
         self.model_ids = []
         skipped_raw = 0
         skipped_faces = 0
@@ -297,17 +270,16 @@ class FaceAdjEdgeCountVAEDataset(Dataset):
             self.model_ids.append(model_id)
             if max_samples and len(self.model_ids) >= max_samples:
                 break
-
         print(
             f"Loaded {len(self.model_ids)} samples "
             f"(skipped raw/load={skipped_raw}, faces>{max_faces}={skipped_faces})",
             flush=True,
         )
 
-    def __len__(self) -> int:
+    def __len__(self):
         return len(self.model_ids)
 
-    def __getitem__(self, index: int):
+    def __getitem__(self, index):
         last_error = None
         for offset in range(len(self.model_ids)):
             model_id = self.model_ids[(index + offset) % len(self.model_ids)]
@@ -335,17 +307,10 @@ class FaceAdjEdgeCountVAEDataset(Dataset):
         raise RuntimeError("No readable sample found") from last_error
 
 
-class FaceAdjEdgeCountTransformerVAE(nn.Module):
-    def __init__(
-        self,
-        max_faces: int = 30,
-        d_model: int = 256,
-        nhead: int = 8,
-        num_encoder_layers: int = 4,
-        num_decoder_layers: int = 4,
-        dim_feedforward: int = 1024,
-        dropout: float = 0.1,
-    ):
+class FaceAdjTransformerVAE(nn.Module):
+    def __init__(self, max_faces=30, d_model=256, nhead=8,
+                 num_encoder_layers=4, num_decoder_layers=4,
+                 dim_feedforward=1024, dropout=0.1):
         super().__init__()
         self.max_faces = max_faces
         self.seq_len = sequence_length(max_faces)
@@ -357,31 +322,21 @@ class FaceAdjEdgeCountTransformerVAE(nn.Module):
         self.register_buffer("positional_encoding", self._build_positional_encoding(self.seq_len, d_model))
 
         enc_layer = nn.TransformerEncoderLayer(
-            d_model=d_model,
-            nhead=nhead,
-            dim_feedforward=dim_feedforward,
-            dropout=dropout,
-            batch_first=True,
-            norm_first=True,
+            d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward,
+            dropout=dropout, batch_first=True, norm_first=True,
         )
         self.encoder = nn.TransformerEncoder(enc_layer, num_layers=num_encoder_layers, norm=nn.LayerNorm(d_model))
-
         self.fc_mu = nn.Linear(d_model, d_model)
         self.fc_logvar = nn.Linear(d_model, d_model)
-
         dec_layer = nn.TransformerDecoderLayer(
-            d_model=d_model,
-            nhead=nhead,
-            dim_feedforward=dim_feedforward,
-            dropout=dropout,
-            batch_first=True,
-            norm_first=True,
+            d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward,
+            dropout=dropout, batch_first=True, norm_first=True,
         )
         self.decoder = nn.TransformerDecoder(dec_layer, num_layers=num_decoder_layers, norm=nn.LayerNorm(d_model))
         self.output_layer = nn.Linear(d_model, self.vocab_size)
 
     @staticmethod
-    def _build_positional_encoding(seq_len: int, d_model: int) -> torch.Tensor:
+    def _build_positional_encoding(seq_len, d_model):
         pe = torch.zeros(seq_len, d_model)
         position = torch.arange(0, seq_len, dtype=torch.float32).unsqueeze(1)
         div_term = torch.exp(torch.arange(0, d_model, 2, dtype=torch.float32) * (-math.log(10000.0) / d_model))
@@ -390,39 +345,38 @@ class FaceAdjEdgeCountTransformerVAE(nn.Module):
         return pe.unsqueeze(0)
 
     @staticmethod
-    def causal_mask(size: int, device: torch.device) -> torch.Tensor:
+    def causal_mask(size, device):
         return torch.triu(torch.ones((size, size), dtype=torch.bool, device=device), diagonal=1)
 
-    def shifted_decoder_input(self, tokens: torch.Tensor, token_mask: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    def shifted_decoder_input(self, tokens, token_mask):
         bos = torch.full((tokens.shape[0], 1), self.bos, dtype=tokens.dtype, device=tokens.device)
         bos_mask = torch.ones((tokens.shape[0], 1), dtype=torch.bool, device=tokens.device)
         decoder_input = torch.cat([bos, tokens[:, :-1]], dim=1)
         decoder_mask = torch.cat([bos_mask, token_mask[:, :-1]], dim=1)
         return decoder_input, decoder_mask
 
-    def encode(self, tokens: torch.Tensor, token_mask: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    def encode(self, tokens, token_mask):
         x = self.embedding(tokens) + self.positional_encoding[:, : tokens.shape[1]].to(tokens.device)
         memory = self.encoder(x, src_key_padding_mask=~token_mask)
         pooled = (memory * token_mask.unsqueeze(-1)).sum(dim=1) / token_mask.sum(dim=1, keepdim=True).clamp_min(1)
         return self.fc_mu(pooled), self.fc_logvar(pooled)
 
     @staticmethod
-    def reparameterize(mu: torch.Tensor, logvar: torch.Tensor) -> torch.Tensor:
+    def reparameterize(mu, logvar):
         std = torch.exp(0.5 * logvar)
         return mu + torch.randn_like(std) * std
 
-    def decode(self, z: torch.Tensor, decoder_input: torch.Tensor, decoder_mask: torch.Tensor) -> torch.Tensor:
+    def decode(self, z, decoder_input, decoder_mask):
         tgt = self.embedding(decoder_input) + self.positional_encoding[:, : decoder_input.shape[1]].to(decoder_input.device)
         memory = z.unsqueeze(1)
         output = self.decoder(
-            tgt=tgt,
-            memory=memory,
+            tgt=tgt, memory=memory,
             tgt_mask=self.causal_mask(decoder_input.shape[1], decoder_input.device),
             tgt_key_padding_mask=~decoder_mask,
         )
         return self.output_layer(output)
 
-    def forward(self, tokens: torch.Tensor, token_mask: torch.Tensor, sample_posterior: bool = True):
+    def forward(self, tokens, token_mask, sample_posterior=True):
         mu, logvar = self.encode(tokens, token_mask)
         z = self.reparameterize(mu, logvar) if sample_posterior else mu
         decoder_input, decoder_mask = self.shifted_decoder_input(tokens, token_mask)
@@ -430,13 +384,7 @@ class FaceAdjEdgeCountTransformerVAE(nn.Module):
         return logits, mu, logvar
 
     @torch.no_grad()
-    def generate(
-        self,
-        z: torch.Tensor,
-        min_faces: int = 1,
-        greedy: bool = True,
-        temperature: float = 1.0,
-    ) -> torch.Tensor:
+    def generate(self, z, min_faces=1, greedy=True, temperature=1.0):
         batch_size = z.shape[0]
         device = z.device
         max_pairs = num_pair_tokens(self.max_faces)
@@ -444,6 +392,7 @@ class FaceAdjEdgeCountTransformerVAE(nn.Module):
         decoder_mask = torch.ones((batch_size, 1), dtype=torch.bool, device=device)
         generated = []
 
+        # Step 1: face count
         logits = self.decode(z, decoder_input, decoder_mask)[:, -1]
         face_logits = logits[:, FACE_COUNT_OFFSET : FACE_COUNT_OFFSET + self.max_faces + 1]
         allowed_face = torch.full_like(face_logits, float("-inf"))
@@ -458,6 +407,7 @@ class FaceAdjEdgeCountTransformerVAE(nn.Module):
         decoder_mask = torch.cat([decoder_mask, torch.ones(batch_size, 1, dtype=torch.bool, device=device)], dim=1)
         counts = face_cls.clamp(min_faces, self.max_faces)
 
+        # Step 2: edge count
         logits = self.decode(z, decoder_input, decoder_mask)[:, -1]
         max_edges_per_sample = counts * (counts - 1) // 2
         edge_logits = logits[:, edge_count_offset(self.max_faces) : edge_count_offset(self.max_faces) + max_edge_count(self.max_faces) + 1]
@@ -473,11 +423,11 @@ class FaceAdjEdgeCountTransformerVAE(nn.Module):
         decoder_input = torch.cat([decoder_input, edge_count_tok[:, None]], dim=1)
         decoder_mask = torch.cat([decoder_mask, torch.ones(batch_size, 1, dtype=torch.bool, device=device)], dim=1)
 
+        # Step 3: pair tokens
         rows, cols = build_pair_index(self.max_faces)
         rows = rows.to(device)
         cols = cols.to(device)
         generated_edge_counts = torch.zeros(batch_size, dtype=torch.long, device=device)
-        valid_pair_counts = max_edges_per_sample.long()
         for pair_idx in range(max_pairs):
             active = (rows[pair_idx] < counts) & (cols[pair_idx] < counts)
             next_tok = torch.full((batch_size,), PAD, dtype=torch.long, device=device)
@@ -485,8 +435,10 @@ class FaceAdjEdgeCountTransformerVAE(nn.Module):
             if active.any():
                 logits = self.decode(z, decoder_input, decoder_mask)[:, -1]
                 pair_logits = torch.stack([logits[:, NO_EDGE], logits[:, EDGE]], dim=-1)
-                remaining_valid = ((rows[pair_idx:][None, :] < counts[:, None]) &
-                                   (cols[pair_idx:][None, :] < counts[:, None])).sum(dim=1)
+                remaining_valid = (
+                    (rows[pair_idx:][None, :] < counts[:, None])
+                    & (cols[pair_idx:][None, :] < counts[:, None])
+                ).sum(dim=1)
                 remaining_needed = (edge_count_cls - generated_edge_counts).clamp_min(0)
                 force_no_edge = active & (generated_edge_counts >= edge_count_cls)
                 force_edge = active & (remaining_needed >= remaining_valid)
@@ -508,39 +460,24 @@ class FaceAdjEdgeCountTransformerVAE(nn.Module):
         return torch.stack(generated, dim=1)
 
 
-def unwrap_model(model: nn.Module) -> FaceAdjEdgeCountTransformerVAE:
+def unwrap_model(model):
     return model.module if isinstance(model, nn.DataParallel) else model
 
 
-def compute_loss(
-    logits: torch.Tensor,
-    mu: torch.Tensor,
-    logvar: torch.Tensor,
-    pair_targets: torch.Tensor,
-    pair_mask: torch.Tensor,
-    num_faces: torch.Tensor,
-    edge_count: torch.Tensor,
-    edge_pos_weight: float,
-    face_count_loss_weight: float,
-    edge_count_loss_weight: float,
-    kl_beta: float,
-) -> tuple[torch.Tensor, dict[str, float]]:
+def compute_loss(logits, mu, logvar, pair_targets, pair_mask, num_faces, edge_count,
+                 edge_pos_weight, face_count_loss_weight, edge_count_loss_weight, kl_beta):
     max_faces = int((1 + math.sqrt(1 + 8 * pair_targets.shape[1])) / 2)
     face_logits = logits[:, 0, FACE_COUNT_OFFSET : FACE_COUNT_OFFSET + max_faces + 1]
     edge_count_logits = logits[:, 1, edge_count_offset(max_faces) : edge_count_offset(max_faces) + max_edge_count(max_faces) + 1]
-
     face_count_loss = F.cross_entropy(face_logits, num_faces)
     edge_count_loss = F.cross_entropy(edge_count_logits, edge_count)
-
     edge_logit = logits[:, 2:, EDGE] - logits[:, 2:, NO_EDGE]
     bce = F.binary_cross_entropy_with_logits(
-        edge_logit,
-        pair_targets,
+        edge_logit, pair_targets,
         pos_weight=torch.tensor(edge_pos_weight, device=logits.device),
         reduction="none",
     )
     pair_loss = (bce * pair_mask.float()).sum() / pair_mask.float().sum().clamp_min(1)
-
     kl = -0.5 * torch.mean(1 + logvar - mu.pow(2) - logvar.exp())
     loss = face_count_loss_weight * face_count_loss + edge_count_loss_weight * edge_count_loss + pair_loss + kl_beta * kl
     return loss, {
@@ -553,13 +490,7 @@ def compute_loss(
     }
 
 
-def pair_metrics_from_logits(
-    logits: torch.Tensor,
-    pair_targets: torch.Tensor,
-    pair_mask: torch.Tensor,
-    num_faces: torch.Tensor,
-    edge_count: torch.Tensor,
-) -> dict[str, float]:
+def pair_metrics_from_logits(logits, pair_targets, pair_mask, num_faces, edge_count):
     max_faces = int((1 + math.sqrt(1 + 8 * pair_targets.shape[1])) / 2)
     face_logits = logits[:, 0, FACE_COUNT_OFFSET : FACE_COUNT_OFFSET + max_faces + 1]
     edge_count_logits = logits[:, 1, edge_count_offset(max_faces) : edge_count_offset(max_faces) + max_edge_count(max_faces) + 1]
@@ -569,7 +500,6 @@ def pair_metrics_from_logits(
     pred_edges = edge_logit > 0
     target_edges = pair_targets > 0.5
     mask = pair_mask.bool()
-
     tp = ((pred_edges & target_edges) & mask).sum().item()
     fp = ((pred_edges & ~target_edges) & mask).sum().item()
     fn = ((~pred_edges & target_edges) & mask).sum().item()
@@ -589,16 +519,8 @@ def pair_metrics_from_logits(
     }
 
 
-def generated_metrics(
-    generated: torch.Tensor,
-    target_tokens: torch.Tensor,
-    target_pair_targets: torch.Tensor,
-    target_pair_mask: torch.Tensor,
-    target_num_faces: torch.Tensor,
-    target_edge_count: torch.Tensor,
-    min_faces: int,
-    prefix: str,
-) -> dict[str, float]:
+def generated_metrics(generated, target_tokens, target_pair_targets, target_pair_mask,
+                      target_num_faces, target_edge_count, min_faces, prefix):
     max_faces = int((1 + math.sqrt(1 + 8 * target_pair_targets.shape[1])) / 2)
     pred_adj, pred_count, pred_edge_count_token = target_to_adj(generated, max_faces=max_faces, min_faces=min_faces)
     target_adj, _, _ = target_to_adj(target_tokens, max_faces=max_faces, min_faces=min_faces)
@@ -609,7 +531,6 @@ def generated_metrics(
     target_pairs = target_pair_targets > 0.5
     mask = target_pair_mask.bool()
     pred_edge_count_actual = (pred_pairs & mask).sum(dim=1)
-
     tp = ((pred_pairs & target_pairs) & mask).sum().item()
     fp = ((pred_pairs & ~target_pairs) & mask).sum().item()
     fn = ((~pred_pairs & target_pairs) & mask).sum().item()
@@ -617,7 +538,6 @@ def generated_metrics(
     recall = tp / max(tp + fn, 1)
     f1 = 2 * precision * recall / max(precision + recall, 1e-8)
     iou = tp / max(tp + fp + fn, 1)
-
     pair_equal = ((pred_pairs == target_pairs) | ~mask).all(dim=1)
     count_equal = pred_count == target_num_faces
     edge_count_equal = pred_edge_count_actual == target_edge_count
@@ -639,7 +559,7 @@ def generated_metrics(
 
 
 @torch.no_grad()
-def evaluate(model: nn.Module, dataloader: DataLoader, device: torch.device, args, epoch: int) -> dict[str, float]:
+def evaluate(model, dataloader, device, args, epoch):
     model.eval()
     core = unwrap_model(model)
     totals = Counter()
@@ -647,7 +567,6 @@ def evaluate(model: nn.Module, dataloader: DataLoader, device: torch.device, arg
     count = 0
     generated_batches = []
     generated_seen = 0
-
     for batch in tqdm(dataloader, desc="val", leave=False):
         tokens = batch["tokens"].to(device)
         token_mask = batch["token_mask"].to(device)
@@ -655,52 +574,39 @@ def evaluate(model: nn.Module, dataloader: DataLoader, device: torch.device, arg
         pair_mask = batch["pair_mask"].to(device)
         num_faces = batch["num_faces"].to(device)
         edge_count = batch["edge_count"].to(device)
-
         logits, mu, logvar = model(tokens, token_mask, sample_posterior=False)
         kl_beta = args.kl_beta * min(1.0, epoch / max(args.kl_warmup_epochs, 1))
         _, loss_parts = compute_loss(
-            logits=logits,
-            mu=mu,
-            logvar=logvar,
-            pair_targets=pair_targets,
-            pair_mask=pair_mask,
-            num_faces=num_faces,
-            edge_count=edge_count,
+            logits=logits, mu=mu, logvar=logvar,
+            pair_targets=pair_targets, pair_mask=pair_mask,
+            num_faces=num_faces, edge_count=edge_count,
             edge_pos_weight=args.edge_pos_weight,
             face_count_loss_weight=args.face_count_loss_weight,
             edge_count_loss_weight=args.edge_count_loss_weight,
             kl_beta=kl_beta,
         )
         batch_size = tokens.shape[0]
-        for key, value in loss_parts.items():
-            totals[key] += value * batch_size
+        for k, v in loss_parts.items():
+            totals[k] += v * batch_size
         metrics = pair_metrics_from_logits(logits, pair_targets, pair_mask, num_faces, edge_count)
-        for key, value in metrics.items():
-            tf_metric_totals[key] += value * batch_size
+        for k, v in metrics.items():
+            tf_metric_totals[k] += v * batch_size
         count += batch_size
-
         if generated_seen < args.eval_generate_limit:
             take = min(batch_size, args.eval_generate_limit - generated_seen)
             generated = core.generate(mu[:take], min_faces=args.min_faces, greedy=True)
             generated_batches.append((
-                generated,
-                tokens[:take],
-                pair_targets[:take],
-                pair_mask[:take],
-                num_faces[:take],
-                edge_count[:take],
+                generated, tokens[:take], pair_targets[:take], pair_mask[:take],
+                num_faces[:take], edge_count[:take],
             ))
             generated_seen += take
-
-    result = {key: value / max(count, 1) for key, value in totals.items()}
-    result.update({key: value / max(count, 1) for key, value in tf_metric_totals.items()})
-
+    result = {k: v / max(count, 1) for k, v in totals.items()}
+    result.update({k: v / max(count, 1) for k, v in tf_metric_totals.items()})
     if generated_batches:
         merged = []
-        for item_idx in range(6):
-            merged.append(torch.cat([batch[item_idx] for batch in generated_batches], dim=0))
+        for i in range(6):
+            merged.append(torch.cat([b[i] for b in generated_batches], dim=0))
         result.update(generated_metrics(*merged, min_faces=args.min_faces, prefix="ar_recon"))
-
     if args.prior_samples > 0:
         prior_z = torch.randn(args.prior_samples, core.d_model, device=device)
         prior_generated = core.generate(prior_z, min_faces=args.min_faces, greedy=False, temperature=args.prior_temperature)
@@ -710,17 +616,37 @@ def evaluate(model: nn.Module, dataloader: DataLoader, device: torch.device, arg
         cols = cols.to(device)
         actual_edge_count = (prior_adj[:, rows, cols] > 0.5).sum(dim=1)
         stats = adjacency_stats(prior_adj, prior_count)
-        result.update({f"prior_{key}": value for key, value in stats.items()})
+        result.update({f"prior_{k}": v for k, v in stats.items()})
         result["prior_count_mean"] = float(prior_count.float().mean().item())
         result["prior_count_std"] = float(prior_count.float().std(unbiased=False).item())
         result["prior_edge_count_token_mean"] = float(prior_edge_count.float().mean().item())
         result["prior_edge_count_actual_mean"] = float(actual_edge_count.float().mean().item())
-
     return result
 
 
-def save_json(path: Path, payload: dict):
+def save_json(path, payload):
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+
+
+# ---------------------------------------------------------------------------
+# The only experimental change vs 06-06 baseline lives below.
+# ---------------------------------------------------------------------------
+
+def corrupt_pair_prefix(decoder_input, decoder_mask, corrupt_prob):
+    """Flip NO_EDGE <-> EDGE in the decoder input prefix.
+
+    Special tokens (BOS, N_FACE, N_EDGE, PAD) are never modified because
+    they don't equal NO_EDGE or EDGE.
+    """
+    if corrupt_prob <= 0:
+        return decoder_input
+    flip = torch.rand_like(decoder_input, dtype=torch.float32) < corrupt_prob
+    pair_pos = (decoder_input == NO_EDGE) | (decoder_input == EDGE)
+    flip = flip & pair_pos & decoder_mask
+    flipped = torch.where(decoder_input == NO_EDGE,
+                          torch.full_like(decoder_input, EDGE),
+                          torch.full_like(decoder_input, NO_EDGE))
+    return torch.where(flip, flipped, decoder_input)
 
 
 def parse_args():
@@ -729,7 +655,7 @@ def parse_args():
     parser.add_argument("--train-list", default=DEFAULT_TRAIN_LIST)
     parser.add_argument("--val-list", default=DEFAULT_VAL_LIST)
     parser.add_argument("--test-list", default=DEFAULT_TEST_LIST)
-    parser.add_argument("--output-dir", default="experiments/2026-06-06/outputs_faceadj_vae_edgecount")
+    parser.add_argument("--output-dir", default="experiments/2026-06-08/outputs_corrupt_only")
     parser.add_argument("--checkpoint", default="")
     parser.add_argument("--eval-only", action="store_true")
     parser.add_argument("--eval-split", choices=["val", "test"], default="test")
@@ -759,9 +685,14 @@ def parse_args():
     parser.add_argument("--max-train-samples", type=int, default=0)
     parser.add_argument("--max-val-samples", type=int, default=0)
     parser.add_argument("--max-test-samples", type=int, default=0)
-    parser.add_argument("--seed", type=int, default=20260606)
+    parser.add_argument("--seed", type=int, default=20260608)
     parser.add_argument("--no-data-parallel", action="store_true")
     parser.add_argument("--compile", action="store_true")
+    # Prefix corruption knobs.
+    parser.add_argument("--corrupt-prob", type=float, default=0.15,
+                        help="Flip probability for each pair token in decoder input.")
+    parser.add_argument("--corrupt-warmup-epochs", type=int, default=10,
+                        help="Linearly ramp corrupt_prob from 0 to its target over N epochs.")
     return parser.parse_args()
 
 
@@ -771,21 +702,11 @@ def load_checkpoint_args(args):
     checkpoint = torch.load(args.checkpoint, map_location="cpu")
     ckpt_args = checkpoint.get("args", {})
     for key in (
-        "max_faces",
-        "min_faces",
-        "order_mode",
-        "wl_rounds",
-        "d_model",
-        "nhead",
-        "encoder_layers",
-        "decoder_layers",
-        "dim_feedforward",
-        "dropout",
-        "kl_beta",
-        "kl_warmup_epochs",
-        "edge_pos_weight",
-        "face_count_loss_weight",
-        "edge_count_loss_weight",
+        "max_faces", "min_faces", "order_mode", "wl_rounds",
+        "d_model", "nhead", "encoder_layers", "decoder_layers",
+        "dim_feedforward", "dropout", "kl_beta", "kl_warmup_epochs",
+        "edge_pos_weight", "face_count_loss_weight", "edge_count_loss_weight",
+        "corrupt_prob", "corrupt_warmup_epochs",
     ):
         if key in ckpt_args:
             setattr(args, key, ckpt_args[key])
@@ -793,18 +714,14 @@ def load_checkpoint_args(args):
 
 
 def build_model(args, device):
-    return FaceAdjEdgeCountTransformerVAE(
-        max_faces=args.max_faces,
-        d_model=args.d_model,
-        nhead=args.nhead,
-        num_encoder_layers=args.encoder_layers,
-        num_decoder_layers=args.decoder_layers,
-        dim_feedforward=args.dim_feedforward,
-        dropout=args.dropout,
+    return FaceAdjTransformerVAE(
+        max_faces=args.max_faces, d_model=args.d_model, nhead=args.nhead,
+        num_encoder_layers=args.encoder_layers, num_decoder_layers=args.decoder_layers,
+        dim_feedforward=args.dim_feedforward, dropout=args.dropout,
     ).to(device)
 
 
-def build_dataset(args, split: str):
+def build_dataset(args, split):
     if split == "test":
         model_list = args.test_list
         max_samples = args.max_test_samples
@@ -813,24 +730,16 @@ def build_dataset(args, split: str):
         max_samples = args.max_val_samples
     else:
         raise ValueError(f"Invalid split: {split}")
-    return FaceAdjEdgeCountVAEDataset(
-        raw_root=args.raw_root,
-        model_list=model_list,
-        max_faces=args.max_faces,
-        order_mode=args.order_mode,
-        wl_rounds=args.wl_rounds,
-        max_samples=max_samples,
+    return FaceAdjVAEDataset(
+        raw_root=args.raw_root, model_list=model_list, max_faces=args.max_faces,
+        order_mode=args.order_mode, wl_rounds=args.wl_rounds, max_samples=max_samples,
     )
 
 
-def build_loader(dataset, args, shuffle: bool):
+def build_loader(dataset, args, shuffle):
     return DataLoader(
-        dataset,
-        batch_size=args.batch_size,
-        shuffle=shuffle,
-        num_workers=args.num_workers,
-        pin_memory=True,
-        drop_last=False,
+        dataset, batch_size=args.batch_size, shuffle=shuffle,
+        num_workers=args.num_workers, pin_memory=True, drop_last=False,
     )
 
 
@@ -848,20 +757,15 @@ def run_eval_only(args, checkpoint):
     metrics_epoch = int(checkpoint.get("metrics", {}).get("epoch", args.epochs))
     metrics = evaluate(model, loader, device, args, metrics_epoch)
     payload = {
-        "split": args.eval_split,
-        "checkpoint": args.checkpoint,
-        "num_samples": len(dataset),
-        **metrics,
+        "split": args.eval_split, "checkpoint": args.checkpoint,
+        "num_samples": len(dataset), **metrics,
     }
     save_json(output_dir / f"{args.eval_split}_metrics.json", payload)
     print(
-        f"{args.eval_split} "
-        f"loss={metrics.get('loss', 0.0):.4f} "
+        f"{args.eval_split} loss={metrics.get('loss', 0.0):.4f} "
         f"tf_f1={metrics.get('tf_edge_f1', 0.0):.4f} "
         f"ar_f1={metrics.get('ar_recon_edge_f1', 0.0):.4f} "
         f"ar_exact={metrics.get('ar_recon_exact_adj_acc', 0.0):.4f} "
-        f"ar_face_mae={metrics.get('ar_recon_face_count_mae', 0.0):.2f} "
-        f"ar_edge_mae={metrics.get('ar_recon_edge_count_mae', 0.0):.2f} "
         f"prior_conn={metrics.get('prior_connected_ratio', 0.0):.3f}",
         flush=True,
     )
@@ -874,27 +778,20 @@ def main():
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     torch.backends.cuda.matmul.allow_tf32 = True
-
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     save_json(output_dir / "args.json", vars(args))
-
     if args.eval_only:
         run_eval_only(args, checkpoint)
         return
 
-    train_dataset = FaceAdjEdgeCountVAEDataset(
-        raw_root=args.raw_root,
-        model_list=args.train_list,
-        max_faces=args.max_faces,
-        order_mode=args.order_mode,
-        wl_rounds=args.wl_rounds,
-        max_samples=args.max_train_samples,
+    train_dataset = FaceAdjVAEDataset(
+        raw_root=args.raw_root, model_list=args.train_list, max_faces=args.max_faces,
+        order_mode=args.order_mode, wl_rounds=args.wl_rounds, max_samples=args.max_train_samples,
     )
     val_dataset = build_dataset(args, "val")
     train_loader = build_loader(train_dataset, args, shuffle=True)
     val_loader = build_loader(val_dataset, args, shuffle=False)
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = build_model(args, device)
     if args.compile and hasattr(torch, "compile"):
@@ -902,12 +799,11 @@ def main():
     if torch.cuda.device_count() > 1 and not args.no_data_parallel:
         print(f"Using DataParallel on {torch.cuda.device_count()} GPUs", flush=True)
         model = nn.DataParallel(model)
-
-    params = [param for param in model.parameters() if param.requires_grad]
+    params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.AdamW(params, lr=args.lr, weight_decay=args.weight_decay)
     print(
         f"Model ready on {device}; trainable parameters={sum(p.numel() for p in params):,}; "
-        f"train={len(train_dataset)} val={len(val_dataset)}",
+        f"train={len(train_dataset)} val={len(val_dataset)}; corrupt_prob={args.corrupt_prob}",
         flush=True,
     )
 
@@ -916,9 +812,11 @@ def main():
     for epoch in range(1, args.epochs + 1):
         model.train()
         kl_beta = args.kl_beta * min(1.0, epoch / max(args.kl_warmup_epochs, 1))
+        cur_corrupt = args.corrupt_prob * min(1.0, epoch / max(args.corrupt_warmup_epochs, 1))
         progress = tqdm(train_loader, desc=f"epoch {epoch:03d}/{args.epochs} train")
         running = Counter()
         seen = 0
+        core = unwrap_model(model)
         for batch in progress:
             tokens = batch["tokens"].to(device, non_blocking=True)
             token_mask = batch["token_mask"].to(device, non_blocking=True)
@@ -927,15 +825,16 @@ def main():
             num_faces = batch["num_faces"].to(device, non_blocking=True)
             edge_count = batch["edge_count"].to(device, non_blocking=True)
 
-            logits, mu, logvar = model(tokens, token_mask, sample_posterior=True)
+            mu, logvar = core.encode(tokens, token_mask)
+            z = core.reparameterize(mu, logvar)
+            decoder_input, decoder_mask = core.shifted_decoder_input(tokens, token_mask)
+            decoder_input = corrupt_pair_prefix(decoder_input, decoder_mask, cur_corrupt)
+            logits = core.decode(z, decoder_input, decoder_mask)
+
             loss, loss_parts = compute_loss(
-                logits=logits,
-                mu=mu,
-                logvar=logvar,
-                pair_targets=pair_targets,
-                pair_mask=pair_mask,
-                num_faces=num_faces,
-                edge_count=edge_count,
+                logits=logits, mu=mu, logvar=logvar,
+                pair_targets=pair_targets, pair_mask=pair_mask,
+                num_faces=num_faces, edge_count=edge_count,
                 edge_pos_weight=args.edge_pos_weight,
                 face_count_loss_weight=args.face_count_loss_weight,
                 edge_count_loss_weight=args.edge_count_loss_weight,
@@ -948,42 +847,41 @@ def main():
 
             batch_size = tokens.shape[0]
             seen += batch_size
-            for key, value in loss_parts.items():
-                running[key] += value * batch_size
+            for k, v in loss_parts.items():
+                running[k] += v * batch_size
             progress.set_postfix({
                 "loss": f"{running['loss'] / max(seen, 1):.4f}",
                 "pair": f"{running['pair_loss'] / max(seen, 1):.4f}",
-                "edgec": f"{running['edge_count_loss'] / max(seen, 1):.4f}",
                 "kl": f"{running['kl'] / max(seen, 1):.4f}",
+                "corrupt": f"{cur_corrupt:.2f}",
             })
 
-        train_metrics = {f"train_{key}": value / max(seen, 1) for key, value in running.items()}
+        train_metrics = {f"train_{k}": v / max(seen, 1) for k, v in running.items()}
         val_metrics = evaluate(model, val_loader, device, args, epoch)
-        epoch_metrics = {"epoch": epoch, **train_metrics, **val_metrics}
+        epoch_metrics = {"epoch": epoch, "corrupt_prob_used": cur_corrupt,
+                         **train_metrics, **val_metrics}
         history.append(epoch_metrics)
         save_json(output_dir / "metrics.json", epoch_metrics)
         save_json(output_dir / "history.json", {"history": history})
 
         score = val_metrics.get("ar_recon_exact_adj_acc", val_metrics.get("ar_recon_edge_f1", 0.0))
         print(
-            f"epoch {epoch:03d} "
-            f"train_loss={train_metrics['train_loss']:.4f} "
+            f"epoch {epoch:03d} train_loss={train_metrics['train_loss']:.4f} "
             f"val_loss={val_metrics['loss']:.4f} "
             f"tf_f1={val_metrics.get('tf_edge_f1', 0.0):.4f} "
             f"ar_f1={val_metrics.get('ar_recon_edge_f1', 0.0):.4f} "
             f"ar_exact={val_metrics.get('ar_recon_exact_adj_acc', 0.0):.4f} "
-            f"ar_edge_mae={val_metrics.get('ar_recon_edge_count_mae', 0.0):.2f} "
-            f"prior_conn={val_metrics.get('prior_connected_ratio', 0.0):.3f}",
+            f"prior_conn={val_metrics.get('prior_connected_ratio', 0.0):.3f} "
+            f"corrupt={cur_corrupt:.2f}",
             flush=True,
         )
         if score > best_score:
             best_score = score
-            checkpoint = {
-                "model": unwrap_model(model).state_dict(),
-                "args": vars(args),
-                "metrics": epoch_metrics,
-            }
-            torch.save(checkpoint, output_dir / "best.pt")
+            torch.save(
+                {"model": unwrap_model(model).state_dict(),
+                 "args": vars(args), "metrics": epoch_metrics},
+                output_dir / "best.pt",
+            )
             print(f"saved best checkpoint to {output_dir / 'best.pt'}", flush=True)
 
 

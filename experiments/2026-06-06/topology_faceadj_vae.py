@@ -216,6 +216,7 @@ def adjacency_stats(adj: torch.Tensor, count: torch.Tensor) -> dict[str, float]:
     count_np = count.detach().cpu().numpy().astype(np.int64)
     connected = []
     no_isolated = []
+    valid_strict = []
     edge_counts = []
     densities = []
     for matrix, n in zip(adj_np, count_np):
@@ -223,6 +224,7 @@ def adjacency_stats(adj: torch.Tensor, count: torch.Tensor) -> dict[str, float]:
         if n <= 1:
             connected.append(1.0)
             no_isolated.append(1.0)
+            valid_strict.append(1.0)
             edge_counts.append(0.0)
             densities.append(0.0)
             continue
@@ -231,7 +233,8 @@ def adjacency_stats(adj: torch.Tensor, count: torch.Tensor) -> dict[str, float]:
         edge_counts.append(edge_count)
         densities.append(edge_count / (n * (n - 1) / 2))
         degree = sub.sum(axis=1)
-        no_isolated.append(float(np.all(degree > 0)))
+        no_iso_flag = bool(np.all(degree > 0))
+        no_isolated.append(float(no_iso_flag))
         seen = {0}
         stack = [0]
         while stack:
@@ -240,10 +243,15 @@ def adjacency_stats(adj: torch.Tensor, count: torch.Tensor) -> dict[str, float]:
                 if int(nxt) not in seen:
                     seen.add(int(nxt))
                     stack.append(int(nxt))
-        connected.append(float(len(seen) == n))
+        conn_flag = bool(len(seen) == n)
+        connected.append(float(conn_flag))
+        # Strict structural validity: connected AND no isolated face.
+        # No empirical degree / density thresholds; pure structural check.
+        valid_strict.append(float(conn_flag and no_iso_flag))
     return {
         "connected_ratio": float(np.mean(connected)) if connected else 0.0,
         "no_isolated_ratio": float(np.mean(no_isolated)) if no_isolated else 0.0,
+        "valid_strict_ratio": float(np.mean(valid_strict)) if valid_strict else 0.0,
         "edge_count_mean": float(np.mean(edge_counts)) if edge_counts else 0.0,
         "density_mean": float(np.mean(densities)) if densities else 0.0,
     }
