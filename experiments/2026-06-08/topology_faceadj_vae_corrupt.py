@@ -376,10 +376,15 @@ class FaceAdjTransformerVAE(nn.Module):
         )
         return self.output_layer(output)
 
-    def forward(self, tokens, token_mask, sample_posterior=True):
+    def forward(self, tokens, token_mask, sample_posterior=True,
+                decoder_input_override=None, decoder_mask_override=None):
         mu, logvar = self.encode(tokens, token_mask)
         z = self.reparameterize(mu, logvar) if sample_posterior else mu
-        decoder_input, decoder_mask = self.shifted_decoder_input(tokens, token_mask)
+        if decoder_input_override is None:
+            decoder_input, decoder_mask = self.shifted_decoder_input(tokens, token_mask)
+        else:
+            decoder_input = decoder_input_override
+            decoder_mask = decoder_mask_override
         logits = self.decode(z, decoder_input, decoder_mask)
         return logits, mu, logvar
 
@@ -462,6 +467,12 @@ class FaceAdjTransformerVAE(nn.Module):
 
 def unwrap_model(model):
     return model.module if isinstance(model, nn.DataParallel) else model
+
+
+def safe_model_forward(model, tokens, token_mask, **kwargs):
+    if isinstance(model, nn.DataParallel) and tokens.shape[0] < len(model.device_ids):
+        return model.module(tokens, token_mask, **kwargs)
+    return model(tokens, token_mask, **kwargs)
 
 
 def compute_loss(logits, mu, logvar, pair_targets, pair_mask, num_faces, edge_count,
@@ -574,7 +585,7 @@ def evaluate(model, dataloader, device, args, epoch):
         pair_mask = batch["pair_mask"].to(device)
         num_faces = batch["num_faces"].to(device)
         edge_count = batch["edge_count"].to(device)
-        logits, mu, logvar = model(tokens, token_mask, sample_posterior=False)
+        logits, mu, logvar = safe_model_forward(model, tokens, token_mask, sample_posterior=False)
         kl_beta = args.kl_beta * min(1.0, epoch / max(args.kl_warmup_epochs, 1))
         _, loss_parts = compute_loss(
             logits=logits, mu=mu, logvar=logvar,
@@ -825,11 +836,14 @@ def main():
             num_faces = batch["num_faces"].to(device, non_blocking=True)
             edge_count = batch["edge_count"].to(device, non_blocking=True)
 
-            mu, logvar = core.encode(tokens, token_mask)
-            z = core.reparameterize(mu, logvar)
             decoder_input, decoder_mask = core.shifted_decoder_input(tokens, token_mask)
             decoder_input = corrupt_pair_prefix(decoder_input, decoder_mask, cur_corrupt)
-            logits = core.decode(z, decoder_input, decoder_mask)
+            logits, mu, logvar = safe_model_forward(
+                model, tokens, token_mask,
+                sample_posterior=True,
+                decoder_input_override=decoder_input,
+                decoder_mask_override=decoder_mask,
+            )
 
             loss, loss_parts = compute_loss(
                 logits=logits, mu=mu, logvar=logvar,

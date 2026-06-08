@@ -31,7 +31,19 @@
   - `corrupt_pair_prefix(decoder_input, decoder_mask, corrupt_prob)`: 只翻转 NO_EDGE/EDGE 位置，特殊 token（BOS/N_FACE/N_EDGE/PAD）天然不在这两个 id 上，因此不会被破坏。
   - 训练循环改成 `encode → reparameterize → corrupt → decode`，eval 不腐蚀。
   - `--corrupt-prob 0.15`、`--corrupt-warmup-epochs 10` 线性 ramp，前 10 epoch 让模型先学到稳定 prefix 再加噪声。
-- 训练命令在 `experiments/2026-06-08/command.sh` 第 1 段，`CUDA_VISIBLE_DEVICES=0`。
+- 手动顺序执行的第 1 条命令：
+
+```
+cd /mnt/d/python && CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python experiments/2026-06-08/topology_faceadj_vae_corrupt.py \
+    --epochs 100 --batch-size 256 --num-workers 8 \
+    --order-mode wl --wl-rounds 3 \
+    --kl-beta 0.001 --kl-warmup-epochs 10 \
+    --edge-count-loss-weight 0.2 \
+    --eval-generate-limit 256 --prior-samples 256 \
+    --output-dir experiments/2026-06-08/outputs_corrupt_only \
+    --corrupt-prob 0.15 --corrupt-warmup-epochs 10 \
+    > experiments/2026-06-08/outputs_corrupt_only.log 2>&1
+```
 - 关键配置：
   - data root: `/mnt/d/data/deepcad_v7`
   - order_mode=wl, wl_rounds=3, kl_beta=0.001, kl_warmup=10
@@ -39,7 +51,7 @@
 
 **结果**
 
-- 还没跑，回家直接 `bash experiments/2026-06-08/command.sh`。
+- 还没跑。先跑上面第 1 条命令，完成后再跑第 2 条。
 - 预期：`ar_f1` 0.93 → 0.95，`exact_adj_acc` 0.78 → 0.82+。
 - 输出：`experiments/2026-06-08/outputs_corrupt_only/best.pt`、`metrics.json`、`history.json`、`outputs_corrupt_only.log`。
 
@@ -61,11 +73,24 @@
 - Loss：`face_count_ce + edge_count_loss_weight * edge_count_ce + degree_loss_weight * degree_ce + pair_bce + kl_beta * kl`。`--degree-loss-weight 0.2`。
 - Generation 加入 4 个 step：face count → edge count → 每个 face 的 degree token → 每个 pair 的 NO_EDGE/EDGE。pair 阶段同时维护 `edge_count` 和 `per-face degree` 两个 budget，互相不冲突时按 logits 选，冲突时优先 NO_EDGE 保安全。
 - 新增评估指标：`tf_degree_acc`、`tf_degree_mae`、`ar_recon_degree_acc`、`ar_recon_degree_mae`、`ar_recon_degree_self_consistent`（生成出的 adjacency 的 row-sum 和 degree token 是否一致）。
-- 训练命令 `CUDA_VISIBLE_DEVICES=1`。
+- 手动顺序执行的第 2 条命令：
+
+```bash
+cd /mnt/d/python && CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python experiments/2026-06-08/topology_faceadj_vae_degree.py \
+    --epochs 100 --batch-size 256 --num-workers 8 \
+    --order-mode wl --wl-rounds 3 \
+    --kl-beta 0.001 --kl-warmup-epochs 10 \
+    --edge-count-loss-weight 0.2 \
+    --eval-generate-limit 256 --prior-samples 256 \
+    --output-dir experiments/2026-06-08/outputs_degree_only \
+    --degree-loss-weight 0.2 \
+    > experiments/2026-06-08/outputs_degree_only.log 2>&1
+```
 
 **结果**
 
-- 还没跑。预期：`exact_adj_acc` 0.78 → 0.85+；degree-budget hard constraint 直接修复 row-sum 错位，理论上能消掉一大批 1-2 edge error。
+- 还没跑。第 1 条命令完成后再跑上面第 2 条命令。
+- 预期：`exact_adj_acc` 0.78 → 0.85+；degree-budget hard constraint 直接修复 row-sum 错位，理论上能消掉一大批 1-2 edge error。
 - 输出：`experiments/2026-06-08/outputs_degree_only/best.pt`、相关 metrics 和 log。
 
 ### 3. Corruption + degree（组合实验，2 的迭代）
@@ -79,11 +104,25 @@
 
 - 脚本：`experiments/2026-06-08/topology_faceadj_vae_both.py`，在 degree 版基础上加入 corruption 训练逻辑。
 - 训练循环：`encode → reparameterize → shifted_decoder_input → corrupt pair tokens (degree 不变) → decode`。
-- 训练命令 `CUDA_VISIBLE_DEVICES=2`，参数同时包含 `--degree-loss-weight 0.2 --corrupt-prob 0.15`。
+- 手动顺序执行的第 3 条命令：
+
+```bash
+cd /mnt/d/python && CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python experiments/2026-06-08/topology_faceadj_vae_both.py \
+    --epochs 100 --batch-size 256 --num-workers 8 \
+    --order-mode wl --wl-rounds 3 \
+    --kl-beta 0.001 --kl-warmup-epochs 10 \
+    --edge-count-loss-weight 0.2 \
+    --eval-generate-limit 256 --prior-samples 256 \
+    --output-dir experiments/2026-06-08/outputs_both \
+    --degree-loss-weight 0.2 \
+    --corrupt-prob 0.15 --corrupt-warmup-epochs 10 \
+    > experiments/2026-06-08/outputs_both.log 2>&1
+```
 
 **结果**
 
-- 还没跑。预期：如果 1 和 2 都各自有效，组合应该比单独的更好或至少持平。如果差于单独的某个，说明两者有 interaction，需要单独调参。
+- 还没跑。第 2 条命令完成后再跑上面第 3 条命令。
+- 预期：如果 1 和 2 都各自有效，组合应该比单独的更好或至少持平。如果差于单独的某个，说明两者有 interaction，需要单独调参。
 - 输出：`experiments/2026-06-08/outputs_both/best.pt`、metrics、log。
 
 ## 评估方法
@@ -102,7 +141,7 @@
 ## 今日结论
 
 - 三个脚本都已经写好并通过 syntax check：`topology_faceadj_vae_corrupt.py`、`topology_faceadj_vae_degree.py`、`topology_faceadj_vae_both.py`。
-- 三个跑批的 shell 命令在 `command.sh`，三张卡同时跑。
+- 三条训练命令已经直接写在上面各自实验记录里，按 1 → 2 → 3 手动顺序运行；`command.sh` 不再自动启动训练，避免误跑三个长任务。
 - 训练目标统一是 `ar_recon_exact_adj_acc`（best checkpoint 用这个 score 选）。
 
 ## 4. Discussion: 当前优化方向的合理性反思
@@ -302,7 +341,34 @@ valid_strict.append(float(conn_flag and no_iso_flag))
 
 ### 6.4 用法
 
-回去训练完后，跑 test split eval-only 命令（在 `command.sh` 末尾，已写但注释掉），新指标会出现在每个实验目录的 `test_metrics.json` 里：
+回去训练完后，手动按顺序跑 test split eval-only 命令，新指标会出现在每个实验目录的 `test_metrics.json` 里：
+
+```bash
+cd /mnt/d/python && CUDA_VISIBLE_DEVICES=0 python experiments/2026-06-08/topology_faceadj_vae_corrupt.py \
+    --eval-only --eval-split test \
+    --checkpoint experiments/2026-06-08/outputs_corrupt_only/best.pt \
+    --output-dir experiments/2026-06-08/outputs_corrupt_only \
+    --batch-size 256 --num-workers 8 \
+    --eval-generate-limit 2424 --prior-samples 512
+```
+
+```bash
+cd /mnt/d/python && CUDA_VISIBLE_DEVICES=0 python experiments/2026-06-08/topology_faceadj_vae_degree.py \
+    --eval-only --eval-split test \
+    --checkpoint experiments/2026-06-08/outputs_degree_only/best.pt \
+    --output-dir experiments/2026-06-08/outputs_degree_only \
+    --batch-size 256 --num-workers 8 \
+    --eval-generate-limit 2424 --prior-samples 512
+```
+
+```bash
+cd /mnt/d/python && CUDA_VISIBLE_DEVICES=0 python experiments/2026-06-08/topology_faceadj_vae_both.py \
+    --eval-only --eval-split test \
+    --checkpoint experiments/2026-06-08/outputs_both/best.pt \
+    --output-dir experiments/2026-06-08/outputs_both \
+    --batch-size 256 --num-workers 8 \
+    --eval-generate-limit 2424 --prior-samples 512
+```
 
 - `ar_recon_valid_strict_ratio`：从 posterior `mu` 解码出的 adjacency 满足 connected + no_isolated 的比例
 - `prior_valid_strict_ratio`：从 N(0, I) 采样 z 解码出的 adjacency 满足 connected + no_isolated 的比例
@@ -310,7 +376,6 @@ valid_strict.append(float(conn_flag and no_iso_flag))
 也可以直接用同样的 `--eval-only --eval-split test` 把 06-06 已有的四个 baseline checkpoint 重新跑一遍：
 
 ```bash
-# 例：06-06 strong baseline
 cd /mnt/d/python && python experiments/2026-06-06/topology_faceadj_vae_edgecount.py \
     --eval-only --eval-split test \
     --checkpoint experiments/2026-06-06/outputs_faceadj_vae_edgecount_wl_kl001/best.pt \
@@ -332,10 +397,33 @@ cd /mnt/d/python && python experiments/2026-06-06/topology_faceadj_vae_edgecount
 
 如果 `valid_strict` 拉开差距，那"哪个 checkpoint 是下一步 CVAE decoder 最佳起点"的答案可能反转。
 
+## 7. 8 卡 DataParallel 小 batch 修复
+
+**为什么这么做**
+
+- 跑 `topology_faceadj_vae_degree.py` 的 8 卡命令时，最后一个小 batch 触发 `torch.nn.DataParallel` scatter 边界问题：某个 replica 收到空 positional input，只剩 `sample_posterior=True`，报错 `FaceAdjDegreeTransformerVAE.forward() missing 2 required positional arguments: 'tokens' and 'token_mask'`。
+- 重新检查三个 06-08 脚本后发现另一个问题：`corrupt.py` 和 `both.py` 的训练循环为了做 prefix corruption 直接调用 `unwrap_model(model).encode/decode`，这会绕过 `DataParallel`，即使命令暴露 8 张卡也主要只在 0 卡训练。
+
+**具体实施**
+
+- 三个脚本统一加 `safe_model_forward(model, tokens, token_mask, **kwargs)`：
+  - 正常 batch：继续走 `DataParallel`。
+  - `tokens.shape[0] < len(model.device_ids)` 的小 batch：退回 `model.module(...)` 单卡 forward，避免空 replica。
+- 三个模型的 `forward(...)` 都新增可选参数 `decoder_input_override` / `decoder_mask_override`。
+- `degree.py` 的 train/eval 直接从裸 `model(...)` 改成 `safe_model_forward(...)`。
+- `corrupt.py` 和 `both.py` 的 corruption 训练逻辑改成：先用 core 生成并腐蚀 `decoder_input`，然后把 override 传给 `safe_model_forward(...)`，因此大 batch 仍然能走 8 卡 DataParallel。
+
+**结果**
+
+- `conda run -n torch python -m py_compile experiments/2026-06-08/topology_faceadj_vae_corrupt.py experiments/2026-06-08/topology_faceadj_vae_degree.py experiments/2026-06-08/topology_faceadj_vae_both.py` 通过。
+- 在当前机器 8 张 GPU 上做了 forward smoke：
+  - batch size 1：三个脚本都通过，覆盖小 batch fallback。
+  - batch size 8：三个脚本都通过，覆盖正常 DataParallel 路径。
+
 ## 待办
 
-- [ ] 回家执行 `bash experiments/2026-06-08/command.sh`，三张卡并行跑 100 epoch。
-- [ ] 训练完成后，分别在 test split 上做 eval-only（命令在 `command.sh` 末尾，已注释，去掉注释直接跑），把 `test_metrics.json` 和 06-06 baseline 比。
+- [ ] 回家按上面第 1 → 2 → 3 条训练命令手动顺序运行；每条都是单实验 8 卡跑满。
+- [ ] 训练完成后，分别按上面的 test split eval-only 命令手动顺序运行，把 `test_metrics.json` 和 06-06 baseline 比。
 - [ ] 用 06-06 两个改过 `adjacency_stats` 的脚本对四个旧 checkpoint 跑 eval-only（不重训），拿到 `ar_recon_valid_strict_ratio` / `prior_valid_strict_ratio`。看 `degree+KL=0.1` 是否在 valid_strict 上反而最高。
 - [ ] 后续工程：写完整的 `validity_utils.py`（degree/density 经验阈值版 + sample@K），先跑 train-set calibration 拿阈值，再做严格 valid_rate 评估。
 - [ ] 决定 CVAE decoder 起点：在 ar_recon_exact_adj_acc 高 vs valid_strict_ratio 高之间根据数据选。

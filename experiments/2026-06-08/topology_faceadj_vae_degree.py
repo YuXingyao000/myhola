@@ -403,10 +403,15 @@ class FaceAdjDegreeTransformerVAE(nn.Module):
         )
         return self.output_layer(out)
 
-    def forward(self, tokens, token_mask, sample_posterior=True):
+    def forward(self, tokens, token_mask, sample_posterior=True,
+                decoder_input_override=None, decoder_mask_override=None):
         mu, logvar = self.encode(tokens, token_mask)
         z = self.reparameterize(mu, logvar) if sample_posterior else mu
-        decoder_input, decoder_mask = self.shifted_decoder_input(tokens, token_mask)
+        if decoder_input_override is None:
+            decoder_input, decoder_mask = self.shifted_decoder_input(tokens, token_mask)
+        else:
+            decoder_input = decoder_input_override
+            decoder_mask = decoder_mask_override
         logits = self.decode(z, decoder_input, decoder_mask)
         return logits, mu, logvar
 
@@ -547,6 +552,12 @@ class FaceAdjDegreeTransformerVAE(nn.Module):
 
 def unwrap_model(model):
     return model.module if isinstance(model, nn.DataParallel) else model
+
+
+def safe_model_forward(model, tokens, token_mask, **kwargs):
+    if isinstance(model, nn.DataParallel) and tokens.shape[0] < len(model.device_ids):
+        return model.module(tokens, token_mask, **kwargs)
+    return model(tokens, token_mask, **kwargs)
 
 
 def compute_loss(logits, mu, logvar,
@@ -719,7 +730,7 @@ def evaluate(model, dataloader, device, args, epoch):
         num_faces = batch["num_faces"].to(device)
         edge_count = batch["edge_count"].to(device)
 
-        logits, mu, logvar = model(tokens, token_mask, sample_posterior=False)
+        logits, mu, logvar = safe_model_forward(model, tokens, token_mask, sample_posterior=False)
         kl_beta = args.kl_beta * min(1.0, epoch / max(args.kl_warmup_epochs, 1))
         _, parts = compute_loss(
             logits=logits, mu=mu, logvar=logvar,
@@ -948,7 +959,7 @@ def main():
             num_faces = batch["num_faces"].to(device, non_blocking=True)
             edge_count = batch["edge_count"].to(device, non_blocking=True)
 
-            logits, mu, logvar = model(tokens, token_mask, sample_posterior=True)
+            logits, mu, logvar = safe_model_forward(model, tokens, token_mask, sample_posterior=True)
             loss, parts = compute_loss(
                 logits=logits, mu=mu, logvar=logvar,
                 pair_targets=pair_targets, pair_mask=pair_mask,
