@@ -49,6 +49,7 @@ PAD = 0
 NO_EDGE = 1
 EDGE = 2
 COUNT_OFFSET = 3
+MASKED_LOGIT = -1.0e9
 
 
 def count_token(num_faces: int) -> int:
@@ -448,7 +449,7 @@ class FaceAdjTransformerVAE(nn.Module):
 
         logits = self.decode(z, decoder_input, decoder_mask)[:, -1]
         count_logits = logits[:, COUNT_OFFSET : COUNT_OFFSET + self.max_faces + 1]
-        allowed = torch.full_like(count_logits, float("-inf"))
+        allowed = torch.full_like(count_logits, MASKED_LOGIT)
         allowed[:, min_faces : self.max_faces + 1] = count_logits[:, min_faces : self.max_faces + 1]
         if greedy:
             count_cls = allowed.argmax(dim=-1)
@@ -597,6 +598,7 @@ def generated_metrics(
         f"{prefix}_count_mae": float((pred_count.float() - target_num_faces.float()).abs().mean().item()),
         f"{prefix}_connected_ratio": stats["connected_ratio"],
         f"{prefix}_no_isolated_ratio": stats["no_isolated_ratio"],
+        f"{prefix}_valid_strict_ratio": stats["valid_strict_ratio"],
     }
 
 

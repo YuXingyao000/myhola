@@ -48,6 +48,7 @@ PAD = 0
 NO_EDGE = 1
 EDGE = 2
 FACE_COUNT_OFFSET = 3
+MASKED_LOGIT = -1.0e9
 
 
 def face_count_token(num_faces: int) -> int:
@@ -446,7 +447,7 @@ class FaceAdjEdgeCountTransformerVAE(nn.Module):
 
         logits = self.decode(z, decoder_input, decoder_mask)[:, -1]
         face_logits = logits[:, FACE_COUNT_OFFSET : FACE_COUNT_OFFSET + self.max_faces + 1]
-        allowed_face = torch.full_like(face_logits, float("-inf"))
+        allowed_face = torch.full_like(face_logits, MASKED_LOGIT)
         allowed_face[:, min_faces : self.max_faces + 1] = face_logits[:, min_faces : self.max_faces + 1]
         if greedy:
             face_cls = allowed_face.argmax(dim=-1)
@@ -461,7 +462,7 @@ class FaceAdjEdgeCountTransformerVAE(nn.Module):
         logits = self.decode(z, decoder_input, decoder_mask)[:, -1]
         max_edges_per_sample = counts * (counts - 1) // 2
         edge_logits = logits[:, edge_count_offset(self.max_faces) : edge_count_offset(self.max_faces) + max_edge_count(self.max_faces) + 1]
-        allowed_edge = torch.full_like(edge_logits, float("-inf"))
+        allowed_edge = torch.full_like(edge_logits, MASKED_LOGIT)
         for b in range(batch_size):
             allowed_edge[b, : int(max_edges_per_sample[b].item()) + 1] = edge_logits[b, : int(max_edges_per_sample[b].item()) + 1]
         if greedy:
@@ -635,6 +636,7 @@ def generated_metrics(
         f"{prefix}_edge_count_token_mae": float((pred_edge_count_token.float() - target_edge_count.float()).abs().mean().item()),
         f"{prefix}_connected_ratio": stats["connected_ratio"],
         f"{prefix}_no_isolated_ratio": stats["no_isolated_ratio"],
+        f"{prefix}_valid_strict_ratio": stats["valid_strict_ratio"],
     }
 
 

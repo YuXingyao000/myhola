@@ -971,3 +971,19 @@ A | t=0.25 | t=0.5 | t=0.75 | B
 ```
 
 这套可视化足够用于周报，并且能把当前结论讲清楚：`edge count` 改进了全局边数一致性，但 exact adjacency 仍受 degree distribution 和 connectivity 影响，所以下一步应加入 per-face degree 和 constrained decoding。
+
+## 2026-06-09 指标回填：strict validity
+
+**为什么这么做**
+
+- 06-08 的 topology VAE 脚本已经把 `valid_strict = connected ∧ no_isolated` 作为结构有效性指标输出。为了和 06-06 已有 checkpoint 横向比较，需要让 06-06 两个脚本的 test eval 也输出同样字段。
+
+**具体实施**
+
+- 修改 `experiments/2026-06-06/topology_faceadj_vae.py` 和 `experiments/2026-06-06/topology_faceadj_vae_edgecount.py`。
+- 两个脚本的 `adjacency_stats` 里原本已经有 `valid_strict_ratio`；这次补齐 `generated_metrics(...)` 的返回值，因此 test eval 会新增 `ar_recon_valid_strict_ratio`。
+- 同时把 generation 里的 `-inf` mask 改成 `MASKED_LOGIT = -1.0e9`，避免 `prior_samples` 非 greedy 采样时被 `torch.distributions.Categorical` 的参数校验拒绝。
+
+**结果**
+
+- 不需要重训。对 06-06 的已有 checkpoint 跑 `--eval-only --eval-split test` 即可回填 `ar_recon_valid_strict_ratio` 和 `prior_valid_strict_ratio`。

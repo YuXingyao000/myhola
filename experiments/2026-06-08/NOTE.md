@@ -403,15 +403,18 @@ cd /mnt/d/python && python experiments/2026-06-06/topology_faceadj_vae_edgecount
 
 - 跑 `topology_faceadj_vae_degree.py` 的 8 卡命令时，最后一个小 batch 触发 `torch.nn.DataParallel` scatter 边界问题：某个 replica 收到空 positional input，只剩 `sample_posterior=True`，报错 `FaceAdjDegreeTransformerVAE.forward() missing 2 required positional arguments: 'tokens' and 'token_mask'`。
 - 重新检查三个 06-08 脚本后发现另一个问题：`corrupt.py` 和 `both.py` 的训练循环为了做 prefix corruption 直接调用 `unwrap_model(model).encode/decode`，这会绕过 `DataParallel`，即使命令暴露 8 张卡也主要只在 0 卡训练。
+- 2026-06-09 继续重跑时发现第一版 `safe_model_forward` 仍然不够稳：`tokens/token_mask` 还是 positional args，`DataParallel` replica 仍可能丢 positional input。
+- `both.py` 还在 validation 的 `prior_gen = core.generate(... greedy=False)` 中报 `Categorical` invalid logits，因为 degree constrained decoding 用 `-inf` mask，PyTorch distribution 参数校验不接受 `-inf` logits。
 
 **具体实施**
 
 - 三个脚本统一加 `safe_model_forward(model, tokens, token_mask, **kwargs)`：
-  - 正常 batch：继续走 `DataParallel`。
-  - `tokens.shape[0] < len(model.device_ids)` 的小 batch：退回 `model.module(...)` 单卡 forward，避免空 replica。
+  - `tokens/token_mask` 改成 keyword args 传入 `DataParallel`，避免 positional scatter 丢参数。
+  - `tokens.shape[0] < len(model.device_ids)` 的小 batch 仍退回 `model.module(...)` 单卡 forward，避免空 replica。
 - 三个模型的 `forward(...)` 都新增可选参数 `decoder_input_override` / `decoder_mask_override`。
 - `degree.py` 的 train/eval 直接从裸 `model(...)` 改成 `safe_model_forward(...)`。
 - `corrupt.py` 和 `both.py` 的 corruption 训练逻辑改成：先用 core 生成并腐蚀 `decoder_input`，然后把 override 传给 `safe_model_forward(...)`，因此大 batch 仍然能走 8 卡 DataParallel。
+- 三个脚本都新增 `MASKED_LOGIT = -1.0e9`，把 generation 里的 `float("-inf")` mask 换成有限大负数，保持 masked category 概率近似 0，同时避免 `Categorical` 拒绝 logits。
 
 **结果**
 
@@ -419,6 +422,9 @@ cd /mnt/d/python && python experiments/2026-06-06/topology_faceadj_vae_edgecount
 - 在当前机器 8 张 GPU 上做了 forward smoke：
   - batch size 1：三个脚本都通过，覆盖小 batch fallback。
   - batch size 8：三个脚本都通过，覆盖正常 DataParallel 路径。
+  - batch size 35：三个脚本都通过，覆盖 `46627 % 256 = 35` 的训练尾 batch。
+- 三个脚本的 `core.generate(z, min_faces=7, greedy=False, temperature=1.0)` 都用 64 个 prior samples 通过，覆盖 validation prior sampling 路径。
+- 2026-06-09 再补齐 `generated_metrics(...)` 的 `valid_strict_ratio` 返回项，因此 test eval 会同时输出 `ar_recon_valid_strict_ratio` 和 `prior_valid_strict_ratio`。
 
 ## 待办
 

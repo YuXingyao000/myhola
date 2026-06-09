@@ -45,6 +45,7 @@ PAD = 0
 NO_EDGE = 1
 EDGE = 2
 FACE_COUNT_OFFSET = 3
+MASKED_LOGIT = -1.0e9
 
 
 def face_count_token(num_faces): return FACE_COUNT_OFFSET + int(num_faces)
@@ -418,7 +419,7 @@ class FaceAdjDegreeTransformerVAE(nn.Module):
         # ---- Step 1: face count ----
         logits = self.decode(z, decoder_input, decoder_mask)[:, -1]
         face_logits = logits[:, FACE_COUNT_OFFSET : FACE_COUNT_OFFSET + self.max_faces + 1]
-        allowed = torch.full_like(face_logits, float("-inf"))
+        allowed = torch.full_like(face_logits, MASKED_LOGIT)
         allowed[:, min_faces : self.max_faces + 1] = face_logits[:, min_faces : self.max_faces + 1]
         face_cls = (allowed.argmax(dim=-1) if greedy
                     else torch.distributions.Categorical(logits=allowed / max(temperature, 1e-6)).sample())
@@ -432,7 +433,7 @@ class FaceAdjDegreeTransformerVAE(nn.Module):
         logits = self.decode(z, decoder_input, decoder_mask)[:, -1]
         max_edges_per = counts * (counts - 1) // 2
         ec_logits = logits[:, edge_count_offset(self.max_faces) : edge_count_offset(self.max_faces) + max_edge_count(self.max_faces) + 1]
-        allowed = torch.full_like(ec_logits, float("-inf"))
+        allowed = torch.full_like(ec_logits, MASKED_LOGIT)
         for b in range(batch_size):
             allowed[b, : int(max_edges_per[b].item()) + 1] = ec_logits[b, : int(max_edges_per[b].item()) + 1]
         ec_cls = (allowed.argmax(dim=-1) if greedy
@@ -452,7 +453,7 @@ class FaceAdjDegreeTransformerVAE(nn.Module):
             if active.any():
                 logits = self.decode(z, decoder_input, decoder_mask)[:, -1]
                 deg_logits = logits[:, degree_offset(self.max_faces) : degree_offset(self.max_faces) + self.max_faces]
-                allowed = torch.full_like(deg_logits, float("-inf"))
+                allowed = torch.full_like(deg_logits, MASKED_LOGIT)
                 for b in range(batch_size):
                     if not active[b].item():
                         continue
@@ -547,8 +548,8 @@ def unwrap_model(model):
 
 def safe_model_forward(model, tokens, token_mask, **kwargs):
     if isinstance(model, nn.DataParallel) and tokens.shape[0] < len(model.device_ids):
-        return model.module(tokens, token_mask, **kwargs)
-    return model(tokens, token_mask, **kwargs)
+        return model.module(tokens=tokens, token_mask=token_mask, **kwargs)
+    return model(tokens=tokens, token_mask=token_mask, **kwargs)
 
 
 def compute_loss(logits, mu, logvar,
@@ -699,6 +700,7 @@ def generated_metrics(generated, target_tokens,
         f"{prefix}_degree_self_consistent": deg_self_consistent,
         f"{prefix}_connected_ratio": stats["connected_ratio"],
         f"{prefix}_no_isolated_ratio": stats["no_isolated_ratio"],
+        f"{prefix}_valid_strict_ratio": stats["valid_strict_ratio"],
     }
 
 
