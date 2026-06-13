@@ -146,7 +146,6 @@ wandb/
 src/brepnet/results/
 src/brepnet/data/DataGeneration/
 thirdparty/Depth_Anything_V2/
-.cursor/
 check.png
 env.txt
 *.pt
