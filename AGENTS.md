@@ -6,7 +6,7 @@ This repository contains the HoLa-BRep research codebase for B-Rep VAE and condi
 
 Hydra configs live under `configs/`, grouped by `model`, `dataset`, `condition`, `trainer`, `datagen`, and top-level experiment configs such as `train_diffusion_real.yaml` and `train_diffusion_learned_topology.yaml`. Data preparation scripts are in `src/brepnet/data/` and `tools/`, evaluation code is in `src/brepnet/eval/`, and PythonOCC post-processing is in `src/brepnet/post/`.
 
-When touching `experiments/`, read `experiments/SKILL.md` first. Experiment folders are note-first: one `experiments/YYYY-MM-DD/` folder per day, with a mandatory `NOTE.md` containing per-experiment records for why, implementation, and result.
+When touching `experiments/`, use the experiment skills (canonical source in `skills/`, installed into Cursor/Claude/Codex — see README "Experiment Workflow & Agent Skills" for the sync steps): read `skills/brepnet-experiment-notes/SKILL.md` for the note-first reporting workflow, and `skills/brepnet-experiment-planning/SKILL.md` to plan a new experiment day (it reads `experiments/ROADMAP.md` and `experiments/REFERENCES.md`). Experiment folders are note-first: one `experiments/YYYY-MM-DD/` folder per day, with a mandatory `NOTE.md` containing per-experiment records for why, implementation, and result.
 
 ## Build, Test, and Development Commands
 

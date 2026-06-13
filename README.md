@@ -229,6 +229,42 @@ HoLa-BRep/
 
 ---
 
+## Experiment Workflow & Agent Skills
+
+Day-to-day research is driven by two agent skills plus two living docs:
+
+| Path | Role |
+|------|------|
+| `skills/brepnet-experiment-planning/SKILL.md` | Plan & set up one experiment day (confirm goal → reflect against the long-term target → check literature → design experiment → write scripts/commands → smoke test only). |
+| `skills/brepnet-experiment-notes/SKILL.md` | Write the day's report under `experiments/YYYY-MM-DD/NOTE.md` (note-first: why / implementation / result, with clickable links). |
+| `experiments/ROADMAP.md` | Single source of truth for the long-term goal, current phase, recent progress, open questions, anti-goals. Read first, update after conclusions. |
+| `experiments/REFERENCES.md` | Curated reading list (foundational + last-3-years papers). |
+
+`skills/` is the **canonical source**. Each tool discovers skills from its own directory, so the two `SKILL.md` files must be copied into each tool's skills folder:
+
+| Tool | Skills directory | Scope |
+|------|------------------|-------|
+| Cursor | `.cursor/skills/<name>/SKILL.md` | project (committed) |
+| Claude Code | `.claude/skills/<name>/SKILL.md` | project (committed) |
+| Codex | `~/.codex/skills/<name>/SKILL.md` | home (per-user; **no repo `.codex/` folder**) |
+
+> Codex only reads skills from the home directory (`~/.codex/skills`), which is why there is no `.codex/` folder in the repo, unlike `.cursor/` and `.claude/`.
+
+After editing a skill under `skills/`, re-sync the copies:
+
+```bash
+for name in brepnet-experiment-notes brepnet-experiment-planning; do
+  for tool in .cursor .claude; do
+    mkdir -p "$tool/skills/$name"
+    cp "skills/$name/SKILL.md" "$tool/skills/$name/SKILL.md"
+  done
+  mkdir -p "$HOME/.codex/skills/$name"
+  cp "skills/$name/SKILL.md" "$HOME/.codex/skills/$name/SKILL.md"
+done
+```
+
+---
+
 ## Citation
 
 If you find this work useful, please cite:

@@ -8,7 +8,8 @@ This repository uses `AGENTS.md` files as the primary project instructions. When
 - For source changes under `src/brepnet/`: `src/brepnet/AGENTS.md`
 - For data tooling under `src/brepnet/data/`: `src/brepnet/data/AGENTS.md`
 - For evaluation changes under `src/brepnet/eval/`: `src/brepnet/eval/AGENTS.md`
-- For experiment folders under `experiments/`: `experiments/SKILL.md`
+- For reporting experiments under `experiments/`: `skills/brepnet-experiment-notes/SKILL.md`
+- For planning a new experiment day: `skills/brepnet-experiment-planning/SKILL.md`
 - For diffusion model internals: `src/brepnet/models/SKILL.md`
 
 ## Current Project Shape
@@ -26,7 +27,7 @@ Keep behavior changes in the owning module and expose experiment knobs through `
 
 ## Experiment Notes
 
-When touching `experiments/`, use the note-first workflow in `experiments/SKILL.md`:
+When touching `experiments/`, use the note-first workflow in `skills/brepnet-experiment-notes/SKILL.md` (and `skills/brepnet-experiment-planning/SKILL.md` to plan a new day). Skills are installed into Cursor/Claude/Codex; edit the canonical copy under `skills/` and re-sync the copies (see README "Experiment Workflow & Agent Skills").
 
 - one dated folder per day: `experiments/YYYY-MM-DD/`
 - every dated folder must have `NOTE.md`
