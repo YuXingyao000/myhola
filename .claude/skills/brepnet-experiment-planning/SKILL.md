@@ -41,9 +41,16 @@ Summarize, with links, the recent direction and recent results (from Phase 0). T
 1. 这个方向相对长期目标，现在卡在哪一步？(map to an open question in `ROADMAP.md`)
 2. 最近几天是不是在对同一个指标 / 同一份数据反复微调？检查 anti-goals 列表。
    - Anti-local-loop trigger: if the last ~3 experiment days were all optimizing the **same single metric** on the **same component** with no meaningful breakthrough (and no new question answered), do NOT propose another tweak of the same kind. Instead, step back: re-derive whether that metric still serves the North Star, and propose either (a) moving to the next bottleneck in the pipeline, or (b) a downstream check that validates whether the local gains matter at all.
-3. 基于反思，今天的方向是「继续推进上一条」还是「跳出局部、换下一个瓶颈」？给出明确选择和理由。
+3. **任务定义是否仍然合理（Task Validity Check）**？这是比指标循环更深一层的反思——**即使换个结构 / 换个瓶颈，是否在解决同一个错误的任务**？
+   - 当前 loss 是否假设 1-to-1 mapping，但任务本身是 1-to-many？（典型表现：sample diversity 持续下降，model 在 collapse；或者某些"指标永远到不了 1.0"是因为 GT 本身只是众多合理解之一）
+   - 当前监督信号的"标签空间"是否和 condition 提供的"信息空间"对齐？（典型表现：单视角 image 提供局部信息，但 loss 强迫 fit global structure；GT 提供 absolute pose，但 task 只要 relative 即可）
+   - 当前训练数据是否足以表达期望的 task？（典型表现：缺少 view-specific / region-specific / partial-observation 标注，导致 loss 必须用 over-determined supervision）
+   - 如果任意一条命中，**今天最优先的不是 next-bottleneck 也不是 downstream check，而是重新定义任务**（修 loss / 加新标注 / 改训练目标）。降级一切 ablation/调参方向。
+4. 基于反思，今天的方向是「继续推进上一条」还是「跳出局部、换下一个瓶颈」还是「重新定义任务本身」？给出明确选择和理由。
 
 Keep this reflection honest and specific. It is the main guard against grinding one metric while forgetting the paper goal.
+
+**Common failure mode**: jumping out of metric-loop only to land on another flavor of the same task definition. Question 3 is the brake. If the original task is mis-specified, even a successful downstream check is solving the wrong problem.
 
 ### Phase 3 — Literature check (required before writing any script/command)
 
@@ -97,6 +104,7 @@ If results are only available later, leave the report's `结果` as "已给出�
 3. `exact_adj_acc` and similar one-to-many metrics are sanity checks, not targets. Do not grind them.
 4. When a local metric improves, ask whether it actually moves the downstream `image -> B-Rep` pipeline; if untested, propose the downstream check rather than more local tuning.
 5. Prefer answering an open question over squeezing a saturated number.
+6. **Task validity outranks structural search**: if Phase 2 question 3 (Task Validity Check) flags the supervision target as mis-specified, do not propose another structural variant or downstream ablation under the old target. Even a successful downstream check on a mis-defined task is misleading. Fixing the task (loss / labels / training data) takes priority.
 
 ## Current Data Contract
 
