@@ -1,24 +1,74 @@
-# Repository Guidelines
+# 评估指南
 
-## Project Structure & Module Organization
-Core training and inference code lives one level up in `src/brepnet`: `train.py`, `train_diffusion.py`, and `inference.py` are the main entry points; `model.py`, `diffusion_model.py`, and `dataset.py` define architectures and datasets. Evaluation code in this directory covers validity, novelty, complexity, point-cloud metrics, and conditioning workflows (`eval_validity.py`, `eval_unique_novel.py`, `eval_condition.py`). Legacy baseline conversion utilities live in `eval/baseline_preprocess/`, and LFD tooling plus reference assets live in `eval/lfd/evaluation_scripts/`. Keep split lists in `data/list/`, helper scripts in `scripts/`, visual analysis in `viz/`, and lightweight regression checks in `test/`.
+## 研究与评价边界
 
-## Build, Test, and Development Commands
-- `bash install.sh`: install the geometry and PyTorch stack used by training and evaluation.
-- `python train.py trainer.exp_name=my_run dataset.dataset_name=AutoEncoder_dataset3 trainer.gpu=[0]`: start an autoencoder training run.
-- `python train_diffusion.py dataset.dataset_name=Diffusion_dataset_mm trainer.gpu=[0,1]`: launch diffusion training with Hydra overrides.
-- `python inference.py --ckpt path/to.ckpt --split validation`: export reconstructions for downstream evaluation.
-- `python eval/eval_validity.py` or `bash eval/eval_condition.sh`: run evaluation scripts from the repo root so relative paths resolve consistently.
-- `pytest test -k split` or `python test/test_unzip_dataset.py`: run focused regressions.
+评价应回答照片到 B-Rep 的几何准确性、可见证据一致性、实体有效性以及计算成本，不只追踪旧实验的一项均值。
+区分灰模条件、生成照片条件和真实拍摄条件；合成域成绩不能直接作为真实照片泛化结论。
+强通用模型可以生成 CAD 程序作为基线；比较时记录相同输入、工具权限、推理预算、重试和人工干预。
+单图隐藏几何可能不唯一；分别报告完整 GT 重建和可见证据一致性，不能把二者互相替代。
 
-## Coding Style & Naming Conventions
-Use Python with 4-space indentation and PEP 8 spacing. Prefer `snake_case` for functions, files, and local variables; existing examples include `sample_points_gt` and `check_data_deduplicate`. Add type hints on public helpers when practical, use `Path` instead of hard-coded absolute paths, and expose tunables through Hydra/YAML rather than inline constants.
+## 当前入口与模块
 
-## Testing Guidelines
-Write focused `test_*.py` cases under `test/`. Use temporary `.npz` fixtures or mocked geometry inputs instead of real CAD assets, and seed random behavior explicitly. If a script depends on LFD binaries or large generated meshes, document the prerequisite and expected runtime near the test or in the PR.
+统一几何评估入口为 `python -m src.brepnet.eval.run`，从仓库根目录运行。
 
-## Commit & Pull Request Guidelines
-Recent commits are short, imperative messages such as `nano fix`, `update_dino_feat`, and `fix repeat`. Keep commit subjects brief, present tense, and under about 60 characters. PRs should state the motivation, list the commands run, mention any config or dataset-list changes, and attach screenshots or metric summaries when evaluation behavior changes.
+```bash
+python -m src.brepnet.eval.run \
+    --pred-root /path/to/post_output \
+    --gt-root /path/to/ground_truth \
+    --split-list /path/to/frozen_model_ids.txt \
+    --metrics condition,validity,complexity
+```
 
-## Data & Configuration Tips
-Do not commit STEP files, generated meshes, checkpoints, or WandB artifacts. Keep dataset splits in `data/list/`, preserve large evaluation outputs in ignored directories, and note any environment variables, proxies, or external binaries needed to reproduce results.
+- `protocol.py`：样本 ID 与预测/GT 目录定位。
+- `run.py`、`parallel.py`、`io.py`：指标调度、并行和结果保存。
+- `metrics/condition.py`：面/边/点 CD、匹配 F1、面边/边点拓扑指标。
+- `metrics/visible_condition.py`：使用 GT 可见性缓存的条件指标。
+- `metrics/validity.py`：STEP 读取、solid 类型和内核有效性。
+- `metrics/complexity.py`、`uniqueness.py`、`lfd.py`：结构统计、图重复性与 LFD。
+- `quality_metrics.py`：生成照片的 SAM2 轮廓 IoU、DINO、CLIP 辅助指标，独立于重建评估入口。
+- `adapters/`、`baseline_preprocess/`：历史 baseline 输出适配；协议必须按具体方法核对。
+
+`metrics/point_cloud_set.py` 存在不代表 `run.py` 已提供相应 CLI 指标；以入口 dispatch 为准。
+不要使用 `legacy/` 或硬编码路径的旧 shell 脚本作为新实验入口；旧 `train_diffusion.py`、`model.py` 路径不再代表当前架构。
+
+## 输入与阶段
+
+推理原始输出位于 `raw_root/{model_id}/data.npz`，保存面、边和连接预测。
+后处理入口为 `python -m src.brepnet.post.construct_brep --data_root ... --out_root ...`。
+后处理目录的 `recon_brep.step` 是评估输入；GT 通常为 `gt_root/{model_id}/normalized_shape.step`。
+`recon_brep.step` 存在不等于有效 solid：后处理失败后仍可能输出 compound fallback。
+`success.txt` 是后处理成功标志，不能替代重新读取 STEP 的独立有效性检查。
+保留 raw/post 两阶段指标和失败数量；拟合、几何优化、删面与 sewing 都可能改变预测结果。
+对比时固定后处理参数与预算，包括 `drop_num`、优化次数、容差、超时和 CPU/GPU 路径。
+PythonOCC API 与容差敏感；修改 post 的公开接口或几何阶段须验证完整调用链。
+
+## 坐标、指标与 Oracle 信息
+
+当前 condition 固定使用 `data/rotations.py` 中 identity-first cube24 的 0 号 GT；不是最优旋转搜索。
+不要用旧 Euler64 或 Blender 原始数字序号解释当前输出；相机、尺度和坐标变换必须来自记录。
+CD 当前在同类 primitive 的合并点集上计算；Hungarian 匹配用于 primitive 检测 F1 及拓扑对应，不能把 CD 描述成匹配后均值。
+报告 CD 的实际实现、归一化、采样密度及 F1 阈值；展示单位换算与原始数值分开。
+有效 solid 仅表示当前内核/容差检查通过，不证明形状正确、可加工或满足工程约束。
+可见性来自 GT；训练监督和评估标签可以使用，若推理时额外输入给模型、筛选候选或指导修复，必须标为 Oracle 设置。
+当前 visible condition 把全部预测面与可见 GT 面比较；它并不是仅比较相机可见的预测表面，也不是图像重投影误差。
+没有配对 GT 的实拍样例可做可见证据与有效性分析，不能把 loader 占位几何当真实 GT。
+
+## 固定分母与已知汇总限制
+
+评估前冻结 intended model IDs；以该清单作为尝试总数，保留每个 ID 的阶段状态。
+至少分别报告：请求总数、推理成功、后处理产出 STEP、有效 solid、可计算几何指标，以及各失败原因。
+准确率或成功率必须注明分母；成功样本上的 CD/F1 均值与全样本成功率并列报告。
+当前 `condition.prepare_eval_data` 对缺失或不可读预测使用原点退化几何 fallback；因此有数值结果不意味着预测成功。
+当前 `compute_statistics` 使用 split 与已有预测目录交集，并跳过没有结果的目录；不能将其 `num_total` 自动视为 intended 总数。
+默认无 split 时仅扫描已有目录，会遗漏未产生目录的样本；`--only-valid` 又进一步筛选 `success.txt`，必须明确披露。
+跨方法配对比较既报告共同成功集合，也报告各方法在固定全集上的失败情况，避免只比较幸存样本。
+失败、超时、NaN/Inf、缺 GT 和适配错误应分别记录，不能静默删除或当作普通重建误差。
+
+## 缓存、数据质量与验证
+
+结果缓存当前优先读取 `eval_condition.npz`，也兼容旧 `eval.npz`；默认跳过已有结果。
+改变预测、GT、split 或指标协议时使用新输出目录或明确重算，并记录版本；旧缓存不能混作新结果。
+`quality_metrics.py` 的轮廓分割误差与几何失真须区分；DINO/CLIP 分数不能认证孔槽保持或照片真实性。
+生成数据的验收不应仅依赖待评估重建模型，以免筛选出该模型偏好的测试分布。
+修改指标实现时验证已知几何差异、缺失输出及坐标错误等有区分力的案例；文档修改不触发批量 CAD 评估。
+冻结清单、指标设置、后处理设置和逐件结果；新实验记录遵循根目录 `AGENTS.md` 的记录规则及当日 `NOTE.md` 约定，不依赖已删除的实验技能。

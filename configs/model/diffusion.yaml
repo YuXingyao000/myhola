@@ -44,7 +44,9 @@ topology_bias:
   target: self_attention
   mode: soft_bias
   timestep_weight: linear_high_noise
+  parameterization: additive  # additive | log_multiplier
   scale: 2.0
+  max_multiplier: 2.0
   predictor:
     checkpoint: null
     max_faces: 30

@@ -1,0 +1,110 @@
+{
+  "camera": {
+    "fov_degrees": 45.0,
+    "location": [
+      2.0,
+      2.0,
+      2.0
+    ],
+    "target": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "faces": [
+    {
+      "face_id": 0,
+      "projected_pixels": 3746,
+      "visible_fraction": 0.6249332621462894,
+      "visible_pixels": 2341
+    },
+    {
+      "face_id": 1,
+      "projected_pixels": 867,
+      "visible_fraction": 0.11072664359861592,
+      "visible_pixels": 96
+    },
+    {
+      "face_id": 2,
+      "projected_pixels": 714,
+      "visible_fraction": 0.23109243697478993,
+      "visible_pixels": 165
+    },
+    {
+      "face_id": 3,
+      "projected_pixels": 5521,
+      "visible_fraction": 0.9250135844955624,
+      "visible_pixels": 5107
+    },
+    {
+      "face_id": 4,
+      "projected_pixels": 859,
+      "visible_fraction": 0.4458672875436554,
+      "visible_pixels": 383
+    },
+    {
+      "face_id": 5,
+      "projected_pixels": 1733,
+      "visible_fraction": 0.7414887478361223,
+      "visible_pixels": 1285
+    },
+    {
+      "face_id": 6,
+      "projected_pixels": 12544,
+      "visible_fraction": 0.7415497448979592,
+      "visible_pixels": 9302
+    },
+    {
+      "face_id": 7,
+      "projected_pixels": 5210,
+      "visible_fraction": 0.2074856046065259,
+      "visible_pixels": 1081
+    },
+    {
+      "face_id": 8,
+      "projected_pixels": 12544,
+      "visible_fraction": 0.9583067602040817,
+      "visible_pixels": 12021
+    },
+    {
+      "face_id": 9,
+      "projected_pixels": 4472,
+      "visible_fraction": 0.5250447227191414,
+      "visible_pixels": 2348
+    },
+    {
+      "face_id": 10,
+      "projected_pixels": 4025,
+      "visible_fraction": 0.06906832298136646,
+      "visible_pixels": 278
+    },
+    {
+      "face_id": 11,
+      "projected_pixels": 721,
+      "visible_fraction": 0.10124826629680998,
+      "visible_pixels": 73
+    },
+    {
+      "face_id": 12,
+      "projected_pixels": 992,
+      "visible_fraction": 0.04939516129032258,
+      "visible_pixels": 49
+    },
+    {
+      "face_id": 13,
+      "projected_pixels": 3793,
+      "visible_fraction": 0.5837068283680464,
+      "visible_pixels": 2214
+    }
+  ],
+  "method": "sample_points_faces point-splat z-buffer prototype",
+  "model_id": "00001907",
+  "num_edges": 36,
+  "num_faces": 14,
+  "resolution": 512,
+  "splat_radius": 3,
+  "view_id": 0,
+  "visible_face_count_gt_0p05": 13,
+  "visible_face_count_gt_0p5": 7
+}

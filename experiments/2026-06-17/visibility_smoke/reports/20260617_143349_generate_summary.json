@@ -1,0 +1,16 @@
+{
+  "total": 1,
+  "accepted": 1,
+  "skipped": 0,
+  "failed": 0,
+  "by_status": {
+    "debugged": 1
+  },
+  "mean_visible_fraction": 0.4164299964904785,
+  "mean_screen_coverage": 0.00643291138112545,
+  "mode": "generate",
+  "model_list": "/mnt/d/python/src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt",
+  "views": "0",
+  "image_size": 224,
+  "output_root": "/mnt/d/python/experiments/2026-06-17/visibility_smoke"
+}

@@ -1,0 +1,33 @@
+{
+  "exception_folders": [
+    "00547707"
+  ],
+  "num_eval": 2423,
+  "num_gt_face_mean": 12.691291787040859,
+  "num_gt_face_median": 11.0,
+  "num_recon_face_mean": 12.630210482872473,
+  "num_recon_face_median": 12.0,
+  "num_total": 2424,
+  "visibility_view_id_mean": 0.0,
+  "visibility_view_id_median": 0.0,
+  "visible_face_cd_mean": 0.03507668213123333,
+  "visible_face_cd_median": 0.018546660896390676,
+  "visible_face_fscore_mean": 0.6249694140361141,
+  "visible_face_fscore_median": 0.6428566198983133,
+  "visible_face_gt_to_recon_cd_mean": 0.005437088547339464,
+  "visible_face_gt_to_recon_cd_median": 0.0010388937080278993,
+  "visible_face_precision_mean": 0.4923170576197621,
+  "visible_face_precision_median": 0.499999950000005,
+  "visible_face_recall_mean": 0.9008811068620017,
+  "visible_face_recall_median": 0.9999997500000625,
+  "visible_face_recon_to_gt_cd_mean": 0.02963959358389386,
+  "visible_face_recon_to_gt_cd_median": 0.013790885917842388,
+  "visible_fraction_mean_mean": 0.4290543723908329,
+  "visible_fraction_mean_median": 0.43290042877197266,
+  "visible_fraction_selected_mean_mean": 0.7930279924044962,
+  "visible_fraction_selected_mean_median": 0.7988088130950928,
+  "visible_num_gt_face_mean": 6.884853487412299,
+  "visible_num_gt_face_median": 6.0,
+  "visible_threshold_mean": 0.05,
+  "visible_threshold_median": 0.05
+}

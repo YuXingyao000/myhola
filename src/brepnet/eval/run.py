@@ -77,6 +77,33 @@ def run_validity_metric(args, samples: list[EvalSample]) -> dict[str, Any]:
     return {"validity": summary}
 
 
+def run_visible_condition_metric(args, samples: list[EvalSample]) -> dict[str, Any]:
+    from src.brepnet.eval.metrics import visible_condition
+
+    jobs = [
+        sample for sample in samples
+        if args.from_scratch or visible_condition.load_visible_result(sample.pred_dir) is None
+    ]
+
+    def worker(sample: EvalSample):
+        try:
+            return visible_condition.eval_one(
+                args.pred_root,
+                args.gt_root,
+                sample.name,
+                visibility_root=args.visibility_root,
+                view_id=args.visibility_view_id,
+                visible_threshold=args.visible_threshold,
+            )
+        except Exception:
+            write_text(error_path(sample), traceback.format_exc())
+            return None
+
+    run_tasks(jobs, worker, use_ray=args.use_ray, num_cpus=args.num_cpus, timeout=args.timeout, desc="VisibleCondition")
+    summary = visible_condition.compute_statistics(args.pred_root, args.split_list)
+    return {"visible_condition": summary}
+
+
 def run_complexity_metric(args, samples: list[EvalSample]) -> dict[str, Any]:
     from src.brepnet.eval.metrics import complexity
 
@@ -128,7 +155,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--pred-root", "--eval_root", dest="pred_root", required=True)
     parser.add_argument("--gt-root", "--gt_root", dest="gt_root", default="")
     parser.add_argument("--split-list", "--list", dest="split_list", default="")
-    parser.add_argument("--metrics", default="condition", help="Comma list: condition,validity,complexity,unique,lfd")
+    parser.add_argument("--metrics", default="condition", help="Comma list: condition,visible_condition,validity,complexity,unique,lfd")
     parser.add_argument("--sample", "--prefix", dest="sample", default="")
     parser.add_argument("--from-scratch", action="store_true")
     parser.add_argument("--use-ray", "--use_ray", dest="use_ray", action="store_true")
@@ -149,6 +176,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     parser.add_argument("--lfd-pkl", default="")
     parser.add_argument("--lfd-valid-only", action="store_true")
+    parser.add_argument("--visibility-root", default="/mnt/d/data/deepcad_v7_visibility")
+    parser.add_argument("--visibility-view-id", type=int, default=0)
+    parser.add_argument("--visible-threshold", type=float, default=0.05)
     return parser
 
 
@@ -166,6 +196,10 @@ def main() -> None:
             if not args.gt_root:
                 raise ValueError("--gt-root is required for condition metric")
             summaries.update(run_condition_metric(args, samples))
+        elif metric == "visible_condition":
+            if not args.gt_root:
+                raise ValueError("--gt-root is required for visible_condition metric")
+            summaries.update(run_visible_condition_metric(args, samples))
         elif metric == "validity":
             summaries.update(run_validity_metric(args, samples))
         elif metric == "complexity":

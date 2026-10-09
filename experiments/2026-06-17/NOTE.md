@@ -223,15 +223,66 @@ python -m src.brepnet.train --config-name train_diffusion_oracle_topology \
 
 ## 任务 0 结果（Codex 在服务器执行后回填）
 
-> （Codex 填）
+- 用户确认：这台服务器上没有 deepcad_v7 + real_photo + cube24 协议的 oracle full training；另一台机器上已经做过验证，本机暂时不重复搜索 / 不重训。
+- oracle 训练命令保留在 [任务 2](#任务-2条件执行仅在任务-0-走-d-路径时启动-oracle-baseline-full-training)，以后需要重新训练时再执行。
 
 ## 任务 1 结果（Codex 在服务器执行后回填）
 
-> （Codex 填）
+### 1. DeepCAD v7 24-view per-face visibility cache 脚本
+
+**为什么这么做**
+
+- 承接今天的任务定义修正：image→topology 是 one-to-many，CVAE 不应该对不可见区域做 full GT adjacency hard supervision；需要 per-face continuous visibility 来构造 soft pair mask。
+- 用户确认先不做 WL face reorder，因为 topology mask 后续要和 diffusion latent face order 对齐；如果 OCC reload 后 direct face order 和 [data.npz](/mnt/d/data/deepcad_v7/00000093/data.npz) 不一致，第一版直接 skip，不做自动 remap。
+- 用户提醒每个模型有 24 个视角，因此 visibility cache 需要按 identity-first 24-view 协议生成 `view_000` 到 `view_023`。
+
+**具体实施**
+
+- 新增正式数据脚本：[extract_visibility.py](../../src/brepnet/data/extract_visibility.py)。
+- 新增今晚自动化命令：[visibility_commands.sh](./visibility_commands.sh)。
+- 数据源：
+  - raw B-Rep：[deepcad_v7](/mnt/d/data/deepcad_v7)
+  - condition image：[deepcad_v7_cond](/mnt/d/data/deepcad_v7_cond)
+  - visibility 输出：[deepcad_v7_visibility](/mnt/d/data/deepcad_v7_visibility)
+- 输出 contract：
+  - 每个 `(model_id, view_id)` 保存 `visibility.npz`，路径形如 `/mnt/d/data/deepcad_v7_visibility/{model_id}/view_000/visibility.npz`。
+  - 核心字段：`face_id_map`、`depth_map`、`valid_mask`、`visible_pixels`、`projected_pixels`、`visible_fraction`、`screen_coverage`、camera `K/T`、`order_status`、`matching_cost`。
+  - 不保存点云；后续反投影可由 `depth_map + face_id_map + camera` 重建。
+  - debug 图只作人工检查，保存在 `/mnt/d/data/deepcad_v7_visibility/debug/{model_id}/view_xxx/`，包括 `face_id_color.png`、`visibility_heatmap.png`、`depth.png`、`silhouette.png`、`overlay_svr_silhouette.png`。
+- renderer 选择：
+  - 用 OCC 从 `normalized_shape.step` 读取 face，并按 direct order 对齐 `data.npz["sample_points_faces"]`。
+  - 用 OCC triangulation + 软件 z-buffer 生成整数 `face_id_map`，不是从 RGB 颜色反推 face id。
+  - 关闭 backface culling，按双面投影统计 visibility。
+- 相机协议：
+  - 初版曾尝试使用 [rotations.py](../../src/brepnet/data/rotations.py) 的 cube24 矩阵，但 24-view smoke 中 `view_023` 和 `svr_imgs[23]` overlay 不对齐。
+  - 已改为严格复现 [extract_imgs.py](../../src/brepnet/data/extract_imgs.py) 的 legacy euler64 相机公式，并使用 [migrate_64_to_24.py](../../tools/migrate_64_to_24.py) 的 `identity24_to_euler64` mapping。修正后 `view_000` 和 `view_023` overlay 均对齐。
+
+**结果**
+
+- 编译检查通过：
+  - `conda run -n torch python -m py_compile src/brepnet/data/extract_visibility.py`
+- 1 个模型 view0 smoke 通过，输出：[visibility_smoke](./visibility_smoke/)。
+  - `00000093`：18 faces，`order_status=direct`，`max_direct_cost=3.48e-15`，`mean_visible_fraction=0.4164`。
+- 1 个模型 24-view smoke 通过，输出：[visibility_smoke_24_euler](./visibility_smoke_24_euler/)。
+  - 修正 euler64 camera mapping 后，`view_023` overlay 和 `svr_imgs[23]` 对齐。
+- testing 前 100 个模型 face-order audit 全部通过，输出：[visibility_audit_100](./visibility_audit_100/)。
+  - accepted=100，skipped=0，failed=0。
+- testing 前 3 个模型全 24-view debug/generate 通过，输出：[visibility_debug_3](./visibility_debug_3/)。
+  - accepted=3，skipped=0，failed=0，`mean_visible_fraction=0.4195`。
+- 尚未由 Codex 启动全量 `/mnt/d/data/deepcad_v7_visibility` 生成；已把可恢复命令写入 [visibility_commands.sh](./visibility_commands.sh)，用户睡前可直接运行，明天看 reports 和 debug overlay。
+
+**参考 / 关联**
+
+- 今日任务定义反思：[反思 3](#反思-3任务定义合理性new这是今天的核心)
+- 数据脚本：[extract_visibility.py](../../src/brepnet/data/extract_visibility.py)
+- 执行命令：[visibility_commands.sh](./visibility_commands.sh)
+- 原始 B-Rep 提取：[extract_brep_from_step_half_structure.py](../../src/brepnet/data/extract_brep_from_step_half_structure.py)
+- 原始图像渲染：[extract_imgs.py](../../src/brepnet/data/extract_imgs.py)
+- 64→24 迁移：[migrate_64_to_24.py](../../tools/migrate_64_to_24.py)
 
 ## 任务 2 结果（仅 D 路径才会有）
 
-> （Codex 填）
+> 本机不执行。用户确认 oracle baseline 另一台机器已有验证；本 NOTE 仅保留训练命令。
 
 ---
 
@@ -249,9 +300,10 @@ python -m src.brepnet.train --config-name train_diffusion_oracle_topology \
 
 按顺序：
 
-- [ ] **任务 0**（必做，先做）：在 wandb / `/mnt/d/data/diffusion_topo_experiments/` 找 deepcad_v7 + real_photo + cube24 协议下的 oracle full training run。回填本 NOTE 的"任务 0 结果"+ 更新 [ROADMAP](../ROADMAP.md) 的 `当前最优` 表 "End-to-end diffusion" 行。
-- [ ] **任务 1**（A/B/D 路径都做）：visibility annotation 在 1+2 个 model 上的可行性 prototyping。输出三组 debug 图 + visibility JSON + 可行性结论。回填本 NOTE 的"任务 1 结果"。
-- [ ] **任务 2**（仅 D 路径）：启动 oracle baseline full training（命令已给）。先 1-step smoke test 再上 8 卡。
+- [x] **任务 0**（必做，先做）：用户确认本机没有该 oracle full training，不在本机重复搜索 / 重训。
+- [x] **任务 1**（A/B/D 路径都做）：visibility annotation 正式脚本已写完；1 个模型 view0、1 个模型 24-view、100 个 audit、3 个模型 24-view debug 均通过。
+- [ ] **任务 1 后续**：运行 [visibility_commands.sh](./visibility_commands.sh) 生成 `/mnt/d/data/deepcad_v7_visibility` 全量 cache，并人工检查 `/mnt/d/data/deepcad_v7_visibility/debug/`。
+- [ ] **任务 2**（仅 D 路径）：本机暂不执行；命令保留。
 
 ## 之后的待办（06-18 开始）
 

@@ -1,104 +1,59 @@
 # BRepNet Source Guidelines
 
-## Current Architecture
+研究目标和协作原则见根目录 [AGENTS.md](../../AGENTS.md)。本文件描述当前实现与接口约束；允许有理由的架构重设计，不把已有实验方向设为固定路线。
 
-`src/brepnet` is the package for training, datasets, models, data tools, evaluation, and post-processing. The current training path is `python -m src.brepnet.train`; avoid reviving old entry points such as `train_diffusion.py`, `model.py`, or `diffusion_model.py` unless the files actually exist and are intentionally reintroduced.
+## 入口与配置
 
-The diffusion stack is modular and assembled from Hydra configs:
+- `train.py`：`python -m src.brepnet.train`，`UnifiedTrainer` 根据 `model.stage` 分派 VAE / diffusion，数据类通过 `dataset.name` 查找。
+- `models/__init__.py`：`build_model`；主模型在 `models/vae.py` 与 `models/diffusion.py`。
+- `inference.py`：独立推理工具，仍手工构造配置并带旧兼容逻辑；使用前核对参数与 checkpoint，不能认为它完整复现训练配置。
+- `eval/run.py`：`python -m src.brepnet.eval.run`；`post/` 完成 OCC B-Rep 构造。
+- 行为配置归属 `configs/model/`、`dataset/`、`condition/`、`trainer/`、`datagen/`；不要复活已移除的 `model.py`、`diffusion_model.py`、`train_diffusion.py` 入口。
 
-- `train.py`: unified Lightning entry point for VAE and diffusion stages.
-- `dataset.py`: `AutoEncoder_dataset3`, `Diffusion_dataset`, and legacy `Diffusion_dataset_mm`.
-- `models/__init__.py`: model factory.
-- `models/diffusion.py`: top-level diffusion assembly, loss, and inference loop.
-- `models/diffusion_latents.py`: cached latent stats or VAE encoding path.
-- `models/diffusion_padding.py`: fixed-size face-token padding and validity behavior.
-- `models/diffusion_condition.py`: condition encoder factory.
-- `models/condition_encoders.py`: DINOv2 / Depth Anything / point-cloud condition encoders.
-- `models/diffusion_denoiser.py`: cross-attention condition fuser, alignment loss, denoiser backbone, oracle/learned topology self-attention bias.
-- `models/vae.py`: VAE and autoencoder variants.
+## VAE：表示与解码
 
-## Config-Driven Development
+`models/vae.py` 的 `AutoEncoder` / `AutoEncoder_light` 编码面 UV 采样点、半边采样点与 edge-face connectivity；图网络、注意力与全局聚合把几何／拓扑融合到每面 latent。常用 latent 维度是 `8 × 2 × 2 = 32`。这是包含全局信息的 holistic 表示，不能直接当作独立局部 surface code。
 
-Most behavior should be changed through `configs/`, not by adding new shell wrappers. Current config groups are:
+`sample()` 内部参数化 mean/logvar，但返回的缓存统计量是拼接的 **mean/std**。解码器恢复面几何，并通过有序 face pair 的 neural intersection 预测连接和有向半边几何。每个 pair 只产生一个候选半边；多重公共边、复杂裁剪和全局闭合不能由 adjacency 分类保证。最终合法 solid 仍依赖 `post/` 的拟合、优化、裁剪与缝合。
 
-- `configs/model/*.yaml`
-- `configs/dataset/*.yaml`
-- `configs/condition/*.yaml`
-- `configs/trainer/*.yaml`
-- top-level configs such as `train_diffusion_real.yaml`, `train_diffusion_oracle_topology.yaml`, `train_diffusion_learned_topology.yaml`, and `train_vae.yaml`
+改变 VAE 或归一化时说明旧 latent cache、AE checkpoint 与 diffusion checkpoint 是否兼容；不能复用名称相同但定义不同的缓存。正式 diffusion run 确认冻结 AE 加载了正确 checkpoint，并与 cache 同源。
 
-When adding a model option, add the field to the relevant config and read it explicitly from the owning module. Keep config names lowercase and task-oriented. Do not add hidden defaults in code if the experiment depends on the value.
+## Diffusion：实际数据流
 
-For diffusion data, `Diffusion_dataset` currently expects:
+1. `dataset.py:Diffusion_dataset` 读取 cache 并完成 padding；`diffusion_latents.py:LatentProvider` 取 mean，或用 std 采样。非 cache 分支调用冻结 VAE 再由 padder 打包。
+2. `diffusion.py` 对 `[B, F, 32]` 加噪；默认 DDPM 1000 steps、epsilon prediction、L2 loss。
+3. `diffusion_condition.py` 选择条件编码器。当前支持 single image、sketch、point cloud 或无条件，显式拒绝 `multi_img` / `text`；有 YAML 或论文支持不代表当前路径可用。
+4. `condition_encoders.py` 默认冻结 DINOv2 ViT-L，224 输入得到 257 个 token，再训练 projection。Depth Anything V2 选项只使用其 ViT 特征，不等于显式深度预测／监督。
+5. `diffusion_denoiser.py` 的前端 fuser 用 noisy face tokens 查询 image tokens，默认 4 层 cross-attention。训练 alignment 用 clean latent 的汇聚表示；它不是 face-to-pixel 对应监督。
+6. fuser 之后加入 timestep embedding，再经过默认 24 层 self-attention backbone（hidden 768），预测噪声。每个 diffusion timestep 都重新调用 fuser，但 backbone 各层没有独立 image cross-attention。
+7. 采样后筛选／去重 face latent，交给冻结 VAE 解码。当前 diffusion loss 不直接优化 OCC solid validity，也没有直接渲染重投影损失。
 
-```text
-dataset.raw_data_root
-dataset.cached_latent_root
-dataset.condition_data_root
-dataset.train_dataset
-dataset.val_dataset
-dataset.test_dataset
-```
+## Face padding 与 topology 的共同契约
 
-For current v7 data, condition files are:
+- 默认 random padding 复制真实面并随机排列到 30 slots；mask 全为 true。`RandomFacePadder.postprocess()` 用 latent 距离阈值去重，面数由此间接产生。
+- zero padding 有 validity head；当前训练输入 denoiser prediction，推理输入最终 latent。epsilon prediction 下两种输入分布不同，切换 padding 不能假设等价。
+- Oracle adjacency 在 dataset 中通过同一 padding index 重排。新增 face-level 标签也必须使用相同映射。
+- 当前 `LearnedTopologyPredictor` 从图像 CLS 预测固定 slots 的 adjacency；默认 learned 配置仍用随机 latent 排列，没有显式 slot matching。先解决对应关系，再讨论预测精度或 attention 强度。
+- `experiments/2026-06-19/cvae_diffusion_two_step.py` 读取 GT adjacency 计算 canonical ordering，并使用 GT 面数恢复预测；只能作为带 GT 信息的诊断路径，不能当作部署时纯照片推理。
+- `source: gt_adjacency` 是 oracle；`source: learned` 读 raw `conditions["imgs"]`。存在预测缓存或 `freeze=false` 不表示已经实现 topology BCE 联合目标；当前 `Diffusion.forward()` 没有自动加入这些辅助损失。
+- additive bias `+2` 将相同 base logit 下的未归一化 attention mass 乘 `exp(2)`；`log_multiplier` 使用 `log(1 + (max_multiplier-1)*P)`。这不保证 feature 输出被相同比率约束。旧数值解释错误不等于已经证明 two-step 退化的原因。
+- `dataset.topology_visibility_weighted` 当前用 `min(v_i,v_j)` 修改 oracle adjacency；它不是完整的 visible/hidden 分解模型，也不同于实验脚本中的 visibility-weighted BCE。
 
-```text
-deepcad_v7_cond/{model_id}/imgs.npz         # keys: svr_imgs, sketch_imgs
-deepcad_v7_cond/{model_id}/real_photo.npz   # key: flux
-```
+## 已知配置漂移（2026-10-09 源码审计）
 
-Cached latent features are stored under:
+| 区域 | 使用前要处理的问题 |
+|---|---|
+| `configs/train_diffusion_real.yaml` | 继承 `is_overfit=true`、`validation_real_photo_ratio=0.0`；额外写的 `scale_factor` 不被 diffusion loader 读取 |
+| `configs/train_diffusion_baseline_real.yaml` | 显式修正 overfit 与 real-photo validation，但有历史机器路径和 8-GPU 设置，需要 overrides |
+| `AutoEncoder_dataset3` | 读取 `scale_factor`、`data_root`、`condition_names`、`condition_root`，与 `configs/dataset/vae.yaml` 新字段不一致 |
+| cached condition | 当前图像分支读取 `imgs`，不能只打开 cached flag 就假定特征缓存可替代图像 |
 
-```text
-ae_cache/1119_deepcad_aug1_11k_24/{model_id}_{rotation_id}/features.npy
-```
+Diffusion loader 字段为 `raw_data_root`、`cached_latent_root`、`condition_data_root`、`train_dataset`、`val_dataset`、`test_dataset`、`epoch_scale_factor`。记录实际解析配置和实际消费字段；配置解析成功不代表数据语义正确。
 
-`features.npy` is latent stats, typically `[num_faces, 64]`; `Diffusion.latent.dim=32` consumes the mean slice.
+## 修改与验证
 
-## Diffusion Maintenance Rules
+保持行为归属：cache 在 `diffusion_latents.py`，padding 在 `diffusion_padding.py`，编码选择在 `diffusion_condition.py`，条件实现与 denoiser 在各自模块，装配／loss／采样在 `diffusion.py`。新增完整架构可建新模块与显式 config，避免继续膨胀旧类。
 
-Preserve the existing module boundaries:
+重设计交代训练／推理各自可得的信息、face correspondence、mask、相机约定、输出表示、checkpoint 迁移及最终评估。联合 geometry/topology 训练可以作为新方向，需明确损失语义和权重，不沿用旧指南中限制联合训练的默认立场。
 
-- Put latent cache or VAE sampling changes in `diffusion_latents.py`.
-- Put padding or face-mask behavior in `diffusion_padding.py`.
-- Put condition encoder selection in `diffusion_condition.py` and encoder implementation in `condition_encoders.py`.
-- Put denoiser, condition fusion, alignment, and topology self-attention changes in `diffusion_denoiser.py`.
-- Keep top-level orchestration, training loss, and inference loop in `diffusion.py`.
-
-Topology bias only affects denoiser self-attention. `source: gt_adjacency` reads `batch["face_adj"]`; `source: learned` reads raw condition images from `batch["conditions"]["imgs"]`. If `dataset.load_topology=true`, ensure `dataset.raw_data_root` is set and face adjacency aligns with padded face order.
-
-The alignment branch should use clean latent features, not noisy latent features. Do not mix AR/topology predictor losses into diffusion training unless the experiment explicitly calls for a combined objective and the config documents the weighting.
-
-## Commands
-
-Prefer direct Hydra commands:
-
-```bash
-python -m src.brepnet.train --config-name train_diffusion_real \
-    dataset.raw_data_root=/mnt/d/data/deepcad_v7 \
-    dataset.cached_latent_root=/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24 \
-    dataset.condition_data_root=/mnt/d/data/deepcad_v7_cond \
-    dataset.train_dataset=src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt \
-    dataset.val_dataset=src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt \
-    dataset.test_dataset=src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt \
-    model.autoencoder.checkpoint=/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt \
-    hydra.job.chdir=false
-```
-
-Before using VAE commands, verify `AutoEncoder_dataset3` and `configs/dataset/vae.yaml` field names. This area has legacy naming drift (`data_root` / `condition_root` vs `raw_data_root` / `condition_data_root`).
-
-## Testing And Validation
-
-Use small, focused checks before long jobs:
-
-```bash
-python -c "from src.brepnet.models import build_model"
-python -m pytest src/brepnet/test
-python tools/filter_deepcad_v7_lists.py --dry-run
-```
-
-For dataset or condition changes, run a small `Diffusion_dataset` smoke test or the audit/filter tools before training. For topology or generation changes, run a reduced-batch validation or inference pass and record the result under `experiments/YYYY-MM-DD/NOTE.md`.
-
-## Style
-
-Use Python 3.10+, type hints for new public helpers, `Path` for filesystem paths, and clear snake_case names. Keep generated CAD, meshes, checkpoints, logs, W&B artifacts, and samples outside source directories. Prefer narrow scripts in `tools/` for reusable data audits and one-off scripts in `experiments/YYYY-MM-DD/` for experiment-specific code.
+相关检查包括导入、配置消费、真实小批量前向／反向、有限梯度、排列一致性与训练／推理接口。只运行与改动有关的测试；研究有效性由固定协议的下游结果判断。文档整理不需要启动训练或下载模型。

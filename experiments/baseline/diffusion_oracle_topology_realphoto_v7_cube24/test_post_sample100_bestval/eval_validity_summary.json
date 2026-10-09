@@ -1,0 +1,15 @@
+{
+  "has_step_mean": 1.0,
+  "has_step_median": 1.0,
+  "has_success_marker_mean": 0.57,
+  "has_success_marker_median": 1.0,
+  "is_valid_solid_mean": 0.57,
+  "is_valid_solid_median": 1.0,
+  "num_edges_mean": 31.3,
+  "num_edges_median": 26.5,
+  "num_eval": 100,
+  "num_faces_mean": 11.58,
+  "num_faces_median": 10.5,
+  "num_vertices_mean": 22.25,
+  "num_vertices_median": 16.5
+}

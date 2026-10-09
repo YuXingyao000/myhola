@@ -149,3 +149,17 @@ thirdparty/Depth_Anything_V2/
 check.png
 env.txt
 *.pt
+
+# Training checkpoints and generated experiment geometry stay local.
+# Keep notes, commands, resolved configs, audit records, and evaluation CSV/JSON.
+*.ckpt
+/experiments/**/*.npz
+/experiments/**/*.npy
+/experiments/**/*.ply
+/experiments/**/*.step
+/experiments/**/*.stp
+/experiments/**/*.stl
+/experiments/**/*.obj
+/experiments/**/success.txt
+/experiments/**/events.out.tfevents.*
+/experiments/2026-06-17/visibility_*/**/*.png

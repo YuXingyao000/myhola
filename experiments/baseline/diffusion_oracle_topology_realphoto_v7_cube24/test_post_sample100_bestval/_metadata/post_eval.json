@@ -1,0 +1,34 @@
+{
+  "args": {
+    "data_root": "experiments/baseline/diffusion_oracle_topology_realphoto_v7_cube24/test_outputs_sample100_bestval",
+    "force": true,
+    "gt_root": "/mnt/d/data/deepcad_v7",
+    "list": "src/brepnet/data/list/deduplicated_deepcad_testing_7_30_sample_100.txt",
+    "num_cpus": 32,
+    "post_root": "experiments/baseline/diffusion_oracle_topology_realphoto_v7_cube24/test_post_sample100_bestval",
+    "skip_construct": false,
+    "skip_eval": false,
+    "timeout": 180,
+    "use_cuda": false
+  },
+  "argv": [
+    "/mnt/d/python/src/brepnet/experiments/condition_debug/post_eval.py",
+    "--data-root",
+    "experiments/baseline/diffusion_oracle_topology_realphoto_v7_cube24/test_outputs_sample100_bestval",
+    "--post-root",
+    "experiments/baseline/diffusion_oracle_topology_realphoto_v7_cube24/test_post_sample100_bestval",
+    "--gt-root",
+    "/mnt/d/data/deepcad_v7",
+    "--list",
+    "src/brepnet/data/list/deduplicated_deepcad_testing_7_30_sample_100.txt",
+    "--num-cpus",
+    "32",
+    "--timeout",
+    "180",
+    "--force"
+  ],
+  "cuda_visible_devices": "",
+  "cwd": "/mnt/d/python",
+  "git_status_short": " M configs/dataset/diffusion.yaml\n M configs/train_diffusion_baseline_real.yaml\n M experiments/2026-06-17/NOTE.md\n M experiments/ROADMAP.md\n M src/brepnet/dataset.py\n M src/brepnet/eval/run.py\n M src/brepnet/models/diffusion_denoiser.py\n?? experiments/2026-06-17/visibility_audit_100/\n?? experiments/2026-06-17/visibility_commands.sh\n?? experiments/2026-06-17/visibility_debug_3/\n?? experiments/2026-06-17/visibility_prototype.py\n?? experiments/2026-06-17/visibility_prototype/\n?? experiments/2026-06-17/visibility_smoke/\n?? experiments/2026-06-17/visibility_smoke_24/\n?? experiments/2026-06-17/visibility_smoke_24_euler/\n?? experiments/2026-06-18/\n?? experiments/2026-06-19/\n?? experiments/2026-06-23/\n?? experiments/2026-06-24/\n?? experiments/2026-06-26/\n?? experiments/2026-06-28/\n?? experiments/baseline/\n?? src/brepnet/data/extract_visibility.py\n?? src/brepnet/eval/metrics/visible_condition.py\n",
+  "timestamp_utc": "2026-06-28T08:54:57.087370+00:00"
+}

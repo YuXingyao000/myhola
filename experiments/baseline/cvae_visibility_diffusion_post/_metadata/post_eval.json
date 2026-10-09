@@ -1,0 +1,34 @@
+{
+  "args": {
+    "data_root": "experiments/baseline/cvae_visibility_diffusion_outputs",
+    "force": true,
+    "gt_root": "/mnt/d/data/deepcad_v7",
+    "list": "src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt",
+    "num_cpus": 32,
+    "post_root": "experiments/baseline/cvae_visibility_diffusion_post",
+    "skip_construct": false,
+    "skip_eval": false,
+    "timeout": 180,
+    "use_cuda": false
+  },
+  "argv": [
+    "/mnt/d/python/src/brepnet/experiments/condition_debug/post_eval.py",
+    "--data-root",
+    "experiments/baseline/cvae_visibility_diffusion_outputs",
+    "--post-root",
+    "experiments/baseline/cvae_visibility_diffusion_post",
+    "--gt-root",
+    "/mnt/d/data/deepcad_v7",
+    "--list",
+    "src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt",
+    "--num-cpus",
+    "32",
+    "--timeout",
+    "180",
+    "--force"
+  ],
+  "cuda_visible_devices": "",
+  "cwd": "/mnt/d/python",
+  "git_status_short": " M configs/dataset/diffusion.yaml\n M configs/train_diffusion_baseline_real.yaml\n M experiments/2026-06-17/NOTE.md\n M experiments/ROADMAP.md\n M src/brepnet/dataset.py\n M src/brepnet/eval/run.py\n M src/brepnet/models/diffusion_denoiser.py\n?? experiments/2026-06-17/visibility_audit_100/\n?? experiments/2026-06-17/visibility_commands.sh\n?? experiments/2026-06-17/visibility_debug_3/\n?? experiments/2026-06-17/visibility_prototype.py\n?? experiments/2026-06-17/visibility_prototype/\n?? experiments/2026-06-17/visibility_smoke/\n?? experiments/2026-06-17/visibility_smoke_24/\n?? experiments/2026-06-17/visibility_smoke_24_euler/\n?? experiments/2026-06-18/\n?? experiments/2026-06-19/\n?? experiments/baseline/\n?? src/brepnet/data/extract_visibility.py\n?? src/brepnet/eval/metrics/visible_condition.py\n",
+  "timestamp_utc": "2026-06-23T08:36:07.593190+00:00"
+}

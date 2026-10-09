@@ -1,0 +1,145 @@
+trainer:
+  devices: 1
+  accelerator: gpu
+  precision: bf16-mixed
+  num_workers: 8
+  batch_size: 8
+  learning_rate: 0.0001
+  max_epochs: 1000000
+  max_steps: -1
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: 2
+  vae_validation_inference: false
+  gradient_clip_val: 1.0
+  log_every_n_steps: 50
+  wandb:
+    enabled: false
+    project: hola-brep
+    name: null
+  resume_from_checkpoint: /mnt/d/data/new_cond_ckpt/diffusion_oracle_topology.ckpt
+  init_from_checkpoint: null
+  evaluate: true
+  test_output_dir: null
+  output_dir: /mnt/d/python/experiments/baseline/diffusion_oracle_topology_real_v7_cube24
+  exp_name: diffusion_oracle_topology_real_v7_cube24
+dataset:
+  name: Diffusion_dataset
+  raw_data_root: /mnt/d/data/deepcad_v7
+  train_dataset: ???
+  val_dataset: ???
+  test_dataset: src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt
+  cached_latent_root: /mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24
+  condition_data_root: /mnt/d/data/deepcad_v7_cond
+  condition_name: single_img
+  cached_condition: false
+  is_aug: false
+  is_overfit: false
+  load_topology: true
+  visibility_root: null
+  topology_visibility_weighted: false
+  max_faces: 30
+  padding: random
+  num_points: 10000
+  epoch_scale_factor: 200
+  real_photo_ratio: 1.0
+  validation_real_photo_ratio: 1.0
+  augmentation:
+    enabled: true
+    random_rotate: true
+    random_scale: true
+    scale_range:
+    - 0.9
+    - 1.1
+  scale_factor: 200
+model:
+  name: Diffusion
+  stage: diffusion
+  loss: l2
+  latent:
+    dim: 32
+    use_cached_latents: true
+    use_mean: true
+  padding:
+    type: random
+    max_faces: 30
+    valid_loss_weight: 0.01
+  noise:
+    prediction_type: epsilon
+    beta_schedule: squaredcos_cap_v2
+    beta_start: 0.0001
+    beta_end: 0.02
+    variance_type: fixed_small
+    num_train_timesteps: 1000
+  denoiser:
+    hidden_dim: 768
+    num_layers: 24
+    nhead_divisor: 64
+    feedforward_dim: 2048
+    dropout: 0.1
+  condition_fuser:
+    type: cross_attention
+    condition_dim: 1024
+    hidden_dim: 1024
+    num_layers: 4
+    alignment:
+      enabled: true
+      weight: 1.0
+      temperature: 0.07
+      projection_dim: 256
+  topology_bias:
+    enabled: true
+    source: gt_adjacency
+    target: self_attention
+    mode: soft_bias
+    timestep_weight: linear_high_noise
+    scale: 2.0
+    predictor:
+      checkpoint: null
+      max_faces: 30
+      hidden_dim: 512
+      face_dim: 128
+      dino_model: facebook/dinov2-large
+      freeze: true
+      edge_threshold: 0.5
+  autoencoder:
+    name: AutoEncoder_light
+    stage: vae
+    mode: frozen_inference
+    checkpoint: /mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt
+    in_channels: 6
+    latent_channels: 8
+    hidden_channels: 768
+    norm: layer
+    gaussian_weights: 1.0e-06
+    sigmoid: false
+    num_gat_layers: 5
+    bottleneck_dim: 768
+    num_encoder_layers: 8
+    num_decoder_layers: 8
+    nhead: 16
+    with_intersection: true
+    intersection_dim: 512
+    intersection_layers: 8
+    intersection_noise_std: 0.0
+    trainable_scope: all
+    trainable_module_prefixes:
+    - inter
+    - classifier
+    loss: l1
+condition:
+  type: single_img
+  condition_name: single_img
+  cached_features: false
+  output_dim: 1024
+  image:
+    backbone: dinov2
+    depth_anything_v2_ckpt: null
+    augment_probability: 0.0
+  point_cloud:
+    encoder: pointnet
+    augment_probability: 0.0
+eval:
+  enabled: true
+  output_dir: experiments/baseline/diffusion_oracle_topology_real_v7_cube24/test_outputs
+  num_samples: 100
+  post_process: true

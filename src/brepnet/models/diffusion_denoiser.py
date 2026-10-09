@@ -112,6 +112,35 @@ def build_condition_fuser(fuser_cfg: dict, condition_cfg: dict, hidden_dim: int)
     raise ValueError(f"Unknown condition fuser type '{fuser_cfg['type']}'.")
 
 
+def build_soft_topology_attention_bias(
+    adjacency_weight: Tensor,
+    timesteps: Tensor,
+    *,
+    num_train_timesteps: int,
+    timestep_weight: str,
+    parameterization: str,
+    scale: float,
+    max_multiplier: float,
+) -> Tensor:
+    if timestep_weight != "linear_high_noise":
+        raise ValueError(f"Unknown topology timestep weight '{timestep_weight}'.")
+
+    if parameterization == "additive":
+        # Preserve the historical schedule exactly for old configs/checkpoints.
+        timestep_scale = timesteps.float() / float(num_train_timesteps)
+        pair_bias = adjacency_weight * scale
+    elif parameterization == "log_multiplier":
+        if max_multiplier <= 0:
+            raise ValueError("max_multiplier must be positive.")
+        max_timestep = max(num_train_timesteps - 1, 1)
+        timestep_scale = timesteps.float() / float(max_timestep)
+        pair_bias = torch.log1p(adjacency_weight * (max_multiplier - 1.0))
+    else:
+        raise ValueError(f"Unknown topology bias parameterization '{parameterization}'.")
+
+    return pair_bias * timestep_scale[:, None, None]
+
+
 class OracleTopologySelfAttentionMask(nn.Module):
     def __init__(self, cfg: dict, num_train_timesteps: int):
         super().__init__()
@@ -119,6 +148,8 @@ class OracleTopologySelfAttentionMask(nn.Module):
         self.mode = cfg["mode"]
         self.timestep_weight = cfg["timestep_weight"]
         self.scale = cfg["scale"]
+        self.parameterization = cfg.get("parameterization", "additive")
+        self.max_multiplier = cfg.get("max_multiplier", 2.0)
         self.num_train_timesteps = num_train_timesteps
 
     def forward(self, face_adjacency: Tensor | None, timesteps: Tensor) -> Tensor | None:
@@ -127,18 +158,25 @@ class OracleTopologySelfAttentionMask(nn.Module):
         if face_adjacency is None:
             return None
 
-        adjacency = face_adjacency.to(timesteps.device).bool()
-        seq_len = adjacency.shape[1]
+        adjacency_weight = face_adjacency.to(timesteps.device, dtype=torch.float32).clamp(0.0, 1.0)
+        adjacency_bool = adjacency_weight > 0.5
+        seq_len = adjacency_weight.shape[1]
 
         if self.mode == "hard_mask":
             self_loop = torch.eye(seq_len, device=timesteps.device, dtype=torch.bool).unsqueeze(0)
-            allowed_attention = adjacency | self_loop
+            allowed_attention = adjacency_bool | self_loop
             return ~allowed_attention
 
         if self.mode == "soft_bias":
-            adjacency_bias = adjacency.to(dtype=torch.float32)
-            timestep_weight = timesteps.float() / float(self.num_train_timesteps)
-            return adjacency_bias * timestep_weight[:, None, None] * self.scale
+            return build_soft_topology_attention_bias(
+                adjacency_weight,
+                timesteps,
+                num_train_timesteps=self.num_train_timesteps,
+                timestep_weight=self.timestep_weight,
+                parameterization=self.parameterization,
+                scale=self.scale,
+                max_multiplier=self.max_multiplier,
+            )
 
         raise ValueError(f"Unknown oracle topology self-attention mode '{self.mode}'.")
 
@@ -231,6 +269,9 @@ class LearnedTopologySelfAttentionMask(nn.Module):
         self.enabled = cfg["enabled"]
         self.mode = cfg["mode"]
         self.scale = cfg["scale"]
+        self.timestep_weight = cfg["timestep_weight"]
+        self.parameterization = cfg.get("parameterization", "additive")
+        self.max_multiplier = cfg.get("max_multiplier", 2.0)
         self.num_train_timesteps = num_train_timesteps
 
         predictor_cfg = cfg["predictor"]
@@ -287,8 +328,15 @@ class LearnedTopologySelfAttentionMask(nn.Module):
             return ~allowed_attention
 
         if self.mode == "soft_bias":
-            timestep_weight = timesteps.float() / float(self.num_train_timesteps)
-            return face_adj_prob * timestep_weight[:, None, None] * self.scale
+            return build_soft_topology_attention_bias(
+                face_adj_prob,
+                timesteps,
+                num_train_timesteps=self.num_train_timesteps,
+                timestep_weight=self.timestep_weight,
+                parameterization=self.parameterization,
+                scale=self.scale,
+                max_multiplier=self.max_multiplier,
+            )
 
         raise ValueError(f"Unknown learned topology self-attention mode '{self.mode}'.")
 

@@ -10,11 +10,14 @@ cached_condition: ${condition.cached_features}
 is_aug: false
 is_overfit: true
 load_topology: false
+visibility_root: null
+topology_visibility_weighted: false
 max_faces: ${model.padding.max_faces}
 padding: ${model.padding.type}
 num_points: 10000
 epoch_scale_factor: 200
 real_photo_ratio: 1.0
+validation_real_photo_ratio: 0.0
 augmentation:
   enabled: true
   random_rotate: true

@@ -473,6 +473,10 @@ class Diffusion_dataset(torch.utils.data.Dataset):
         self.cached_latent_root = Path(self.conf["cached_latent_root"])
         self.raw_data_root      = Path(self.conf["raw_data_root"]) if self.conf["raw_data_root"] is not None else None
         self.load_topology      = bool(self.conf["load_topology"])
+        self.visibility_root    = Path(self.conf["visibility_root"]) if self.conf.get("visibility_root", None) is not None else None
+        self.topology_visibility_weighted = bool(self.conf.get("topology_visibility_weighted", False))
+        if self.topology_visibility_weighted and self.visibility_root is None:
+            raise ValueError("dataset.topology_visibility_weighted=true requires dataset.visibility_root")
 
         # --- Data split ---
         if training_mode == "testing":
@@ -500,7 +504,7 @@ class Diffusion_dataset(torch.utils.data.Dataset):
         if training_mode == "validation":
             self.is_aug = False
             self.cached_condition = False
-            self.real_photo_ratio = 0.0
+            self.real_photo_ratio = self.conf.get("validation_real_photo_ratio", 0.0)
 
         # --- Condition Names ---
         self.condition_name         = self.conf["condition_name"]
@@ -519,6 +523,15 @@ class Diffusion_dataset(torch.utils.data.Dataset):
                 if has_required_condition_files(self.condition_name, self.condition_data_root / item, self.cached_condition, self.real_photo_ratio):
                     data_folders.append(item)
             print("Filter out {} folders without feat".format(len(filelist) - len(data_folders)))
+            filelist = data_folders
+
+        if self.topology_visibility_weighted:
+            required_views = range(NUM_CUBE24_VIEWS) if self.is_aug else (0,)
+            data_folders = [
+                item for item in filelist
+                if all(self._visibility_path(item, view_id).is_file() for view_id in required_views)
+            ]
+            print("Filter out {} folders without visibility".format(len(filelist) - len(data_folders)))
             filelist = data_folders
 
         # Display which local GPU/device (rank) this dataset is being used on.
@@ -540,6 +553,9 @@ class Diffusion_dataset(torch.utils.data.Dataset):
 
     def __len__(self):
         return len(self.data_folders)
+
+    def _visibility_path(self, model_id, rotation_id):
+        return self.visibility_root / model_id / f"view_{int(rotation_id):03d}" / "visibility.npz"
 
     def _load_pc_points(self, folder_path):
         pc = o3d.io.read_point_cloud(str(self.condition_data_root / folder_path / "pc.ply"))
@@ -602,6 +618,19 @@ class Diffusion_dataset(torch.utils.data.Dataset):
                 n = min(face_adj.shape[0], num_faces)
                 face_adj_clipped = torch.zeros(num_faces, num_faces)
                 face_adj_clipped[:n, :n] = face_adj[:n, :n]
+                if self.topology_visibility_weighted:
+                    visibility_path = self._visibility_path(model_id, rotation_id)
+                    visibility_npz = np.load(str(visibility_path))
+                    visible_fraction = torch.from_numpy(visibility_npz["visible_fraction"]).float()
+                    if visible_fraction.numel() < n:
+                        raise RuntimeError(
+                            f"{visibility_path} has {visible_fraction.numel()} visibility values, "
+                            f"but {model_id} needs {n} faces"
+                        )
+                    visibility = torch.zeros(num_faces, dtype=face_adj_clipped.dtype)
+                    visibility[:n] = visible_fraction[:n].clamp(0.0, 1.0)
+                    pair_weight = torch.minimum(visibility[:, None], visibility[None, :])
+                    face_adj_clipped = face_adj_clipped * pair_weight
                 # Map to padded space using the same index used for latent stats.
                 if self.padding == "random":
                     padded_adj = face_adj_clipped[index][:, index]  # [max_faces, max_faces]

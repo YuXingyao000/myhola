@@ -1,0 +1,15 @@
+{
+  "has_step_mean": 1.0,
+  "has_step_median": 1.0,
+  "has_success_marker_mean": 0.2887788778877888,
+  "has_success_marker_median": 0.0,
+  "is_valid_solid_mean": 0.2887788778877888,
+  "is_valid_solid_median": 0.0,
+  "num_edges_mean": 39.771452145214525,
+  "num_edges_median": 36.0,
+  "num_eval": 2424,
+  "num_faces_mean": 12.95585808580858,
+  "num_faces_median": 12.0,
+  "num_vertices_mean": 31.71328382838284,
+  "num_vertices_median": 28.0
+}
