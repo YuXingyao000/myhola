@@ -26,6 +26,7 @@ import torch.nn.functional as F
 from PIL import Image
 
 from src.brepnet.data.rotations import NUM_CUBE24_VIEWS, cube24_rotation_matrix
+from src.brepnet.data.shared_boundaries import build_shared_boundary_targets, validate_legacy_geometry
 
 
 def normalize_coord1112(v_points):
@@ -33,6 +34,8 @@ def normalize_coord1112(v_points):
     normals = v_points[..., 3:]
     shape = points.shape
     num_items = shape[0]
+    if num_items == 0:
+        return points.clone(), normals.clone(), points.new_empty((0, 3)), points.new_empty((0, 1))
     points = points.reshape(num_items, -1, 3)
     target_points = points + normals.reshape(num_items, -1, 3)
 
@@ -240,13 +243,45 @@ def prepare_condition(v_condition_names, v_cond_root, v_folder_path, rotation_id
     return condition
 
 
+_CONFIG_MISSING = object()
+
+
+def _vae_config_field(config, canonical, legacy, default=_CONFIG_MISSING, normalize=None):
+    """Accept documented old names, rejecting contradictory dual definitions."""
+    current = config.get(canonical, _CONFIG_MISSING)
+    previous = config.get(legacy, _CONFIG_MISSING)
+    if normalize is not None:
+        if current is not _CONFIG_MISSING:
+            current = normalize(current)
+        if previous is not _CONFIG_MISSING:
+            previous = normalize(previous)
+    if current is not _CONFIG_MISSING and previous is not _CONFIG_MISSING and current != previous:
+        raise ValueError(f"Conflicting VAE dataset config: {canonical}={current!r}, {legacy}={previous!r}")
+    value = current if current is not _CONFIG_MISSING else previous
+    if value is _CONFIG_MISSING:
+        if default is _CONFIG_MISSING:
+            raise KeyError(f"VAE dataset requires {canonical} (legacy alias: {legacy})")
+        value = default
+    return value
+
+
+def _vae_condition_names(value):
+    if value is None or isinstance(value, str) and value == "none":
+        return []
+    return [value] if isinstance(value, str) else list(value)
+
+
 class AutoEncoder_dataset3(torch.utils.data.Dataset):
+    strict_sample_loading = False
+
     def __init__(self, v_training_mode, v_conf):
         super(AutoEncoder_dataset3, self).__init__()
         self.mode = v_training_mode
         self.conf = v_conf
         # self.max_intersection = 500
-        self.scale_factor = int(v_conf["scale_factor"])
+        self.scale_factor = int(_vae_config_field(v_conf, "epoch_scale_factor", "scale_factor", 1))
+        if self.scale_factor < 1:
+            raise ValueError("VAE dataset epoch_scale_factor must be positive")
         if v_training_mode == "testing":
             listfile = v_conf['test_dataset']
         elif v_training_mode == "training":
@@ -256,13 +291,16 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
         else:
             raise
 
-        self.data_folders = [item.strip() for item in open(listfile).readlines()]
-        self.root = Path(v_conf["data_root"])
+        self.data_folders = [item.strip() for item in Path(listfile).read_text().splitlines() if item.strip()]
+        self.root = Path(_vae_config_field(v_conf, "raw_data_root", "data_root"))
 
         # Cond related
         self.is_aug = v_conf["is_aug"]
-        self.condition = list(v_conf["condition_names"])
-        self.conditional_data_root = Path(v_conf["condition_root"]) if self.condition else None
+        self.condition = _vae_config_field(v_conf, "condition_name", "condition_names", [], _vae_condition_names)
+        condition_root = _vae_config_field(v_conf, "condition_data_root", "condition_root", None)
+        if self.condition and condition_root is None:
+            raise ValueError("VAE conditioning requires dataset.condition_data_root")
+        self.conditional_data_root = Path(condition_root) if self.condition else None
         self.cached_condition = v_conf["cached_condition"]
         if v_training_mode == "validation":
             self.is_aug = 0
@@ -273,14 +311,18 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
         for item in self.data_folders:
             if os.path.exists(self.root / item / "data.npz"):
                 data_folders.append(item)
+            elif self.strict_sample_loading:
+                raise FileNotFoundError(f"VAE sample {item!r}: missing {self.root / item / 'data.npz'}")
         self.data_folders = data_folders
 
         # Check cond data
         if len(self.condition) > 0:
             data_folders = []
             for item in self.data_folders:
-                if has_required_condition_files(self.condition, self.conditional_data_root / item, self.cached_condition):
+                if all(has_required_condition_files(name, self.conditional_data_root / item, self.cached_condition) for name in self.condition):
                     data_folders.append(item)
+                elif self.strict_sample_loading:
+                    raise FileNotFoundError(f"VAE sample {item!r}: missing required condition assets")
             print("Filter out {} folders without feat".format(len(self.data_folders) - len(data_folders)))
             self.data_folders = data_folders
 
@@ -290,6 +332,8 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
                 self.data_folders = self.data_folders * 100
 
         self.ori_length = len(self.data_folders)
+        if self.strict_sample_loading and self.ori_length == 0:
+            raise ValueError(f"VAE dataset list {listfile} is empty")
         if v_training_mode == "testing" and self.is_aug == 1:
             self.data_folders = self.data_folders * NUM_CUBE24_VIEWS
         self.transform = T.Compose([
@@ -306,11 +350,18 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
         # return 100
         return len(self.data_folders) * self.scale_factor
 
+    def _load_sample_arrays(self, folder_path):
+        with np.load(self.root / folder_path / "data.npz") as data:
+            return {key: data[key] for key in (
+                "sample_points_faces", "sample_points_lines", "face_adj",
+                "edge_face_connectivity", "zero_positions",
+            )}
+
     def __getitem__(self, idx):
         # idx = 0
         folder_path = self.data_folders[idx % len(self.data_folders)]
         output_prefix = folder_path
-        data_npz = np.load(str(self.root / folder_path / "data.npz"))
+        data_npz = self._load_sample_arrays(folder_path)
         face_points = torch.from_numpy(data_npz['sample_points_faces'])
         edge_points = torch.from_numpy(data_npz['sample_points_lines'])
 
@@ -462,6 +513,66 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
             "valid_mask"            : valid_mask,
             "conditions"            : condition_out
         }
+
+
+class AutoEncoder_joint_dataset(AutoEncoder_dataset3):
+    """Keep legacy encoder tensors, add validated local shared-boundary targets."""
+
+    strict_sample_loading = True
+
+    def __init__(self, v_training_mode, v_conf):
+        self.boundary_reciprocal_tolerance = float(v_conf["boundary_reciprocal_tolerance"])
+        self.boundary_closed_tolerance = float(v_conf["boundary_closed_tolerance"])
+        self.boundary_allow_closed_phase = bool(v_conf["boundary_allow_closed_phase"])
+        super().__init__(v_training_mode, v_conf)
+
+    def _load_sample_arrays(self, folder_path):
+        try:
+            data = super()._load_sample_arrays(folder_path)
+            validate_legacy_geometry(
+                data["sample_points_faces"], data["sample_points_lines"],
+                data["edge_face_connectivity"], folder_path,
+            )
+            count = len(data["sample_points_faces"])
+            adjacency = data["face_adj"]
+            negatives = data["zero_positions"]
+            if adjacency.shape != (count, count) or not np.isfinite(adjacency).all():
+                raise ValueError("face_adj must be a finite [F,F] array")
+            if negatives.ndim != 2 or negatives.shape[1] != 2 or not np.issubdtype(negatives.dtype, np.integer):
+                raise ValueError("zero_positions must be integer [N,2]")
+            if (negatives < 0).any() or (negatives >= count).any():
+                raise ValueError("zero_positions has an invalid face index")
+            return data
+        except Exception as exc:
+            raise ValueError(f"joint VAE sample {folder_path!r}: {exc}") from exc
+
+    def __getitem__(self, idx):
+        sample_id = self.data_folders[idx % len(self.data_folders)]
+        try:
+            item = super().__getitem__(idx)
+            target = build_shared_boundary_targets(
+                item[1].numpy(), item[2].numpy(), item[7].numpy(),
+                sample_id=sample_id,
+                reciprocal_tolerance=self.boundary_reciprocal_tolerance,
+                closed_tolerance=self.boundary_closed_tolerance,
+                allow_closed_phase=self.boundary_allow_closed_phase,
+            )
+        except Exception as exc:
+            raise ValueError(f"joint VAE sample {sample_id!r}: {exc}") from exc
+        return item + ({key: torch.from_numpy(value) for key, value in target.items()},)
+
+    @staticmethod
+    def collate_fn(batch):
+        # The legacy collator offsets connectivity in-place. Clone that tensor
+        # so reusing a fetched sample cannot leak offsets across batches.
+        encoder_items = []
+        for item in batch:
+            original = list(item[:-1])
+            original[7] = original[7].clone()
+            encoder_items.append(tuple(original))
+        result = AutoEncoder_dataset3.collate_fn(encoder_items)
+        result["boundary_targets"] = [item[-1] for item in batch]
+        return result
 
 
 class Diffusion_dataset(torch.utils.data.Dataset):

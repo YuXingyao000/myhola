@@ -35,6 +35,8 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 | `src/brepnet/train.py` | Hydra + Lightning 统一 VAE / diffusion 入口 |
 | `src/brepnet/dataset.py` | 当前 `Diffusion_dataset`，以及仍有旧字段的 VAE / legacy 数据路径 |
 | `src/brepnet/models/vae.py` | 面／半边编码、拓扑特征融合、每面 latent、neural intersection、几何解码 |
+| `src/brepnet/models/joint_vae.py`、`joint_decoder.py`、`joint_losses.py` | 新 shared-boundary VAE 与面／边双向解码；保持旧 encoder 合同，具体实现见 `checkpoints/joint_boundary/PLAN.md` |
+| `src/brepnet/run_management.py`、`prediction_export.py` | 独立 run 目录、配置／Git 溯源、逐对象原始预测导出 |
 | `src/brepnet/models/diffusion.py` | diffusion 装配、损失、采样与 VAE 解码 |
 | `src/brepnet/models/diffusion_latents.py` | cached mean/std 或 VAE 编码 |
 | `src/brepnet/models/diffusion_padding.py` | face token padding、有效面筛选、重复 latent 去除 |
@@ -78,7 +80,7 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 
 环境定义为 `environment.yml`，常规安装为 `conda env create -f environment.yml`、`conda activate hola-brep`、`pip install -e .`。先检查现有环境，不因阅读或文档任务自动重装。
 
-训练使用 `python -m src.brepnet.train --config-name <config>`。准备 real-photo baseline 时优先检查 `configs/train_diffusion_baseline_real.yaml`，显式设置数据路径、设备数与 checkpoint。不要把 `train_diffusion_real.yaml` 名字当作协议保证：它继承的 overfit / validation 条件有陷阱，详见源码指南。VAE config 与 loader 有字段漂移，不能直接承诺 stock `train_vae` 命令可运行。
+训练使用 `python -m src.brepnet.train --config-name <config>`。准备 real-photo baseline 时优先检查 `configs/train_diffusion_baseline_real.yaml`，显式设置数据路径、设备数与 checkpoint。不要把 `train_diffusion_real.yaml` 名字当作协议保证：它继承的 overfit / validation 条件有陷阱，详见源码指南。VAE loader 已接受规范字段及显式旧别名，冲突值必须报错；仍需核对实际数据。新联合边界 decoder 的命令与迁移协议见 [README](checkpoints/joint_boundary/README.md)。
 
 保持既有模块职责；有理由改变边界时说明迁移。用 Python 3.10+、四空格、snake_case、显式配置与适当类型注解。不要把研究行为藏在路径猜测、checkpoint 名称或静默 fallback 中。
 
@@ -86,7 +88,11 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 
 ## 记录与评估纪律
 
-新实验按 `experiments/YYYY-MM-DD/` 归档，必须有 `NOTE.md`。每项包含“为什么、具体实施、结果／状态、参考链接”；事实、计划和已完成结果分开。记录 resolved config、代码版本与未提交差异、数据／split、checkpoint、seed、预算及输出路径。先建立可判断方向的研究问题，不机械延续旧实验编号。
+**从 joint-boundary 实现开始，新实验、计划及结果记录统一放在 `checkpoints/`，不再写入 `experiments/`。** 后者保留为历史资产，不移动或删除。每个研究主题维护受 Git 管理的 `PLAN.md`、`README.md`／`NOTE.md`，记录“为什么、具体实施、结果／状态、参考链接”；事实、计划和已完成结果分开。
+
+统一训练默认目录为 `checkpoints/<trainer.exp_name>/<UTC 时间戳>/`，权重 `weights/`、日志 `logs/`、W&B `wandb/`、逐对象预测 `raw_predictions/`、可视化 `visualizations/`、配置与 Git 元数据 `metadata/` 分开。`trainer.output_dir` 是根目录；`trainer.run_dir` 显式指定完整 run。续训使用 `trainer.resume_from_checkpoint` 回到原 run；不要将 init 当作 resume。每次调用保存 resolved config、Git commit／dirty diff、seed 和命令，已有 run 不允许无续训标记覆盖。
+
+运行权重、原始几何及临时日志由 `.gitignore` 排除；研究文档与紧凑的验证报告保留版本管理。记录数据／split、checkpoint、seed、预算及输出路径。先建立可判断方向的研究问题，不机械延续旧实验编号。
 
 比较固定输入信息、样本列表、采样／重试预算、checkpoint、后处理版本及指标协议。分别报告生成覆盖率、有效 STEP／solid 比例、几何与可见区域一致性，以及成本／耗时。失败、缺失、超时留在预定分母里；仅成功子集的几何分数单列。
 

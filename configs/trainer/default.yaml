@@ -11,13 +11,20 @@ num_sanity_val_steps: 2
 vae_validation_inference: false
 gradient_clip_val: 1.0
 log_every_n_steps: 50
+seed: 42
+deterministic: false
+limit_train_batches: 1.0
+limit_val_batches: 1.0
+limit_test_batches: 1.0
 wandb:
   enabled: true
   project: hola-brep
   name: null
+  offline: false
 resume_from_checkpoint: null
 init_from_checkpoint: null
 evaluate: false
 test_output_dir: null
-output_dir: ./outputs
+output_dir: ./checkpoints
+run_dir: null
 exp_name: default

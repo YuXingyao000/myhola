@@ -1,0 +1,29 @@
+defaults:
+  - vae_light
+  - _self_
+
+name: AutoEncoder_joint
+# Matches the validated 1119 light encoder, not the full AutoEncoder.
+primitive_blocks_per_stage: 1
+trainable_scope: all
+freeze_encoder: true
+init_encoder_checkpoint: null
+checkpoint: null
+joint_hidden_dim: 256
+# Train split contains up to 108 merged boundaries; do not truncate to 64.
+joint_num_queries: 128
+joint_num_rounds: 3
+joint_num_heads: 8
+joint_dropout: 0.0
+joint_edge_to_face: true
+joint_existence_threshold: 0.5
+joint_no_boundary_weight: 0.1
+joint_loss_weights:
+  face: 1.0
+  curve: 1.0
+  existence: 0.1
+  ownership: 0.1
+  consistency: 0.1
+joint_match_weights:
+  curve: 1.0
+  ownership: 0.25

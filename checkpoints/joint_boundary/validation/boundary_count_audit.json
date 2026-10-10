@@ -1,0 +1,50 @@
+{
+  "training": {
+    "intended": 46627,
+    "available": 46627,
+    "missing_or_failed": 0,
+    "min": 6,
+    "max": 108,
+    "percentiles": [
+      24.0,
+      60.0,
+      72.0
+    ],
+    "above_64": 1242,
+    "above_128": 0,
+    "seam_cases": 0,
+    "failures": []
+  },
+  "validation": {
+    "intended": 3505,
+    "available": 3505,
+    "missing_or_failed": 0,
+    "min": 6,
+    "max": 90,
+    "percentiles": [
+      24.0,
+      58.79999999999973,
+      72.0
+    ],
+    "above_64": 99,
+    "above_128": 0,
+    "seam_cases": 0,
+    "failures": []
+  },
+  "testing": {
+    "intended": 2424,
+    "available": 2424,
+    "missing_or_failed": 0,
+    "min": 6,
+    "max": 84,
+    "percentiles": [
+      24.0,
+      58.0,
+      72.0
+    ],
+    "above_64": 60,
+    "above_128": 0,
+    "seam_cases": 0,
+    "failures": []
+  }
+}

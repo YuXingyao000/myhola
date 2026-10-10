@@ -9,7 +9,8 @@ FLUX 合成照片与相机实拍照片必须分别命名和报告；文件名 `r
 
 ## 代码入口与职责
 
-- `../dataset.py`：训练实际读取的数据契约；当前主类是 `Diffusion_dataset` 和 `AutoEncoder_dataset3`。
+- `../dataset.py`：训练实际读取的数据契约；主类为 `Diffusion_dataset`、`AutoEncoder_dataset3` 及严格加载的 `AutoEncoder_joint_dataset`。
+- `shared_boundaries.py`：旧 reciprocal rows 到共享边界监督的显式适配，以及未筛选预测的诊断计数。
 - `rotations.py`：训练、推理、评估共用的 identity-first cube24 旋转协议。
 - `datagen/run_blender.py`、`run_flux.py`、`run_pack.py`：现存的分阶段编排入口，运行前核对配置与下游接口。
 - `datagen/blender_scripts/`：Blender 相机、材质、渲染及模型旋转。
@@ -38,6 +39,18 @@ FLUX 合成照片与相机实拍照片必须分别命名和报告；文件名 `r
 `real_photo_ratio>0` 不支持 `cached_condition=True`；验证/测试的照片比例也要核对实际 loader 配置。
 当前 loader 明确拒绝旧 `natural_img` / `natural.npz` 路径。不要将其改称 `svr.npz` 或默默增加格式猜测。
 实拍准备脚本复制任意有效 `data.npz` 作为 loader 占位；该文件不是照片对应的 GT，不能据此计算重建准确率。
+
+## 共享边界监督契约
+
+`AutoEncoder_joint_dataset` 保留旧 encoder 的面顺序、双向边、归一化和旋转，只额外返回逐对象 `boundary_targets`。
+每组不同面的无向 pair 必须恰有两条 reciprocal rows；目标保留较小原始 edge ID 的采样，不平均、不重采样。
+这代表旧提取器合并后的 face-pair boundary，不是完整 native physical edge，也不提供 coedge、UV/pcurve、loop 或 vertex 监督。
+`curves[K,L,3]`、局部 `face_pairs[K,2]` 与 `is_closed[K]` 在 collate 后仍逐对象保存；不能使用批次全局面编号。
+闭合曲线保留原始首末采样，端点距离用 `boundary_closed_tolerance` 判断；匹配可循环对齐前 `L-1` 点。
+互反检查先比较正/反序；配置允许时，对闭合曲线再用双向顶点到折线距离。所有阈值均为输入全局 XYZ 单位。
+缺失、seam、覆盖不全及不一致的目标带 sample ID 报错；零边界合法，容量溢出由模型报错，禁止静默截断或过滤。
+先用 `tools/audit_shared_boundaries.py` 完整审计清单，记录 accepted IDs 和逐件 rejection；对照方法使用同一训练清单。
+VAE 同时支持标准与旧字段名，但矛盾配置必须报错；新配置使用 `raw_data_root`、`epoch_scale_factor`、`condition_name`。
 
 ## 已观察到的生成链路漂移
 
@@ -70,4 +83,4 @@ SAM2 轮廓 IoU、DINO 相似度和 CLIP 分数是辅助筛查信号，不能独
 审计与过滤工具的默认报告目录仍指向 `experiments/2026-06-07/`，新报告不要覆盖到该历史目录。
 数组读取检查与存在性检查分别报告；通过存在性检查不代表文件可解压、视图正确或几何配对可靠。
 修改数据读取时验证具有代表性的格式与异常输入；完整生成、训练和全库清理不作为文档检查的副作用。
-需要记录新实验时遵循根目录 `AGENTS.md` 中自包含的记录规则与 `experiments/YYYY-MM-DD/NOTE.md` 约定，不依赖已删除的实验技能。
+新 joint-boundary 运行、审计与记录写入 `checkpoints/` 的独立目录；遵循根目录 `AGENTS.md`，不要向历史 `experiments/` 追加本轮产物。

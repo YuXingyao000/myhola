@@ -8,6 +8,7 @@ from shared.occ_utils import get_primitives
 from src.brepnet.post.constants import INTERPOLATION_PRECISION
 from src.brepnet.post.distance import ChamferDistance
 from src.brepnet.post.occ_topology import check_edges_similarity
+from src.brepnet.data.shared_boundaries import SHARED_BOUNDARY_REPRESENTATION, shared_prediction_diagnostics
 
 
 _SKIP_FACE_PAIR = object()
@@ -104,6 +105,60 @@ class Shape:
         self.remove_edge_idx_new = []
 
         self.have_data = True
+        self.representation = "legacy_half_edges"
+        self.edge_confidence = None
+        self.post_adaptation_diagnostics = None
+        self.selected_source_edge_ids = None
+
+    def select_shared_boundaries(self, edge2face_threshold=0.3):
+        """Adapt shared queries to the legacy post's one-boundary-per-pair domain.
+
+        Preserve raw arrays on disk. Reject self/invalid assignments and curves
+        outside the same geometric gate used by legacy half-edge selection;
+        among any number of candidates use highest predicted confidence, then
+        smallest edge-to-face residual, then source index. No GT is consulted.
+        """
+        if self.representation != SHARED_BOUNDARY_REPRESENTATION:
+            raise ValueError("select_shared_boundaries requires shared_boundary_v1")
+        diagnostics = shared_prediction_diagnostics(
+            len(self.recon_face_points), self.recon_edge_points,
+            self.edge_face_connectivity, self.edge_confidence,
+        )
+        candidates = {}
+        geometry_rejected = 0
+        for edge, first, second in self.edge_face_connectivity:
+            edge, first, second = int(edge), int(first), int(second)
+            if first == second or min(first, second) < 0 or max(first, second) >= len(self.recon_face_points):
+                continue
+            score = float(self.edge_confidence[edge])
+            if not np.isfinite(score) or not 0 <= score <= 1 or not np.isfinite(self.recon_edge_points[edge]).all():
+                continue
+            residual = float(self._edge_to_face_distance(edge, first, second))
+            if not np.isfinite(residual) or residual > edge2face_threshold:
+                geometry_rejected += 1
+                continue
+            pair = tuple(sorted((first, second)))
+            candidates.setdefault(pair, []).append((-score, residual, edge))
+        selected = [(pair, min(values)[2]) for pair, values in sorted(candidates.items())]
+        source_ids = np.asarray([edge for _, edge in selected], dtype=np.int64)
+        self.selected_source_edge_ids = source_ids
+        self.remove_edge_idx_src = sorted(set(range(len(self.recon_edge_points))) - set(source_ids.tolist()))
+        self.recon_edge_points = self.recon_edge_points[source_ids]
+        self.edge_face_connectivity = np.asarray(
+            [(index, *pair) for index, (pair, _) in enumerate(selected)], dtype=np.int64,
+        ).reshape(-1, 3)
+        self.edge_confidence = self.edge_confidence[source_ids]
+        self.have_data = len(selected) > 0
+        self.post_adaptation_diagnostics = {
+            **diagnostics,
+            "num_geometry_rejected": geometry_rejected,
+            "num_selected_boundaries": len(selected),
+            "num_removed_queries": len(self.remove_edge_idx_src),
+            "selected_source_edge_ids": source_ids.tolist(),
+            "removed_source_edge_ids": self.remove_edge_idx_src,
+            "edge2face_threshold": float(edge2face_threshold),
+            "selection_policy": "geometry_gate_then_confidence_then_residual_then_index",
+        }
 
     def _edge_to_face_distance(self, edge_id, face_id1, face_id2):
         edge = torch.from_numpy(self.recon_edge_points[edge_id]).to(self.device)

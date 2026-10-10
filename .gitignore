@@ -163,3 +163,24 @@ env.txt
 /experiments/**/success.txt
 /experiments/**/events.out.tfevents.*
 /experiments/2026-06-17/visibility_*/**/*.png
+
+# New research records live in checkpoints/; only runtime artifacts are ignored.
+# PLAN.md, README.md, NOTE.md and compact validation reports remain versioned.
+/checkpoints/**/weights/
+/checkpoints/**/logs/
+/checkpoints/**/wandb/
+/checkpoints/**/raw_predictions/
+/checkpoints/**/visualizations/
+/checkpoints/**/metadata/
+/checkpoints/**/*.npz
+/checkpoints/**/*.npy
+/checkpoints/**/*.ply
+/checkpoints/**/*.step
+/checkpoints/**/*.stp
+/checkpoints/**/*.stl
+/checkpoints/**/*.obj
+/checkpoints/**/success.txt
+/checkpoints/**/pytest_tmp*/
+# Per-ID audit streams can be regenerated; retain accepted/rejected manifests
+# and their compact summaries in Git instead.
+/checkpoints/**/samples.csv

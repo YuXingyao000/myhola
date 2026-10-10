@@ -42,6 +42,16 @@ python -m src.brepnet.eval.run \
 对比时固定后处理参数与预算，包括 `drop_num`、优化次数、容差、超时和 CPU/GPU 路径。
 PythonOCC API 与容差敏感；修改 post 的公开接口或几何阶段须验证完整调用链。
 
+## 共享边界输出
+
+新 NPZ 必须明确标记标量 `representation="shared_boundary_v1"`，并提供 `pred_edge_confidence[Q]`。
+每个 active query 只有一条预测曲线；`pred_edge_face_connectivity[Q,3]` 引用预测面的局部编号，不是旧 reciprocal half-edges。
+Raw 导出保留重复 pair、同面 assignment 和全部 active queries，不能按 GT 边数、连接或匹配结果筛选。
+`data/shared_boundaries.py:shared_prediction_diagnostics` 统计这些原始错误；它不修复或减少预测。
+Post 显式适配：检查预测几何与两个预测面距离，在同一无向 pair 的全部可用候选中按置信度、几何残差、原 edge ID 选一条。
+选择与移除原因写入 `shared_boundary_post.json`，原始 NPZ 不覆盖；当前 post 仍只支持不同 face pair 至多一边，不支持 native 多边/seam。
+GT 几何 roundtrip 只能验证接口和内核调用；它不能证明模型预测准确、拓扑有效率提高或训练成功。
+
 ## 坐标、指标与 Oracle 信息
 
 当前 condition 固定使用 `data/rotations.py` 中 identity-first cube24 的 0 号 GT；不是最优旋转搜索。
@@ -71,4 +81,4 @@ CD 当前在同类 primitive 的合并点集上计算；Hungarian 匹配用于 p
 `quality_metrics.py` 的轮廓分割误差与几何失真须区分；DINO/CLIP 分数不能认证孔槽保持或照片真实性。
 生成数据的验收不应仅依赖待评估重建模型，以免筛选出该模型偏好的测试分布。
 修改指标实现时验证已知几何差异、缺失输出及坐标错误等有区分力的案例；文档修改不触发批量 CAD 评估。
-冻结清单、指标设置、后处理设置和逐件结果；新实验记录遵循根目录 `AGENTS.md` 的记录规则及当日 `NOTE.md` 约定，不依赖已删除的实验技能。
+冻结清单、指标设置、后处理设置和逐件结果；本轮 joint-boundary 记录与产物写入 `checkpoints/`，遵循根目录 `AGENTS.md`，不追加历史 `experiments/`。

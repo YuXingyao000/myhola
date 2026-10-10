@@ -24,6 +24,11 @@ eval:
 
 hydra:
   run:
-    dir: ${trainer.output_dir}/${trainer.exp_name}
+    dir: ${brep_run_dir:${trainer.output_dir},${trainer.exp_name},${trainer.run_dir},${trainer.resume_from_checkpoint}}
+  output_subdir: metadata/hydra
+  job_logging:
+    handlers:
+      file:
+        filename: ${brep_log_file:${hydra.runtime.output_dir}}
   job:
     chdir: false

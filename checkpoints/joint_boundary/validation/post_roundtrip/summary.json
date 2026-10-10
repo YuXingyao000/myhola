@@ -1,0 +1,38 @@
+{
+  "kind": "GT geometry and topology interface roundtrip; not a learned-model result",
+  "sample_id": "00000061",
+  "selection": "first ID in deduplicated training list, chosen before postprocessing",
+  "num_faces": 7,
+  "num_legacy_directed_edges": 30,
+  "num_shared_boundaries": 15,
+  "settings": {
+    "v_drop_num": 0,
+    "is_ray": false,
+    "is_log": false,
+    "is_optimize_geom": false,
+    "isdebug": false,
+    "use_cuda": false,
+    "from_scratch": true,
+    "is_save_data": false
+  },
+  "results": {
+    "legacy": {
+      "loaded_representation": "legacy_half_edges",
+      "step_exists": true,
+      "success_marker": true,
+      "valid_solid": true,
+      "elapsed_seconds": 0.40766085404902697,
+      "raw_dir": "/mnt/d/python/checkpoints/joint_boundary/validation/post_roundtrip/legacy_raw/00000061",
+      "post_dir": "/mnt/d/python/checkpoints/joint_boundary/validation/post_roundtrip/legacy_post/00000061"
+    },
+    "shared": {
+      "loaded_representation": "shared_boundary_v1",
+      "step_exists": true,
+      "success_marker": true,
+      "valid_solid": true,
+      "elapsed_seconds": 0.24052191898226738,
+      "raw_dir": "/mnt/d/python/checkpoints/joint_boundary/validation/post_roundtrip/shared_raw/00000061",
+      "post_dir": "/mnt/d/python/checkpoints/joint_boundary/validation/post_roundtrip/shared_post/00000061"
+    }
+  }
+}

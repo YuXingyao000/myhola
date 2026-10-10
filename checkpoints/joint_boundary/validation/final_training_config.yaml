@@ -1,0 +1,103 @@
+trainer:
+  devices: 1
+  accelerator: gpu
+  precision: bf16-mixed
+  num_workers: 4
+  batch_size: 4
+  learning_rate: 0.0001
+  max_epochs: 1000
+  max_steps: 100000
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: 2
+  vae_validation_inference: false
+  gradient_clip_val: 1.0
+  log_every_n_steps: 50
+  seed: 42
+  deterministic: false
+  limit_train_batches: 1.0
+  limit_val_batches: 1.0
+  limit_test_batches: 1.0
+  wandb:
+    enabled: true
+    project: hola-brep
+    name: null
+    offline: false
+  resume_from_checkpoint: null
+  init_from_checkpoint: null
+  evaluate: false
+  test_output_dir: null
+  output_dir: ./checkpoints
+  run_dir: null
+  exp_name: joint_boundary/frozen
+dataset:
+  name: AutoEncoder_joint_dataset
+  raw_data_root: /mnt/d/data/deepcad_v7
+  train_dataset: checkpoints/joint_boundary/validation/train_contract_audit/accepted.txt
+  val_dataset: checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt
+  test_dataset: checkpoints/joint_boundary/validation/test_contract_audit/accepted.txt
+  cached_latent_root: null
+  is_aug: 1
+  is_overfit: false
+  epoch_scale_factor: 1
+  condition_name: none
+  condition_data_root: null
+  cached_condition: false
+  num_points: 10000
+  boundary_reciprocal_tolerance: 0.01
+  boundary_closed_tolerance: 1.0e-05
+  boundary_allow_closed_phase: true
+model:
+  name: AutoEncoder_joint
+  stage: vae
+  mode: train
+  checkpoint: null
+  in_channels: 6
+  latent_channels: 8
+  hidden_channels: 768
+  norm: layer
+  gaussian_weights: 1.0e-06
+  sigmoid: false
+  num_gat_layers: 5
+  bottleneck_dim: 768
+  num_encoder_layers: 8
+  num_decoder_layers: 8
+  nhead: 16
+  with_intersection: true
+  intersection_dim: 512
+  intersection_layers: 8
+  intersection_noise_std: 0.0
+  trainable_scope: all
+  trainable_module_prefixes:
+  - inter
+  - classifier
+  loss: l1
+  primitive_blocks_per_stage: 1
+  freeze_encoder: true
+  init_encoder_checkpoint: /mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt
+  joint_hidden_dim: 256
+  joint_num_queries: 128
+  joint_num_rounds: 3
+  joint_num_heads: 8
+  joint_dropout: 0.0
+  joint_edge_to_face: true
+  joint_existence_threshold: 0.5
+  joint_no_boundary_weight: 0.1
+  joint_loss_weights:
+    face: 1.0
+    curve: 1.0
+    existence: 0.1
+    ownership: 0.1
+    consistency: 0.1
+  joint_match_weights:
+    curve: 1.0
+    ownership: 0.25
+condition:
+  type: none
+  condition_name: none
+  cached_features: false
+  output_dim: 1024
+eval:
+  enabled: false
+  output_dir: null
+  num_samples: 100
+  post_process: false

@@ -1,5 +1,6 @@
 import copy
 import itertools
+import json
 import math
 import os, sys, shutil, traceback
 from pathlib import Path
@@ -37,6 +38,7 @@ from src.brepnet.post.occ_topology import (
     get_solid,
 )
 from src.brepnet.post.shape import Shape
+from src.brepnet.data.shared_boundaries import SHARED_BOUNDARY_REPRESENTATION, shared_prediction_diagnostics
 
 import ray
 import argparse
@@ -49,34 +51,48 @@ import time
 def load_prediction_shape(v_filename):
     # specify the key to get the face points, edge points and edge_face_connectivity in data.npz
     # data_npz = np.load(os.path.join(data_root, folder_name, 'data.npz'), allow_pickle=True)['arr_0'].item()
-    data_npz = np.load(v_filename, allow_pickle=True)
-    if 'sample_points_faces' in data_npz and 'edge_face_connectivity' in data_npz:
-        face_points = data_npz['sample_points_faces']  # Face sample points (num_faces*20*20*3)
-        edge_points = data_npz['sample_points_lines']  # Edge sample points (num_lines*20*3)
-        edge_face_connectivity = data_npz['edge_face_connectivity']  # (num_intersection, (id_edge, id_face1, id_face2))
-    elif 'pred_face' in data_npz and 'pred_edge_face_connectivity' in data_npz:
-        face_points = data_npz['pred_face']
-        edge_points = data_npz['pred_edge']
-        edge_face_connectivity = data_npz['pred_edge_face_connectivity']
-    elif 'pred_face' in data_npz and 'face_edge_adj' in data_npz:
-        face_points = data_npz['pred_face'].astype(np.float32)
-        edge_points = data_npz['pred_edge'].astype(np.float32)
-        face_edge_adj = data_npz['face_edge_adj']
-        edge_face_connectivity = []
-        N = face_points.shape[0]
-        for i in range(N):
-            for j in range(i + 1, N):
-                intersection = list(set(face_edge_adj[i]).intersection(set(face_edge_adj[j])))
-                if len(intersection) > 0:
-                    edge_face_connectivity.append([intersection[0], i, j])
-        edge_face_connectivity = np.array(edge_face_connectivity)
+    with np.load(v_filename, allow_pickle=True) as data_npz:
+        representation = data_npz["representation"].item() if "representation" in data_npz else "legacy_half_edges"
+        confidence = None
+        if representation == SHARED_BOUNDARY_REPRESENTATION:
+            face_points = data_npz["pred_face"]
+            edge_points = data_npz["pred_edge"]
+            edge_face_connectivity = data_npz["pred_edge_face_connectivity"]
+            confidence = data_npz["pred_edge_confidence"]
+            if face_points.ndim != 4 or face_points.shape[-1] != 3 or len(face_points) == 0 or not np.isfinite(face_points).all():
+                raise ValueError(f"{v_filename}: shared_boundary_v1 requires finite nonempty pred_face [F,U,V,3]")
+            shared_prediction_diagnostics(len(face_points), edge_points, edge_face_connectivity, confidence)
+        elif representation != "legacy_half_edges":
+            raise ValueError(f"{v_filename}: unknown representation {representation!r}")
+        elif 'sample_points_faces' in data_npz and 'edge_face_connectivity' in data_npz:
+            face_points = data_npz['sample_points_faces']  # Face sample points (num_faces*20*20*3)
+            edge_points = data_npz['sample_points_lines']  # Edge sample points (num_lines*20*3)
+            edge_face_connectivity = data_npz['edge_face_connectivity']  # (num_intersection, (id_edge, id_face1, id_face2))
+        elif 'pred_face' in data_npz and 'pred_edge_face_connectivity' in data_npz:
+            face_points = data_npz['pred_face']
+            edge_points = data_npz['pred_edge']
+            edge_face_connectivity = data_npz['pred_edge_face_connectivity']
+        elif 'pred_face' in data_npz and 'face_edge_adj' in data_npz:
+            face_points = data_npz['pred_face'].astype(np.float32)
+            edge_points = data_npz['pred_edge'].astype(np.float32)
+            face_edge_adj = data_npz['face_edge_adj']
+            edge_face_connectivity = []
+            N = face_points.shape[0]
+            for i in range(N):
+                for j in range(i + 1, N):
+                    intersection = list(set(face_edge_adj[i]).intersection(set(face_edge_adj[j])))
+                    if len(intersection) > 0:
+                        edge_face_connectivity.append([intersection[0], i, j])
+            edge_face_connectivity = np.array(edge_face_connectivity)
 
-    else:
-        raise ValueError(f"Unknown data npz format {v_filename}")
+        else:
+            raise ValueError(f"Unknown data npz format {v_filename}")
 
     face_points = face_points[..., :3]
     edge_points = edge_points[..., :3]
     shape = Shape(face_points, edge_points, edge_face_connectivity, False)
+    shape.representation = representation
+    shape.edge_confidence = confidence
     return shape
 
 
@@ -160,7 +176,15 @@ def _save_optimized_debug_data(shape, debug_face_save_path):
 def _prepare_shape_topology(shape, debug_face_save_path, isdebug, is_save_data):
     if isdebug:
         export_edges(shape.recon_edge_points, debug_face_save_path / 'edge_ori.obj')
-    shape.select_valid_half_edges()
+    if shape.representation == SHARED_BOUNDARY_REPRESENTATION:
+        shape.select_shared_boundaries()
+        report_path = Path(debug_face_save_path).parent / "shared_boundary_post.json"
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        report_path.write_text(json.dumps(shape.post_adaptation_diagnostics, indent=2) + "\n")
+        if not shape.have_data:
+            raise ValueError("shared_boundary_v1: no usable predicted boundaries after post adaptation")
+    else:
+        shape.select_valid_half_edges()
     shape.detect_edge_openness()
     shape.build_face_edge_adjacency()
     shape.build_corner_constraints(0.2)

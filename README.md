@@ -124,7 +124,7 @@ python -m src.brepnet.train --config-name <train_config> [overrides...]
 python -m src.brepnet.train \
     --config-name train_vae \
     model=vae_light \
-    dataset.data_root=/path/to/brep_data \
+    dataset.raw_data_root=/path/to/brep_data \
     dataset.train_dataset=/path/to/train.txt \
     dataset.val_dataset=/path/to/val.txt \
     dataset.test_dataset=/path/to/test.txt \
@@ -137,8 +137,8 @@ python -m src.brepnet.train \
 ```bash
 python -m src.brepnet.train \
     --config-name train_diffusion_white \
-    dataset.latent_root=/path/to/cached_latents \
-    dataset.condition_root=/path/to/condition_data \
+    dataset.cached_latent_root=/path/to/cached_latents \
+    dataset.condition_data_root=/path/to/condition_data \
     model.autoencoder.checkpoint=/path/to/vae.ckpt \
     trainer.devices=8 \
     trainer.batch_size=64
@@ -148,9 +148,13 @@ python -m src.brepnet.train \
 
 | Config Group | Options |
 |---|---|
-| `model` | `vae`, `vae_light`, `vae_light_exp`, `diffusion` |
+| `model` | `vae`, `vae_light`, `vae_light_exp`, `vae_joint`, `diffusion` |
 | `condition` | `none`, `single_img`, `multi_img`, `sketch`, `point_cloud`, `text` |
 | top-level config | `train`, `train_vae`, `train_diffusion_white`, `train_diffusion_real`, `train_diffusion_topo_bias` |
+
+The shared-boundary decoder has frozen-encoder, joint fine-tuning, and one-way ablation configurations. See [the implementation contract and commands](checkpoints/joint_boundary/README.md). Its research effectiveness has not been established by training.
+
+All entry points default to `checkpoints/<experiment>/<UTC timestamp>/`, with separate `weights/`, `logs/`, `wandb/`, `raw_predictions/`, `visualizations/`, and `metadata/`. Set `trainer.run_dir` for an explicit full run path. Resume or evaluate with an explicit `trainer.resume_from_checkpoint`; evaluation never silently uses random weights.
 
 ### Quick Start Scripts
 
@@ -229,39 +233,15 @@ HoLa-BRep/
 
 ---
 
-## Experiment Workflow & Agent Skills
+## Research Records and Run Outputs
 
-Day-to-day research is driven by two agent skills plus two living docs:
+New work is recorded under `checkpoints/`; `experiments/` remains a historical archive and is not the destination for new runs or notes. The former experiment skills are no longer installed in this repository. Follow the self-contained [AGENTS.md](AGENTS.md) guidelines instead of restoring stale skill copies.
 
-| Path | Role |
-|------|------|
-| `skills/brepnet-experiment-planning/SKILL.md` | Plan & set up one experiment day (confirm goal → reflect against the long-term target → check literature → design experiment → write scripts/commands → smoke test only). |
-| `skills/brepnet-experiment-notes/SKILL.md` | Write the day's report under `experiments/YYYY-MM-DD/NOTE.md` (note-first: why / implementation / result, with clickable links). |
-| `experiments/ROADMAP.md` | Single source of truth for the long-term goal, current phase, recent progress, open questions, anti-goals. Read first, update after conclusions. |
-| `experiments/REFERENCES.md` | Curated reading list (foundational + last-3-years papers). |
+Each research topic keeps a versioned `PLAN.md` and `README.md` or `NOTE.md` with its motivation, implementation, observed results, and links. Runtime artifacts are kept locally in separate run directories and excluded from Git. Compact validation reports remain versioned.
 
-`skills/` is the **canonical source**. Each tool discovers skills from its own directory, so the two `SKILL.md` files must be copied into each tool's skills folder:
+The training launcher records the resolved configuration, seed, Git revision, working-tree diff, and invocation command under `metadata/invocations/`. Resuming preserves the original run and W&B identity; each invocation keeps its own metadata and raw prediction directory. A weight-only initialization starts a new run and does not restore optimizer state.
 
-| Tool | Skills directory | Scope |
-|------|------------------|-------|
-| Cursor | `.cursor/skills/<name>/SKILL.md` | project (committed) |
-| Claude Code | `.claude/skills/<name>/SKILL.md` | project (committed) |
-| Codex | `~/.codex/skills/<name>/SKILL.md` | home (per-user; **no repo `.codex/` folder**) |
-
-> Codex only reads skills from the home directory (`~/.codex/skills`), which is why there is no `.codex/` folder in the repo, unlike `.cursor/` and `.claude/`.
-
-After editing a skill under `skills/`, re-sync the copies:
-
-```bash
-for name in brepnet-experiment-notes brepnet-experiment-planning; do
-  for tool in .cursor .claude; do
-    mkdir -p "$tool/skills/$name"
-    cp "skills/$name/SKILL.md" "$tool/skills/$name/SKILL.md"
-  done
-  mkdir -p "$HOME/.codex/skills/$name"
-  cp "skills/$name/SKILL.md" "$HOME/.codex/skills/$name/SKILL.md"
-done
-```
+Current implementation: [joint shared-boundary decoder](checkpoints/joint_boundary/README.md). Older [ROADMAP](experiments/ROADMAP.md) and [REFERENCES](experiments/REFERENCES.md) are evidence for historical work, not an automatically binding next-experiment queue.
 
 ---
 

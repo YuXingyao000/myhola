@@ -1,0 +1,8 @@
+defaults:
+  - vae
+  - _self_
+
+name: AutoEncoder_joint_dataset
+boundary_reciprocal_tolerance: 0.01
+boundary_closed_tolerance: 1.0e-5
+boundary_allow_closed_phase: true

@@ -750,6 +750,10 @@ class AutoEncoder_light_exp(AutoEncoder_light):
 
 
 def build_autoencoder(v_conf):
+    if v_conf["name"] == "AutoEncoder_joint":
+        from src.brepnet.models.joint_vae import AutoEncoder_joint
+
+        return AutoEncoder_joint(v_conf)
     model_classes = {
         "AutoEncoder": AutoEncoder,
         "AutoEncoder_light": AutoEncoder_light,

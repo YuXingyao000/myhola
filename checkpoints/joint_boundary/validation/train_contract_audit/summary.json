@@ -1,0 +1,122 @@
+{
+  "representation": "shared_boundary_v1",
+  "data_root": "/mnt/d/data/deepcad_v7",
+  "split_list": "/mnt/d/python/src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt",
+  "split_sha256": "bfd0f90428a40600c6f9f72658544c018e75f5576ad6f0af00dbe29224ac9417",
+  "intended_count": 46627,
+  "audited_count": 46627,
+  "complete_split": true,
+  "passed": 46480,
+  "failed": 147,
+  "num_queries": 128,
+  "reciprocal_tolerance": 0.01,
+  "closed_tolerance": 1e-05,
+  "max_boundaries_among_passed": 108,
+  "closed_phase_used_among_passed": 2723,
+  "max_reciprocal_residual_among_passed": 0.009993912652134895,
+  "failure_examples": [
+    {
+      "model_id": "00015174",
+      "status": "failed",
+      "num_faces": null,
+      "num_boundaries": null,
+      "num_closed": null,
+      "closed_phase_used": null,
+      "max_reciprocal_residual": null,
+      "error": "ValueError: shared boundary sample '00015174': face pair (3, 24) reciprocal residual 0.018240976 exceeds 0.01"
+    },
+    {
+      "model_id": "00015609",
+      "status": "failed",
+      "num_faces": null,
+      "num_boundaries": null,
+      "num_closed": null,
+      "closed_phase_used": null,
+      "max_reciprocal_residual": null,
+      "error": "ValueError: shared boundary sample '00015609': face pair (1, 2) reciprocal residual 0.012359912 exceeds 0.01"
+    },
+    {
+      "model_id": "00025189",
+      "status": "failed",
+      "num_faces": null,
+      "num_boundaries": null,
+      "num_closed": null,
+      "closed_phase_used": null,
+      "max_reciprocal_residual": null,
+      "error": "ValueError: shared boundary sample '00025189': face pair (0, 10) reciprocal residual 0.013028938 exceeds 0.01"
+    },
+    {
+      "model_id": "00025193",
+      "status": "failed",
+      "num_faces": null,
+      "num_boundaries": null,
+      "num_closed": null,
+      "closed_phase_used": null,
+      "max_reciprocal_residual": null,
+      "error": "ValueError: shared boundary sample '00025193': face pair (1, 11) reciprocal residual 0.013514464 exceeds 0.01"
+    },
+    {
+      "model_id": "00036676",
+      "status": "failed",
+      "num_faces": null,
+      "num_boundaries": null,
+      "num_closed": null,
+      "closed_phase_used": null,
+      "max_reciprocal_residual": null,
+      "error": "ValueError: shared boundary sample '00036676': face pair (3, 11) reciprocal residual 0.01001386 exceeds 0.01"
+    },
+    {
+      "model_id": "00045015",
+      "status": "failed",
+      "num_faces": null,
+      "num_boundaries": null,
+      "num_closed": null,
+      "closed_phase_used": null,
+      "max_reciprocal_residual": null,
+      "error": "ValueError: shared boundary sample '00045015': face pair (5, 13) reciprocal residual 0.013585636 exceeds 0.01"
+    },
+    {
+      "model_id": "00051615",
+      "status": "failed",
+      "num_faces": null,
+      "num_boundaries": null,
+      "num_closed": null,
+      "closed_phase_used": null,
+      "max_reciprocal_residual": null,
+      "error": "ValueError: shared boundary sample '00051615': face pair (4, 11) reciprocal residual 0.01001386 exceeds 0.01"
+    },
+    {
+      "model_id": "00055524",
+      "status": "failed",
+      "num_faces": null,
+      "num_boundaries": null,
+      "num_closed": null,
+      "closed_phase_used": null,
+      "max_reciprocal_residual": null,
+      "error": "ValueError: shared boundary sample '00055524': face pair (0, 4) reciprocal residual 0.021367521 exceeds 0.01"
+    },
+    {
+      "model_id": "00057165",
+      "status": "failed",
+      "num_faces": null,
+      "num_boundaries": null,
+      "num_closed": null,
+      "closed_phase_used": null,
+      "max_reciprocal_residual": null,
+      "error": "ValueError: shared boundary sample '00057165': face pair (4, 11) reciprocal residual 0.01001386 exceeds 0.01"
+    },
+    {
+      "model_id": "00062393",
+      "status": "failed",
+      "num_faces": null,
+      "num_boundaries": null,
+      "num_closed": null,
+      "closed_phase_used": null,
+      "max_reciprocal_residual": null,
+      "error": "ValueError: shared boundary sample '00062393': face pair (4, 12) reciprocal residual 0.011328771 exceeds 0.01"
+    }
+  ],
+  "accepted_list": "accepted.txt",
+  "rejection_manifest": "rejected.csv",
+  "accepted_sha256": "14a00585500f1c7996411caa1b3fba796a1c39c2b935a1153ec98e30c69dc097"
+}

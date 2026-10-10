@@ -1,0 +1,10 @@
+defaults:
+  - train_vae_joint_boundary_frozen
+  - _self_
+
+trainer:
+  exp_name: joint_boundary/one_way
+
+model:
+  joint_edge_to_face: false
+# Same steps/batch/learning rate/query count; only disable edge-to-face updates.

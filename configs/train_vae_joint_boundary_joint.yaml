@@ -1,0 +1,11 @@
+defaults:
+  - train_vae_joint_boundary_frozen
+  - _self_
+
+trainer:
+  exp_name: joint_boundary/joint
+
+model:
+  freeze_encoder: false
+# Fresh initialized training: provide init_encoder_checkpoint.
+# Fine-tuning a full joint-boundary model: provide model.checkpoint, not resume.

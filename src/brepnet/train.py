@@ -10,7 +10,7 @@ Usage Examples
 
     # VAE training (Stage 1)
     python -m src.brepnet.train --config-name train_vae \
-        dataset.data_root=/path/to/data
+        dataset.raw_data_root=/path/to/data
 
     # Diffusion with single-image condition (Stage 2)
     python -m src.brepnet.train --config-name train_diffusion_white \
@@ -23,7 +23,6 @@ from __future__ import annotations
 import importlib
 import logging
 import warnings
-from functools import partial
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -44,6 +43,12 @@ from pytorch_lightning.callbacks import (
 from pytorch_lightning.loggers import TensorBoardLogger, WandbLogger
 
 from src.brepnet.models import build_model
+from src.brepnet.prediction_export import save_item_predictions, vae_prediction_items
+from src.brepnet.run_management import (
+    predictions_directory, prepare_run, register_run_resolvers,
+)
+
+register_run_resolvers()
 
 logger = logging.getLogger(__name__)
 
@@ -59,11 +64,11 @@ warnings.filterwarnings(
 # Utilities
 # ---------------------------------------------------------------------------
 
-def _seed_worker(worker_id: int, rank_id: int = 0):
+def _seed_worker(worker_id: int):
     """Ensure reproducible randomness per dataloader worker."""
     import random
 
-    seed = worker_id + rank_id * 10000
+    seed = torch.initial_seed() % (2**32)
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -109,12 +114,32 @@ class UnifiedTrainer(pl.LightningModule):
         self.learning_rate: float = cfg.trainer.learning_rate
 
         # --- Output directory ---
-        self.log_root = Path(cfg.trainer.output_dir)
+        self.log_root = Path(cfg.trainer.get("run_dir") or cfg.trainer.output_dir)
         self.log_root.mkdir(parents=True, exist_ok=True)
 
         # --- Build model ---
         logger.info("Building model for stage='%s'", self.stage)
-        self.model = build_model(cfg.model, cfg.condition)
+        model_cfg = OmegaConf.create(OmegaConf.to_container(cfg.model, resolve=True))
+        resume = cfg.trainer.resume_from_checkpoint
+        has_resume = resume and str(resume).lower() not in {"none", "null"}
+        if cfg.model.name == "AutoEncoder_joint":
+            if cfg.trainer.init_from_checkpoint:
+                raise ValueError(
+                    "AutoEncoder_joint rejects trainer.init_from_checkpoint. Use "
+                    "model.init_encoder_checkpoint for validated legacy migration, or "
+                    "trainer.resume_from_checkpoint for a strict full-state restore."
+                )
+            if has_resume:
+                # The checkpoint already owns encoder/decoder weights. Do not first
+                # migrate a second, potentially absent legacy checkpoint.
+                model_cfg.init_encoder_checkpoint = None
+                model_cfg.checkpoint = None
+            elif model_cfg.freeze_encoder and not model_cfg.init_encoder_checkpoint and not model_cfg.checkpoint:
+                raise ValueError(
+                    "A fresh frozen-encoder run needs model.init_encoder_checkpoint "
+                    "or a strict model.checkpoint; refusing to freeze a random encoder."
+                )
+        self.model = build_model(model_cfg, cfg.condition)
         self._init_model_from_checkpoint()
         self._apply_trainable_scope()
 
@@ -132,6 +157,8 @@ class UnifiedTrainer(pl.LightningModule):
         )
         if not ckpt_path or str(ckpt_path).lower() in {"none", "null"}:
             return
+        if self.cfg.trainer.resume_from_checkpoint:
+            raise ValueError("Choose either init_from_checkpoint or resume_from_checkpoint, not both.")
 
         checkpoint = torch.load(str(ckpt_path), map_location="cpu")
         state_dict = checkpoint.get("state_dict", checkpoint)
@@ -204,7 +231,7 @@ class UnifiedTrainer(pl.LightningModule):
             pin_memory=True,
             persistent_workers=self.num_workers > 0,
             prefetch_factor=4 if self.num_workers > 0 else None,
-            worker_init_fn=partial(_seed_worker, rank_id=self.trainer.global_rank),
+            worker_init_fn=_seed_worker,
         )
 
     def val_dataloader(self) -> DataLoader:
@@ -218,12 +245,12 @@ class UnifiedTrainer(pl.LightningModule):
             pin_memory=True,
             persistent_workers=self.num_workers > 0,
             prefetch_factor=4 if self.num_workers > 0 else None,
-            worker_init_fn=partial(_seed_worker, rank_id=self.trainer.global_rank),
+            worker_init_fn=_seed_worker,
         )
 
     def test_dataloader(self) -> DataLoader:
         dataset = self.dataset_cls("testing", self.cfg.dataset)
-        batch_size = self.batch_size if self.stage == "diffusion" else 1
+        batch_size = self.batch_size if self.stage == "diffusion" or self.cfg.model.name == "AutoEncoder_joint" else 1
         return DataLoader(
             dataset,
             batch_size=batch_size,
@@ -238,7 +265,10 @@ class UnifiedTrainer(pl.LightningModule):
     # ------------------------------------------------------------------
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.Adam(
+            (parameter for parameter in self.model.parameters() if parameter.requires_grad),
+            lr=self.learning_rate,
+        )
         return optimizer
 
     # ------------------------------------------------------------------
@@ -258,14 +288,14 @@ class UnifiedTrainer(pl.LightningModule):
                     f"train/{key}", value,
                     prog_bar=False, logger=True,
                     on_step=False, on_epoch=True,
-                    sync_dist=True, batch_size=self.batch_size,
+                    sync_dist=True, batch_size=len(batch["v_prefix"]),
                 )
 
         self.log(
             "train/loss", total_loss,
             prog_bar=True, logger=True,
             on_step=True, on_epoch=True,
-            sync_dist=True, batch_size=self.batch_size,
+            sync_dist=True, batch_size=len(batch["v_prefix"]),
         )
         return total_loss
 
@@ -286,14 +316,14 @@ class UnifiedTrainer(pl.LightningModule):
                     f"val/{key}", value,
                     prog_bar=False, logger=True,
                     on_step=False, on_epoch=True,
-                    sync_dist=True, batch_size=self.batch_size,
+                    sync_dist=True, batch_size=len(batch["v_prefix"]),
                 )
 
         self.log(
             "val/loss", total_loss,
             prog_bar=True, logger=True,
             on_step=False, on_epoch=True,
-            sync_dist=True, batch_size=self.batch_size,
+            sync_dist=True, batch_size=len(batch["v_prefix"]),
         )
 
         # Quick inference visualization on first batch (diffusion only)
@@ -312,28 +342,30 @@ class UnifiedTrainer(pl.LightningModule):
 
     def test_step(self, batch: Dict[str, Any], batch_idx: int) -> Optional[torch.Tensor]:
         """Run full inference and save predictions to NPZ."""
-        output_dir = Path(
-            self.cfg.eval.output_dir
-            or self.cfg.trainer.test_output_dir
-            or self.log_root / "test_outputs"
-        )
+        output_dir = predictions_directory(self.cfg, self.log_root)
         output_dir.mkdir(parents=True, exist_ok=True)
 
         total_loss = None
         loss_dict = {}
-        if self.stage == "vae" or "cached_latent_stats" in batch:
+        recon_data = None
+        if self.stage == "vae":
+            # Report the loss of the exact deterministic posterior-mean
+            # reconstruction being exported, rather than a separate random
+            # posterior sample controlled by the validation-only setting.
+            loss_dict, recon_data = self.model(batch, v_test=True)
+        elif "cached_latent_stats" in batch:
             loss_dict = self._forward_step(batch, is_training=False)
+        if loss_dict:
             total_loss = loss_dict["total_loss"]
             self.log(
                 "test/loss", total_loss,
                 prog_bar=True, logger=True,
                 on_step=False, on_epoch=True,
-                sync_dist=True, batch_size=self.batch_size,
+                sync_dist=True, batch_size=len(batch["v_prefix"]),
             )
 
         # Run model inference for generation
         if self.stage == "vae":
-            _, recon_data = self.model(batch, v_test=True)
             self._save_vae_predictions(batch, recon_data, loss_dict, output_dir)
 
         elif self.stage == "diffusion":
@@ -378,7 +410,8 @@ class UnifiedTrainer(pl.LightningModule):
                 pred_faces = results[0]["pred_face"]
                 import trimesh
                 pc = trimesh.PointCloud(pred_faces.reshape(-1, 3))
-                out_path = self.log_root / f"epoch{self.current_epoch:05d}_val_viz.ply"
+                out_path = self.log_root / "visualizations" / f"epoch{self.current_epoch:05d}_val_viz.ply"
+                out_path.parent.mkdir(parents=True, exist_ok=True)
                 pc.export(str(out_path))
                 logger.info("Saved validation viz to %s", out_path)
         except Exception as e:
@@ -392,25 +425,8 @@ class UnifiedTrainer(pl.LightningModule):
         output_dir: Path,
     ):
         """Save VAE reconstruction predictions to NPZ."""
-        prefixes = batch.get("v_prefix", [f"sample_{0}"])
-        for idx, prefix in enumerate(prefixes):
-            item_dir = output_dir / str(prefix)
-            item_dir.mkdir(parents=True, exist_ok=True)
-
-            save_dict = {}
-            for key in ("pred_face", "pred_edge", "gt_face", "gt_edge",
-                        "pred_face_adj", "gt_face_adj", "pred_edge_face_connectivity",
-                        "gt_edge_face_connectivity"):
-                if key in recon_data:
-                    val = recon_data[key]
-                    save_dict[key] = val.cpu().numpy() if isinstance(val, torch.Tensor) else val
-
-            # Add per-item losses
-            for key in ("face_coords", "edge_coords"):
-                if key in loss_dict and isinstance(loss_dict[key], torch.Tensor):
-                    save_dict[f"{key}_loss"] = loss_dict[key].cpu().item()
-
-            np.savez_compressed(str(item_dir / "data.npz"), **save_dict)
+        prefixes = batch["v_prefix"]
+        save_item_predictions(prefixes, vae_prediction_items(prefixes, recon_data, loss_dict), output_dir)
 
     def _save_diffusion_predictions(
         self,
@@ -419,20 +435,7 @@ class UnifiedTrainer(pl.LightningModule):
         output_dir: Path,
     ):
         """Save diffusion generation predictions to NPZ."""
-        prefixes = batch.get("v_prefix", [f"sample_{i}" for i in range(len(results))])
-        for idx, recon_data in enumerate(results):
-            prefix = prefixes[idx] if idx < len(prefixes) else f"sample_{idx}"
-            item_dir = output_dir / str(prefix)
-            item_dir.mkdir(parents=True, exist_ok=True)
-
-            save_dict = {}
-            for key, val in recon_data.items():
-                if isinstance(val, torch.Tensor):
-                    save_dict[key] = val.cpu().numpy()
-                elif isinstance(val, np.ndarray):
-                    save_dict[key] = val
-
-            np.savez_compressed(str(item_dir / "data.npz"), **save_dict)
+        save_item_predictions(batch["v_prefix"], results, output_dir)
 
 
 # ---------------------------------------------------------------------------
@@ -443,9 +446,9 @@ class UnifiedTrainer(pl.LightningModule):
 def main(cfg: DictConfig):
     """Unified training entry point for HoLa-BRep."""
     # --- Reproducibility ---
-    seed_everything(42, workers=True)
+    seed_everything(cfg.trainer.seed, workers=True)
     torch.set_float32_matmul_precision("medium")
-    torch.backends.cudnn.benchmark = True
+    torch.backends.cudnn.benchmark = not cfg.trainer.deterministic
 
     # --- Print resolved config ---
     logger.info("Resolved config:\n%s", OmegaConf.to_yaml(cfg, resolve=True))
@@ -454,11 +457,22 @@ def main(cfg: DictConfig):
     hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
     output_dir = hydra_cfg["runtime"]["output_dir"]
     exp_name = cfg.trainer.exp_name
-    log_dir = str(Path(output_dir))
-    Path(log_dir).mkdir(parents=True, exist_ok=True)
-
-    # Inject output_dir back into config for the module.
-    OmegaConf.update(cfg, "trainer.output_dir", log_dir, force_add=True)
+    log_dir = str(Path(output_dir).resolve())
+    OmegaConf.update(cfg, "trainer.run_dir", log_dir, force_add=True)
+    resume_from = cfg.trainer.resume_from_checkpoint
+    ckpt_path = None
+    if resume_from and str(resume_from).lower() not in {"none", "null"}:
+        ckpt_path = str(Path(resume_from).expanduser().resolve())
+        if not Path(ckpt_path).is_file():
+            raise FileNotFoundError(f"Checkpoint does not exist: {ckpt_path}")
+        OmegaConf.update(cfg, "trainer.resume_from_checkpoint", ckpt_path)
+    evaluating = bool(cfg.eval.enabled or cfg.trainer.evaluate)
+    if evaluating and ckpt_path is None:
+        raise ValueError("Evaluation requires an explicit trainer.resume_from_checkpoint; no random/best fallback.")
+    if evaluating:
+        OmegaConf.update(cfg, "eval.output_dir", str(predictions_directory(cfg, Path(log_dir))))
+        logger.info("Raw predictions will be saved to %s", cfg.eval.output_dir)
+    run_record = prepare_run(cfg, Path(log_dir))
 
     # --- Logger ---
     wandb_cfg = cfg.trainer.wandb
@@ -469,19 +483,26 @@ def main(cfg: DictConfig):
             project=wandb_cfg.project,
             name=wandb_cfg.name or exp_name,
             save_dir=log_dir,
+            id=run_record["wandb_id"],
+            resume="allow",
+            offline=wandb_cfg.offline,
+            log_model=False,
         )
     else:
-        pl_logger = TensorBoardLogger(save_dir=log_dir, name="tb_logs")
+        pl_logger = TensorBoardLogger(save_dir=str(Path(log_dir) / "logs"), name="tensorboard")
+    if "git" in run_record:
+        pl_logger.log_hyperparams({"seed": cfg.trainer.seed, "git": run_record["git"]})
 
     # --- Callbacks ---
     callbacks = [
         ModelCheckpoint(
-            dirpath=str(Path(log_dir) / "checkpoints"),
+            dirpath=str(Path(log_dir) / "weights"),
             monitor="val/loss",
             mode="min",
             save_top_k=3,
             save_last=True,
-            filename="{epoch:04d}-{val/loss:.4f}",
+            filename="epoch={epoch:04d}-step={step:08d}-val_loss={val/loss:.6f}",
+            auto_insert_metric_name=False,
         ),
         LearningRateMonitor(logging_interval="step"),
         ModelSummary(max_depth=2),
@@ -506,23 +527,23 @@ def main(cfg: DictConfig):
         gradient_clip_val=cfg.trainer.gradient_clip_val,
         enable_model_summary=True,
         log_every_n_steps=cfg.trainer.log_every_n_steps,
+        deterministic=cfg.trainer.deterministic,
+        limit_train_batches=cfg.trainer.limit_train_batches,
+        limit_val_batches=cfg.trainer.limit_val_batches,
+        limit_test_batches=cfg.trainer.limit_test_batches,
     )
 
     # --- Module ---
     module = UnifiedTrainer(cfg)
 
     # --- Resume from checkpoint ---
-    resume_from = cfg.trainer.resume_from_checkpoint
-    ckpt_path = None
-    if resume_from and resume_from != "none":
-        ckpt_path = resume_from
+    if ckpt_path:
         logger.info("Resuming training from: %s", ckpt_path)
 
     # --- Evaluate or Train ---
-    if cfg.eval.enabled or cfg.trainer.evaluate:
-        eval_ckpt = ckpt_path or "best"
-        logger.info("Running evaluation with checkpoint: %s", eval_ckpt)
-        trainer.test(module, ckpt_path=eval_ckpt if eval_ckpt != "best" else None)
+    if evaluating:
+        logger.info("Running evaluation with checkpoint: %s", ckpt_path)
+        trainer.test(module, ckpt_path=ckpt_path)
     else:
         trainer.fit(module, ckpt_path=ckpt_path)
 

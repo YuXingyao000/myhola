@@ -5,6 +5,7 @@
 ## 入口与配置
 
 - `train.py`：`python -m src.brepnet.train`，`UnifiedTrainer` 根据 `model.stage` 分派 VAE / diffusion，数据类通过 `dataset.name` 查找。
+- 所有训练入口默认使用 `checkpoints/<exp_name>/<UTC 时间戳>`。`trainer.run_dir` 指定完整路径；续训／测试显式提供 `trainer.resume_from_checkpoint`，恢复原 run。`trainer.output_dir` 始终表示输出根，不被 Hydra 改写成 run。运行目录和逐对象 NPZ 合同分别由 `run_management.py`、`prediction_export.py` 管理。
 - `models/__init__.py`：`build_model`；主模型在 `models/vae.py` 与 `models/diffusion.py`。
 - `inference.py`：独立推理工具，仍手工构造配置并带旧兼容逻辑；使用前核对参数与 checkpoint，不能认为它完整复现训练配置。
 - `eval/run.py`：`python -m src.brepnet.eval.run`；`post/` 完成 OCC B-Rep 构造。
@@ -17,6 +18,10 @@
 `sample()` 内部参数化 mean/logvar，但返回的缓存统计量是拼接的 **mean/std**。解码器恢复面几何，并通过有序 face pair 的 neural intersection 预测连接和有向半边几何。每个 pair 只产生一个候选半边；多重公共边、复杂裁剪和全局闭合不能由 adjacency 分类保证。最终合法 solid 仍依赖 `post/` 的拟合、优化、裁剪与缝合。
 
 改变 VAE 或归一化时说明旧 latent cache、AE checkpoint 与 diffusion checkpoint 是否兼容；不能复用名称相同但定义不同的缓存。正式 diffusion run 确认冻结 AE 加载了正确 checkpoint，并与 cache 同源。
+
+`AutoEncoder_joint` 是独立的 shared-boundary decoder 变体，训练合同在 [PLAN](../../checkpoints/joint_boundary/PLAN.md)。使用 `AutoEncoder_joint_dataset`，encoder 保持旧 face／half-edge 输入；shared-boundary target 只用于匹配与监督，不作为 decoder 输入。`freeze_encoder` 由模型同时控制梯度与 train/eval 模式；trainer 的 `trainable_scope` 保持 `all`。
+
+旧 encoder 权重只能通过 `model.init_encoder_checkpoint` 做显式组件迁移；完整新模型权重初始化使用 `model.checkpoint` 严格加载；恢复优化器／步数使用 `trainer.resume_from_checkpoint`。新模型禁止旧 trainer permissive `init_from_checkpoint`；resume 时不重复迁移旧 encoder，也不能在无权重来源时冻结随机 encoder。新 VAE `v_test=True` 返回 `{"items": list[dict]}`，每个对象保留本地实体编号与表示标签；旧 VAE 测试保持 batch=1，不能把整个 batch 重复写入各样本。
 
 ## Diffusion：实际数据流
 
@@ -45,7 +50,7 @@
 |---|---|
 | `configs/train_diffusion_real.yaml` | 继承 `is_overfit=true`、`validation_real_photo_ratio=0.0`；额外写的 `scale_factor` 不被 diffusion loader 读取 |
 | `configs/train_diffusion_baseline_real.yaml` | 显式修正 overfit 与 real-photo validation，但有历史机器路径和 8-GPU 设置，需要 overrides |
-| `AutoEncoder_dataset3` | 读取 `scale_factor`、`data_root`、`condition_names`、`condition_root`，与 `configs/dataset/vae.yaml` 新字段不一致 |
+| `AutoEncoder_dataset3` | 支持规范 `raw_data_root`／`epoch_scale_factor`／`condition_name`／`condition_data_root` 及旧别名；双定义冲突报错 |
 | cached condition | 当前图像分支读取 `imgs`，不能只打开 cached flag 就假定特征缓存可替代图像 |
 
 Diffusion loader 字段为 `raw_data_root`、`cached_latent_root`、`condition_data_root`、`train_dataset`、`val_dataset`、`test_dataset`、`epoch_scale_factor`。记录实际解析配置和实际消费字段；配置解析成功不代表数据语义正确。

@@ -1,0 +1,41 @@
+defaults:
+  - trainer: default
+  - dataset: vae_joint
+  - model: vae_joint
+  - condition: none
+  - _self_
+
+trainer:
+  exp_name: joint_boundary/frozen
+  devices: 1
+  batch_size: 4
+  learning_rate: 1.0e-4
+  max_epochs: 1000
+  max_steps: 100000
+  vae_validation_inference: false
+
+model:
+  freeze_encoder: true
+  trainable_scope: all
+
+dataset:
+  # Match the legacy cube24 augmentation during training. Validation disables
+  # augmentation in the loader; use dataset.is_aug=0 for identity-view testing.
+  is_aug: 1
+
+eval:
+  enabled: false
+  output_dir: null
+  num_samples: 100
+  post_process: false
+
+hydra:
+  run:
+    dir: ${brep_run_dir:${trainer.output_dir},${trainer.exp_name},${trainer.run_dir},${trainer.resume_from_checkpoint}}
+  output_subdir: metadata/hydra
+  job_logging:
+    handlers:
+      file:
+        filename: ${brep_log_file:${hydra.runtime.output_dir}}
+  job:
+    chdir: false
