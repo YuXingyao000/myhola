@@ -10,9 +10,15 @@
 
 | 配置 | encoder | 新 decoder | 默认预算 |
 |---|---|---|---|
-| [train_vae_joint_boundary_frozen](../../configs/train_vae_joint_boundary_frozen.yaml) | 旧权重迁移后冻结，保持 eval | 双向更新 | 1 GPU，batch 4，100,000 optimizer steps |
-| [train_vae_joint_boundary_joint](../../configs/train_vae_joint_boundary_joint.yaml) | 可训练 | 双向更新 | 同上 |
-| [train_vae_joint_boundary_one_way](../../configs/train_vae_joint_boundary_one_way.yaml) | 冻结 | 关闭 edge-to-face 更新 | 同上 |
+| [train_vae_joint_boundary_frozen](../../configs/train_vae_joint_boundary_frozen.yaml) | 旧权重迁移后冻结，保持 eval | 双向更新 | 8 GPU，每卡 batch 32，100,000 optimizer steps |
+| [train_vae_joint_boundary_joint](../../configs/train_vae_joint_boundary_joint.yaml) | 可训练 | 双向更新 | 8 GPU，每卡 batch 4，100,000 optimizer steps |
+| [train_vae_joint_boundary_one_way](../../configs/train_vae_joint_boundary_one_way.yaml) | 冻结 | 关闭 edge-to-face 更新 | 与 frozen 相同 |
+
+`batch_size` 与 `num_workers` 都是每个 GPU 进程的设置；frozen 的全局 batch 为 `8 × 32 = 256`，默认共有 `8 × 4 = 32` 个 loader workers。W&B 只记录运行，不决定 GPU 数量。使用下面的 `python -m` 入口，由 Lightning 启动 DDP 子进程；目前未验证外部 `torchrun` 的运行目录合同。
+
+2026-10-10 初始 frozen 配置曾为单卡 batch 4。现在同样 100,000 steps 对应的样本曝光量约为之前的 64 倍，不能作为等预算比较；若只对齐原先约 400,000 次样本曝光，可显式用 `trainer.max_steps=1563`，但这不等价于相同的优化过程。学习率仍为 `1e-4`，尚无大 batch 收敛结果。joint 保留已做过复杂对象反向检查的每卡 batch 4，不能直接套用 frozen 的 batch 32。
+
+DDP 的 face L1 先在每卡按本地面数平均，再跨卡平均；由于每卡面数不同，它不严格等于单卡 batch 256 的全局面平均。本次保留原损失归约方式。frozen 与 joint 的全局 batch 相差 8 倍，阶段间同 step 数也不是等样本预算。
 
 单向版本仅用于之后隔离双向反馈的贡献，不等于已经建立与旧 HoLa decoder 的公平比较。共享边界曲线的存在只是表示性质，不作为性能指标。
 
@@ -55,6 +61,7 @@ W&B 默认启用，可用 `trainer.wandb.enabled=false` 关闭或 `trainer.wandb
 ```bash
 conda activate torch
 cd /mnt/d/python
+export OMP_NUM_THREADS=4 MKL_NUM_THREADS=4
 export BREP_DATA_ROOT=/mnt/d/data/deepcad_v7
 export BREP_LEGACY_AE=/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt
 BREP_DATA_ARGS=(
@@ -94,11 +101,13 @@ train、val 分别替换原始 split 清单与输出目录。退出码 `1` 表�
 python -m src.brepnet.train --config-name train_vae_joint_boundary_frozen \
   "${BREP_DATA_ARGS[@]}" \
   "model.init_encoder_checkpoint=$BREP_LEGACY_AE" \
-  trainer.seed=42 trainer.devices=1 trainer.batch_size=4 \
+  trainer.seed=42 trainer.devices=8 trainer.batch_size=32 \
   trainer.max_steps=100000
 ```
 
 需要明确输出路径时附加 `trainer.run_dir=/absolute/path/to/new-run`。设备数和预算应按实际研究协议修改，不把默认值当作已调优设置。
+
+本配置设置 `trainer.cudnn_benchmark=false`：encoder 输入打包后的面数／边数每步变化，开启卷积算法搜索会产生额外开销。原始单卡短基准中，batch 增大、损失重复计算消除、线程数限制及关闭该搜索均有吞吐收益；详细口径见 [NOTE](NOTE.md)。CPU Hungarian 匹配及逐对象损失仍有同步开销，不保证 GPU 利用率持续满载。
 
 ## 续训与完整模型微调
 
@@ -112,7 +121,7 @@ python -m src.brepnet.train --config-name train_vae_joint_boundary_frozen \
   trainer.max_steps=100000
 ```
 
-续训／测试不需要再次传旧 AE；trainer 构造模型时跳过旧 encoder 迁移，再严格恢复完整新 checkpoint。`max_steps` 是累计上限，不是追加步数。
+续训／测试不需要再次传旧 AE；trainer 构造模型时跳过旧 encoder 迁移，再严格恢复完整新 checkpoint。`max_steps` 是累计上限，不是追加步数。若恢复旧单卡运行，显式保留其 `trainer.devices=1 trainer.batch_size=4` 才能保持原 batch 协议；改变设备或 batch 必须记录。保存发生在验证结束，首轮验证前中断的运行不一定有可恢复 checkpoint。
 
 **从已训 frozen 模型做 joint fine-tuning**是新 run，使用严格的完整新模型权重初始化，不恢复旧 optimizer 或 step：
 
@@ -134,8 +143,11 @@ python -m src.brepnet.train --config-name train_vae_joint_boundary_joint \
 python -m src.brepnet.train --config-name train_vae_joint_boundary_frozen \
   "${BREP_DATA_ARGS[@]}" \
   "trainer.resume_from_checkpoint=$BREP_RUN/weights/last.ckpt" \
-  trainer.evaluate=true dataset.is_aug=0 trainer.batch_size=4 trainer.wandb.enabled=false
+  trainer.evaluate=true trainer.devices=1 dataset.is_aug=0 \
+  trainer.batch_size=4 trainer.wandb.enabled=false
 ```
+
+当前正式测试／逐对象导出要求单卡，入口会拒绝多卡：默认 distributed sampler 会补齐样本，造成重复对象及输出路径冲突。DDP 训练期间的验证可以多卡；3,495 件 validation 在 8 卡下会补齐为 3,496 次采样，最终逐对象评估仍用单卡完整清单。
 
 默认新建 `raw_predictions/<本次调用时间>/`，实际路径记录在日志与 config。可以显式 `eval.output_dir=/absolute/path/to/predictions`；重用该路径会覆盖同名对象，正式比较应使用独立目录。新模型按每对象 `items` 导出，保留表示标签、预测实体、连接和诊断；不以 GT 选择 query。旧 VAE 测试仍限制 batch=1，不能把拼接 batch 当作每个对象。
 

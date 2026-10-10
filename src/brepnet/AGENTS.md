@@ -5,6 +5,7 @@
 ## 入口与配置
 
 - `train.py`：`python -m src.brepnet.train`，`UnifiedTrainer` 根据 `model.stage` 分派 VAE / diffusion，数据类通过 `dataset.name` 查找。
+- 多卡由 `trainer.devices` 启用，W&B 仅记录；`batch_size`／`num_workers` 按卡计。joint-boundary frozen 默认 8 卡 × batch 32，joint 每卡 batch 4；改变全局 batch 后要重新核对样本曝光预算。正式测试／NPZ 导出暂要求 `trainer.devices=1`，避免 distributed sampler 补齐产生重复输出。变长 packed geometry 配置关闭 `trainer.cudnn_benchmark`，其他配置保留原行为。
 - 所有训练入口默认使用 `checkpoints/<exp_name>/<UTC 时间戳>`。`trainer.run_dir` 指定完整路径；续训／测试显式提供 `trainer.resume_from_checkpoint`，恢复原 run。`trainer.output_dir` 始终表示输出根，不被 Hydra 改写成 run。运行目录和逐对象 NPZ 合同分别由 `run_management.py`、`prediction_export.py` 管理。
 - `models/__init__.py`：`build_model`；主模型在 `models/vae.py` 与 `models/diffusion.py`。
 - `inference.py`：独立推理工具，仍手工构造配置并带旧兼容逻辑；使用前核对参数与 checkpoint，不能认为它完整复现训练配置。

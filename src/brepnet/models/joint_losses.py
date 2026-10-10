@@ -26,12 +26,13 @@ def boundary_costs(curves: Tensor, ownership_logits: Tensor, target: Mapping) ->
         closed_indices = closed.nonzero(as_tuple=True)[0]
         if len(closed_indices):
             unique = truth[closed_indices, :-1]
-            variants = []
-            for direction in (unique, unique.flip(1)):
-                for shift in range(unique.shape[1]):
-                    shifted = direction.roll(shift, dims=1)
-                    variants.append(torch.cat((shifted, shifted[:, :1]), dim=1))
-            variants = torch.stack(variants, dim=1)
+            positions = torch.arange(unique.shape[1], device=unique.device)
+            forward_indices = (positions[None, :] - positions[:, None]) % unique.shape[1]
+            # Preserve the original order: forward shifts 0..L-2, then reverse
+            # shifts 0..L-2. The order matters for min() gradients at exact ties.
+            indices = torch.cat((forward_indices, unique.shape[1] - 1 - forward_indices), dim=0)
+            indices = torch.cat((indices, indices[:, :1]), dim=1)
+            variants = unique[:, indices]
             closed_cost = (curves[:, None, None] - variants[None]).abs().mean(dim=(-1, -2)).min(dim=-1).values
             geometry = geometry.clone()
             geometry[:, closed_indices] = closed_cost
@@ -63,6 +64,21 @@ def validate_boundary_target(target: Mapping, faces: int, capacity: int, resolut
         raise ValueError(f"{name}: multiple target boundaries for one face pair are unsupported")
 
 
+def _match_costs(
+    geometry: Tensor, ownership: Tensor, curve_weight: float, ownership_weight: float
+) -> tuple[Tensor, Tensor]:
+    """Solve detached matching while retaining the original differentiable costs."""
+    with torch.no_grad():
+        cost = curve_weight * geometry + ownership_weight * ownership
+        if not torch.isfinite(cost).all():
+            raise ValueError("Nonfinite boundary matching cost")
+        rows, columns = linear_sum_assignment(cost.detach().float().cpu().numpy())
+    return (
+        torch.as_tensor(rows, device=geometry.device, dtype=torch.long),
+        torch.as_tensor(columns, device=geometry.device, dtype=torch.long),
+    )
+
+
 def match_boundaries(
     curves: Tensor, ownership_logits: Tensor, target: Mapping, curve_weight: float, ownership_weight: float
 ) -> tuple[Tensor, Tensor]:
@@ -70,14 +86,7 @@ def match_boundaries(
         raise ValueError("Target boundary count exceeds query capacity")
     with torch.no_grad():
         geometry, ownership = boundary_costs(curves, ownership_logits, target)
-        cost = curve_weight * geometry + ownership_weight * ownership
-        if not torch.isfinite(cost).all():
-            raise ValueError("Nonfinite boundary matching cost")
-        rows, columns = linear_sum_assignment(cost.detach().float().cpu().numpy())
-    return (
-        torch.as_tensor(rows, device=curves.device, dtype=torch.long),
-        torch.as_tensor(columns, device=curves.device, dtype=torch.long),
-    )
+        return _match_costs(geometry, ownership, curve_weight, ownership_weight)
 
 
 def surface_boundary_consistency(surfaces: Tensor, curves: Tensor, ownership_logits: Tensor) -> Tensor:
@@ -122,7 +131,8 @@ def joint_boundary_loss(
         ownership = state["ownership_logits"][item, :, :, :count]
         name = str(sample_names[item]) if sample_names is not None else f"batch item {item}"
         validate_boundary_target(target, count, len(curves), curves.shape[1], name)
-        rows, columns = match_boundaries(curves, ownership, target, **{
+        geometry, owner = boundary_costs(curves, ownership, target)
+        rows, columns = _match_costs(geometry, owner, **{
             "curve_weight": float(match_weights["curve"]),
             "ownership_weight": float(match_weights["ownership"]),
         })
@@ -133,7 +143,6 @@ def joint_boundary_loss(
             state["existence_logits"][item], exists, reduction="none"
         ) * existence_weight).mean())
         if len(rows):
-            geometry, owner = boundary_costs(curves, ownership, target)
             curve_losses.append(geometry[rows, columns].mean())
             owner_losses.append(owner[rows, columns].mean())
             consistency_losses.append(surface_boundary_consistency(

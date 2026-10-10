@@ -27,7 +27,6 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import hydra
-import numpy as np
 import torch
 from lightning_fabric import seed_everything
 from omegaconf import DictConfig, OmegaConf
@@ -64,14 +63,13 @@ warnings.filterwarnings(
 # Utilities
 # ---------------------------------------------------------------------------
 
-def _seed_worker(worker_id: int):
-    """Ensure reproducible randomness per dataloader worker."""
-    import random
-
-    seed = torch.initial_seed() % (2**32)
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
+def _validate_evaluation_devices(cfg: DictConfig) -> None:
+    """Avoid duplicated distributed test samples writing the same NPZ paths."""
+    if (cfg.eval.enabled or cfg.trainer.evaluate) and cfg.trainer.devices > 1:
+        raise ValueError(
+            "Evaluation currently requires trainer.devices=1: the distributed test "
+            "sampler can repeat objects and multiple ranks would write the same prediction files."
+        )
 
 
 def _load_dataset_class(cfg: DictConfig):
@@ -231,7 +229,6 @@ class UnifiedTrainer(pl.LightningModule):
             pin_memory=True,
             persistent_workers=self.num_workers > 0,
             prefetch_factor=4 if self.num_workers > 0 else None,
-            worker_init_fn=_seed_worker,
         )
 
     def val_dataloader(self) -> DataLoader:
@@ -245,7 +242,6 @@ class UnifiedTrainer(pl.LightningModule):
             pin_memory=True,
             persistent_workers=self.num_workers > 0,
             prefetch_factor=4 if self.num_workers > 0 else None,
-            worker_init_fn=_seed_worker,
         )
 
     def test_dataloader(self) -> DataLoader:
@@ -445,10 +441,17 @@ class UnifiedTrainer(pl.LightningModule):
 @hydra.main(version_base="1.3", config_path="../../configs", config_name="train")
 def main(cfg: DictConfig):
     """Unified training entry point for HoLa-BRep."""
+    _validate_evaluation_devices(cfg)
+    logger.info(
+        "Device setup: devices=%s, batch_size_per_device=%s, global_train_batch_size=%s "
+        "(single node, no gradient accumulation). W&B records metrics; trainer.devices selects GPUs.",
+        cfg.trainer.devices, cfg.trainer.batch_size,
+        cfg.trainer.devices * cfg.trainer.batch_size,
+    )
     # --- Reproducibility ---
     seed_everything(cfg.trainer.seed, workers=True)
     torch.set_float32_matmul_precision("medium")
-    torch.backends.cudnn.benchmark = not cfg.trainer.deterministic
+    torch.backends.cudnn.benchmark = bool(cfg.trainer.cudnn_benchmark) and not cfg.trainer.deterministic
 
     # --- Print resolved config ---
     logger.info("Resolved config:\n%s", OmegaConf.to_yaml(cfg, resolve=True))

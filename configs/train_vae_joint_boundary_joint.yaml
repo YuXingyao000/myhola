@@ -4,6 +4,8 @@ defaults:
 
 trainer:
   exp_name: joint_boundary/joint
+  # The unfrozen encoder retains activations; use its validated smaller batch.
+  batch_size: 4
 
 model:
   freeze_encoder: false

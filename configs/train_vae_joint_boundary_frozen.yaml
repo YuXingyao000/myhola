@@ -7,8 +7,11 @@ defaults:
 
 trainer:
   exp_name: joint_boundary/frozen
-  devices: 1
-  batch_size: 4
+  devices: 8
+  # Per GPU: 8 x 32 = 256 objects per optimizer step.
+  batch_size: 32
+  # Packed face/edge counts vary per batch; avoid repeated cuDNN searches.
+  cudnn_benchmark: false
   learning_rate: 1.0e-4
   max_epochs: 1000
   max_steps: 100000

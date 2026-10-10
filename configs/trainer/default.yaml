@@ -13,6 +13,7 @@ gradient_clip_val: 1.0
 log_every_n_steps: 50
 seed: 42
 deterministic: false
+cudnn_benchmark: true
 limit_train_batches: 1.0
 limit_val_batches: 1.0
 limit_test_batches: 1.0

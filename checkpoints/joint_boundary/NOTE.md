@@ -59,3 +59,29 @@ OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=1 python -m pytest -q \
 ## 研究状态
 
 尚未启动 100,000-step 正式研究运行，没有下游质量提升结论。下一步先运行 frozen 配置，再按结果开展 joint fine-tuning；可用相同的旧生成 latent 比较冻结 encoder 版本的 Decoder。Encoder 联合训练后，旧 latent cache/生成器不能被自动视为兼容。
+
+## 2026-10-10 — 多卡配置与吞吐修正
+
+用户第一次运行 `frozen/20261010T082441.611797Z` 实际继承 `devices=1, batch_size=4`；W&B 不会自动启用多卡。该次约到 1,025 steps 后由用户中止，尚未到首轮验证，`weights/` 为空，不能从该 run 恢复 optimizer。以上“尚未启动”是最初实现检查时的状态；现在有这次未完成的训练尝试，仍无正式下游质量结果。
+
+本次将 frozen／one-way 默认改为 8 卡、每卡 batch 32，joint 解冻 encoder 时保留每卡 batch 4。入口打印设备数与全局 batch；由 Lightning 启动 DDP 并按 rank 初始化数据 worker 随机种子。正式测试／逐对象 NPZ 导出限制单卡，避免 sampler 补齐造成重复导出；DDP 训练验证仍可运行。
+
+CPU/GPU 混合损失中，每件对象的曲线／归属 cost 原来在 matching 与可微 loss 各计算一次，现复用同一组 cost，仅在 CPU Hungarian 匹配时 detach。闭合边的循环移位候选改用一次索引构造，保留原候选顺序和相同最小值时的梯度选择。损失、权重和模型结构没有改变；新增回归测试逐项验证 loss、metrics 及几何／归属／存在性梯度与旧实现完全一致。
+
+真实 accepted 训练数据、冻结旧 encoder、bf16、每种 batch 3 步预热 + 10 步计时，单张 RTX 4090 的短基准如下，单位为 objects/s：
+
+| 设置 | batch 4 | batch 16 | batch 32 |
+|---|---:|---:|---:|
+| 原损失，CPU 64 threads，cuDNN search 开 | 19.0 | 36.4 | 48.1 |
+| 复用 cost，CPU 64 threads，cuDNN search 开 | 20.1 | 39.8 | 52.7 |
+| 复用 cost，CPU 4 threads，cuDNN search 关 | 36.6 | 66.4 | 86.6 |
+
+测量包括取 batch 到 optimizer step 的完整耗时，每步末 CUDA synchronize。加载等待约 0.2–1.1 ms；这里数据已热，不能外推所有存储场景。encoder 的 packed 面／边数量变化会引入新卷积形状，因此 joint-boundary 关闭 `trainer.cudnn_benchmark`，其他配置保留原默认行为；命令设置 `OMP_NUM_THREADS=4 MKL_NUM_THREADS=4`。batch 32 的最后一组短基准峰值 allocated memory 约 0.99 GiB，只反映所测数据，不是所有复杂对象的内存上界。
+
+这些是短期启动吞吐诊断，不是长期加速比，也没有测得可报告的平均 GPU utilization；部分独立诊断与前一进程的 CPU profiler 汇总重叠，不是严格隔离的重复性能研究。逐对象 Hungarian、动态索引与小 kernel 仍有同步／调度开销，因此不承诺满载。原用户运行进度条约 8.5 step/s 与这里的短基准不能直接等同比较。
+
+实际 8 卡 CLI 检查：`runtime_ddp8_check/20261010T083556.907473Z`。rank 0–7 全部注册，global batch 256，完成 10 optimizer steps、每卡 1 个 validation batch（每卡 16 件），`val/loss=1.014304`，保存 best/last，退出码 0；只有一个 run、一个 invocation 和一个离线 W&B run。checkpoint 内 `global_step=10`，设备／batch／cuDNN 配置与记录一致。这不是完整 validation 评估，也未启动新的正式长训练。
+
+本次相关测试 **31 passed**（14.01 秒），包含旧／新损失及梯度逐项等价、CUDA bf16 前向反向、worker seed 与导出设备合同、原 run 管理回归。配置解析确认 frozen／one-way 为 8×32，joint 为 8×4。紧凑数字记录见 [runtime_20261010.json](validation/runtime_20261010.json)，详细诊断保存在本地 `metadata/performance_20261010/`。
+
+预算注意：全局 batch 从 4 变为 256，保留 100,000 steps 会将样本曝光扩大约 64 倍；`1,563 × 256 ≈ 100,000 × 4` 只对齐曝光量，不保证优化等价。学习率没有线性放大；尚需正式训练判断大 batch 收敛。后续与旧模型比较时固定并报告预算，而不能仅对齐 step 数。
