@@ -1,0 +1,1838 @@
+{
+  "schema": "intersection_independent_review_v1",
+  "generated_at_utc": "2026-10-11T15:01:18.707567+00:00",
+  "purpose": "Independent read-only CSV recomputation of the frozen full-test summaries; only this review artifact is written.",
+  "method": "Python csv + statistics and explicit linear p90 interpolation; does not import or invoke the evaluation summarizers, post algorithms, model, or geometry extraction.",
+  "raw": {
+    "posterior_mean": {
+      "sources": [
+        {
+          "path": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011/raw_metrics/posterior_mean/per_object.csv",
+          "sha256": "1c516f79ca5ed91775f0c89bcc3366cf83f6d12d107396eefb88197350743612"
+        },
+        {
+          "path": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011/raw_metrics/posterior_mean/summary.json",
+          "sha256": "225fba6b25623c77fdf0f6720959570e6430e121c2f72457321a7baa10881b60"
+        }
+      ],
+      "checks_passed": [
+        "CSV has exactly one row per intended ID and method",
+        "both methods equal the full accepted split ID set",
+        "each paired input_latent_sha256 matches and is nonempty",
+        "all 4834 records are ok and shared_input verified",
+        "fixed denominators are 2417 accepted and 2424 original",
+        "every paired statistic count/mean/median/p90, signed delta, direction, win and tie fraction recomputed"
+      ],
+      "intended_count_per_method": 2417,
+      "original_count": 2424,
+      "shared_input_hash_equal_count": 2417,
+      "paired": {
+        "face_mae": {
+          "count": 2417,
+          "better_direction": "lower",
+          "legacy": {
+            "count": 2417,
+            "mean": 0.002073240287793914,
+            "median": 0.0019110413804204049,
+            "p90": 0.002978427967088161
+          },
+          "intersection": {
+            "count": 2417,
+            "mean": 0.002029487475536623,
+            "median": 0.001912270142630071,
+            "p90": 0.0028793572693703914
+          },
+          "intersection_minus_legacy": {
+            "count": 2417,
+            "mean": -4.375281225729112e-05,
+            "median": -4.2483258945529576e-05,
+            "p90": 0.00046528086785371575
+          },
+          "intersection_win_count": 1332,
+          "tie_count": 0,
+          "intersection_loss_count": 1085,
+          "relative_change_of_mean_percent": -2.1103589639311693
+        },
+        "face_cd_sq": {
+          "count": 2417,
+          "better_direction": "lower",
+          "legacy": {
+            "count": 2417,
+            "mean": 5.01528672958565e-05,
+            "median": 3.612087151146906e-05,
+            "p90": 8.677205760525793e-05
+          },
+          "intersection": {
+            "count": 2417,
+            "mean": 4.944831128556671e-05,
+            "median": 3.799892966878473e-05,
+            "p90": 8.307319499941751e-05
+          },
+          "intersection_minus_legacy": {
+            "count": 2417,
+            "mean": -7.045560102897892e-07,
+            "median": 2.0273544904212965e-07,
+            "p90": 2.121206422802363e-05
+          },
+          "intersection_win_count": 1194,
+          "tie_count": 0,
+          "intersection_loss_count": 1223,
+          "relative_change_of_mean_percent": -1.4048170090326995
+        },
+        "face_pred_to_gt_sq": {
+          "count": 2417,
+          "better_direction": "lower",
+          "legacy": {
+            "count": 2417,
+            "mean": 2.6668328837060598e-05,
+            "median": 1.8591387015355905e-05,
+            "p90": 4.4966375980509926e-05
+          },
+          "intersection": {
+            "count": 2417,
+            "mean": 2.602717548495716e-05,
+            "median": 1.9738731482442925e-05,
+            "p90": 4.279798475260291e-05
+          },
+          "intersection_minus_legacy": {
+            "count": 2417,
+            "mean": -6.411533521034396e-07,
+            "median": 1.9553995564402314e-07,
+            "p90": 1.1021343382658498e-05
+          },
+          "intersection_win_count": 1186,
+          "tie_count": 0,
+          "intersection_loss_count": 1231,
+          "relative_change_of_mean_percent": -2.404175214805504
+        },
+        "face_gt_to_pred_sq": {
+          "count": 2417,
+          "better_direction": "lower",
+          "legacy": {
+            "count": 2417,
+            "mean": 2.34845384587959e-05,
+            "median": 1.7338383513880815e-05,
+            "p90": 4.197454785292379e-05
+          },
+          "intersection": {
+            "count": 2417,
+            "mean": 2.3421135800609552e-05,
+            "median": 1.8262059656296974e-05,
+            "p90": 4.007897140458243e-05
+          },
+          "intersection_minus_legacy": {
+            "count": 2417,
+            "mean": -6.34026581863497e-08,
+            "median": 3.807294063392898e-08,
+            "p90": 1.0302348125222823e-05
+          },
+          "intersection_win_count": 1201,
+          "tie_count": 0,
+          "intersection_loss_count": 1216,
+          "relative_change_of_mean_percent": -0.26997617303652355
+        },
+        "edge_cd_sq": {
+          "count": 2417,
+          "better_direction": "lower",
+          "legacy": {
+            "count": 2417,
+            "mean": 8.92354578588759e-05,
+            "median": 3.4823174899398934e-05,
+            "p90": 0.00011009247868470584
+          },
+          "intersection": {
+            "count": 2417,
+            "mean": 7.772083262996791e-05,
+            "median": 3.063488508820724e-05,
+            "p90": 9.401526794690055e-05
+          },
+          "intersection_minus_legacy": {
+            "count": 2417,
+            "mean": -1.1514625228907993e-05,
+            "median": -3.694426566106577e-06,
+            "p90": 1.0510523700236428e-05
+          },
+          "intersection_win_count": 1529,
+          "tie_count": 0,
+          "intersection_loss_count": 888,
+          "relative_change_of_mean_percent": -12.90364335566938
+        },
+        "edge_pred_to_gt_sq": {
+          "count": 2417,
+          "better_direction": "lower",
+          "legacy": {
+            "count": 2417,
+            "mean": 6.0531180499255876e-05,
+            "median": 2.2192771049591695e-05,
+            "p90": 6.981725864786532e-05
+          },
+          "intersection": {
+            "count": 2417,
+            "mean": 5.409093810008011e-05,
+            "median": 1.9218010886300868e-05,
+            "p90": 5.969295687684108e-05
+          },
+          "intersection_minus_legacy": {
+            "count": 2417,
+            "mean": -6.440242399175767e-06,
+            "median": -2.860172498621408e-06,
+            "p90": 5.4164203308004734e-06
+          },
+          "intersection_win_count": 1631,
+          "tie_count": 0,
+          "intersection_loss_count": 786,
+          "relative_change_of_mean_percent": -10.639545348458778
+        },
+        "edge_gt_to_pred_sq": {
+          "count": 2417,
+          "better_direction": "lower",
+          "legacy": {
+            "count": 2417,
+            "mean": 2.870427735962003e-05,
+            "median": 1.2282559687462233e-05,
+            "p90": 3.5558156200236286e-05
+          },
+          "intersection": {
+            "count": 2417,
+            "mean": 2.3629894529887805e-05,
+            "median": 1.137259957679042e-05,
+            "p90": 3.20350208532069e-05
+          },
+          "intersection_minus_legacy": {
+            "count": 2417,
+            "mean": -5.074382829732226e-06,
+            "median": -7.209221830415383e-07,
+            "p90": 5.312929693257132e-06
+          },
+          "intersection_win_count": 1351,
+          "tie_count": 0,
+          "intersection_loss_count": 1066,
+          "relative_change_of_mean_percent": -17.678141714414497
+        },
+        "topology_precision": {
+          "count": 2417,
+          "better_direction": "higher",
+          "legacy": {
+            "count": 2417,
+            "mean": 0.9973664804844545,
+            "median": 1.0,
+            "p90": 1.0
+          },
+          "intersection": {
+            "count": 2417,
+            "mean": 0.9981106211187494,
+            "median": 1.0,
+            "p90": 1.0
+          },
+          "intersection_minus_legacy": {
+            "count": 2417,
+            "mean": 0.0007441406342948602,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "intersection_win_count": 59,
+          "tie_count": 2347,
+          "intersection_loss_count": 11,
+          "relative_change_of_mean_percent": 0.07461055177364617
+        },
+        "topology_recall": {
+          "count": 2417,
+          "better_direction": "higher",
+          "legacy": {
+            "count": 2417,
+            "mean": 0.9991358854653262,
+            "median": 1.0,
+            "p90": 1.0
+          },
+          "intersection": {
+            "count": 2417,
+            "mean": 0.9991618959523532,
+            "median": 1.0,
+            "p90": 1.0
+          },
+          "intersection_minus_legacy": {
+            "count": 2417,
+            "mean": 2.6010487026988705e-05,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "intersection_win_count": 8,
+          "tie_count": 2395,
+          "intersection_loss_count": 14,
+          "relative_change_of_mean_percent": 0.0026032982505475033
+        },
+        "topology_f1": {
+          "count": 2417,
+          "better_direction": "higher",
+          "legacy": {
+            "count": 2417,
+            "mean": 0.998170959557695,
+            "median": 1.0,
+            "p90": 1.0
+          },
+          "intersection": {
+            "count": 2417,
+            "mean": 0.9985829799571692,
+            "median": 1.0,
+            "p90": 1.0
+          },
+          "intersection_minus_legacy": {
+            "count": 2417,
+            "mean": 0.0004120203994742016,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "intersection_win_count": 63,
+          "tie_count": 2339,
+          "intersection_loss_count": 15,
+          "relative_change_of_mean_percent": 0.04127753823421898
+        },
+        "unique_pair_count_error": {
+          "count": 2417,
+          "better_direction": "lower",
+          "legacy": {
+            "count": 2417,
+            "mean": 0.12329333884981382,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "intersection": {
+            "count": 2417,
+            "mean": 0.08978071990070335,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "intersection_minus_legacy": {
+            "count": 2417,
+            "mean": -0.033512618949110465,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "intersection_win_count": 57,
+          "tie_count": 2343,
+          "intersection_loss_count": 17,
+          "relative_change_of_mean_percent": -27.181208053691275
+        }
+      },
+      "methods": {
+        "legacy": {
+          "legacy_unilateral_pair_count": {
+            "count": 2417,
+            "mean": 0.05668183698800165,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "legacy_reciprocal_cd_sq_mean": {
+            "count": 2417,
+            "mean": 8.268575709229706e-05,
+            "median": 3.4284445956505684e-05,
+            "p90": 9.38751567101102e-05
+          },
+          "legacy_reciprocal_cd_sq_max": {
+            "count": 2417,
+            "mean": 0.0008535048101641216,
+            "median": 0.00012858603180027246,
+            "p90": 0.0006196827710328844
+          },
+          "unilateral_pair_total": 137,
+          "objects_with_unilateral_pairs": 82,
+          "topology_micro": {
+            "tp": 70582,
+            "fp": 294,
+            "fn": 78,
+            "objects": 2417,
+            "precision": 0.9958519103786896,
+            "recall": 0.9988961222756864,
+            "f1": 0.9973716934207552
+          },
+          "objects_with_exact_pair_set": 2296
+        },
+        "intersection": {
+          "legacy_unilateral_pair_count": {
+            "count": 2417,
+            "mean": 0.0,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "legacy_reciprocal_cd_sq_mean": {
+            "count": 2417,
+            "mean": 6.508847324259768e-05,
+            "median": 2.395593055379486e-05,
+            "p90": 7.499072731125773e-05
+          },
+          "legacy_reciprocal_cd_sq_max": {
+            "count": 2417,
+            "mean": 0.0008879415455677063,
+            "median": 9.739017144152345e-05,
+            "p90": 0.0005071339758242904
+          },
+          "unilateral_pair_total": 0,
+          "objects_with_unilateral_pairs": 0,
+          "topology_micro": {
+            "tp": 70573,
+            "fp": 202,
+            "fn": 87,
+            "objects": 2417,
+            "precision": 0.997145884846344,
+            "recall": 0.9987687517690348,
+            "f1": 0.9979566585357231
+          },
+          "objects_with_exact_pair_set": 2321
+        }
+      },
+      "exact_pair_set_transitions": {
+        "both_exact": 2292,
+        "both_wrong": 92,
+        "legacy_wrong_to_intersection_exact": 29,
+        "legacy_exact_to_intersection_wrong": 4
+      }
+    },
+    "archived_latents": {
+      "sources": [
+        {
+          "path": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011/raw_metrics/archived_latents/per_object.csv",
+          "sha256": "028a4aae091c077f5a771c5afe5011066ad9dea2725d8c3189dd01f9f3cc8e63"
+        },
+        {
+          "path": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011/raw_metrics/archived_latents/summary.json",
+          "sha256": "fd69f19c42b982fb5376d746b51cf54f22eff1d312c343aca6c1c0eacb97d8c8"
+        }
+      ],
+      "checks_passed": [
+        "CSV has exactly one row per intended ID and method",
+        "both methods equal the full accepted split ID set",
+        "each paired input_latent_sha256 matches and is nonempty",
+        "all 4834 records are ok and shared_input verified",
+        "fixed denominators are 2417 accepted and 2424 original",
+        "every paired statistic count/mean/median/p90, signed delta, direction, win and tie fraction recomputed"
+      ],
+      "intended_count_per_method": 2417,
+      "original_count": 2424,
+      "shared_input_hash_equal_count": 2417,
+      "paired": {
+        "face_mae": {
+          "count": 0,
+          "better_direction": "lower",
+          "legacy": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "p90": null
+          },
+          "intersection": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "p90": null
+          },
+          "intersection_minus_legacy": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "p90": null
+          },
+          "intersection_win_count": 0,
+          "tie_count": 0,
+          "intersection_loss_count": 0,
+          "relative_change_of_mean_percent": null
+        },
+        "face_cd_sq": {
+          "count": 2417,
+          "better_direction": "lower",
+          "legacy": {
+            "count": 2417,
+            "mean": 0.005113912209271243,
+            "median": 0.002245143729169589,
+            "p90": 0.010013014363270616
+          },
+          "intersection": {
+            "count": 2417,
+            "mean": 0.0051292545468208245,
+            "median": 0.0022519102600685446,
+            "p90": 0.010074363539403646
+          },
+          "intersection_minus_legacy": {
+            "count": 2417,
+            "mean": 1.534233754958164e-05,
+            "median": 9.984710331513219e-06,
+            "p90": 0.00017330205309279276
+          },
+          "intersection_win_count": 1063,
+          "tie_count": 0,
+          "intersection_loss_count": 1354,
+          "relative_change_of_mean_percent": 0.30001175072515984
+        },
+        "face_pred_to_gt_sq": {
+          "count": 2417,
+          "better_direction": "lower",
+          "legacy": {
+            "count": 2417,
+            "mean": 0.0024265695889201,
+            "median": 0.0010585158290109932,
+            "p90": 0.004797154425102501
+          },
+          "intersection": {
+            "count": 2417,
+            "mean": 0.0024365707062524275,
+            "median": 0.0010589318608900152,
+            "p90": 0.004836560275948119
+          },
+          "intersection_minus_legacy": {
+            "count": 2417,
+            "mean": 1.0001117332327168e-05,
+            "median": 4.543115201590536e-06,
+            "p90": 9.075670270692715e-05
+          },
+          "intersection_win_count": 1083,
+          "tie_count": 0,
+          "intersection_loss_count": 1334,
+          "relative_change_of_mean_percent": 0.4121504439020818
+        },
+        "face_gt_to_pred_sq": {
+          "count": 2417,
+          "better_direction": "lower",
+          "legacy": {
+            "count": 2417,
+            "mean": 0.0026873426203511425,
+            "median": 0.0010742073603699227,
+            "p90": 0.004842694603530019
+          },
+          "intersection": {
+            "count": 2417,
+            "mean": 0.002692683840568397,
+            "median": 0.0010889653741449048,
+            "p90": 0.004878880118860188
+          },
+          "intersection_minus_legacy": {
+            "count": 2417,
+            "mean": 5.3412202172544425e-06,
+            "median": 4.926848188647939e-06,
+            "p90": 9.106411413971143e-05
+          },
+          "intersection_win_count": 1073,
+          "tie_count": 0,
+          "intersection_loss_count": 1344,
+          "relative_change_of_mean_percent": 0.19875471690158353
+        },
+        "edge_cd_sq": {
+          "count": 2417,
+          "better_direction": "lower",
+          "legacy": {
+            "count": 2417,
+            "mean": 0.012894253386502671,
+            "median": 0.0046387414659881925,
+            "p90": 0.030089711748425944
+          },
+          "intersection": {
+            "count": 2417,
+            "mean": 0.013054118634000097,
+            "median": 0.004656318270744426,
+            "p90": 0.03019273815496578
+          },
+          "intersection_minus_legacy": {
+            "count": 2417,
+            "mean": 0.0001598652474974254,
+            "median": 1.7014621648220676e-07,
+            "p90": 0.0003738155351884637
+          },
+          "intersection_win_count": 1207,
+          "tie_count": 0,
+          "intersection_loss_count": 1210,
+          "relative_change_of_mean_percent": 1.2398177909608066
+        },
+        "edge_pred_to_gt_sq": {
+          "count": 2417,
+          "better_direction": "lower",
+          "legacy": {
+            "count": 2417,
+            "mean": 0.005480983789125974,
+            "median": 0.0019786517790014945,
+            "p90": 0.011660413325424852
+          },
+          "intersection": {
+            "count": 2417,
+            "mean": 0.005467994927981235,
+            "median": 0.0019411749889824829,
+            "p90": 0.011748587033430288
+          },
+          "intersection_minus_legacy": {
+            "count": 2417,
+            "mean": -1.2988861144739254e-05,
+            "median": -5.948193884041883e-06,
+            "p90": 0.00014625726291485645
+          },
+          "intersection_win_count": 1295,
+          "tie_count": 0,
+          "intersection_loss_count": 1122,
+          "relative_change_of_mean_percent": -0.2369804700117606
+        },
+        "edge_gt_to_pred_sq": {
+          "count": 2417,
+          "better_direction": "lower",
+          "legacy": {
+            "count": 2417,
+            "mean": 0.007413269597376698,
+            "median": 0.0022254101712504797,
+            "p90": 0.016301878206263755
+          },
+          "intersection": {
+            "count": 2417,
+            "mean": 0.0075861237060188625,
+            "median": 0.0022534382773132943,
+            "p90": 0.016625974681667113
+          },
+          "intersection_minus_legacy": {
+            "count": 2417,
+            "mean": 0.00017285410864216472,
+            "median": 6.133159632146223e-06,
+            "p90": 0.00021387000851742357
+          },
+          "intersection_win_count": 1112,
+          "tie_count": 0,
+          "intersection_loss_count": 1305,
+          "relative_change_of_mean_percent": 2.3316851811693518
+        },
+        "topology_precision": {
+          "count": 0,
+          "better_direction": "higher",
+          "legacy": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "p90": null
+          },
+          "intersection": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "p90": null
+          },
+          "intersection_minus_legacy": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "p90": null
+          },
+          "intersection_win_count": 0,
+          "tie_count": 0,
+          "intersection_loss_count": 0,
+          "relative_change_of_mean_percent": null
+        },
+        "topology_recall": {
+          "count": 0,
+          "better_direction": "higher",
+          "legacy": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "p90": null
+          },
+          "intersection": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "p90": null
+          },
+          "intersection_minus_legacy": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "p90": null
+          },
+          "intersection_win_count": 0,
+          "tie_count": 0,
+          "intersection_loss_count": 0,
+          "relative_change_of_mean_percent": null
+        },
+        "topology_f1": {
+          "count": 0,
+          "better_direction": "higher",
+          "legacy": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "p90": null
+          },
+          "intersection": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "p90": null
+          },
+          "intersection_minus_legacy": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "p90": null
+          },
+          "intersection_win_count": 0,
+          "tie_count": 0,
+          "intersection_loss_count": 0,
+          "relative_change_of_mean_percent": null
+        },
+        "unique_pair_count_error": {
+          "count": 0,
+          "better_direction": "lower",
+          "legacy": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "p90": null
+          },
+          "intersection": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "p90": null
+          },
+          "intersection_minus_legacy": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "p90": null
+          },
+          "intersection_win_count": 0,
+          "tie_count": 0,
+          "intersection_loss_count": 0,
+          "relative_change_of_mean_percent": null
+        }
+      },
+      "methods": {
+        "legacy": {
+          "legacy_unilateral_pair_count": {
+            "count": 2417,
+            "mean": 0.468349193214729,
+            "median": 0.0,
+            "p90": 2.0
+          },
+          "legacy_reciprocal_cd_sq_mean": {
+            "count": 2417,
+            "mean": 0.0002674683470710385,
+            "median": 0.0001266205780774419,
+            "p90": 0.0005794065428722815
+          },
+          "legacy_reciprocal_cd_sq_max": {
+            "count": 2417,
+            "mean": 0.0030004960034578513,
+            "median": 0.0008616823015276357,
+            "p90": 0.0060337053277134955
+          },
+          "unilateral_pair_total": 1132,
+          "objects_with_unilateral_pairs": 552
+        },
+        "intersection": {
+          "legacy_unilateral_pair_count": {
+            "count": 2417,
+            "mean": 0.0,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "legacy_reciprocal_cd_sq_mean": {
+            "count": 2417,
+            "mean": 0.0002870477129529266,
+            "median": 0.00012119109287204049,
+            "p90": 0.000611939271081061
+          },
+          "legacy_reciprocal_cd_sq_max": {
+            "count": 2417,
+            "mean": 0.0036007088612592495,
+            "median": 0.0008938672054833105,
+            "p90": 0.006922302615913556
+          },
+          "unilateral_pair_total": 0,
+          "objects_with_unilateral_pairs": 0
+        }
+      }
+    }
+  },
+  "post": {
+    "fit_only": {
+      "status": "verified",
+      "sources": [
+        {
+          "path": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011/post/fit_only/samples.csv",
+          "sha256": "39f10c13f9a874aee18b942f255119f1d502ac749fda3bc68bdcef4729398d25"
+        },
+        {
+          "path": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011/post/fit_only/summary.json",
+          "sha256": "1a6107e371f7647bfb4fa9a8984262dd12af2740aa194249b4c850409aa81c6f"
+        }
+      ],
+      "checks_passed": [
+        "exactly one terminal row per intended ID and method",
+        "method ID sets equal accepted split",
+        "native/compat/STEP/geometry coverage and fixed-denominator rates independently counted",
+        "status counts and native validity transitions recomputed",
+        "all common-subset geometry count/mean/median/p90 and signed differences recomputed",
+        "legacy marked reference_reused and intersection marked current_run"
+      ],
+      "intended_count_per_method": 2417,
+      "original_test_count": 2424,
+      "methods": {
+        "legacy": {
+          "counts": {
+            "step_exists": 2417,
+            "step_readable": 2407,
+            "success_marker": 1058,
+            "native_valid_solid": 1058,
+            "compat_valid_solid": 1058,
+            "geometry_computable": 1989,
+            "terminal_records": 2417
+          },
+          "status_counts": {
+            "ok": 1989,
+            "geometry_error": 417,
+            "timeout": 1,
+            "step_read_error": 10
+          },
+          "result_origin": "reference_reused",
+          "non_ok_status_stages": [
+            {
+              "status": "geometry_error",
+              "stage": "geometry",
+              "count": 417
+            },
+            {
+              "status": "step_read_error",
+              "stage": "native_validity",
+              "count": 10
+            },
+            {
+              "status": "timeout",
+              "stage": "geometry",
+              "count": 1
+            }
+          ],
+          "native_valid_over_intended": 0.43773272652047995,
+          "native_valid_over_original": 0.43646864686468645,
+          "timeout_records": [
+            {
+              "id": "00173619",
+              "stage": "geometry",
+              "native_valid_solid": false,
+              "geometry_status": "running"
+            }
+          ]
+        },
+        "intersection": {
+          "counts": {
+            "step_exists": 2417,
+            "step_readable": 2413,
+            "success_marker": 1063,
+            "native_valid_solid": 1062,
+            "compat_valid_solid": 1063,
+            "geometry_computable": 2123,
+            "terminal_records": 2417
+          },
+          "status_counts": {
+            "ok": 2123,
+            "geometry_error": 290,
+            "step_read_error": 4
+          },
+          "result_origin": "current_run",
+          "non_ok_status_stages": [
+            {
+              "status": "geometry_error",
+              "stage": "geometry",
+              "count": 290
+            },
+            {
+              "status": "step_read_error",
+              "stage": "native_validity",
+              "count": 4
+            }
+          ],
+          "native_valid_over_intended": 0.439387670666115,
+          "native_valid_over_original": 0.4381188118811881,
+          "timeout_records": []
+        }
+      },
+      "reference_provenance": {
+        "reference_root": "/mnt/d/python/checkpoints/joint_boundary/comparison_20261011",
+        "source_protocol_path": "/mnt/d/python/checkpoints/joint_boundary/comparison_20261011/metadata/post/fit_only/protocol.json",
+        "source_protocol_sha256": "f64842629a95d7ab148552c7156a8632d5781eb2c026fc03a68d7f24215251d8",
+        "source_protocol_fingerprint": "3206737b87febd31d4d117e75e74ad4643ea33896a59c89c70080464add3369d",
+        "record_count": 2417,
+        "record_hash_manifest_sha256": "f72a8d1bdadbb53c40ef4b3b642b65d6a26a8ee3e050d481cc9885216ababd3d"
+      },
+      "native_validity_transitions": {
+        "both_valid": 921,
+        "legacy_failed_to_intersection_valid": 141,
+        "legacy_valid_to_intersection_failed": 137,
+        "both_failed": 1218,
+        "unknown": 0
+      },
+      "paired_common_geometry": {
+        "count": 1819,
+        "coverage_over_intended": 0.7525858502275549,
+        "metrics": {
+          "face_cd": {
+            "legacy": {
+              "count": 1819,
+              "mean": 0.0050911331572071165,
+              "median": 0.0006393538374628489,
+              "p90": 0.006452777413694002
+            },
+            "intersection": {
+              "count": 1819,
+              "mean": 0.002876005879167607,
+              "median": 0.000667829792337888,
+              "p90": 0.0067907128277362935
+            },
+            "intersection_minus_legacy": {
+              "count": 1819,
+              "mean": -0.0022151272780395097,
+              "median": -1.2340692555061375e-06,
+              "p90": 0.0008784305325000743
+            },
+            "relative_change_of_mean_percent": -43.50951369055686,
+            "intersection_win_count": 973,
+            "tie_count": 0,
+            "top10_largest_improvements": {
+              "definition": "Select the 10 largest legacy-minus-intersection CD changes on the common measurable subset. Sum their changes / sum all changes. This descriptive ratio can exceed 1 when other objects offset improvements; it is not a causal attribution.",
+              "count": 10,
+              "sum_improvement": 4.792092252145984,
+              "all_objects_net_improvement_sum": 4.029316518753868,
+              "fraction_of_net_improvement": 1.1893064815935626,
+              "signed_ratio_to_net_improvement": 1.1893064815935626,
+              "net_direction": "improvement",
+              "ratio_note": "Share is unavailable when the overall mean worsens; the separately retained signed ratio is descriptive arithmetic, not an improvement share.",
+              "objects": [
+                {
+                  "id": "00055963",
+                  "legacy": 0.9513070281597442,
+                  "intersection": 0.0004501487449163344,
+                  "improvement": 0.9508568794148279
+                },
+                {
+                  "id": "00574356",
+                  "legacy": 0.9273230822363617,
+                  "intersection": 0.00017217596347950256,
+                  "improvement": 0.9271509062728822
+                },
+                {
+                  "id": "00561497",
+                  "legacy": 0.8964145010753538,
+                  "intersection": 9.020984348202178e-05,
+                  "improvement": 0.8963242912318717
+                },
+                {
+                  "id": "00166136",
+                  "legacy": 0.4250217487027203,
+                  "intersection": 0.0003901985433836351,
+                  "improvement": 0.4246315501593367
+                },
+                {
+                  "id": "00191638",
+                  "legacy": 0.4213819067092782,
+                  "intersection": 7.505204297326446e-05,
+                  "improvement": 0.42130685466630496
+                },
+                {
+                  "id": "00834544",
+                  "legacy": 0.3665485613927022,
+                  "intersection": 0.0060653418542908795,
+                  "improvement": 0.36048321953841134
+                },
+                {
+                  "id": "00312716",
+                  "legacy": 0.2602643891293267,
+                  "intersection": 0.00026448320926128173,
+                  "improvement": 0.25999990592006544
+                },
+                {
+                  "id": "00220926",
+                  "legacy": 0.24816096470057458,
+                  "intersection": 0.006300966013592755,
+                  "improvement": 0.24185999868698183
+                },
+                {
+                  "id": "00732452",
+                  "legacy": 0.17196173915547683,
+                  "intersection": 0.000295775013497838,
+                  "improvement": 0.171665964141979
+                },
+                {
+                  "id": "00668949",
+                  "legacy": 0.14025724476728657,
+                  "intersection": 0.0024445626539631453,
+                  "improvement": 0.13781268211332343
+                }
+              ]
+            },
+            "top10_largest_worsenings": {
+              "count": 10,
+              "sum_worsening": 0.9640782042481757,
+              "all_objects_net_worsening_sum": -4.029316518753868,
+              "fraction_of_net_worsening": null,
+              "objects": [
+                {
+                  "id": "00571486",
+                  "legacy": 0.005286532672135401,
+                  "intersection": 0.31435096749624875,
+                  "worsening": 0.30906443482411333
+                },
+                {
+                  "id": "00477464",
+                  "legacy": 0.00018863633084107616,
+                  "intersection": 0.23708063819261757,
+                  "worsening": 0.2368920018617765
+                },
+                {
+                  "id": "00285306",
+                  "legacy": 0.006893001864619922,
+                  "intersection": 0.19981341581897002,
+                  "worsening": 0.1929204139543501
+                },
+                {
+                  "id": "00243943",
+                  "legacy": 0.003712980140461126,
+                  "intersection": 0.05916298955013437,
+                  "worsening": 0.05545000940967324
+                },
+                {
+                  "id": "00234423",
+                  "legacy": 0.001440374055145454,
+                  "intersection": 0.044380240017800436,
+                  "worsening": 0.042939865962654984
+                },
+                {
+                  "id": "00395475",
+                  "legacy": 0.003504307554955396,
+                  "intersection": 0.03269566728030314,
+                  "worsening": 0.029191359725347744
+                },
+                {
+                  "id": "00699297",
+                  "legacy": 0.0004510914296226539,
+                  "intersection": 0.026677264626167135,
+                  "worsening": 0.02622617319654448
+                },
+                {
+                  "id": "00835783",
+                  "legacy": 6.56950208582739e-05,
+                  "intersection": 0.025590089898227628,
+                  "worsening": 0.025524394877369353
+                },
+                {
+                  "id": "00907226",
+                  "legacy": 0.00037868948375160955,
+                  "intersection": 0.02533318989367099,
+                  "worsening": 0.02495450040991938
+                },
+                {
+                  "id": "00845253",
+                  "legacy": 0.0005463754544203228,
+                  "intersection": 0.021461425480846896,
+                  "worsening": 0.020915050026426574
+                }
+              ]
+            }
+          },
+          "face_accuracy": {
+            "legacy": {
+              "count": 1819,
+              "mean": 0.0008546049042042496,
+              "median": 0.00026140461393248825,
+              "p90": 0.0018601830766128082
+            },
+            "intersection": {
+              "count": 1819,
+              "mean": 0.0008550427032221774,
+              "median": 0.0002686125862244694,
+              "p90": 0.0018217369364530453
+            },
+            "intersection_minus_legacy": {
+              "count": 1819,
+              "mean": 4.377990179277719e-07,
+              "median": -4.3864939726402934e-07,
+              "p90": 0.00010783090308298066
+            },
+            "relative_change_of_mean_percent": 0.051228236085942847,
+            "intersection_win_count": 963,
+            "tie_count": 0
+          },
+          "face_completeness": {
+            "legacy": {
+              "count": 1819,
+              "mean": 0.004236528253002867,
+              "median": 0.0003007335341770168,
+              "p90": 0.004149108421491728
+            },
+            "intersection": {
+              "count": 1819,
+              "mean": 0.0020209631759454294,
+              "median": 0.00030774739323535864,
+              "p90": 0.004460702115515191
+            },
+            "intersection_minus_legacy": {
+              "count": 1819,
+              "mean": -0.0022155650770574373,
+              "median": -9.050043733183229e-07,
+              "p90": 0.000322272685356945
+            },
+            "relative_change_of_mean_percent": -52.2967143081611,
+            "intersection_win_count": 983,
+            "tie_count": 0
+          },
+          "edge_cd": {
+            "legacy": {
+              "count": 1819,
+              "mean": 0.003512669678253247,
+              "median": 3.16572730742327e-05,
+              "p90": 0.0002032509028168789
+            },
+            "intersection": {
+              "count": 1819,
+              "mean": 0.0009634074973034636,
+              "median": 2.862492272429848e-05,
+              "p90": 0.00013953954255806856
+            },
+            "intersection_minus_legacy": {
+              "count": 1819,
+              "mean": -0.0025492621809497834,
+              "median": -1.773419455956278e-06,
+              "p90": 1.5788865337142618e-05
+            },
+            "relative_change_of_mean_percent": -72.57335344487788,
+            "intersection_win_count": 1011,
+            "tie_count": 0,
+            "top10_largest_improvements": {
+              "definition": "Select the 10 largest legacy-minus-intersection CD changes on the common measurable subset. Sum their changes / sum all changes. This descriptive ratio can exceed 1 when other objects offset improvements; it is not a causal attribution.",
+              "count": 10,
+              "sum_improvement": 5.108019254511141,
+              "all_objects_net_improvement_sum": 4.637107907147656,
+              "fraction_of_net_improvement": 1.1015528119666183,
+              "signed_ratio_to_net_improvement": 1.1015528119666183,
+              "net_direction": "improvement",
+              "ratio_note": "Share is unavailable when the overall mean worsens; the separately retained signed ratio is descriptive arithmetic, not an improvement share.",
+              "objects": [
+                {
+                  "id": "00055963",
+                  "legacy": 0.9843868707946261,
+                  "intersection": 2.3143545123499524e-05,
+                  "improvement": 0.9843637272495026
+                },
+                {
+                  "id": "00574356",
+                  "legacy": 0.9467309522758814,
+                  "intersection": 2.368373593008291e-05,
+                  "improvement": 0.9467072685399514
+                },
+                {
+                  "id": "00561497",
+                  "legacy": 0.8935462443353981,
+                  "intersection": 1.8210477349504742e-05,
+                  "improvement": 0.8935280338580486
+                },
+                {
+                  "id": "00191638",
+                  "legacy": 0.47684991413969063,
+                  "intersection": 1.7665556294206935e-05,
+                  "improvement": 0.4768322485833964
+                },
+                {
+                  "id": "00166136",
+                  "legacy": 0.42103325371730205,
+                  "intersection": 2.6272528361634916e-05,
+                  "improvement": 0.4210069811889404
+                },
+                {
+                  "id": "00834544",
+                  "legacy": 0.40738927996823293,
+                  "intersection": 5.212151177466095e-05,
+                  "improvement": 0.4073371584564583
+                },
+                {
+                  "id": "00312716",
+                  "legacy": 0.35886624243927906,
+                  "intersection": 1.3768292555214325e-05,
+                  "improvement": 0.35885247414672383
+                },
+                {
+                  "id": "00220926",
+                  "legacy": 0.2676998957066927,
+                  "intersection": 0.0002547591058967442,
+                  "improvement": 0.267445136600796
+                },
+                {
+                  "id": "00314630",
+                  "legacy": 0.17931965703575156,
+                  "intersection": 0.0009634815439696528,
+                  "improvement": 0.1783561754917819
+                },
+                {
+                  "id": "00668949",
+                  "legacy": 0.17361156773205472,
+                  "intersection": 2.1517336512987564e-05,
+                  "improvement": 0.17359005039554173
+                }
+              ]
+            },
+            "top10_largest_worsenings": {
+              "count": 10,
+              "sum_worsening": 1.0362802480501832,
+              "all_objects_net_worsening_sum": -4.637107907147656,
+              "fraction_of_net_worsening": null,
+              "objects": [
+                {
+                  "id": "00571486",
+                  "legacy": 4.4709151502033244e-05,
+                  "intersection": 0.3276219852063996,
+                  "worsening": 0.3275772760548976
+                },
+                {
+                  "id": "00477464",
+                  "legacy": 1.7725635449222003e-05,
+                  "intersection": 0.2758704284826746,
+                  "worsening": 0.2758527028472254
+                },
+                {
+                  "id": "00285306",
+                  "legacy": 1.2206226151494902e-05,
+                  "intersection": 0.22368251728650407,
+                  "worsening": 0.22367031106035257
+                },
+                {
+                  "id": "00243943",
+                  "legacy": 4.94918143353101e-05,
+                  "intersection": 0.05342900707275551,
+                  "worsening": 0.0533795152584202
+                },
+                {
+                  "id": "00234423",
+                  "legacy": 0.0027313513992392327,
+                  "intersection": 0.052916869368354255,
+                  "worsening": 0.05018551796911502
+                },
+                {
+                  "id": "00744749",
+                  "legacy": 0.017979234889766577,
+                  "intersection": 0.05123450253978656,
+                  "worsening": 0.03325526765001998
+                },
+                {
+                  "id": "00835783",
+                  "legacy": 4.695631967847319e-05,
+                  "intersection": 0.024618592055910667,
+                  "worsening": 0.024571635736232195
+                },
+                {
+                  "id": "00333503",
+                  "legacy": 0.0004052023549100429,
+                  "intersection": 0.021564857379147106,
+                  "worsening": 0.021159655024237063
+                },
+                {
+                  "id": "00896733",
+                  "legacy": 0.0009788031564403944,
+                  "intersection": 0.01551511518360239,
+                  "worsening": 0.014536312027161996
+                },
+                {
+                  "id": "00837850",
+                  "legacy": 3.51800885642029e-05,
+                  "intersection": 0.012127234511085355,
+                  "worsening": 0.012092054422521153
+                }
+              ]
+            }
+          },
+          "edge_accuracy": {
+            "legacy": {
+              "count": 1819,
+              "mean": 0.0002239729973934194,
+              "median": 1.5074079105143346e-05,
+              "p90": 5.126917122810233e-05
+            },
+            "intersection": {
+              "count": 1819,
+              "mean": 0.00022877563420459305,
+              "median": 1.4090200892705329e-05,
+              "p90": 3.949821655596121e-05
+            },
+            "intersection_minus_legacy": {
+              "count": 1819,
+              "mean": 4.8026368111736555e-06,
+              "median": -8.414995804776479e-07,
+              "p90": 7.417397565868763e-06
+            },
+            "relative_change_of_mean_percent": 2.1442927795164435,
+            "intersection_win_count": 1009,
+            "tie_count": 0
+          },
+          "edge_completeness": {
+            "legacy": {
+              "count": 1819,
+              "mean": 0.0032886966808598275,
+              "median": 1.554186593873603e-05,
+              "p90": 6.801018053749212e-05
+            },
+            "intersection": {
+              "count": 1819,
+              "mean": 0.0007346318630988705,
+              "median": 1.3967861061389704e-05,
+              "p90": 5.064437817331159e-05
+            },
+            "intersection_minus_legacy": {
+              "count": 1819,
+              "mean": -0.002554064817760957,
+              "median": -9.980416855322043e-07,
+              "p90": 7.2675957430039455e-06
+            },
+            "relative_change_of_mean_percent": -77.66191490463628,
+            "intersection_win_count": 1016,
+            "tie_count": 0
+          }
+        }
+      }
+    },
+    "optimized": {
+      "status": "verified",
+      "sources": [
+        {
+          "path": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011/post/optimized/samples.csv",
+          "sha256": "4a865eacb536c2398ad04ea0c150473788e1bd6f92dd7f9111f95ba1dc379d2a"
+        },
+        {
+          "path": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011/post/optimized/summary.json",
+          "sha256": "6cfd16b79d1a9b0c821710a44bacffa666b4e5cce6eb6137857c2acdf2809a4f"
+        }
+      ],
+      "checks_passed": [
+        "exactly one terminal row per intended ID and method",
+        "method ID sets equal accepted split",
+        "native/compat/STEP/geometry coverage and fixed-denominator rates independently counted",
+        "status counts and native validity transitions recomputed",
+        "all common-subset geometry count/mean/median/p90 and signed differences recomputed",
+        "legacy marked reference_reused and intersection marked current_run"
+      ],
+      "intended_count_per_method": 2417,
+      "original_test_count": 2424,
+      "methods": {
+        "legacy": {
+          "counts": {
+            "step_exists": 2417,
+            "step_readable": 2417,
+            "success_marker": 2049,
+            "native_valid_solid": 2048,
+            "compat_valid_solid": 2048,
+            "geometry_computable": 2262,
+            "terminal_records": 2417
+          },
+          "status_counts": {
+            "ok": 2262,
+            "geometry_error": 155
+          },
+          "result_origin": "reference_reused",
+          "non_ok_status_stages": [
+            {
+              "status": "geometry_error",
+              "stage": "geometry",
+              "count": 155
+            }
+          ],
+          "native_valid_over_intended": 0.8473314025651634,
+          "native_valid_over_original": 0.8448844884488449,
+          "timeout_records": []
+        },
+        "intersection": {
+          "counts": {
+            "step_exists": 2417,
+            "step_readable": 2417,
+            "success_marker": 2113,
+            "native_valid_solid": 2113,
+            "compat_valid_solid": 2112,
+            "geometry_computable": 2313,
+            "terminal_records": 2417
+          },
+          "status_counts": {
+            "ok": 2313,
+            "geometry_error": 102,
+            "timeout": 2
+          },
+          "result_origin": "current_run",
+          "non_ok_status_stages": [
+            {
+              "status": "geometry_error",
+              "stage": "geometry",
+              "count": 102
+            },
+            {
+              "status": "timeout",
+              "stage": "geometry",
+              "count": 2
+            }
+          ],
+          "native_valid_over_intended": 0.8742242449317336,
+          "native_valid_over_original": 0.8716996699669967,
+          "timeout_records": [
+            {
+              "id": "00267701",
+              "stage": "geometry",
+              "native_valid_solid": true,
+              "geometry_status": "running"
+            },
+            {
+              "id": "00309458",
+              "stage": "geometry",
+              "native_valid_solid": false,
+              "geometry_status": "running"
+            }
+          ]
+        }
+      },
+      "reference_provenance": {
+        "reference_root": "/mnt/d/python/checkpoints/joint_boundary/comparison_20261011",
+        "source_protocol_path": "/mnt/d/python/checkpoints/joint_boundary/comparison_20261011/metadata/post/optimized/protocol.json",
+        "source_protocol_sha256": "92f3bc354cadc54d32edd916077a4bff7176b9db5b882baed8c936eb57fd7d16",
+        "source_protocol_fingerprint": "526c134784a245f0b9825f05674450b1ac73408454ff69bf7e63d6a83378d648",
+        "record_count": 2417,
+        "record_hash_manifest_sha256": "bcaed7f3be28a5db60ce38d9a3bb03a12357c81585d223ef7a0ce351d7479443"
+      },
+      "native_validity_transitions": {
+        "both_valid": 2006,
+        "legacy_failed_to_intersection_valid": 107,
+        "legacy_valid_to_intersection_failed": 42,
+        "both_failed": 262,
+        "unknown": 0
+      },
+      "paired_common_geometry": {
+        "count": 2204,
+        "coverage_over_intended": 0.9118742242449317,
+        "metrics": {
+          "face_cd": {
+            "legacy": {
+              "count": 2204,
+              "mean": 0.0006982162061603297,
+              "median": 0.00041005419626303135,
+              "p90": 0.0010304740308962992
+            },
+            "intersection": {
+              "count": 2204,
+              "mean": 0.000659917980381723,
+              "median": 0.00040800312805332314,
+              "p90": 0.0010240867162194045
+            },
+            "intersection_minus_legacy": {
+              "count": 2204,
+              "mean": -3.829822577860667e-05,
+              "median": 9.252158814629632e-07,
+              "p90": 5.16239274135463e-05
+            },
+            "relative_change_of_mean_percent": -5.485152799477189,
+            "intersection_win_count": 1067,
+            "tie_count": 0,
+            "top10_largest_improvements": {
+              "definition": "Select the 10 largest legacy-minus-intersection CD changes on the common measurable subset. Sum their changes / sum all changes. This descriptive ratio can exceed 1 when other objects offset improvements; it is not a causal attribution.",
+              "count": 10,
+              "sum_improvement": 0.10528990062891998,
+              "all_objects_net_improvement_sum": 0.0844092896160491,
+              "fraction_of_net_improvement": 1.2473733768860051,
+              "signed_ratio_to_net_improvement": 1.2473733768860051,
+              "net_direction": "improvement",
+              "ratio_note": "Share is unavailable when the overall mean worsens; the separately retained signed ratio is descriptive arithmetic, not an improvement share.",
+              "objects": [
+                {
+                  "id": "00249913",
+                  "legacy": 0.029524989829473703,
+                  "intersection": 0.006085808382835292,
+                  "improvement": 0.02343918144663841
+                },
+                {
+                  "id": "00446595",
+                  "legacy": 0.017998098359907413,
+                  "intersection": 0.0033806768062680046,
+                  "improvement": 0.014617421553639409
+                },
+                {
+                  "id": "00556193",
+                  "legacy": 0.014331250903019527,
+                  "intersection": 0.0006871962486076081,
+                  "improvement": 0.01364405465441192
+                },
+                {
+                  "id": "00238163",
+                  "legacy": 0.012619981193633147,
+                  "intersection": 0.0008698468965066721,
+                  "improvement": 0.011750134297126475
+                },
+                {
+                  "id": "00518536",
+                  "legacy": 0.010291993628490707,
+                  "intersection": 0.0003957628604275135,
+                  "improvement": 0.009896230768063194
+                },
+                {
+                  "id": "00828031",
+                  "legacy": 0.008804147417701792,
+                  "intersection": 0.0013055812212713165,
+                  "improvement": 0.007498566196430475
+                },
+                {
+                  "id": "00860850",
+                  "legacy": 0.007898418544869012,
+                  "intersection": 0.0009470133906642495,
+                  "improvement": 0.006951405154204763
+                },
+                {
+                  "id": "00386810",
+                  "legacy": 0.007117384149974799,
+                  "intersection": 0.000884317684317586,
+                  "improvement": 0.006233066465657213
+                },
+                {
+                  "id": "00165264",
+                  "legacy": 0.021348451645729086,
+                  "intersection": 0.015449742047937335,
+                  "improvement": 0.00589870959779175
+                },
+                {
+                  "id": "00637362",
+                  "legacy": 0.005890282232739427,
+                  "intersection": 0.0005291517377830537,
+                  "improvement": 0.005361130494956373
+                }
+              ]
+            },
+            "top10_largest_worsenings": {
+              "count": 10,
+              "sum_worsening": 0.05326740779441359,
+              "all_objects_net_worsening_sum": -0.0844092896160491,
+              "fraction_of_net_worsening": null,
+              "objects": [
+                {
+                  "id": "00997577",
+                  "legacy": 0.0013931280317964069,
+                  "intersection": 0.014729797475102455,
+                  "worsening": 0.013336669443306049
+                },
+                {
+                  "id": "00533990",
+                  "legacy": 0.009157155521450902,
+                  "intersection": 0.016542510738031087,
+                  "worsening": 0.007385355216580186
+                },
+                {
+                  "id": "00932166",
+                  "legacy": 0.006139625323387669,
+                  "intersection": 0.011910128517184024,
+                  "worsening": 0.005770503193796355
+                },
+                {
+                  "id": "00110206",
+                  "legacy": 0.004906104630997285,
+                  "intersection": 0.010661369530076945,
+                  "worsening": 0.005755264899079659
+                },
+                {
+                  "id": "00711822",
+                  "legacy": 0.004828316793396438,
+                  "intersection": 0.008940005195928167,
+                  "worsening": 0.004111688402531729
+                },
+                {
+                  "id": "00741878",
+                  "legacy": 0.001468298409937859,
+                  "intersection": 0.005450076418119262,
+                  "worsening": 0.0039817780081814035
+                },
+                {
+                  "id": "00541592",
+                  "legacy": 0.03055739302116571,
+                  "intersection": 0.03449408712562502,
+                  "worsening": 0.003936694104459307
+                },
+                {
+                  "id": "00991826",
+                  "legacy": 4.284997999953443e-05,
+                  "intersection": 0.0032573254113342836,
+                  "worsening": 0.0032144754313347492
+                },
+                {
+                  "id": "00520669",
+                  "legacy": 0.00321100317500913,
+                  "intersection": 0.006245695564885075,
+                  "worsening": 0.003034692389875945
+                },
+                {
+                  "id": "00896572",
+                  "legacy": 0.0009025639907059729,
+                  "intersection": 0.0036428506959741867,
+                  "worsening": 0.002740286705268214
+                }
+              ]
+            }
+          },
+          "face_accuracy": {
+            "legacy": {
+              "count": 2204,
+              "mean": 0.000368571691736711,
+              "median": 0.00020156973651232286,
+              "p90": 0.0005116902675118305
+            },
+            "intersection": {
+              "count": 2204,
+              "mean": 0.00035828787509353685,
+              "median": 0.0002010132672152897,
+              "p90": 0.0005057126218009966
+            },
+            "intersection_minus_legacy": {
+              "count": 2204,
+              "mean": -1.0283816643174152e-05,
+              "median": 4.453278008787533e-07,
+              "p90": 2.5268362870297926e-05
+            },
+            "relative_change_of_mean_percent": -2.790180817934429,
+            "intersection_win_count": 1065,
+            "tie_count": 0
+          },
+          "face_completeness": {
+            "legacy": {
+              "count": 2204,
+              "mean": 0.00032964451442361864,
+              "median": 0.00020326784105608207,
+              "p90": 0.0004681826375687306
+            },
+            "intersection": {
+              "count": 2204,
+              "mean": 0.00030163010528818615,
+              "median": 0.00020006550210334043,
+              "p90": 0.00046791942310137524
+            },
+            "intersection_minus_legacy": {
+              "count": 2204,
+              "mean": -2.801440913543251e-05,
+              "median": 5.082505181471874e-07,
+              "p90": 2.5636189443336835e-05
+            },
+            "relative_change_of_mean_percent": -8.49836957985347,
+            "intersection_win_count": 1063,
+            "tie_count": 0
+          },
+          "edge_cd": {
+            "legacy": {
+              "count": 2204,
+              "mean": 0.00038565460954056345,
+              "median": 9.826405044397973e-05,
+              "p90": 0.0003075730927842508
+            },
+            "intersection": {
+              "count": 2204,
+              "mean": 0.0003873908355418496,
+              "median": 0.00010196318348710499,
+              "p90": 0.0002960714930847338
+            },
+            "intersection_minus_legacy": {
+              "count": 2204,
+              "mean": 1.7362260012861934e-06,
+              "median": 3.398712848299612e-06,
+              "p90": 8.631801576268641e-05
+            },
+            "relative_change_of_mean_percent": 0.45020232050501097,
+            "intersection_win_count": 1015,
+            "tie_count": 0,
+            "top10_largest_improvements": {
+              "definition": "Select the 10 largest legacy-minus-intersection CD changes on the common measurable subset. Sum their changes / sum all changes. This descriptive ratio can exceed 1 when other objects offset improvements; it is not a causal attribution.",
+              "count": 10,
+              "sum_improvement": 0.06846437680801705,
+              "all_objects_net_improvement_sum": -0.00382664210683477,
+              "fraction_of_net_improvement": null,
+              "signed_ratio_to_net_improvement": -17.891502496596885,
+              "net_direction": "worsening",
+              "ratio_note": "Share is unavailable when the overall mean worsens; the separately retained signed ratio is descriptive arithmetic, not an improvement share.",
+              "objects": [
+                {
+                  "id": "00249913",
+                  "legacy": 0.011227070741110361,
+                  "intersection": 0.0009261777737436149,
+                  "improvement": 0.010300892967366746
+                },
+                {
+                  "id": "00446595",
+                  "legacy": 0.011627367571379204,
+                  "intersection": 0.0013894984386995624,
+                  "improvement": 0.010237869132679642
+                },
+                {
+                  "id": "00165264",
+                  "legacy": 0.015624274261730768,
+                  "intersection": 0.006757615305345659,
+                  "improvement": 0.00886665895638511
+                },
+                {
+                  "id": "00144225",
+                  "legacy": 0.008081667339303157,
+                  "intersection": 8.592032803235444e-05,
+                  "improvement": 0.007995747011270803
+                },
+                {
+                  "id": "00776857",
+                  "legacy": 0.009795071233970352,
+                  "intersection": 0.002847563243279449,
+                  "improvement": 0.006947507990690903
+                },
+                {
+                  "id": "00834544",
+                  "legacy": 0.006824109322897129,
+                  "intersection": 0.00016088906009392444,
+                  "improvement": 0.006663220262803205
+                },
+                {
+                  "id": "00375802",
+                  "legacy": 0.004916821915015668,
+                  "intersection": 8.762576505795422e-05,
+                  "improvement": 0.004829196149957714
+                },
+                {
+                  "id": "00685289",
+                  "legacy": 0.0064673273292638386,
+                  "intersection": 0.0018244777994985495,
+                  "improvement": 0.004642849529765289
+                },
+                {
+                  "id": "00375328",
+                  "legacy": 0.03243612574138892,
+                  "intersection": 0.028377431831008333,
+                  "improvement": 0.0040586939103805855
+                },
+                {
+                  "id": "00297204",
+                  "legacy": 0.004006431043061334,
+                  "intersection": 8.469014634428321e-05,
+                  "improvement": 0.003921740896717051
+                }
+              ]
+            },
+            "top10_largest_worsenings": {
+              "count": 10,
+              "sum_worsening": 0.06806565277862736,
+              "all_objects_net_worsening_sum": 0.00382664210683477,
+              "fraction_of_net_worsening": 17.787305652926158,
+              "objects": [
+                {
+                  "id": "00997577",
+                  "legacy": 0.00012109183488664388,
+                  "intersection": 0.010042048775790216,
+                  "worsening": 0.009920956940903572
+                },
+                {
+                  "id": "00896572",
+                  "legacy": 0.0018632585549358395,
+                  "intersection": 0.011449392865856455,
+                  "worsening": 0.009586134310920615
+                },
+                {
+                  "id": "00021937",
+                  "legacy": 0.0002738661540386217,
+                  "intersection": 0.00821948215389565,
+                  "worsening": 0.007945615999857028
+                },
+                {
+                  "id": "00101718",
+                  "legacy": 0.0001673694546297485,
+                  "intersection": 0.00787389368066208,
+                  "worsening": 0.007706524226032332
+                },
+                {
+                  "id": "00110206",
+                  "legacy": 0.003948981535262789,
+                  "intersection": 0.011071338171633612,
+                  "worsening": 0.007122356636370823
+                },
+                {
+                  "id": "00533990",
+                  "legacy": 0.006550403697178783,
+                  "intersection": 0.012931888024246045,
+                  "worsening": 0.006381484327067262
+                },
+                {
+                  "id": "00359148",
+                  "legacy": 9.626000900483128e-05,
+                  "intersection": 0.005872363913695071,
+                  "worsening": 0.00577610390469024
+                },
+                {
+                  "id": "00778188",
+                  "legacy": 0.00039872909458745105,
+                  "intersection": 0.005644565323012449,
+                  "worsening": 0.005245836228424998
+                },
+                {
+                  "id": "00800825",
+                  "legacy": 0.0008386513436737536,
+                  "intersection": 0.005064605090682136,
+                  "worsening": 0.004225953747008382
+                },
+                {
+                  "id": "00991826",
+                  "legacy": 2.5391294889253012e-05,
+                  "intersection": 0.004180077752241356,
+                  "worsening": 0.004154686457352103
+                }
+              ]
+            }
+          },
+          "edge_accuracy": {
+            "legacy": {
+              "count": 2204,
+              "mean": 0.00025222238958306196,
+              "median": 4.864726017471792e-05,
+              "p90": 0.0001490979696803158
+            },
+            "intersection": {
+              "count": 2204,
+              "mean": 0.0002657532624639472,
+              "median": 5.068259931632154e-05,
+              "p90": 0.00014483145259357614
+            },
+            "intersection_minus_legacy": {
+              "count": 2204,
+              "mean": 1.3530872880885254e-05,
+              "median": 1.993726631008763e-06,
+              "p90": 4.464213967280686e-05
+            },
+            "relative_change_of_mean_percent": 5.36465969704456,
+            "intersection_win_count": 1000,
+            "tie_count": 0
+          },
+          "edge_completeness": {
+            "legacy": {
+              "count": 2204,
+              "mean": 0.0001334322199575015,
+              "median": 4.862984203165913e-05,
+              "p90": 0.00014220639517396462
+            },
+            "intersection": {
+              "count": 2204,
+              "mean": 0.00012163757307790244,
+              "median": 5.075505908480453e-05,
+              "p90": 0.0001358532650531914
+            },
+            "intersection_minus_legacy": {
+              "count": 2204,
+              "mean": -1.1794646879599065e-05,
+              "median": 1.2762493140452685e-06,
+              "p90": 4.136490521172199e-05
+            },
+            "relative_change_of_mean_percent": -8.83942939970247,
+            "intersection_win_count": 1030,
+            "tie_count": 0
+          }
+        }
+      }
+    }
+  },
+  "interpretation_limits": [
+    "All comparisons are descriptive. Fine-tuning, loss changes and candidate/symmetry rules changed together; this comparison does not isolate feedback-module causality.",
+    "Posterior-mean reconstruction uses aligned GT face slots. Archived diffusion latents have no guaranteed GT face correspondence, so aligned MAE and topology PR/F1 must remain unavailable there.",
+    "Archived-latent evaluation replaces the decoder on the same historical latent inputs; it is not new diffusion sampling or an end-to-end real-photo evaluation.",
+    "Zero unilateral pairs follows explicitly symmetric connection logits, not evidence that the network learned exact shared geometry. Reciprocal-curve summaries use each method's own active pair set.",
+    "Raw reciprocal rows are half-edge predictions, not arbitrary native CAD edge/coedge/UV reconstruction. Pair-set accuracy does not establish trim, sewing, or solid validity.",
+    "Post geometry is evaluated on the common measurable subset, not all intended objects or only valid solids. Raw-grid and sampled-STEP CD protocols differ and must not be directly equated.",
+    "Post CD mean changes can be dominated by a few objects. Top-10 net contribution and win counts supplement the mean; neither demonstrates a causal mechanism.",
+    "Geometry errors/timeouts do not automatically mean no valid STEP; native solid status and metric computability are separate.",
+    "Legacy post records and timings are read-only historical results with verified protocol compatibility, not rerun in this invocation.",
+    "The 7 contract-unsupported original test objects remain outside the accepted 2417 and inside the original denominator 2424."
+  ]
+}

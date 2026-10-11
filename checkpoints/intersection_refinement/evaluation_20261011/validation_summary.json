@@ -1,0 +1,120 @@
+{
+  "new_inference_tests": 6,
+  "combined_evaluation_tests": 39,
+  "combined_command": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python -m pytest -q src/brepnet/test/test_intersection_evaluate_inference.py src/brepnet/test/test_vae_compare_inference.py src/brepnet/test/test_vae_compare_metrics.py src/brepnet/test/test_vae_compare_post.py",
+  "combined_exit_code": 0,
+  "gpu_smoke": {
+    "num_objects": 2,
+    "encoder_equal_tensors": 243,
+    "posterior_mean_max_abs_error": 1.430511474609375e-06,
+    "all_outputs_valid": true
+  },
+  "first_full_inference": {
+    "mode": "posterior_mean",
+    "exit_codes": [
+      1,
+      0,
+      1,
+      0,
+      0,
+      1,
+      1,
+      0
+    ],
+    "stage": "posterior_identity_mean_audit",
+    "status": "stopped_before_metrics",
+    "action": "measure repeated legacy/new floating-point variation; preserve partial run and rerun under one documented numerical audit protocol",
+    "archived_at": "checkpoints/intersection_refinement/evaluation_20261011/metadata/initial_mean_audit_failed"
+  },
+  "full_inference": {
+    "posterior_mean": {
+      "count": 2417,
+      "status_counts": {
+        "ok": 2417
+      },
+      "shard_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_commit": "9ad6dfbc"
+    },
+    "archived_latents": {
+      "count": 2417,
+      "status_counts": {
+        "ok": 2417
+      },
+      "shard_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_commit": "9ad6dfbc"
+    }
+  },
+  "evaluation_exit_codes": {
+    "raw_posterior_mean": 0,
+    "raw_archived_latents": 0,
+    "post_fit_only": 0,
+    "post_optimized": 0
+  },
+  "evaluation_completion": {
+    "fit_only": {
+      "legacy": {
+        "terminal_records": 2417,
+        "native_valid_solid": 1058,
+        "status_counts": {
+          "ok": 1989,
+          "geometry_error": 417,
+          "timeout": 1,
+          "step_read_error": 10
+        }
+      },
+      "intersection": {
+        "terminal_records": 2417,
+        "native_valid_solid": 1062,
+        "status_counts": {
+          "ok": 2123,
+          "geometry_error": 290,
+          "step_read_error": 4
+        }
+      }
+    },
+    "optimized": {
+      "legacy": {
+        "terminal_records": 2417,
+        "native_valid_solid": 2048,
+        "status_counts": {
+          "ok": 2262,
+          "geometry_error": 155
+        }
+      },
+      "intersection": {
+        "terminal_records": 2417,
+        "native_valid_solid": 2113,
+        "status_counts": {
+          "ok": 2313,
+          "geometry_error": 102,
+          "timeout": 2
+        }
+      }
+    }
+  },
+  "report_contract_tests": {
+    "count": 16,
+    "exit_code": 0,
+    "command": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python -m pytest -q src/brepnet/test/test_intersection_evaluate_report.py",
+    "validation": "complete actual raw/post report assembly checked before writing; independent CSV review saved in independent_review.json"
+  },
+  "total_related_tests_passed": 55
+}

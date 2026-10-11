@@ -1,0 +1,4 @@
+# Keep compact protocols/results in Git; per-object artifacts stay local.
+post/*/legacy/
+post/*/intersection/
+raw_metrics/*/per_object.csv
