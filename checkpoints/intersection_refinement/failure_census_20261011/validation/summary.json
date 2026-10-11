@@ -1,0 +1,210 @@
+{
+  "runner_tests_passed": 37,
+  "manifest_helper_tests_passed": 16,
+  "pilot": {
+    "intersection": {
+      "version": "legacy_failure_provenance_v1",
+      "method": "intersection",
+      "protocol_fingerprint": "bccc4fead92eab8df3ec88f6ad189299363a65f0195df2a42e58c08bffbb3ddd",
+      "intended_count": 3,
+      "status_counts": {
+        "ok": 3
+      },
+      "instrumentation_error_cases": [],
+      "step_data_equal_count": 3,
+      "step_data_different_ids": [],
+      "mechanisms": {
+        "wire_not_returned": {
+          "true": 0,
+          "false": 3,
+          "unknown": 0
+        },
+        "wire_skipped_open_after_fix": {
+          "true": 1,
+          "false": 2,
+          "unknown": 0
+        },
+        "all_wires_rejected": {
+          "true": 0,
+          "false": 3,
+          "unknown": 0
+        },
+        "partial_wire_drop_with_face_returned": {
+          "true": 0,
+          "false": 3,
+          "unknown": 0
+        },
+        "closed_wire_admitted_but_trim_failed": {
+          "true": 3,
+          "false": 0,
+          "unknown": 0
+        },
+        "face_context_brepcheck_error": {
+          "true": 3,
+          "false": 0,
+          "unknown": 0
+        },
+        "face_fix_exception": {
+          "true": 0,
+          "false": 3,
+          "unknown": 0
+        },
+        "periodic_wire_substitution": {
+          "true": 3,
+          "false": 0,
+          "unknown": 0
+        },
+        "sewing_compound_early_return": {
+          "true": 2,
+          "false": 1,
+          "unknown": 0
+        },
+        "sewing_free_edges": {
+          "true": 2,
+          "false": 1,
+          "unknown": 0
+        },
+        "sewing_multiple_edges": {
+          "true": 0,
+          "false": 3,
+          "unknown": 0
+        },
+        "no_free_edge_but_solid_failed": {
+          "true": 1,
+          "false": 2,
+          "unknown": 0
+        },
+        "trim_gate_blocked": {
+          "true": 0,
+          "false": 3,
+          "unknown": 0
+        },
+        "saved_step_rejected": {
+          "true": 0,
+          "false": 3,
+          "unknown": 0
+        },
+        "saved_check_passed_native_failed": {
+          "true": 0,
+          "false": 3,
+          "unknown": 0
+        },
+        "uv_specific_failure": {
+          "true": 0,
+          "false": 0,
+          "unknown": 3
+        }
+      },
+      "elapsed_seconds": {
+        "count": 3,
+        "finite_count": 3,
+        "status": "ok",
+        "mean": 7.853845178663808,
+        "max": 10.118896550993668,
+        "rms": 8.120511285433885
+      }
+    },
+    "legacy": {
+      "version": "legacy_failure_provenance_v1",
+      "method": "legacy",
+      "protocol_fingerprint": "0edef3fa96549f7754eb39d4ccf987141c6f63e0f96e81c7040cb47ff3b1bc27",
+      "intended_count": 1,
+      "status_counts": {
+        "ok": 1
+      },
+      "instrumentation_error_cases": [],
+      "step_data_equal_count": 1,
+      "step_data_different_ids": [],
+      "mechanisms": {
+        "wire_not_returned": {
+          "true": 0,
+          "false": 1,
+          "unknown": 0
+        },
+        "wire_skipped_open_after_fix": {
+          "true": 0,
+          "false": 1,
+          "unknown": 0
+        },
+        "all_wires_rejected": {
+          "true": 0,
+          "false": 1,
+          "unknown": 0
+        },
+        "partial_wire_drop_with_face_returned": {
+          "true": 0,
+          "false": 1,
+          "unknown": 0
+        },
+        "closed_wire_admitted_but_trim_failed": {
+          "true": 1,
+          "false": 0,
+          "unknown": 0
+        },
+        "face_context_brepcheck_error": {
+          "true": 1,
+          "false": 0,
+          "unknown": 0
+        },
+        "face_fix_exception": {
+          "true": 0,
+          "false": 1,
+          "unknown": 0
+        },
+        "periodic_wire_substitution": {
+          "true": 1,
+          "false": 0,
+          "unknown": 0
+        },
+        "sewing_compound_early_return": {
+          "true": 0,
+          "false": 1,
+          "unknown": 0
+        },
+        "sewing_free_edges": {
+          "true": 0,
+          "false": 1,
+          "unknown": 0
+        },
+        "sewing_multiple_edges": {
+          "true": 0,
+          "false": 1,
+          "unknown": 0
+        },
+        "no_free_edge_but_solid_failed": {
+          "true": 1,
+          "false": 0,
+          "unknown": 0
+        },
+        "trim_gate_blocked": {
+          "true": 0,
+          "false": 1,
+          "unknown": 0
+        },
+        "saved_step_rejected": {
+          "true": 0,
+          "false": 1,
+          "unknown": 0
+        },
+        "saved_check_passed_native_failed": {
+          "true": 0,
+          "false": 1,
+          "unknown": 0
+        },
+        "uv_specific_failure": {
+          "true": 0,
+          "false": 0,
+          "unknown": 1
+        }
+      },
+      "elapsed_seconds": {
+        "count": 1,
+        "finite_count": 1,
+        "status": "ok",
+        "mean": 6.43077703200106,
+        "max": 6.43077703200106,
+        "rms": 6.43077703200106
+      }
+    }
+  }
+}

@@ -1,4 +1,4 @@
-"""Read-only stage provenance for the frozen legacy failure census.
+"""Read-only stage provenance for a frozen single-method failure census.
 
 Original post functions are called once. A code-object-filtered Python trace
 observes existing branches; additional geometric projections run only after
@@ -19,6 +19,7 @@ import time
 import traceback
 
 from tools.legacy_failure_trace import PipelineTrace, SOURCE_FILES, comparison, json_value, observations
+from tools.failure_census_contract import case_method, case_path, case_record, manifest_method
 from tools.vae_compare_post import (atomic_json, configure_cpu, fingerprint, native_validity,
     preload_cpu_dependencies, read_json, read_step_at_precision, run_isolated_jobs,
     sha256_file, stable_seed, validate_raw_prediction)
@@ -368,7 +369,7 @@ def execute_provenance(job, status_path):
     started = time.monotonic()
     sample_id = job["sample_id"]
     trace_path = Path(job["trace_path"])
-    trace = {"sample_id": sample_id, "version": VERSION, "protocol_fingerprint": job["protocol_fingerprint"],
+    trace = {"sample_id": sample_id, "method": job["method"], "version": VERSION, "protocol_fingerprint": job["protocol_fingerprint"],
              "raw_sha256": job["raw_sha256"], "seed": stable_seed(sample_id, "post"),
              "status": "running", "stage": "startup", "fallback_used": False,
              "original": job["original"], "post_mode": job["mode"], "instrumentation_errors": []}
@@ -376,7 +377,7 @@ def execute_provenance(job, status_path):
         trace["elapsed_seconds"] = time.monotonic() - started
         atomic_json(trace_path, json_value(trace))
         atomic_json(status_path, {key: trace[key] for key in
-            ("sample_id", "protocol_fingerprint", "status", "stage", "elapsed_seconds")})
+            ("sample_id", "method", "protocol_fingerprint", "status", "stage", "elapsed_seconds")})
     observer = ProvenanceTrace(trace, flush)
     flush()
     try:
@@ -420,6 +421,18 @@ def provenance_process(job, status_path, log_path):
         execute_provenance(job, status_path)
 
 
+def validate_replay_paths(case, root):
+    """A replay must not enter, replace, or contain any source asset directory."""
+    raw = case_path(case, "raw_npz")
+    replay = (root / "replay" / case["id"]).resolve()
+    if raw.parent.name != case["id"]:
+        raise ValueError("Unsafe or inconsistent input/output paths")
+    for name in ("raw_npz", "post_step", "fit_step", "gt_npz", "gt_step"):
+        source = case_path(case, name).resolve().parent
+        if replay == source or replay in source.parents or source in replay.parents:
+            raise ValueError(f"Replay would overlap source assets: {name}")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, required=True)
@@ -434,6 +447,7 @@ def main(argv=None):
         parser.error("workers must be 1..8; timeout must be >0 and <=180 seconds")
     root, manifest_path = args.output_root.resolve(), args.manifest.resolve()
     cases = read_json(manifest_path)["cases"]
+    method = manifest_method(cases)
     ids = [case["id"] for case in cases]
     if len(ids) != len(set(ids)):
         raise ValueError("Duplicate IDs")
@@ -441,8 +455,8 @@ def main(argv=None):
         if set(args.only_ids) - set(ids):
             raise ValueError("Unknown --only-ids")
         cases = [case for case in cases if case["id"] in set(args.only_ids)]
-    protocol = {"version": VERSION, "manifest_sha256": sha256_file(manifest_path),
-        "source_sha256": {name: sha256_file(Path(name)) for name in (*SOURCE_FILES, "tools/legacy_failure_provenance.py", "tools/legacy_failure_geometry.py")},
+    protocol = {"version": VERSION, "method": method, "manifest_sha256": sha256_file(manifest_path),
+        "source_sha256": {name: sha256_file(Path(name)) for name in (*SOURCE_FILES, "tools/legacy_failure_provenance.py", "tools/legacy_failure_geometry.py", "tools/failure_census_contract.py")},
         "post_mode": args.post_mode, "workers": args.workers, "timeout_seconds": args.timeout, "cpu_threads": 1,
         "seed": "stable_seed(id, 'post')", "optimization_initial_budget": 200,
         "optimization_adaptive_limit": 600, "drop_num": 0, "sampling": SAMPLING, "output_root": str(root)}
@@ -454,10 +468,9 @@ def main(argv=None):
     atomic_json(metadata / "protocol.json", protocol)
     jobs = []
     for case in cases:
-        sid, raw = case["id"], Path(case["paths"]["raw_legacy_npz"])
+        sid, raw = case["id"], case_path(case, "raw_npz")
         trace_path = root / "traces" / f"{sid}.json"
-        if raw.parent.name != sid or (root / "replay" / sid).resolve() == Path(case["paths"]["post_legacy_step"]).parent.resolve():
-            raise ValueError("Unsafe or inconsistent input/output paths")
+        validate_replay_paths(case, root)
         raw_hash = sha256_file(raw) if raw.is_file() else None
         old = read_json(trace_path)
         if old:
@@ -466,10 +479,10 @@ def main(argv=None):
             if args.resume and old.get("status") in ("ok", "post_error", "timeout", "crash"):
                 continue
             raise ValueError(f"Refusing overwrite: {sid}")
-        jobs.append({"sample_id": sid, "method": "legacy", "mode": args.post_mode, "protocol_fingerprint": key,
+        jobs.append({"sample_id": sid, "method": case_method(case), "mode": args.post_mode, "protocol_fingerprint": key,
             "raw_sha256": raw_hash, "raw_root": str(raw.parents[1]), "post_root": str(root / "replay"),
-            "trace_path": str(trace_path), "original": case["post_legacy"] if args.post_mode == "optimized" else case["fit_legacy"],
-            "original_step": case["paths"]["post_legacy_step" if args.post_mode == "optimized" else "fit_legacy_step"]})
+            "trace_path": str(trace_path), "original": case_record(case, "post" if args.post_mode == "optimized" else "fit"),
+            "original_step": str(case_path(case, "post_step" if args.post_mode == "optimized" else "fit_step"))})
     configure_cpu()
     preload_cpu_dependencies()
     run_isolated_jobs(jobs, metadata, args.workers, args.timeout, process_target=provenance_process)
@@ -477,13 +490,13 @@ def main(argv=None):
     for case in cases:
         path = root / "traces" / f"{case['id']}.json"
         trace = read_json(path)
-        status = read_json(metadata / "samples" / "legacy" / f"{case['id']}.json")
+        status = read_json(metadata / "samples" / case_method(case) / f"{case['id']}.json")
         if status.get("status") in ("timeout", "crash"):
-            trace.update(sample_id=case["id"], status=status["status"], error=status.get("error"))
+            trace.update(sample_id=case["id"], method=case_method(case), status=status["status"], error=status.get("error"))
             trace["mechanisms"] = mechanism_flags(trace)
             atomic_json(path, json_value(trace))
         traces.append(trace)
-    summary = {"version": VERSION, "protocol_fingerprint": key, "intended_count": len(cases),
+    summary = {"version": VERSION, "method": method, "protocol_fingerprint": key, "intended_count": len(cases),
         "status_counts": dict(Counter(t.get("status", "missing") for t in traces)),
         "instrumentation_error_cases": [t["sample_id"] for t in traces if t.get("instrumentation_errors")],
         "step_data_equal_count": sum(t.get("step_data_comparison", {}).get("equal") is True for t in traces),

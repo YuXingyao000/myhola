@@ -12,6 +12,7 @@ import numpy as np
 
 from tools.vae_compare_post import (atomic_json, configure_cpu, fingerprint, read_json,
                                     read_step_at_precision, run_isolated_jobs, sha256_file)
+from tools.failure_census_contract import case_method, case_path, manifest_method
 
 THRESHOLDS = (0.002, 0.006, 0.01, 0.08)
 
@@ -70,7 +71,7 @@ def execute(job, status_path, log_path):
         os.dup2(handle.fileno(), 1)
         os.dup2(handle.fileno(), 2)
         start = time.monotonic()
-        result = {'id': job['sample_id'], 'schema': 'legacy_saved_step_v1',
+        result = {'id': job['sample_id'], 'method': job['method'], 'schema': 'legacy_saved_step_v1',
                   'protocol_fingerprint': job['protocol_fingerprint'], 'step_sha256': job['step_sha256'],
                   'status': 'running', 'sampling_errors': []}
         try:
@@ -112,13 +113,16 @@ def main(argv=None):
     root = args.root.resolve()
     manifest = read_json(args.manifest)
     cases = manifest['cases']
+    method = manifest_method(cases)
+    if len({case['id'] for case in cases}) != len(cases):
+        raise ValueError('Duplicate manifest IDs')
     if args.only_ids:
         if set(args.only_ids)-{case['id'] for case in cases}:
             raise ValueError('Requested ID outside frozen manifest')
         cases = [case for case in cases if case['id'] in set(args.only_ids)]
-    protocol = {'schema': 'legacy_saved_step_v1', 'manifest_sha256': sha256_file(args.manifest),
+    protocol = {'schema': 'legacy_saved_step_v1', 'method': method, 'manifest_sha256': sha256_file(args.manifest),
                 'source_sha256': {p: sha256_file(Path(p)) for p in
-                    ['tools/legacy_failure_saved_step.py', 'tools/legacy_failure_geometry.py', 'tools/vae_compare_post.py']},
+                    ['tools/legacy_failure_saved_step.py', 'tools/legacy_failure_geometry.py', 'tools/vae_compare_post.py', 'tools/failure_census_contract.py']},
                 'curve_samples': 128, 'thresholds': THRESHOLDS, 'workers': args.workers,
                 'timeout_seconds': args.timeout, 'read_precision_mode': 0,
                 'distance': 'max of directed p95 Euclidean point-to-polyline distances, normalized XYZ length',
@@ -132,7 +136,7 @@ def main(argv=None):
     atomic_json(metadata/'protocol.json', protocol)
     jobs = []
     for case in cases:
-        source = Path(case['paths']['post_legacy_step'])
+        source = case_path(case, 'post_step')
         out = root/'saved_step'/f"{case['id']}.json"
         old = read_json(out)
         sha = sha256_file(source) if source.exists() else None
@@ -141,9 +145,9 @@ def main(argv=None):
                 raise ValueError('Changed input or protocol')
             if args.resume:
                 continue
-        jobs.append({'sample_id': case['id'], 'method': 'legacy', 'mode': 'optimized', 'path': str(source),
+        jobs.append({'sample_id': case['id'], 'method': case_method(case), 'mode': 'optimized', 'path': str(source),
                      'output': str(out), 'step_sha256': sha,
-                     'raw_sha256': sha256_file(Path(case['paths']['raw_legacy_npz'])), 'protocol_fingerprint': key})
+                     'raw_sha256': sha256_file(case_path(case, 'raw_npz')), 'protocol_fingerprint': key})
     configure_cpu()
     from tools.legacy_failure_geometry import native_diagnostics  # Preload once before fork.
     from OCC.Core.STEPControl import STEPControl_Reader
@@ -152,13 +156,13 @@ def main(argv=None):
     for case in cases:
         out = root/'saved_step'/f"{case['id']}.json"
         row = read_json(out)
-        status = read_json(metadata/'samples'/'legacy'/f"{case['id']}.json")
+        status = read_json(metadata/'samples'/case_method(case)/f"{case['id']}.json")
         if status.get('status') in ('timeout', 'crash'):
-            row.update(id=case['id'], status=status['status'], error=status.get('error'), protocol_fingerprint=key)
+            row.update(id=case['id'], method=case_method(case), status=status['status'], error=status.get('error'), protocol_fingerprint=key)
             atomic_json(out, row)
         state = row.get('status', 'missing')
         counts[state] = counts.get(state, 0)+1
-    print(json.dumps({'cases': len(cases), 'status_counts': counts}))
+    print(json.dumps({'method': method, 'cases': len(cases), 'status_counts': counts}))
 
 
 if __name__ == '__main__':

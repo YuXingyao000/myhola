@@ -1,0 +1,17 @@
+# Freeze ID lists and compact summaries in Git; retain full evidence locally.
+manifest.json
+legacy_control_manifest.json
+baseline_reuse.json
+source_asset_audit.json
+traces/
+replay/
+upstream/
+saved_step/
+cases.json
+charts/
+page/data.js
+pilot*/
+legacy_controls/
+fit_only_counterfactual/
+validation/*.png
+validation/browser_profile/

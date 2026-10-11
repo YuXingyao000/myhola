@@ -1,4 +1,4 @@
-"""GT-referenced upstream observations for the frozen legacy failure census.
+"""GT-referenced upstream observations for a frozen single-method census.
 
 Distances are lengths in normalized XYZ, not squared Chamfer distances. These
 are screening observations, not a classifier of unique causes of invalid CAD.
@@ -19,6 +19,7 @@ import numpy as np
 from scipy.spatial import cKDTree
 
 from tools.vae_compare_post import atomic_json, configure_cpu, fingerprint, read_json, run_isolated_jobs
+from tools.failure_census_contract import case_method, case_path, manifest_method
 
 
 SCHEMA = "legacy_failure_upstream_v1"
@@ -32,7 +33,7 @@ SETTINGS = {
     "raw_cross_pair_rule": "any candidate combination between distinct unordered face pairs; prefer smallest passed threshold, then symmetric p95",
     "face_distance": "nearest 16x16 grid samples; a proximity proxy, NOT distance to the underlying surface or trimmed-face overlap",
     "endpoint_rule": "known GT-closed pair: own endpoint gap; known GT-open pair: other curves' endpoints only; unknown pair: no closure assumption",
-    "dedup": "not_applied: frozen decoder call explicitly sets v_deduplicated=False",
+    "dedup": "not_applied: fixed-identity posterior_mean decode preserves every input face in its original order",
     "uncertainty": "Threshold flags are descriptive screening, not validated causes or CAD validity criteria.",
 }
 
@@ -399,7 +400,7 @@ def mechanism_flags(report):
 
 def input_sources(case, root):
     sid = case["id"]
-    paths = {"raw": Path(case["paths"]["raw_legacy_npz"]), "gt": Path(case["paths"]["gt_npz"]),
+    paths = {"raw": case_path(case, "raw_npz"), "gt": case_path(case, "gt_npz"),
              "trace": root / "traces" / f"{sid}.json", "stage_geometry": root / "replay" / sid / "trace_geometry.npz"}
     return {name: {"path": str(path.resolve()), "sha256": digest(path)} for name, path in paths.items()}
 
@@ -482,7 +483,7 @@ def worker(job, status_path, log_path):
         os.dup2(handle.fileno(), 1)
         os.dup2(handle.fileno(), 2)
         started = time.monotonic()
-        output = {"schema": SCHEMA, "sample_id": job["sample_id"], "protocol_fingerprint": job["protocol_fingerprint"],
+        output = {"schema": SCHEMA, "sample_id": job["sample_id"], "method": job["method"], "protocol_fingerprint": job["protocol_fingerprint"],
                   "sources": job["sources"], "settings": SETTINGS, "status": "running"}
         path = Path(job["output"])
         atomic_json(path, output)
@@ -505,6 +506,7 @@ def main(argv=None):
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--workers", type=int, default=8)
+    parser.add_argument("--only-ids", nargs="+")
     parser.add_argument("--resume", action="store_true")
     args = parser.parse_args(argv)
     if not 1 <= args.workers <= 8:
@@ -514,10 +516,16 @@ def main(argv=None):
     threadpool_limits(1)
     root = args.root.resolve()
     cases = read_json(args.manifest)["cases"]
+    method = manifest_method(cases)
     if len({case["id"] for case in cases}) != len(cases):
         raise ValueError("Duplicate manifest IDs")
-    protocol = {"schema": SCHEMA, "settings": SETTINGS, "manifest_sha256": digest(args.manifest),
+    if args.only_ids:
+        if set(args.only_ids) - {case["id"] for case in cases}:
+            raise ValueError("Requested ID outside frozen manifest")
+        cases = [case for case in cases if case["id"] in set(args.only_ids)]
+    protocol = {"schema": SCHEMA, "method": method, "settings": SETTINGS, "manifest_sha256": digest(args.manifest),
                 "tool_sha256": digest(__file__), "gt_helper_sha256": digest("src/brepnet/data/shared_boundaries.py"),
+                "contract_helper_sha256": digest("tools/failure_census_contract.py"),
                 "workers": args.workers, "cpu_threads": 1, "hard_timeout_seconds": 180}
     protocol_hash = fingerprint(protocol)
     protocol_path = root / "metadata" / "upstream" / "protocol.json"
@@ -541,7 +549,7 @@ def main(argv=None):
             archive = root / "metadata" / "upstream" / "superseded" / f"{sid}.{time.time_ns()}.json"
             archive.parent.mkdir(parents=True, exist_ok=True)
             output.rename(archive)
-        jobs.append({"sample_id": sid, "method": "legacy", "mode": "upstream",
+        jobs.append({"sample_id": sid, "method": case_method(case), "mode": "upstream",
                      "protocol_fingerprint": protocol_hash, "raw_sha256": sources["raw"]["sha256"],
                      "case": case, "sources": sources, "output": str(output)})
     metadata = root / "metadata" / "upstream"
@@ -551,12 +559,12 @@ def main(argv=None):
         sid = case["id"]
         path = root / "upstream" / f"{sid}.json"
         output = read_json(path)
-        status = read_json(metadata / "samples" / "legacy" / f"{sid}.json")
+        status = read_json(metadata / "samples" / case_method(case) / f"{sid}.json")
         if status.get("status") in ("timeout", "crash"):
-            output.update(status=status["status"], error=status.get("error"))
+            output.update(sample_id=sid, method=case_method(case), status=status["status"], error=status.get("error"))
             atomic_json(path, output)
         statuses[output.get("status", "missing")] += 1
-    atomic_json(root / "upstream_summary.json", {"intended": len(cases), "status_counts": dict(statuses), "protocol_fingerprint": protocol_hash})
+    atomic_json(root / "upstream_summary.json", {"method": method, "intended": len(cases), "status_counts": dict(statuses), "protocol_fingerprint": protocol_hash})
     print(json.dumps(dict(statuses)), flush=True)
 
 
