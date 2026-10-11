@@ -1,0 +1,102 @@
+{
+  "diagnostic_counts": {
+    "new": 411,
+    "main_failed": 304
+  },
+  "new_statuses": {
+    "traces": {
+      "ok": 411
+    },
+    "upstream": {
+      "ok": 411
+    },
+    "saved_step": {
+      "ok": 411
+    }
+  },
+  "all_new_replays_step_data_equal": true,
+  "main_counts": {
+    "raw_extra_pair": 67,
+    "raw_missing_pair": 33,
+    "raw_any_pair_error": 80,
+    "raw_directed_duplicate": 0,
+    "face_count_mismatch": 0,
+    "all_faces_returned": 78,
+    "strict_closed_candidate_failed": 181,
+    "closed_admitted_still_failed": 190,
+    "owner_gap_independent_curve_0.002": 304,
+    "owner_gap_independent_curve_0.006": 297,
+    "owner_gap_independent_curve_0.01": 273,
+    "owner_gap_independent_curve_0.08": 12,
+    "owner_gap_after_periodic_replacement_0.002": 304,
+    "owner_gap_after_periodic_replacement_0.006": 294,
+    "owner_gap_after_periodic_replacement_0.01": 274,
+    "owner_gap_after_periodic_replacement_0.08": 17,
+    "saved_has_free_edges": 274,
+    "final_success_discarded_wire": 111,
+    "never_closed_admitted": 63,
+    "face_without_boundary": 1
+  },
+  "main_face_counts": {
+    "closed_admitted_still_failed": 305,
+    "strict_closed_candidate_failed": 284,
+    "returned_face_dropped_wire": 213,
+    "never_closed_admitted": 189
+  },
+  "failed_faces_without_attempts": [
+    {
+      "id": "00772578",
+      "face": 1,
+      "no_assigned_boundary": true
+    },
+    {
+      "id": "00772578",
+      "face": 2,
+      "no_assigned_boundary": true
+    },
+    {
+      "id": "00772578",
+      "face": 13,
+      "no_assigned_boundary": true
+    }
+  ],
+  "final_failed_face_check_errors": {
+    "BRepCheck_InvalidSameParameterFlag": {
+      "cad": 146,
+      "faces": 231
+    },
+    "BRepCheck_NotClosed": {
+      "cad": 137,
+      "faces": 211
+    },
+    "BRepCheck_InvalidCurveOnSurface": {
+      "cad": 146,
+      "faces": 231
+    },
+    "BRepCheck_UnorientableShape": {
+      "cad": 188,
+      "faces": 299
+    },
+    "BRepCheck_SelfIntersectingWire": {
+      "cad": 43,
+      "faces": 58
+    },
+    "BRepCheck_InvalidPointOnCurve": {
+      "cad": 1,
+      "faces": 1
+    },
+    "BRepCheck_IntersectingWires": {
+      "cad": 30,
+      "faces": 35
+    },
+    "BRepCheck_BadOrientationOfSubshape": {
+      "cad": 6,
+      "faces": 6
+    },
+    "BRepCheck_InvalidImbricationOfWires": {
+      "cad": 3,
+      "faces": 3
+    }
+  },
+  "note": "Independent read of original trace events, not generated report summaries. Overlapping counts, not unique roots."
+}

@@ -206,5 +206,120 @@
         "rms": 6.43077703200106
       }
     }
+  },
+  "completed_at_utc": "2026-10-11T16:12:39.214026+00:00",
+  "report_tests_passed": 34,
+  "full_diagnostics": {
+    "intersection": {
+      "traces": {
+        "count": 411,
+        "status_counts": {
+          "ok": 411
+        },
+        "step_data_equal": 411,
+        "same_original_outcome": 411,
+        "instrumentation_error_count": 0
+      },
+      "upstream": {
+        "count": 411,
+        "status_counts": {
+          "ok": 411
+        }
+      },
+      "saved_step": {
+        "count": 411,
+        "status_counts": {
+          "ok": 411
+        }
+      }
+    },
+    "legacy_controls": {
+      "traces": {
+        "count": 42,
+        "status_counts": {
+          "ok": 42
+        },
+        "step_data_equal": 42,
+        "same_original_outcome": 42,
+        "instrumentation_error_count": 0
+      },
+      "upstream": {
+        "count": 42,
+        "status_counts": {
+          "ok": 42
+        }
+      },
+      "saved_step": {
+        "count": 42,
+        "status_counts": {
+          "ok": 42
+        }
+      }
+    },
+    "fit_only_counterfactual": {
+      "traces": {
+        "count": 6,
+        "status_counts": {
+          "ok": 6
+        },
+        "step_data_equal": 6,
+        "same_original_outcome": 6,
+        "instrumentation_error_count": 0
+      },
+      "upstream": {
+        "count": 6,
+        "status_counts": {
+          "partial": 6
+        }
+      }
+    }
+  },
+  "baseline_reused": 369,
+  "main_failure_denominator": 304,
+  "paired_cohorts": {
+    "persistent": 262,
+    "regressed": 42,
+    "rescued": 107
+  },
+  "independent_recount_checks": 35,
+  "independent_recount_mismatches": 0,
+  "source_assets_unchanged": 6433,
+  "browser_check": "browser_check.json",
+  "browser_checks": {
+    "cohort_threshold_combinations": 16,
+    "observation_rows_per_view": 28,
+    "resources": 16,
+    "mobile_document_width": 390,
+    "javascript_errors": 0
+  },
+  "limitations": [
+    "The six fit-only upstream files are partial because no optimized-coordinate snapshot exists on that path.",
+    "These checks verify implementation and provenance, not a causal attribution to a neural module or loss."
+  ],
+  "artifacts": {
+    "REPORT.md": {
+      "bytes": 15450,
+      "sha256": "bb26bc2efd00dba78d1d38c8c9e7dc82e3959c38b069fe822830f5fee8720f97"
+    },
+    "NOTE.md": {
+      "bytes": 6919,
+      "sha256": "048a7a3a8d2a93eaf413b66f8218c932c3427b047d22e55f332fc56f5093da38"
+    },
+    "compact_summary.json": {
+      "bytes": 82667,
+      "sha256": "28a7f531f088972ceb1ca84d59a9d08346282a4a18402c78333e6a51a0af4e09"
+    },
+    "page/index.html": {
+      "bytes": 8710,
+      "sha256": "584cfe924867a9ee641722357ee13b8086db7fa8d5013d0600dddc9987d0880d"
+    },
+    "page/app.js": {
+      "bytes": 11603,
+      "sha256": "7ea5bbbe039c2af4ab6a4a4f36d32382df33a8f048674eda2ba717f6f2694414"
+    },
+    "page/data.js": {
+      "bytes": 12111563,
+      "sha256": "a269d22c999f7a8a8f48893670788593cec26b6fc70c5467a7d9969163ffc092"
+    }
   }
 }

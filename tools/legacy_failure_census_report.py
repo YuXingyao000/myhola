@@ -17,6 +17,7 @@ import math
 from pathlib import Path
 
 from tools.legacy_failure_select import file_sha256, read_table
+from tools.failure_census_contract import case_record
 
 
 VERSION = "legacy_failure_census_report_v1"
@@ -140,9 +141,16 @@ def trace_verified(trace):
             and get(trace, "step_data_comparison", "equal") is True)
 
 
-def terminal_stage(trace):
+def terminal_stage(trace, recorded_valid=None):
+    # Original success is an observed outcome, even when its diagnostic replay
+    # is incomplete. Replay verification remains a separate field/requirement
+    # for every intermediate-stage observation.
+    if recorded_valid is True:
+        return "native_valid"
     if not trace_verified(trace):
         return "unknown"
+    if recorded_valid is None and get(trace, "replay", "native_valid_solid") is True:
+        return "native_valid"
     saves = trace.get("save_attempts", [])
     if any(item.get("legacy_saved_step_check") is True for item in saves):
         return "native_readback_invalid" if get(trace, "replay", "native_valid_solid") is False else "unresolved"
@@ -163,7 +171,7 @@ def local_failed_faces(case, trace, upstream, identity_contract):
     if not trace_verified(trace) or identity_contract.get("gt_order_preserved") is not True:
         return unknown
     runs = [run for run in trace.get("trim_runs", []) if run.get("context") == "main"]
-    if len(runs) != 1 or runs[0].get("num_faces") != case["raw_legacy"].get("pred_face_count"):
+    if len(runs) != 1 or runs[0].get("num_faces") != case_record(case, "raw").get("pred_face_count"):
         return unknown
     failed = runs[0].get("failed_face_indices")
     if not isinstance(failed, list) or any(type(index) is not int or not 0 <= index < runs[0]["num_faces"] for index in failed):
@@ -261,7 +269,7 @@ def raw_curve_decomposition(cases):
     values = Counter()
     checked, unknown = [], []
     for case in cases:
-        raw = case["raw_legacy"]
+        raw = case_record(case, "raw")
         keys = ("raw_edge_count", "legacy_reciprocal_pair_count", "legacy_unilateral_pair_count",
                 "legacy_directed_duplicate_count", "same_face_count", "invalid_face_index_count",
                 "invalid_edge_index_count", "repeated_edge_reference_count")
@@ -435,10 +443,10 @@ def aggregate(manifest, root):
             for threshold in THRESHOLDS}
         deltas = get(upstream, "stage_deltas", default={}) if stage_verified else {}
         records.append({"id": sid, "gt_face_count": case["gt_face_count"],
-            "original_shape_type": case["post_legacy"].get("shape_type"),
-            "fit_only_native_valid": case["fit_legacy"].get("native_valid_solid"),
-            "raw_metrics": case["raw_legacy"], "raw_topology": raw_topology_class(case["raw_legacy"]),
-            "terminal_stage": terminal_stage(trace), "trace_verified": verified,
+            "original_shape_type": case_record(case, "post").get("shape_type"),
+            "fit_only_native_valid": case_record(case, "fit").get("native_valid_solid"),
+            "raw_metrics": case_record(case, "raw"), "raw_topology": raw_topology_class(case_record(case, "raw")),
+            "terminal_stage": terminal_stage(trace, case_record(case, "post").get("native_valid_solid")), "trace_verified": verified,
             "upstream_stage_source_verified": stage_verified,
             "trace_status": trace.get("status", "missing"), "upstream_status": upstream.get("status", "missing"),
             "saved_step_status": saved.get("status", "missing"), "saved_step": saved_step_observations(saved),
@@ -452,10 +460,13 @@ def aggregate(manifest, root):
             "unresolved": trace.get("unresolved", []) + upstream.get("unknowns", []),
             "source_files": {"trace": trace_source, "upstream": upstream_source, "saved_step": saved_source}})
     denominator = len(records)
+    terminal_keys = list(TERMINAL)
+    if any(row["terminal_stage"] == "native_valid" for row in records):
+        terminal_keys.append("native_valid")
     terminal = {key: {"count": sum(row["terminal_stage"] == key for row in records),
-                      "ids": [row["id"] for row in records if row["terminal_stage"] == key]} for key in TERMINAL}
+                      "ids": [row["id"] for row in records if row["terminal_stage"] == key]} for key in terminal_keys}
     cross = {top: {stage: [row["id"] for row in records if row["raw_topology"] == top and row["terminal_stage"] == stage]
-                   for stage in TERMINAL} for top in ("exact", "inexact", "unknown")}
+                   for stage in terminal_keys} for top in ("exact", "inexact", "unknown")}
     faces = {key: [] for key in ("raw_wrong_pair_incident", "raw_local_pair_exact", "unknown")}
     uncountable = []
     for row in records:

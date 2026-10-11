@@ -1,6 +1,6 @@
 # Intersection refinement
 
-这一版保留原 HoLa light 的 encoder、posterior、face Transformer、面/边几何头、`inter` 和线性 `classifier`，新增一轮几何读取、候选边消息聚合和面/边残差回写。新增模块零初始化输出 ΔF/ΔE，完整旧模型权重用于初始化；默认冻结 encoder/posterior，微调 decoder。实现协议见 [PLAN.md](PLAN.md)，验证结果见 [NOTE.md](NOTE.md)。已完成首次微调测试：2417 件上，优化后合法 solid 由 2048 增至 2113，但固定 diffusion latent 的几何误差未改善。完整结果和局限见 [测试报告](evaluation_20261011/REPORT.md)，复现命令见 [评估说明](evaluation_20261011/README.md)。
+这一版保留原 HoLa light 的 encoder、posterior、face Transformer、面/边几何头、`inter` 和线性 `classifier`，新增一轮几何读取、候选边消息聚合和面/边残差回写。新增模块零初始化输出 ΔF/ΔE，完整旧模型权重用于初始化；默认冻结 encoder/posterior，微调 decoder。实现协议见 [PLAN.md](PLAN.md)，验证结果见 [NOTE.md](NOTE.md)。已完成首次微调测试：2417 件上，优化后合法 solid 由 2048 增至 2113，但固定 diffusion latent 的几何误差未改善。完整结果和局限见 [测试报告](evaluation_20261011/REPORT.md)，复现命令见 [评估说明](evaluation_20261011/README.md)。全部304失败件的溯源、107救回与42退步的成对比较见[失败统计](failure_census_20261011/README.md)，研究判断见[通俗解释](failure_census_20261011/NOTE.md)。
 
 ## 从哪里读代码
 

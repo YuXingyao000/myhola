@@ -184,3 +184,8 @@ env.txt
 # Per-ID audit streams can be regenerated; retain accepted/rejected manifests
 # and their compact summaries in Git instead.
 /checkpoints/**/samples.csv
+
+# Full paired failure trajectories stay local; compact_summary.json is versioned.
+/checkpoints/intersection_refinement/failure_census_20261011/summary.json
+/checkpoints/intersection_refinement/failure_census_20261011/cases.csv
+/checkpoints/intersection_refinement/failure_census_20261011/optimization_regressions.json

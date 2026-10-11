@@ -1,0 +1,148 @@
+{
+  "checked_at_utc": "2026-10-11T16:10:53.771753+00:00",
+  "comparison_count": 35,
+  "mismatches": [],
+  "checks": {
+    "strict_closed_candidate_failed": [
+      181,
+      181
+    ],
+    "closed_admitted_still_failed": [
+      190,
+      190
+    ],
+    "final_success_discarded_wire": [
+      111,
+      111
+    ],
+    "never_closed_admitted": [
+      63,
+      63
+    ],
+    "face_without_boundary": [
+      1,
+      1
+    ],
+    "face_count_mismatch": [
+      0,
+      0
+    ],
+    "raw_extra_gt_pair": [
+      67,
+      67
+    ],
+    "raw_missing_gt_pair": [
+      33,
+      33
+    ],
+    "raw_duplicate_directed_pair": [
+      0,
+      0
+    ],
+    "owner_independent_0.002": [
+      304,
+      304
+    ],
+    "owner_after_0.002": [
+      304,
+      304
+    ],
+    "owner_independent_0.006": [
+      297,
+      297
+    ],
+    "owner_after_0.006": [
+      294,
+      294
+    ],
+    "owner_independent_0.01": [
+      273,
+      273
+    ],
+    "owner_after_0.01": [
+      274,
+      274
+    ],
+    "owner_independent_0.08": [
+      12,
+      12
+    ],
+    "owner_after_0.08": [
+      17,
+      17
+    ],
+    "BRepCheck_InvalidSameParameterFlag_cad": [
+      146,
+      146
+    ],
+    "BRepCheck_InvalidSameParameterFlag_faces": [
+      231,
+      231
+    ],
+    "BRepCheck_NotClosed_cad": [
+      137,
+      137
+    ],
+    "BRepCheck_NotClosed_faces": [
+      211,
+      211
+    ],
+    "BRepCheck_InvalidCurveOnSurface_cad": [
+      146,
+      146
+    ],
+    "BRepCheck_InvalidCurveOnSurface_faces": [
+      231,
+      231
+    ],
+    "BRepCheck_UnorientableShape_cad": [
+      188,
+      188
+    ],
+    "BRepCheck_UnorientableShape_faces": [
+      299,
+      299
+    ],
+    "BRepCheck_SelfIntersectingWire_cad": [
+      43,
+      43
+    ],
+    "BRepCheck_SelfIntersectingWire_faces": [
+      58,
+      58
+    ],
+    "BRepCheck_InvalidPointOnCurve_cad": [
+      1,
+      1
+    ],
+    "BRepCheck_InvalidPointOnCurve_faces": [
+      1,
+      1
+    ],
+    "BRepCheck_IntersectingWires_cad": [
+      30,
+      30
+    ],
+    "BRepCheck_IntersectingWires_faces": [
+      35,
+      35
+    ],
+    "BRepCheck_BadOrientationOfSubshape_cad": [
+      6,
+      6
+    ],
+    "BRepCheck_BadOrientationOfSubshape_faces": [
+      6,
+      6
+    ],
+    "BRepCheck_InvalidImbricationOfWires_cad": [
+      3,
+      3
+    ],
+    "BRepCheck_InvalidImbricationOfWires_faces": [
+      3,
+      3
+    ]
+  },
+  "independent_recount_sha256": "29c1c536f8fb96ce769dc81a48eb33c8a35dc5a2e5676f063e04222209711dd5"
+}
