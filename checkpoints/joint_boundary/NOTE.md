@@ -1,5 +1,7 @@
 # 2026-10-10 — 联合共享边界 Decoder 实现
 
+> 当前进展（2026-10-11）：冻结 encoder 正式运行已完成 100,000 steps；已完成新旧 VAE 的固定协议全量对比，见本文末尾与 [完整报告](comparison_20261011/REPORT.md)。下面各日期的“尚未训练”等表述属于当时状态。
+
 ## 为什么与实现范围
 
 在分支 `codex/joint-boundary-decoder` 实现第一次核心 Decoder 改造。起点为 `8cda6ab3`，原始研究重启状态可在原分支 `rotation_correction` 查看。本次不追加 `experiments/`；目录和命令见 [README](README.md)，事先确定的合同见 [PLAN](PLAN.md)。
@@ -85,3 +87,17 @@ CPU/GPU 混合损失中，每件对象的曲线／归属 cost 原来在 matching
 本次相关测试 **31 passed**（14.01 秒），包含旧／新损失及梯度逐项等价、CUDA bf16 前向反向、worker seed 与导出设备合同、原 run 管理回归。配置解析确认 frozen／one-way 为 8×32，joint 为 8×4。紧凑数字记录见 [runtime_20261010.json](validation/runtime_20261010.json)，详细诊断保存在本地 `metadata/performance_20261010/`。
 
 预算注意：全局 batch 从 4 变为 256，保留 100,000 steps 会将样本曝光扩大约 64 倍；`1,563 × 256 ≈ 100,000 × 4` 只对齐曝光量，不保证优化等价。学习率没有线性放大；尚需正式训练判断大 batch 收敛。后续与旧模型比较时固定并报告预算，而不能仅对齐 step 数。
+
+## 2026-10-11 — 完整 VAE 对比与 diffusion latent 重放
+
+`frozen/20261010T084310.423740Z` 已完成 100,000 steps，本次在测试前固定验证集最佳 `epoch=0538-step=00097559-val_loss=0.028098.ckpt`。两个 encoder/posterior 的 243 个 tensor 完全相等，原 VAE 完整严格加载；相同 2,417 个 accepted test ID、identity 坐标、posterior mean 与面集合，Decoder 自主预测拓扑，不读取 GT adjacency、不额外删面。原 test 的 7 个契约不支持对象保留在 2,424 总分母中。
+
+全量结果（Legacy → Joint）：面 XYZ MAE `0.00207324 → 0.00456291`，面 CD² `0.000050153 → 0.000237510`，边 CD² `0.000089235 → 0.001525565`，合法不同面 pair 去重后的宏 F1 `99.8171% → 96.8011%`。新模型平均 69.4042 条激活 query，其中同 pair 额外 query 38.1589；旧模型正常互反半边不计重复。
+
+相同 CPU 后处理预算下，原读取容差有效 solid：fit-only `1,058/2,417 → 478/2,417`（43.77% → 19.78%）；geometry optimized `2,048/2,417 → 778/2,417`（84.73% → 32.19%）。独立原容差检查、强制 0.1 容差检查与可计算几何子集分别报告。新模型的 post adapter 已把激活 query 平均从 69.40 减至 30.01，全部最终 pair 唯一；不能将实体差距全归因于重复直接进入 OCC。
+
+同一批历史 diffusion 生成 latent 全 2,417 件重放，Joint 面 CD² 增加 0.83%、边 CD² 增加 9.54%；无已证实替换收益。这只描述固定归档上游分布，不是重新执行照片流程／重新训练 diffusion，也不是实拍评估。两模型训练历史、几何 heads、decoder 容量等不同，不能作为等预算架构消融或单独否定共享边界思路。
+
+本轮结论是当前 checkpoint 整体退步，保留旧 Decoder 为可用基线。共享 latent 能被旧 Decoder 更好重建，将现阶段差距定位到新 Decoder 架构／训练组合；后续讨论须同时处理面／边几何与输出集合，而不只看 matched ownership 或重复条数。本次没有启动优化或新训练。
+
+协议、资产审计、完整数值、固定选例、逐对象产物导航与复现命令均在 [comparison_20261011](comparison_20261011/README.md)。28 项定向检查通过，完成 9,668 个 raw 预测文件及 9,668 个 OCC 后处理任务；推理无失败，后处理失败／超时留在预定分母。评估实现提交为 `d72ecb08`；紧凑结果与可复现画图入口在后续提交保存，逐对象产物与图片留在本地。新实验产物均写入 checkpoints，未改动历史 experiments。

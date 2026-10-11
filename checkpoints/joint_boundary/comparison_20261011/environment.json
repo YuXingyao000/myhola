@@ -2,15 +2,6 @@
   "python": "3.10.13 | packaged by conda-forge | (main, Dec 23 2023, 15:36:39) [GCC 12.3.0]",
   "executable": "/mnt/d/anaconda3/envs/torch/bin/python",
   "platform": "Linux-5.15.0-138-generic-x86_64-with-glibc2.35",
-  "packages": {
-    "torch": "2.4.1+cu124",
-    "pytorch-lightning": "2.5.0.post0",
-    "numpy": "2.1.2",
-    "scipy": "1.15.3",
-    "trimesh": "4.5.3",
-    "matplotlib": "3.10.0",
-    "torch-geometric": "2.6.1"
-  },
   "pytorch_cuda": "12.4",
   "gpu_count": 8,
   "gpus": [
@@ -24,5 +15,45 @@
     "NVIDIA GeForce RTX 4090"
   ],
   "pythonocc": "7.8.1.1",
-  "logical_cpus": 128
+  "logical_cpus": 128,
+  "distribution_metadata": {
+    "torch": "2.4.1+cu124",
+    "pytorch-lightning": "2.5.0.post0",
+    "numpy": "2.1.2",
+    "scipy": "1.15.3",
+    "trimesh": "4.5.3",
+    "matplotlib": "3.10.0",
+    "torch-geometric": "2.6.1"
+  },
+  "runtime_versions": {
+    "torch": {
+      "version": "2.4.1+cu124",
+      "file": "/mnt/d/anaconda3/envs/torch/lib/python3.10/site-packages/torch/__init__.py"
+    },
+    "pytorch_lightning": {
+      "version": "2.5.0.post0",
+      "file": "/mnt/d/anaconda3/envs/torch/lib/python3.10/site-packages/pytorch_lightning/__init__.py"
+    },
+    "numpy": {
+      "version": "2.0.1",
+      "file": "/mnt/d/anaconda3/envs/torch/lib/python3.10/site-packages/numpy/__init__.py"
+    },
+    "scipy": {
+      "version": "1.15.3",
+      "file": "/mnt/d/anaconda3/envs/torch/lib/python3.10/site-packages/scipy/__init__.py"
+    },
+    "trimesh": {
+      "version": "4.5.3",
+      "file": "/mnt/d/anaconda3/envs/torch/lib/python3.10/site-packages/trimesh/__init__.py"
+    },
+    "matplotlib": {
+      "version": "3.10.0",
+      "file": "/mnt/d/anaconda3/envs/torch/lib/python3.10/site-packages/matplotlib/__init__.py"
+    },
+    "torch_geometric": {
+      "version": "2.6.1",
+      "file": "/mnt/d/anaconda3/envs/torch/lib/python3.10/site-packages/torch_geometric/__init__.py"
+    }
+  },
+  "version_note": "Runtime imports are authoritative; distribution metadata may include stale package records (NumPy)."
 }

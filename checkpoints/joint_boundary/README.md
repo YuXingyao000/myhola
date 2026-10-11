@@ -1,6 +1,6 @@
 # Joint shared-boundary decoder
 
-本目录对应 [实现合同](PLAN.md)。当前是候选模型实现，**尚未完成正式训练，不声称重建质量或 solid validity 提升**。[验证记录](NOTE.md)包含 39 项通过的针对性测试、真实 GPU 前向／反向／续训／导出以及 OCC GT 接口往返；单元测试、短运行与科研结果分开记录。
+本目录对应 [实现合同](PLAN.md)。冻结 encoder 的正式运行已完成 100,000 steps；2026-10-11 使用验证集最佳 step 97,559，与原 VAE 在相同 2,417 个 test 对象及共享 latent 下比较。**当前新 Decoder 的原始几何与自主拓扑均退步，尚不适合替换原 Decoder。** 完整协议、实体结果、固定选例与复现命令见 [比较报告](comparison_20261011/REPORT.md)和[比较 README](comparison_20261011/README.md)。[验证记录](NOTE.md)保留最初实现与短运行的历史状态，不能将其中“尚未训练”误读为当前状态。
 
 ## 表示与配置
 
@@ -16,7 +16,7 @@
 
 `batch_size` 与 `num_workers` 都是每个 GPU 进程的设置；frozen 的全局 batch 为 `8 × 32 = 256`，默认共有 `8 × 4 = 32` 个 loader workers。W&B 只记录运行，不决定 GPU 数量。使用下面的 `python -m` 入口，由 Lightning 启动 DDP 子进程；目前未验证外部 `torchrun` 的运行目录合同。
 
-2026-10-10 初始 frozen 配置曾为单卡 batch 4。现在同样 100,000 steps 对应的样本曝光量约为之前的 64 倍，不能作为等预算比较；若只对齐原先约 400,000 次样本曝光，可显式用 `trainer.max_steps=1563`，但这不等价于相同的优化过程。学习率仍为 `1e-4`，尚无大 batch 收敛结果。joint 保留已做过复杂对象反向检查的每卡 batch 4，不能直接套用 frozen 的 batch 32。
+2026-10-10 初始 frozen 配置曾为单卡 batch 4。现在同样 100,000 steps 对应的样本曝光量约为之前的 64 倍，不能作为等预算比较；若只对齐原先约 400,000 次样本曝光，可显式用 `trainer.max_steps=1563`，但这不等价于相同的优化过程。学习率仍为 `1e-4`；正式 frozen 运行已完成，质量判断见上述固定协议比较。joint 保留已做过复杂对象反向检查的每卡 batch 4，不能直接套用 frozen 的 batch 32。
 
 DDP 的 face L1 先在每卡按本地面数平均，再跨卡平均；由于每卡面数不同，它不严格等于单卡 batch 256 的全局面平均。本次保留原损失归约方式。frozen 与 joint 的全局 batch 相差 8 倍，阶段间同 step 数也不是等样本预算。
 

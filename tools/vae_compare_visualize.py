@@ -8,6 +8,7 @@ from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.colors import LightSource
 from mpl_toolkits.mplot3d.art3d import Line3DCollection, Poly3DCollection
 import numpy as np
 
@@ -38,15 +39,48 @@ def raw_geometry(path, truth=False):
 
 
 def step_geometry(path):
-    from OCC.Extend.DataExchange import read_step_file
-    from OCC.Core.TopAbs import TopAbs_FACE, TopAbs_EDGE
-    from shared.occ_utils import get_primitives, get_triangulations, get_points_along_edge
-    shape = read_step_file(str(path), as_compound=False, verbosity=False)
-    vertices, triangles = get_triangulations(shape, 0.02, 0.15)
+    from OCC.Core.BRep import BRep_Tool
+    from OCC.Core.BRepAdaptor import BRepAdaptor_Curve
+    from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
+    from OCC.Core.TopAbs import TopAbs_FACE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_REVERSED
+    from OCC.Core.TopLoc import TopLoc_Location
+    from shared.occ_utils import get_primitives
+    from tools.vae_compare_post import read_step_at_precision, native_validity
+    shape = read_step_at_precision(path)
+    valid = native_validity(shape)['native_valid_solid']
     faces = get_primitives(shape, TopAbs_FACE, v_remove_half=True)
     edges = get_primitives(shape, TopAbs_EDGE, v_remove_half=True)
-    curves = [get_points_along_edge(edge, 64)[:, :3] for edge in edges]
-    return np.asarray(vertices)[np.asarray(triangles)], curves, f'{len(faces)} faces, {len(edges)} edges'
+    meshes, curves, missing = [], [], 0
+    for face in faces:
+        BRepMesh_IncrementalMesh(face, 0.02, False, 0.15)
+        location = TopLoc_Location()
+        triangulation = BRep_Tool.Triangulation(face, location)
+        if triangulation is None or not triangulation.NbTriangles():
+            missing += 1
+            continue
+        transform = location.Transformation()
+        vertices = np.asarray([triangulation.Node(i).Transformed(transform).Coord()
+                               for i in range(1, triangulation.NbNodes() + 1)])
+        triangles = np.asarray([triangulation.Triangle(i).Get()
+                                for i in range(1, triangulation.NbTriangles() + 1)]) - 1
+        if face.Orientation() == TopAbs_REVERSED:
+            triangles = triangles[:, ::-1]
+        meshes.append(vertices[triangles])
+    for edge in edges:
+        if BRep_Tool.Degenerated(edge):
+            vertices = get_primitives(edge, TopAbs_VERTEX, v_remove_half=True)
+            if vertices:
+                curves.append(np.repeat(np.asarray(BRep_Tool.Pnt(vertices[0]).Coord())[None], 64, axis=0))
+        else:
+            curve = BRepAdaptor_Curve(edge)
+            curves.append(np.asarray([curve.Value(float(u)).Coord()
+                                      for u in np.linspace(curve.FirstParameter(), curve.LastParameter(), 64)]))
+    if not meshes:
+        raise ValueError('No renderable face meshes')
+    detail = f'{len(faces)} faces, {len(edges)} edges | valid solid: {"yes" if valid else "no"}'
+    if missing:
+        detail += f'\n{missing} faces have no renderable mesh'
+    return np.concatenate(meshes), curves, detail
 
 
 def draw_row(axes, geometries, names, *, xray=False):
@@ -59,9 +93,12 @@ def draw_row(axes, geometries, names, *, xray=False):
         ax.computed_zorder = not xray
         ax.set_title(label + '\n' + detail, fontsize=10, pad=2)
         if triangles is not None:
-            ax.add_collection3d(Poly3DCollection(triangles, facecolor='#92adc9',
-                                                edgecolor='none', alpha=0.38 if xray else 0.82,
-                                                zsort='average', zorder=1))
+            surface = Poly3DCollection(triangles, facecolors='#92adc9',
+                                       alpha=0.38 if xray else 0.82,
+                                       zsort='average', zorder=1, shade=True,
+                                       lightsource=LightSource(azdeg=315, altdeg=40))
+            surface.set_edgecolor('none')
+            ax.add_collection3d(surface)
             if len(curves):
                 ax.add_collection3d(Line3DCollection(curves, colors='#173759', linewidths=0.65, alpha=0.85, zorder=2))
         for set_lim, coordinate in zip((ax.set_xlim, ax.set_ylim, ax.set_zlim), center):
@@ -92,6 +129,14 @@ def main():
         for method in ('legacy', 'joint'):
             try:
                 if args.post_mode:
+                    status_path = (args.comparison_root / 'metadata' / 'post' / args.post_mode /
+                                   'samples' / method / (name + '.json'))
+                    status = json.loads(status_path.read_text())
+                    if status.get('geometry_status') != 'ok':
+                        detail = ('STEP valid solid: ' + ('yes' if status.get('native_valid_solid') else 'no') +
+                                  '\nGeometry unavailable: ' + status.get('status', 'unknown'))
+                        geometries.append((None, [], detail))
+                        continue
                     path = args.comparison_root / 'post' / args.post_mode / method / name / 'recon_brep.step'
                     geom = step_geometry(path)
                 else:

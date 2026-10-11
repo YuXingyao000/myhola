@@ -1,0 +1,134 @@
+{
+  "code_commit": "d72ecb08",
+  "training_or_model_changes": false,
+  "targeted_tests": {
+    "passed": 28,
+    "seconds": 7.15,
+    "files": [
+      "src/brepnet/test/test_vae_compare_inference.py",
+      "src/brepnet/test/test_vae_compare_metrics.py",
+      "src/brepnet/test/test_vae_compare_post.py"
+    ]
+  },
+  "inference": {
+    "posterior_mean": {
+      "shards": 8,
+      "status_counts": {
+        "ok": 2417
+      },
+      "unique_id_count": 2417,
+      "duplicate_row_count": 0,
+      "shared_input_status_counts": {
+        "verified": 2417
+      },
+      "raw_csv_sha256": "92e94d6c9adb4c6ec04c6fc73bf75f11e7f9eaef9713618e43335180a39b7fe5",
+      "inference_protocol_file_sha256": "665a5f181206c4577079afe9156c28c6e646d8b0a3ef692e222a48f1f9863df0"
+    },
+    "archived_latents": {
+      "shards": 8,
+      "status_counts": {
+        "ok": 2417
+      },
+      "unique_id_count": 2417,
+      "duplicate_row_count": 0,
+      "shared_input_status_counts": {
+        "verified": 2417
+      },
+      "raw_csv_sha256": "67e27c29e522f5e340e785260b934ec46b4bde8d65646cdeb636109c95230b2e",
+      "inference_protocol_file_sha256": "1e9ebdd2d045df3c94836d7ea3325cb84fec9649ca4d24bc7f8c91c7d4689650"
+    }
+  },
+  "metrics_serialization_fix": {
+    "changes_per_object_metrics": false,
+    "per_object_csv_byte_identical_on_retry": true
+  },
+  "metric_source_sha256": {
+    "vae_compare_inference.py": "feed394dca6de4597c3674f9dbdc2a719dd62f1b5e9359ac13c19da7788734e4",
+    "vae_compare_metrics.py": "6c5986fd8b009effd93c1423c76c8d2ac9de25264d63d6d11927ad1ec9074bc1",
+    "vae_compare_post.py": "907fbcd61064ac08bec84936a9e4438462eff94744e421cfbcbf781e9e37a255"
+  },
+  "post": {
+    "fit_only": {
+      "intended_per_method": 2417,
+      "terminal_rows": 4834,
+      "counts": {
+        "legacy": {
+          "step_exists": 2417,
+          "step_readable": 2407,
+          "success_marker": 1058,
+          "native_valid_solid": 1058,
+          "compat_valid_solid": 1058,
+          "geometry_computable": 1989,
+          "terminal_records": 2417
+        },
+        "joint": {
+          "step_exists": 2417,
+          "step_readable": 2417,
+          "success_marker": 480,
+          "native_valid_solid": 478,
+          "compat_valid_solid": 480,
+          "geometry_computable": 1786,
+          "terminal_records": 2417
+        }
+      },
+      "status_counts": {
+        "legacy": {
+          "ok": 1989,
+          "geometry_error": 417,
+          "timeout": 1,
+          "step_read_error": 10
+        },
+        "joint": {
+          "geometry_error": 624,
+          "ok": 1786,
+          "timeout": 7
+        }
+      },
+      "paired_geometry_count": 1528,
+      "timeout_stage_counts": {
+        "geometry": 8
+      },
+      "per_object_csv_sha256": "1739d4df263c508547115801a32916474ecd88fab7f407c0eb77cc5909938c38"
+    },
+    "optimized": {
+      "intended_per_method": 2417,
+      "terminal_rows": 4834,
+      "counts": {
+        "legacy": {
+          "step_exists": 2417,
+          "step_readable": 2417,
+          "success_marker": 2049,
+          "native_valid_solid": 2048,
+          "compat_valid_solid": 2048,
+          "geometry_computable": 2262,
+          "terminal_records": 2417
+        },
+        "joint": {
+          "step_exists": 2417,
+          "step_readable": 2417,
+          "success_marker": 785,
+          "native_valid_solid": 778,
+          "compat_valid_solid": 782,
+          "geometry_computable": 1881,
+          "terminal_records": 2417
+        }
+      },
+      "status_counts": {
+        "legacy": {
+          "ok": 2262,
+          "geometry_error": 155
+        },
+        "joint": {
+          "ok": 1881,
+          "geometry_error": 524,
+          "timeout": 12
+        }
+      },
+      "paired_geometry_count": 1807,
+      "timeout_stage_counts": {
+        "geometry": 12
+      },
+      "per_object_csv_sha256": "10849cb6f0fce73be8475b03f45cb9b007ef8146e0d639597c69586e4b10bb0d"
+    }
+  }
+}
