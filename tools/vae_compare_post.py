@@ -1,0 +1,594 @@
+"""Isolated, fixed-denominator OCC comparison for posterior-mean VAE exports.
+
+Run from the repository root with ``python -m tools.vae_compare_post``. This
+runner does not change the existing post algorithms. A hard timeout covers the
+entire per-object subprocess, including geometry evaluation. Completed stages
+remain recorded if a later stage times out. Reinvocation resumes matching
+terminal records; algorithm failures/timeouts are not automatically retried.
+"""
+from __future__ import annotations
+
+import argparse
+from collections import Counter
+import csv
+from datetime import datetime, timezone
+import fcntl
+import hashlib
+import json
+import math
+import multiprocessing as mp
+import os
+from pathlib import Path
+import random
+import signal
+import sys
+import tempfile
+import time
+import traceback
+from typing import Any
+
+
+METHODS = ("legacy", "joint")
+PROTOCOL_VERSION = "vae_compare_post_v1"
+SAMPLING = {
+    "version": "native_step_per_primitive_v1",
+    "face_points_per_face": 1024,
+    "face_distribution": "triangle-area-weighted within each face; equal count per face",
+    "mesh_linear_deflection": 0.01,
+    "mesh_angular_deflection": 0.1,
+    "edge_points_per_edge": 128,
+    "edge_distribution": "uniform native curve parameter including endpoints",
+    "degenerate_edges": "repeat a real topological vertex; never use an origin fallback",
+    "coordinates": "as stored; no alignment, scaling or rotation",
+    "cd": "mean(pred-to-gt squared nearest distance) + mean(gt-to-pred squared nearest distance)",
+    "read_precision_mode": 0,
+    "seed": 42,
+}
+TERMINAL = {
+    "ok", "missing_raw", "invalid_raw", "post_error", "no_step", "step_read_error",
+    "geometry_error", "timeout", "crash", "interrupted",
+}
+
+
+def stable_seed(sample_id: str, stage: str) -> int:
+    return int.from_bytes(hashlib.sha256(f"42:{sample_id}:{stage}".encode()).digest()[:4], "little")
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def fingerprint(value: Any) -> str:
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def atomic_json(path: Path, value: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(mode="w", dir=path.parent, prefix=path.name + ".", suffix=".tmp", delete=False) as handle:
+        temporary = Path(handle.name)
+        json.dump(value, handle, indent=2, allow_nan=False)
+        handle.write("\n")
+    os.replace(temporary, path)
+
+
+def read_json(path: Path) -> dict:
+    try:
+        return json.loads(path.read_text())
+    except FileNotFoundError:
+        return {}
+
+
+def configure_cpu() -> None:
+    # Set before importing numerical libraries, and before any child is forked.
+    for name in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "NUMEXPR_NUM_THREADS"):
+        os.environ[name] = "1"
+    os.environ["CUDA_VISIBLE_DEVICES"] = ""
+
+
+def preload_cpu_dependencies() -> None:
+    configure_cpu()
+    import torch
+    torch.set_num_threads(1)
+    try:
+        torch.set_num_interop_threads(1)
+    except RuntimeError:
+        pass
+    # Import once in the single-threaded parent: every job still gets its own
+    # process and OCC state, without paying thousands of heavyweight imports.
+    from src.brepnet.post.construct_brep import construct_brep_for_sample  # noqa: F401
+    from scipy.spatial import cKDTree  # noqa: F401
+    import trimesh  # noqa: F401
+
+
+def squared_chamfer(predicted, target) -> dict[str, float]:
+    import numpy as np
+    from scipy.spatial import cKDTree
+    predicted, target = np.asarray(predicted, dtype=np.float64), np.asarray(target, dtype=np.float64)
+    for name, points in (("predicted", predicted), ("target", target)):
+        if points.ndim != 2 or points.shape[1] != 3 or not len(points) or not np.isfinite(points).all():
+            raise ValueError(f"{name} point cloud must be finite nonempty [N,3]")
+    forward = cKDTree(target).query(predicted, workers=1)[0]
+    backward = cKDTree(predicted).query(target, workers=1)[0]
+    accuracy = float(np.mean(forward ** 2))
+    completeness = float(np.mean(backward ** 2))
+    return {"accuracy": accuracy, "completeness": completeness, "cd": accuracy + completeness}
+
+
+def read_step_at_precision(path: Path, mode: int = 0, precision: float = 0.1):
+    """Do not let validity.py's import-time STEP settings alter native reads."""
+    from OCC.Core.Interface import Interface_Static
+    from OCC.Extend.DataExchange import read_step_file
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    old_mode = Interface_Static.IVal("read.precision.mode")
+    old_precision = Interface_Static.RVal("read.precision.val")
+    try:
+        Interface_Static.SetIVal("read.precision.mode", mode)
+        Interface_Static.SetRVal("read.precision.val", precision)
+        shape = read_step_file(str(path), as_compound=False, verbosity=False)
+        if shape is None or shape.IsNull():
+            raise ValueError(f"No readable shape: {path}")
+        return shape
+    finally:
+        Interface_Static.SetIVal("read.precision.mode", old_mode)
+        Interface_Static.SetRVal("read.precision.val", old_precision)
+
+
+def native_validity(shape) -> dict[str, Any]:
+    """Analyze the as-read shape before any ShapeFix mutation or triangulation."""
+    from OCC.Core.BRepCheck import BRepCheck_Analyzer
+    from OCC.Core.TopAbs import TopAbs_SOLID, TopAbs_FACE, TopAbs_EDGE, TopAbs_VERTEX
+    from shared.occ_utils import get_primitives
+    solid_type = shape.ShapeType() == TopAbs_SOLID
+    checked = bool(BRepCheck_Analyzer(shape).IsValid())
+    return {
+        "step_readable": True,
+        "shape_type": int(shape.ShapeType()),
+        "native_is_solid_type": solid_type,
+        "native_brepcheck_valid": checked,
+        "native_valid_solid": bool(solid_type and checked),
+        "num_faces": len(get_primitives(shape, TopAbs_FACE, v_remove_half=True)),
+        "num_edges": len(get_primitives(shape, TopAbs_EDGE, v_remove_half=True)),
+        "num_vertices": len(get_primitives(shape, TopAbs_VERTEX, v_remove_half=True)),
+    }
+
+
+def compatibility_validity(path: Path) -> bool:
+    from OCC.Core.BRepCheck import BRepCheck_Analyzer
+    from OCC.Core.ShapeFix import ShapeFix_ShapeTolerance
+    from OCC.Core.TopAbs import TopAbs_SOLID
+    shape = read_step_at_precision(path, mode=1, precision=0.1)
+    if shape.ShapeType() != TopAbs_SOLID:
+        return False
+    ShapeFix_ShapeTolerance().SetTolerance(shape, 0.1)
+    return bool(BRepCheck_Analyzer(shape).IsValid())
+
+
+def sample_native_geometry(shape, seed: int) -> dict[str, Any]:
+    """Deterministic samples of native STEP faces/edges, including locations.
+
+    No face is silently skipped. A failed primitive makes this object's geometry
+    metric unavailable, independently of its already recorded solid validity.
+    """
+    import numpy as np
+    import trimesh
+    from OCC.Core.BRep import BRep_Tool
+    from OCC.Core.BRepAdaptor import BRepAdaptor_Curve
+    from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
+    from OCC.Core.TopAbs import TopAbs_FACE, TopAbs_EDGE, TopAbs_VERTEX
+    from OCC.Core.TopLoc import TopLoc_Location
+    from shared.occ_utils import get_primitives
+    faces = get_primitives(shape, TopAbs_FACE, v_remove_half=True)
+    edges = get_primitives(shape, TopAbs_EDGE, v_remove_half=True)
+    if not faces or not edges:
+        raise ValueError("STEP geometry comparison requires nonempty native faces and edges")
+    face_points, edge_points = [], []
+    for index, face in enumerate(faces):
+        BRepMesh_IncrementalMesh(face, SAMPLING["mesh_linear_deflection"], False, SAMPLING["mesh_angular_deflection"])
+        location = TopLoc_Location()
+        triangulation = BRep_Tool.Triangulation(face, location)
+        if triangulation is None or triangulation.NbTriangles() == 0:
+            raise ValueError(f"Native face {index} has no triangulation")
+        transform = location.Transformation()
+        vertices = [triangulation.Node(i).Transformed(transform).Coord() for i in range(1, triangulation.NbNodes() + 1)]
+        triangles = [triangulation.Triangle(i).Get() for i in range(1, triangulation.NbTriangles() + 1)]
+        mesh = trimesh.Trimesh(vertices=vertices, faces=np.asarray(triangles) - 1, process=False)
+        if not np.isfinite(mesh.area) or mesh.area <= 0:
+            raise ValueError(f"Native face {index} has no finite positive mesh area")
+        points, _ = trimesh.sample.sample_surface(mesh, SAMPLING["face_points_per_face"], seed=(seed + index) % (2 ** 32))
+        face_points.append(points)
+    degenerate_count = 0
+    for index, edge in enumerate(edges):
+        if BRep_Tool.Degenerated(edge):
+            vertices = get_primitives(edge, TopAbs_VERTEX, v_remove_half=True)
+            if not vertices:
+                raise ValueError(f"Degenerate native edge {index} has no real vertex")
+            points = np.repeat(np.asarray(BRep_Tool.Pnt(vertices[0]).Coord())[None], SAMPLING["edge_points_per_edge"], axis=0)
+            degenerate_count += 1
+        else:
+            curve = BRepAdaptor_Curve(edge)
+            start, end = curve.FirstParameter(), curve.LastParameter()
+            if not np.isfinite([start, end]).all():
+                raise ValueError(f"Native edge {index} has an unbounded parameter interval")
+            points = np.asarray([curve.Value(float(u)).Coord() for u in np.linspace(start, end, SAMPLING["edge_points_per_edge"])])
+        edge_points.append(points)
+    face_points, edge_points = np.concatenate(face_points), np.concatenate(edge_points)
+    if not np.isfinite(face_points).all() or not np.isfinite(edge_points).all():
+        raise ValueError("STEP sampling produced NaN/Inf")
+    return {"face_points": face_points, "edge_points": edge_points,
+            "num_faces": len(faces), "num_edges": len(edges), "num_degenerate_edges": degenerate_count}
+
+
+def load_gt_samples(path: Path, cache_root: Path, sample_id: str) -> dict[str, Any]:
+    import numpy as np
+    seed = stable_seed(sample_id, "geometry")
+    key = fingerprint({"step_sha256": sha256_file(path), "sampling": SAMPLING, "seed": seed})
+    cache = cache_root / f"{sample_id}-{key}.npz"
+    if cache.is_file():
+        with np.load(cache, allow_pickle=False) as data:
+            return {name: data[name] for name in data.files}
+    data = sample_native_geometry(read_step_at_precision(path), seed)
+    cache_root.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(dir=cache_root, prefix=sample_id + ".", suffix=".tmp", delete=False) as handle:
+        temporary = Path(handle.name)
+        np.savez_compressed(handle, **data)
+    os.replace(temporary, cache)
+    return data
+
+
+def validate_raw_prediction(path: Path) -> dict[str, Any]:
+    import numpy as np
+    with np.load(path, allow_pickle=False) as data:
+        face = data["pred_face"]
+        edge = data["pred_edge"]
+        conn = data["pred_edge_face_connectivity"]
+        representation = data["representation"].item() if "representation" in data else "legacy_half_edges"
+        if face.ndim != 4 or face.shape[-1] != 3 or not len(face) or min(face.shape[1:3]) < 2:
+            raise ValueError("pred_face must be nonempty [F,U,V,3] with U,V>=2")
+        if edge.ndim != 3 or edge.shape[-1] != 3 or edge.shape[1] < 2:
+            raise ValueError("pred_edge must be [E,L,3] with L>=2")
+        if not np.isfinite(face).all() or not np.isfinite(edge).all():
+            raise ValueError("Raw geometry contains NaN/Inf")
+        if conn.shape != (len(edge), 3) or not np.issubdtype(conn.dtype, np.integer):
+            raise ValueError("Raw connectivity must be integer [E,3]")
+        if not np.array_equal(np.sort(conn[:, 0]), np.arange(len(edge))):
+            raise ValueError("Raw edge IDs must cover the curve array exactly once")
+        if representation == "shared_boundary_v1":
+            from src.brepnet.data.shared_boundaries import shared_prediction_diagnostics
+            # Invalid/self face assignments remain raw diagnostics; the existing
+            # explicit shared adapter handles them using predictions only.
+            shared_prediction_diagnostics(len(face), edge, conn, data["pred_edge_confidence"])
+        elif representation == "legacy_half_edges":
+            if (conn[:, 1:] < 0).any() or (conn[:, 1:] >= len(face)).any():
+                raise ValueError("Legacy raw connectivity has an invalid face ID")
+        else:
+            raise ValueError(f"Unknown prediction representation {representation!r}")
+    return {"representation": representation, "raw_num_faces": len(face), "raw_num_edges": len(edge)}
+
+
+def execute_job(job: dict, status_path: Path) -> dict:
+    import numpy as np
+    started = time.monotonic()
+    row = {"sample_id": job["sample_id"], "method": job["method"], "mode": job["mode"],
+           "protocol_fingerprint": job["protocol_fingerprint"], "raw_sha256": job["raw_sha256"],
+           "status": "running", "stage": "validate_raw", "process_pid": os.getpid(),
+           "seed": stable_seed(job["sample_id"], "post"), "post_status": "not_run",
+           "step_exists": False, "step_readable": False, "success_marker": False,
+           "native_valid_solid": False, "compat_valid_solid": False,
+           "geometry_status": "not_run", "error": ""}
+
+    def record(**values):
+        row.update(values)
+        row["elapsed_seconds"] = time.monotonic() - started
+        atomic_json(status_path, row)
+
+    raw = Path(job["raw_root"]) / job["sample_id"] / "data.npz"
+    output = Path(job["post_root"]) / job["sample_id"]
+    record()
+    if not raw.is_file():
+        record(status="missing_raw", error=f"Missing prediction {raw}")
+        return row
+    try:
+        row.update(validate_raw_prediction(raw))
+    except Exception as exc:
+        record(status="invalid_raw", error=f"{type(exc).__name__}: {exc}")
+        return row
+    random.seed(row["seed"])
+    np.random.seed(row["seed"])
+    try:
+        from src.brepnet.post.construct_brep import construct_brep_for_sample
+        record(stage="post", post_status="running")
+        post_started = time.monotonic()
+        construct_brep_for_sample(
+            job["raw_root"], job["post_root"], job["sample_id"], v_drop_num=0,
+            is_ray=False, is_log=False, is_optimize_geom=job["mode"] == "optimized",
+            v_max_optimize_iter=job["max_optimize_iter"], isdebug=False,
+            use_cuda=False, from_scratch=True, is_save_data=False,
+        )
+        record(post_status="returned", post_elapsed_seconds=time.monotonic() - post_started,
+               step_exists=(output / "recon_brep.step").is_file(), success_marker=(output / "success.txt").is_file())
+    except Exception as exc:
+        traceback.print_exc()
+        record(status="post_error", post_status="error", error=f"{type(exc).__name__}: {exc}")
+        return row
+    step = output / "recon_brep.step"
+    if not step.is_file():
+        record(status="no_step", stage="done", error="Post returned without a STEP")
+        return row
+    try:
+        record(stage="native_validity")
+        shape = read_step_at_precision(step, mode=0)
+        record(**native_validity(shape))
+    except Exception as exc:
+        record(status="step_read_error", error=f"{type(exc).__name__}: {exc}")
+        return row
+    try:
+        record(stage="compatibility_validity")
+        record(compat_valid_solid=compatibility_validity(step))
+    except Exception as exc:
+        record(compatibility_error=f"{type(exc).__name__}: {exc}")
+    try:
+        record(stage="geometry", geometry_status="running")
+        geometry_started = time.monotonic()
+        gt = load_gt_samples(Path(job["data_root"]) / job["sample_id"] / "normalized_shape.step",
+                             Path(job["cache_root"]), job["sample_id"])
+        predicted = sample_native_geometry(shape, stable_seed(job["sample_id"], "geometry"))
+        values = {}
+        for name in ("face", "edge"):
+            metrics = squared_chamfer(predicted[name + "_points"], gt[name + "_points"])
+            values.update({name + "_" + key: value for key, value in metrics.items()})
+        record(**values, geometry_status="ok", geometry_elapsed_seconds=time.monotonic() - geometry_started,
+               gt_num_faces=int(gt["num_faces"]), gt_num_edges=int(gt["num_edges"]),
+               sampled_degenerate_edges=int(predicted["num_degenerate_edges"]),
+               status="ok", stage="done")
+    except Exception as exc:
+        traceback.print_exc()
+        record(status="geometry_error", geometry_status="error", error=f"{type(exc).__name__}: {exc}")
+    return row
+
+
+def job_process(job: dict, status_path: Path, log_path: Path) -> None:
+    os.setsid()
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    with log_path.open("ab", buffering=0) as handle:
+        os.dup2(handle.fileno(), 1)
+        os.dup2(handle.fileno(), 2)
+        try:
+            execute_job(job, status_path)
+        except BaseException:
+            traceback.print_exc()
+            raise
+
+
+def terminate_process(process) -> None:
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        if process.is_alive():
+            process.kill()
+    process.join(timeout=5)
+
+
+def run_isolated_jobs(jobs: list[dict], metadata: Path, workers: int, timeout: float,
+                      process_target=job_process) -> None:
+    """Schedule only active processes; queued jobs never spend their timeout."""
+    context = mp.get_context("fork")
+    pending = iter(jobs)
+    active = {}
+    exhausted = False
+    complete = 0
+    stream_path = metadata / "events.jsonl"
+    metadata.mkdir(parents=True, exist_ok=True)
+    try:
+        with stream_path.open("a", buffering=1) as stream:
+            while active or not exhausted:
+                while len(active) < workers and not exhausted:
+                    try:
+                        job = next(pending)
+                    except StopIteration:
+                        exhausted = True
+                        break
+                    status_path = metadata / "samples" / job["method"] / (job["sample_id"] + ".json")
+                    log_path = metadata / "logs" / job["method"] / (job["sample_id"] + ".log")
+                    process = context.Process(target=process_target, args=(job, status_path, log_path))
+                    started = time.monotonic()
+                    process.start()
+                    active[process.pid] = (process, started, job, status_path)
+                for pid, (process, started, job, status_path) in list(active.items()):
+                    elapsed = time.monotonic() - started
+                    expired = process.is_alive() and elapsed >= timeout
+                    if not expired and process.is_alive():
+                        continue
+                    if expired:
+                        terminate_process(process)
+                    else:
+                        process.join()
+                    row = read_json(status_path)
+                    row.setdefault("sample_id", job["sample_id"])
+                    row.setdefault("method", job["method"])
+                    row.setdefault("mode", job["mode"])
+                    row.setdefault("protocol_fingerprint", job["protocol_fingerprint"])
+                    row.setdefault("raw_sha256", job["raw_sha256"])
+                    if expired:
+                        row.update(status="timeout", error=f"Hard subprocess timeout after {timeout:g}s", timeout_seconds=timeout)
+                    elif row.get("status") not in TERMINAL or process.exitcode != 0:
+                        row.update(status="crash", error=f"Worker exit code {process.exitcode}; last stage {row.get('stage', 'startup')}")
+                    row.update(worker_exit_code=process.exitcode, wall_seconds=elapsed)
+                    atomic_json(status_path, row)
+                    stream.write(json.dumps({"time_utc": datetime.now(timezone.utc).isoformat(), **row}, allow_nan=False) + "\n")
+                    complete += 1
+                    del active[pid]
+                    if complete % 20 == 0 or complete == len(jobs):
+                        print(f"Post {job['mode']}: {complete}/{len(jobs)} finished; last={job['method']}/{job['sample_id']} {row['status']}", flush=True)
+                if active:
+                    time.sleep(0.05)
+    finally:
+        for process, _, _, _ in active.values():
+            terminate_process(process)
+
+
+def statistics(values: list[float]) -> dict[str, Any]:
+    import numpy as np
+    values = [float(value) for value in values if value is not None and math.isfinite(value)]
+    return {"count": len(values), "mean": float(np.mean(values)) if values else None,
+            "median": float(np.median(values)) if values else None,
+            "p90": float(np.quantile(values, 0.9)) if values else None}
+
+
+def summarize(rows: list[dict], intended: int, original_total: int) -> dict[str, Any]:
+    summary = {"intended_count_per_method": intended, "original_test_count": original_total,
+               "accepted_coverage_of_original": intended / original_total, "methods": {}}
+    metric_names = ("face_cd", "face_accuracy", "face_completeness", "edge_cd", "edge_accuracy", "edge_completeness")
+    maps = {}
+    for method in METHODS:
+        selected = [row for row in rows if row["method"] == method]
+        maps[method] = {row["sample_id"]: row for row in selected}
+        counts = {key: sum(bool(row.get(key)) for row in selected) for key in
+                  ("step_exists", "step_readable", "success_marker", "native_valid_solid", "compat_valid_solid")}
+        counts["geometry_computable"] = sum(row.get("geometry_status") == "ok" for row in selected)
+        counts["terminal_records"] = sum(row.get("status") in TERMINAL for row in selected)
+        summary["methods"][method] = {
+            "status_counts": dict(Counter(row.get("status", "not_run") for row in selected)),
+            "counts": counts,
+            "rates_over_intended": {key: value / intended for key, value in counts.items()},
+            "rates_over_original_test": {key: value / original_total for key, value in counts.items()},
+            "geometry_all_computable": {name: statistics([row.get(name) for row in selected if row.get("geometry_status") == "ok"]) for name in metric_names},
+            "latency_seconds": {name: statistics([row.get(name) for row in selected]) for name in
+                                ("wall_seconds", "post_elapsed_seconds", "geometry_elapsed_seconds")},
+        }
+    common = sorted(set(maps["legacy"]) & set(maps["joint"]))
+    common = [sample_id for sample_id in common if all(maps[method][sample_id].get("geometry_status") == "ok" for method in METHODS)]
+    summary["paired_common_geometry"] = {
+        "count": len(common), "coverage_over_intended": len(common) / intended,
+        "coverage_over_original_test": len(common) / original_total,
+        "metrics": {name: {
+            **{method: statistics([maps[method][sample_id][name] for sample_id in common]) for method in METHODS},
+            "joint_minus_legacy": statistics([maps["joint"][sample_id][name] - maps["legacy"][sample_id][name] for sample_id in common]),
+        } for name in metric_names},
+    }
+    return summary
+
+
+def write_summary(comparison_root: Path, mode: str, metadata: Path, ids: list[str], protocol: dict) -> dict:
+    rows = []
+    for method in METHODS:
+        for sample_id in ids:
+            row = read_json(metadata / "samples" / method / (sample_id + ".json"))
+            rows.append(row or {"sample_id": sample_id, "method": method, "mode": mode, "status": "not_run"})
+    output = comparison_root / "post" / mode
+    output.mkdir(parents=True, exist_ok=True)
+    keys = sorted({key for row in rows for key in row})
+    with tempfile.NamedTemporaryFile(mode="w", newline="", dir=output, suffix=".csv.tmp", delete=False) as handle:
+        temp = Path(handle.name)
+        writer = csv.DictWriter(handle, fieldnames=keys)
+        writer.writeheader()
+        writer.writerows(rows)
+    os.replace(temp, output / "samples.csv")
+    summary = summarize(rows, len(ids), protocol["original_test_count"])
+    summary.update(protocol=protocol, csv_path=str(output / "samples.csv"))
+    atomic_json(output / "summary.json", summary)
+    return summary
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--comparison-root", type=Path, required=True)
+    parser.add_argument("--data-root", type=Path, required=True)
+    parser.add_argument("--split-list", type=Path, required=True)
+    parser.add_argument("--mode", choices=("fit_only", "optimized"), required=True)
+    parser.add_argument("--methods", "--method", nargs="+", choices=METHODS, default=list(METHODS))
+    parser.add_argument("--workers", type=int, default=32)
+    parser.add_argument("--timeout", type=float, default=180)
+    parser.add_argument("--max-optimize-iter", type=int, default=200)
+    parser.add_argument("--original-test-count", type=int, default=2424)
+    parser.add_argument("--summary-only", action="store_true")
+    return parser
+
+
+def main() -> int:
+    args = build_parser().parse_args()
+    if args.workers < 1 or not math.isfinite(args.timeout) or args.timeout <= 0 or args.max_optimize_iter < 1:
+        raise ValueError("workers, timeout and max-optimize-iter must be positive")
+    ids = [line.strip() for line in args.split_list.read_text().splitlines() if line.strip()]
+    if not ids or len(ids) != len(set(ids)) or any(Path(item).name != item or item in {".", ".."} for item in ids):
+        raise ValueError("Split must contain unique nonempty individual model IDs")
+    if args.original_test_count < len(ids):
+        raise ValueError("original-test-count cannot be smaller than intended split")
+    args.comparison_root = args.comparison_root.resolve()
+    args.data_root = args.data_root.resolve()
+    metadata = args.comparison_root / "metadata" / "post" / args.mode
+    metadata.mkdir(parents=True, exist_ok=True)
+    protocol = {
+        "version": PROTOCOL_VERSION, "source": "posterior_mean", "mode": args.mode,
+        "comparison_root": str(args.comparison_root), "data_root": str(args.data_root),
+        "split_sha256": sha256_file(args.split_list), "intended_count": len(ids),
+        "original_test_count": args.original_test_count, "timeout_seconds": args.timeout,
+        "timeout_scope": "whole subprocess from launch, including native/compat validity and geometry metrics",
+        "max_optimize_iter": args.max_optimize_iter,
+        "adaptive_max_optimize_iter": args.max_optimize_iter * 3 if args.mode == "optimized" else 0,
+        "drop_num": 0, "use_cuda": False, "threads_per_process": 1,
+        "sampling": SAMPLING, "native_validity": "read.precision.mode=0; as-read TopAbs_SOLID and BRepCheck before mutation",
+        "compatibility_validity": "fresh read mode=1, precision=.1; SetTolerance(.1); TopAbs_SOLID and BRepCheck",
+        "post_algorithm_files": {str(path): sha256_file(path) for path in sorted(Path("src/brepnet/post").glob("*.py"))},
+        "runner_sha256": sha256_file(Path(__file__)),
+    }
+    digest = fingerprint(protocol)
+    with (metadata / "protocol.lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        existing = read_json(metadata / "protocol.json")
+        if existing and existing != protocol:
+            raise ValueError("Post protocol/config/code fingerprint changed; choose a new comparison root or restore the original contract")
+        atomic_json(metadata / "protocol.json", protocol)
+    locks = []
+    try:
+        for method in sorted(set(args.methods)):
+            lock = (metadata / f"{method}.lock").open("a")
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            locks.append(lock)
+        if args.summary_only:
+            write_summary(args.comparison_root, args.mode, metadata, ids, protocol)
+            return 0
+        jobs = []
+        for sample_id in ids:
+            for method in args.methods:
+                raw_root = args.comparison_root / "raw_predictions" / "posterior_mean" / method
+                raw = raw_root / sample_id / "data.npz"
+                raw_sha = sha256_file(raw) if raw.is_file() else None
+                status_path = metadata / "samples" / method / (sample_id + ".json")
+                old = read_json(status_path)
+                if old:
+                    if old.get("protocol_fingerprint") != digest or old.get("raw_sha256") != raw_sha:
+                        # A previous missing input has not consumed a post attempt.
+                        if not (old.get("status") == "missing_raw" and old.get("raw_sha256") is None and raw_sha is not None and old.get("protocol_fingerprint") == digest):
+                            raise ValueError(f"Input or protocol changed for {method}/{sample_id}; refusing to mix results")
+                    elif old.get("status") in TERMINAL:
+                        continue
+                    else:
+                        old.update(status="interrupted", error="Previous invocation ended before this worker recorded a terminal result; no automatic retry")
+                        atomic_json(status_path, old)
+                        continue
+                jobs.append({"sample_id": sample_id, "method": method, "mode": args.mode,
+                             "raw_root": str(raw_root), "raw_sha256": raw_sha,
+                             "post_root": str(args.comparison_root / "post" / args.mode / method),
+                             "data_root": str(args.data_root), "cache_root": str(args.comparison_root / "metadata" / "gt_step_samples"),
+                             "max_optimize_iter": args.max_optimize_iter, "protocol_fingerprint": digest})
+        print(f"{args.mode}: {len(jobs)} jobs pending; {len(ids)} intended IDs per method; workers={args.workers}; timeout={args.timeout:g}s", flush=True)
+        atomic_json(metadata / "invocation.json", {"argv": sys.argv, "methods": args.methods, "workers": args.workers,
+                                                   "pending_jobs": len(jobs), "time_utc": datetime.now(timezone.utc).isoformat()})
+        if jobs:
+            preload_cpu_dependencies()
+            run_isolated_jobs(jobs, metadata, args.workers, args.timeout)
+        summary = write_summary(args.comparison_root, args.mode, metadata, ids, protocol)
+        print(json.dumps({method: value["counts"] for method, value in summary["methods"].items()}, indent=2), flush=True)
+        return 0
+    finally:
+        for lock in locks:
+            lock.close()
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
