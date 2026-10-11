@@ -1,0 +1,24 @@
+{
+  "reference_root": "/mnt/d/python/checkpoints/joint_boundary/comparison_20261011",
+  "intended_count": 2417,
+  "modes": {
+    "posterior_mean": {
+      "count": 2417,
+      "finite_latents_verified": false,
+      "latent_digests_verified": true,
+      "prediction_arrays_crc_read": true,
+      "source_protocols": [
+        "fce3e3d6750744e054e7bcb0c8896de5a44d68b0f7491a44d3dcca6bcdfc4c28"
+      ]
+    },
+    "archived_latents": {
+      "count": 2417,
+      "finite_latents_verified": false,
+      "latent_digests_verified": true,
+      "prediction_arrays_crc_read": true,
+      "source_protocols": [
+        "7f46cd3405be74a41fe7b43e33378f74ae2ebb788c97a9d71906f4a4943025fe"
+      ]
+    }
+  }
+}
