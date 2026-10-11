@@ -1,0 +1,37 @@
+defaults:
+  - vae_light
+  - _self_
+
+name: AutoEncoder_intersection
+primitive_blocks_per_stage: 1
+point_decoder_blocks_per_stage: 1
+face_bbox_decoder_blocks: 7
+edge_bbox_decoder_blocks: 7
+kl_reduction: sum
+freeze_encoder: true
+init_legacy_checkpoint: null
+checkpoint: null
+trainable_scope: all
+edge_threshold: 0.5
+
+# One pass: the original face Transformer is called only before refinement.
+refinement:
+  enabled: true
+  hidden_dim: 128
+  geometry_dim: 64
+  geometry_chunk_size: 32
+  candidate_chunk_size: 64
+  checkpoint_candidates: true
+
+# Raw and weighted values are logged separately. These are initial research
+# settings, not calibrated optimal weights or a claim of improved CAD validity.
+loss_weights:
+  coarse_weight: 0.25
+  classification_weight: 0.1
+  feature_weight: 1.0
+  encoder_edge_weight: 1.0
+  xyz_weight: 1.0
+  incidence_weight: 0.1
+  twin_weight: 0.1
+  geometry_tolerance: 1.0e-5
+  geometry_chunk_size: 32

@@ -1,0 +1,41 @@
+defaults:
+  - trainer: default
+  # Reuse the strict reciprocal-boundary data validator. Predictions still use
+  # the original directed half-edge representation, not shared edge queries.
+  - dataset: vae_joint
+  - model: vae_intersection
+  - condition: none
+  - _self_
+
+trainer:
+  exp_name: intersection_refinement/frozen
+  devices: 8
+  batch_size: 2
+  num_workers: 2
+  learning_rate: 2.0e-5
+  max_epochs: 1000
+  max_steps: 100000
+  cudnn_benchmark: false
+  # Keep weights/last.ckpt current even when resuming from a best checkpoint.
+  checkpoint_enable_version_counter: false
+  vae_validation_inference: false
+
+dataset:
+  is_aug: 1
+
+eval:
+  enabled: false
+  output_dir: null
+  num_samples: 100
+  post_process: false
+
+hydra:
+  run:
+    dir: ${brep_run_dir:${trainer.output_dir},${trainer.exp_name},${trainer.run_dir},${trainer.resume_from_checkpoint}}
+  output_subdir: metadata/hydra
+  job_logging:
+    handlers:
+      file:
+        filename: ${brep_log_file:${hydra.runtime.output_dir}}
+  job:
+    chdir: false

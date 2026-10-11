@@ -1,0 +1,10 @@
+defaults:
+  - train_vae_intersection
+  - _self_
+
+trainer:
+  exp_name: intersection_refinement/joint
+  batch_size: 1
+
+model:
+  freeze_encoder: false

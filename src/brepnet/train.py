@@ -137,6 +137,17 @@ class UnifiedTrainer(pl.LightningModule):
                     "A fresh frozen-encoder run needs model.init_encoder_checkpoint "
                     "or a strict model.checkpoint; refusing to freeze a random encoder."
                 )
+        if cfg.model.name == "AutoEncoder_intersection":
+            if cfg.trainer.init_from_checkpoint:
+                raise ValueError(
+                    "AutoEncoder_intersection rejects trainer.init_from_checkpoint. "
+                    "Use model.init_legacy_checkpoint for strict original VAE migration, "
+                    "model.checkpoint for new-model initialization, or trainer.resume_from_checkpoint."
+                )
+            if has_resume:
+                model_cfg.init_legacy_checkpoint = None
+                model_cfg.checkpoint = None
+                OmegaConf.update(model_cfg, "restoring_checkpoint", True, force_add=True)
         self.model = build_model(model_cfg, cfg.condition)
         self._init_model_from_checkpoint()
         self._apply_trainable_scope()
@@ -246,7 +257,8 @@ class UnifiedTrainer(pl.LightningModule):
 
     def test_dataloader(self) -> DataLoader:
         dataset = self.dataset_cls("testing", self.cfg.dataset)
-        batch_size = self.batch_size if self.stage == "diffusion" or self.cfg.model.name == "AutoEncoder_joint" else 1
+        batched_vae = self.cfg.model.name in {"AutoEncoder_joint", "AutoEncoder_intersection"}
+        batch_size = self.batch_size if self.stage == "diffusion" or batched_vae else 1
         return DataLoader(
             dataset,
             batch_size=batch_size,
@@ -506,6 +518,7 @@ def main(cfg: DictConfig):
             save_last=True,
             filename="epoch={epoch:04d}-step={step:08d}-val_loss={val/loss:.6f}",
             auto_insert_metric_name=False,
+            enable_version_counter=cfg.trainer.checkpoint_enable_version_counter,
         ),
         LearningRateMonitor(logging_interval="step"),
         ModelSummary(max_depth=2),

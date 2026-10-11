@@ -1,0 +1,92 @@
+{
+  "status": "implementation_verified_not_research_quality",
+  "seed": 42,
+  "environment": {
+    "python": "/mnt/d/anaconda3/envs/torch/bin/python",
+    "torch": "2.4.1+cu124",
+    "pytorch_lightning": "2.5.0.post0"
+  },
+  "tests": {
+    "new_geometry_decoder_loss_vae": 52,
+    "existing_training_run_management_joint_decoder": 24,
+    "total_passed": 76
+  },
+  "ddp_smoke": {
+    "devices": 8,
+    "batch_per_device": 2,
+    "global_batch": 16,
+    "precision": "bf16-mixed",
+    "initial_global_step": 2,
+    "resumed_global_steps": [
+      4,
+      6
+    ],
+    "checkpoint": "checkpoints/intersection_refinement/validation/ddp8/20261011T115022.529848Z/weights/last.ckpt",
+    "verified_checkpoint_global_step": 6,
+    "verified_optimizer_steps": [
+      6
+    ],
+    "logs": [
+      "checkpoints/intersection_refinement/validation/ddp8.log",
+      "checkpoints/intersection_refinement/validation/resume8_confirmed.log",
+      "checkpoints/intersection_refinement/validation/resume8_last_path.log"
+    ]
+  },
+  "export_smoke": {
+    "devices": 1,
+    "batch_size": 2,
+    "batch_count": 2,
+    "checkpoint_global_step": 6,
+    "root": "checkpoints/intersection_refinement/validation/ddp8/20261011T115022.529848Z/raw_predictions/20261011T120057.938524Z",
+    "items": [
+      {
+        "sample_id": "00000178",
+        "representation": "legacy_half_edges",
+        "raw_num_faces": 7,
+        "raw_num_edges": 20,
+        "symmetric_probability": true,
+        "candidate_count": 42
+      },
+      {
+        "sample_id": "00000894",
+        "representation": "legacy_half_edges",
+        "raw_num_faces": 20,
+        "raw_num_edges": 104,
+        "symmetric_probability": true,
+        "candidate_count": 380
+      },
+      {
+        "sample_id": "00003202",
+        "representation": "legacy_half_edges",
+        "raw_num_faces": 8,
+        "raw_num_edges": 32,
+        "symmetric_probability": true,
+        "candidate_count": 56
+      },
+      {
+        "sample_id": "00003406",
+        "representation": "legacy_half_edges",
+        "raw_num_faces": 24,
+        "raw_num_edges": 112,
+        "symmetric_probability": true,
+        "candidate_count": 552
+      }
+    ],
+    "post_input_contract_passed": true,
+    "occ_not_run": true,
+    "log": "checkpoints/intersection_refinement/validation/test_export_latest.log"
+  },
+  "split_sha256": {
+    "smoke_train.txt": "05bd62deb6194446d4bcd6ab32fcf429e26566ccc492eec77723a1bafa5ba01c",
+    "smoke_val.txt": "608b0336bf7ad2d9431aea17f690ddefc0bfb36f0aa6f85708418d55083a081e"
+  },
+  "formal_training_started": false,
+  "wandb_during_smoke": false,
+  "notes": [
+    "An initial resume stopped at the inherited epoch ceiling without an optimizer step; successful resume explicitly increased max_epochs to 10.",
+    "Hydra values containing equals signs require quotes around the whole checkpoint path value.",
+    "Resume from best checkpoint originally saved last-v1.ckpt; the new experiment now disables filename version counter. last.ckpt was verified at step 6 after resume from step 4.",
+    "Test uses posterior mean; training and validation sample the posterior, as in the existing VAE entry point.",
+    "Smoke runs verify implementation and export contracts only; no trained-model quality or solid-validity improvement is claimed."
+  ]
+}

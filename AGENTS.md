@@ -36,6 +36,7 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 | `src/brepnet/dataset.py` | 当前 `Diffusion_dataset`，以及仍有旧字段的 VAE / legacy 数据路径 |
 | `src/brepnet/models/vae.py` | 面／半边编码、拓扑特征融合、每面 latent、neural intersection、几何解码 |
 | `src/brepnet/models/joint_vae.py`、`joint_decoder.py`、`joint_losses.py` | 新 shared-boundary VAE 与面／边双向解码；保持旧 encoder 合同，具体实现见 `checkpoints/joint_boundary/PLAN.md` |
+| `src/brepnet/models/intersection_vae.py`、`intersection_decoder.py`、`intersection_refiner.py`、`intersection_losses.py` | 保留旧 HoLa 内核与线性 classifier 的单轮几何反馈实验；显式模块与协议见 `checkpoints/intersection_refinement/README.md` |
 | `src/brepnet/run_management.py`、`prediction_export.py` | 独立 run 目录、配置／Git 溯源、逐对象原始预测导出 |
 | `src/brepnet/models/diffusion.py` | diffusion 装配、损失、采样与 VAE 解码 |
 | `src/brepnet/models/diffusion_latents.py` | cached mean/std 或 VAE 编码 |

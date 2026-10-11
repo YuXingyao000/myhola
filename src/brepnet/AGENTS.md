@@ -22,7 +22,9 @@
 
 `AutoEncoder_joint` 是独立的 shared-boundary decoder 变体，训练合同在 [PLAN](../../checkpoints/joint_boundary/PLAN.md)。使用 `AutoEncoder_joint_dataset`，encoder 保持旧 face／half-edge 输入；shared-boundary target 只用于匹配与监督，不作为 decoder 输入。`freeze_encoder` 由模型同时控制梯度与 train/eval 模式；trainer 的 `trainable_scope` 保持 `all`。
 
-旧 encoder 权重只能通过 `model.init_encoder_checkpoint` 做显式组件迁移；完整新模型权重初始化使用 `model.checkpoint` 严格加载；恢复优化器／步数使用 `trainer.resume_from_checkpoint`。新模型禁止旧 trainer permissive `init_from_checkpoint`；resume 时不重复迁移旧 encoder，也不能在无权重来源时冻结随机 encoder。新 VAE `v_test=True` 返回 `{"items": list[dict]}`，每个对象保留本地实体编号与表示标签；旧 VAE 测试保持 batch=1，不能把整个 batch 重复写入各样本。
+`AutoEncoder_intersection` 是原 light VAE 的一轮反馈变体，协议与命令见 [README](../../checkpoints/intersection_refinement/README.md)。使用相同严格 dataset/accepted split 校验互反半边，输出仍为 `legacy_half_edges`。`holistic_encoder.py` 拆出原 encoder/posterior，`intersection_decoder.py` 枚举全部对象内有向非 self 面对，`intersection_refiner.py` 从预测几何与预测概率生成 ΔF/ΔE，原几何头与线性 classifier 复用。只对 logits 双向平均。GT 不筛 decoder 候选；`intersection_losses.py` 单独处理原目标、global XYZ、连续网格贴合与 GT 对应 twin 一致性。`model.init_legacy_checkpoint` 严格迁移整个旧模型；`model.checkpoint` 严格加载完整新模型；resume 跳过两种初始化。默认冻结 encoder/posterior；latent cache 兼容还要求实际 encoder checkpoint、输入与 posterior 同源。没有额外 decode face 去重，也没有显式 loop/vertex 预测。保留原 `inter`/classifier，独立拓扑 head 不属于本轮范围。
+
+对 `AutoEncoder_joint`，旧 encoder 权重只能通过 `model.init_encoder_checkpoint` 做显式组件迁移；完整新模型权重初始化使用 `model.checkpoint` 严格加载；恢复优化器／步数使用 `trainer.resume_from_checkpoint`。新模型禁止旧 trainer permissive `init_from_checkpoint`；resume 时不重复迁移旧 encoder，也不能在无权重来源时冻结随机 encoder。新 VAE `v_test=True` 返回 `{"items": list[dict]}`，每个对象保留本地实体编号与表示标签；旧 VAE 测试保持 batch=1，不能把整个 batch 重复写入各样本。
 
 ## Diffusion：实际数据流
 
