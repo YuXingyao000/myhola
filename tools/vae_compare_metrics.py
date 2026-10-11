@@ -26,6 +26,14 @@ ACCEPTED_COUNT = 2417
 ORIGINAL_COUNT = 2424
 ACCEPTED_SHA256 = "2864849e8240134c6033cc6cd64efa19337f67fea94b89a493690ae84355b7b3"
 METHODS = ("legacy", "joint")
+CANDIDATE_METHODS = ("joint", "intersection")
+
+
+def comparison_methods(candidate_method="joint"):
+    if candidate_method not in CANDIDATE_METHODS:
+        raise ValueError(f"Unsupported candidate method: {candidate_method}")
+    return ("legacy", candidate_method)
+
 MODES = ("posterior_mean", "archived_latents")
 GEOMETRY_METRICS = (
     "face_mae", "face_cd_sq", "face_pred_to_gt_sq", "face_gt_to_pred_sq",
@@ -148,8 +156,10 @@ def _internal_topology(row: dict, prediction: dict, curves: np.ndarray, face_cou
 
 
 def evaluate_prediction(prediction: dict, gt_faces: np.ndarray, gt_curves: np.ndarray,
-                        gt_pairs: np.ndarray, *, method: str, mode: str) -> dict:
+                        gt_pairs: np.ndarray, *, method: str = "joint", mode: str) -> dict:
     """Compute independent stages so an empty/bad edge set cannot erase face metrics."""
+    if method not in ("legacy", *CANDIDATE_METHODS):
+        raise ValueError(f"Unsupported method: {method}")
     row = {"prediction_status": "ok", "gt_status": "ok", "face_status": "missing_field",
            "edge_status": "missing_field", "face_mae_status": "not_applicable",
            "topology_status": "not_applicable", "internal_topology_status": "not_computable",
@@ -231,7 +241,8 @@ def _load_prediction(path: Path) -> dict:
         ) if key in source}
 
 
-def evaluate_sample(model_id: str, *, data_root: Path, prediction_root: Path, mode: str) -> list[dict]:
+def evaluate_sample(model_id: str, *, data_root: Path, prediction_root: Path, mode: str, candidate_method: str = "joint") -> list[dict]:
+    methods = comparison_methods(candidate_method)
     rows = []
     try:
         with np.load(data_root / model_id / "data.npz", allow_pickle=False) as source:
@@ -248,8 +259,8 @@ def evaluate_sample(model_id: str, *, data_root: Path, prediction_root: Path, mo
         return [{"model_id": model_id, "method": method, "mode": mode, "status": "failed",
                  "gt_status": "invalid_or_missing_gt", "prediction_status": "not_evaluated",
                  "error": f"{type(exc).__name__}: {exc}", "shared_input_status": "not_verified"}
-                for method in METHODS]
-    for method in METHODS:
+                for method in methods]
+    for method in methods:
         path = prediction_root / method / model_id / "data.npz"
         base = {"model_id": model_id, "method": method, "mode": mode, "prediction_file": str(path),
                 "prediction_file_exists": path.is_file(), "error": ""}
@@ -297,17 +308,20 @@ def _micro_topology(rows: list[dict]) -> dict:
             "f1": 2 * tp / (2 * tp + fp + fn) if tp + fp + fn else 1.0}
 
 
-def summarize(rows: list[dict], ids: list[str], *, mode: str, original_count: int = ORIGINAL_COUNT) -> dict:
+def summarize(rows: list[dict], ids: list[str], *, mode: str, original_count: int = ORIGINAL_COUNT,
+              candidate_method: str = "joint") -> dict:
+    methods = comparison_methods(candidate_method)
     if len(ids) > original_count:
         raise ValueError("Intended count cannot exceed the original population")
-    summary = {"mode": mode, "intended_count": len(ids), "original_count": original_count,
+    summary = {"mode": mode, "candidate_method": candidate_method, "intended_count": len(ids), "original_count": original_count,
                "contract_unsupported_count": original_count - len(ids), "methods": {}, "paired": {},
+               "diagnostic_convention": "legacy_* columns describe the directed-half-edge representation used by legacy and intersection; joint_* columns apply only to shared-boundary queries.",
                "limitations": LIMITATIONS,
                "empty_pair_convention": "both empty: P=R=F1=1; prediction-only empty: P=1,R=0,F1=0; GT-only empty: P=0,R=1,F1=0"}
     lookup = {(row["method"], row["model_id"]): row for row in rows}
-    if len(lookup) != len(rows) or set(lookup) != {(method, item) for method in METHODS for item in ids}:
+    if len(lookup) != len(rows) or set(lookup) != {(method, item) for method in methods for item in ids}:
         raise ValueError("Exactly one metric row per method and intended ID is required")
-    for method in METHODS:
+    for method in methods:
         group = [lookup[method, item] for item in ids]
         counts = {
             "files_present": sum(bool(row.get("prediction_file_exists")) for row in group),
@@ -331,24 +345,24 @@ def summarize(rows: list[dict], ids: list[str], *, mode: str, original_count: in
     summary["shared_input_status_counts"] = dict(shared)
     summary["protocol_valid"] = not (shared["mismatch"] or shared["missing_digest"])
     for key in PAIRED_METRICS:
-        matched = [(lookup["legacy", item], lookup["joint", item]) for item in ids
+        matched = [(lookup["legacy", item], lookup[candidate_method, item]) for item in ids
                    if lookup["legacy", item]["shared_input_status"] == "verified"
-                   and _finite(lookup["legacy", item], key) and _finite(lookup["joint", item], key)]
+                   and _finite(lookup["legacy", item], key) and _finite(lookup[candidate_method, item], key)]
         old = [first[key] for first, _ in matched]
         new = [second[key] for _, second in matched]
         differences = np.asarray(new) - np.asarray(old)
         direction = "higher" if key in TOPOLOGY_METRICS else "lower"
         wins = differences > 1e-12 if direction == "higher" else differences < -1e-12
         summary["paired"][key] = {
-            "common_count": len(matched), "legacy": statistics(old), "joint": statistics(new),
-            "joint_minus_legacy": statistics(differences), "better_direction": direction,
-            "joint_win_fraction": float(wins.mean()) if len(matched) else None,
+            "common_count": len(matched), "legacy": statistics(old), candidate_method: statistics(new),
+            f"{candidate_method}_minus_legacy": statistics(differences), "better_direction": direction,
+            f"{candidate_method}_win_fraction": float(wins.mean()) if len(matched) else None,
             "tie_fraction": float((np.abs(differences) <= 1e-12).mean()) if len(matched) else None,
             "tie_absolute_tolerance": 1e-12,
         }
     shared_ids = [item for item in ids if lookup["legacy", item]["shared_input_status"] == "verified"
-                  and all(_finite(lookup[method, item], "topology_f1") for method in METHODS)]
-    summary["paired_topology_micro"] = {method: _micro_topology([lookup[method, item] for item in shared_ids]) for method in METHODS}
+                  and all(_finite(lookup[method, item], "topology_f1") for method in methods)]
+    summary["paired_topology_micro"] = {method: _micro_topology([lookup[method, item] for item in shared_ids]) for method in methods}
     return summary
 
 
@@ -369,6 +383,7 @@ def main() -> int:
     parser.add_argument("--split-list", type=Path, required=True)
     parser.add_argument("--comparison-root", type=Path, required=True)
     parser.add_argument("--mode", choices=MODES, required=True)
+    parser.add_argument("--candidate-method", choices=CANDIDATE_METHODS, default="joint")
     parser.add_argument("--workers", type=int, default=16)
     args = parser.parse_args()
     if args.workers < 1:
@@ -378,14 +393,14 @@ def main() -> int:
     if (output / "per_object.csv").exists() or (output / "summary.json").exists():
         parser.error("Metrics already exist; use a fresh comparison root to prevent mixing protocols")
     prediction_root = args.comparison_root / "raw_predictions" / args.mode
-    evaluate = partial(evaluate_sample, data_root=args.data_root, prediction_root=prediction_root, mode=args.mode)
+    evaluate = partial(evaluate_sample, data_root=args.data_root, prediction_root=prediction_root, mode=args.mode, candidate_method=args.candidate_method)
     rows = []
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
         for index, pair in enumerate(pool.map(evaluate, ids), start=1):
             rows.extend(pair)
             if index % 250 == 0:
                 print(f"Scored {index}/{len(ids)} objects", flush=True)
-    summary = summarize(rows, ids, mode=args.mode)
+    summary = summarize(rows, ids, mode=args.mode, candidate_method=args.candidate_method)
     summary.update(
         created_at_utc=datetime.now(timezone.utc).isoformat(), workers=args.workers,
         data_root=str(args.data_root.resolve()), prediction_root=str(prediction_root.resolve()),

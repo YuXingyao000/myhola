@@ -202,6 +202,33 @@ def test_paired_statistics_use_metric_specific_shared_input_intersection():
     assert result["paired_topology_micro"]["joint"]["f1"] == 1
 
 
+def test_intersection_uses_half_edge_contract_and_named_paired_results(tmp_path):
+    write_gt(tmp_path / "gt" / "present")
+    write_gt(tmp_path / "gt" / "missing")
+    for method in ("legacy", "intersection"):
+        folder = tmp_path / "pred" / method / "present"
+        folder.mkdir(parents=True)
+        np.savez(folder / "data.npz", **prediction("legacy"))
+    rows = []
+    for sample in ("present", "missing"):
+        rows.extend(evaluate_sample(sample, data_root=tmp_path / "gt", prediction_root=tmp_path / "pred",
+                                    mode="posterior_mean", candidate_method="intersection"))
+    candidate = next(row for row in rows if row["method"] == "intersection" and row["model_id"] == "present")
+    assert candidate["status"] == "ok"
+    assert candidate["legacy_reciprocal_pair_count"] == 1
+    assert candidate["legacy_directed_duplicate_count"] == 0
+    assert candidate["joint_duplicate_pair_count"] is None
+    assert candidate["joint_query_count_error"] is None
+    assert "confidence_status" not in candidate
+    result = summarize(rows, ["present", "missing"], mode="posterior_mean", original_count=3,
+                       candidate_method="intersection")
+    paired = result["paired"]["face_cd_sq"]
+    assert paired["common_count"] == 1 and paired["intersection_minus_legacy"]["mean"] == 0
+    assert paired["intersection_win_fraction"] == 0 and "joint" not in result["methods"]
+    assert result["methods"]["intersection"]["coverage"]["face_geometry_computable"]["original_fraction"] == 1 / 3
+    assert evaluate_prediction(prediction(), *geometry(), method="intersection", mode="posterior_mean")["prediction_status"] == "invalid_representation"
+
+
 def test_cli_rejects_nonfrozen_split_instead_of_claiming_2417_coverage(tmp_path):
     path = tmp_path / "ids.txt"
     path.write_text("one\ntwo\n")
@@ -213,7 +240,8 @@ def test_cli_rejects_nonfrozen_split_instead_of_claiming_2417_coverage(tmp_path)
 
 
 @pytest.mark.parametrize("mode", ["posterior_mean", "archived_latents"])
-def test_complete_cli_writes_json_summary_and_matching_per_object_csv(tmp_path, monkeypatch, mode):
+@pytest.mark.parametrize("candidate_method", ["joint", "intersection"])
+def test_complete_cli_writes_json_summary_and_matching_per_object_csv(tmp_path, monkeypatch, mode, candidate_method):
     """Exercise NPZ -> scalar metrics -> coverage counts -> actual JSON output."""
     from tools import vae_compare_metrics as metrics
 
@@ -222,22 +250,22 @@ def test_complete_cli_writes_json_summary_and_matching_per_object_csv(tmp_path, 
     split = tmp_path / "ids.txt"
     split.write_text(sample + "\n")
     comparison = tmp_path / "comparison"
-    for method in ("legacy", "joint"):
+    for method in ("legacy", candidate_method):
         folder = comparison / "raw_predictions" / mode / method / sample
         folder.mkdir(parents=True)
-        np.savez(folder / "data.npz", **prediction(method))
+        np.savez(folder / "data.npz", **prediction("legacy" if method == "intersection" else method))
     # The frozen-list validation has its own test; this checks the real CLI outputs.
     monkeypatch.setattr(metrics, "read_frozen_ids", lambda path: [sample])
     monkeypatch.setattr(sys, "argv", ["vae_compare_metrics", "--data-root", str(tmp_path / "gt"),
                                      "--split-list", str(split), "--comparison-root", str(comparison),
-                                     "--mode", mode, "--workers", "1"])
+                                     "--mode", mode, "--workers", "1", "--candidate-method", candidate_method])
     assert metrics.main() == 0
     output = comparison / "raw_metrics" / mode
     summary = json.loads((output / "summary.json").read_text())
     with (output / "per_object.csv").open(newline="") as handle:
         rows = list(csv.DictReader(handle))
     assert len(rows) == 2
-    for method in ("legacy", "joint"):
+    for method in ("legacy", candidate_method):
         coverage = summary["methods"][method]["coverage"]
         assert type(coverage["face_geometry_computable"]["count"]) is int
         assert coverage["face_geometry_computable"]["count"] == 1
