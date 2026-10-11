@@ -1,0 +1,11 @@
+traces/
+replay/
+upstream/
+saved_step/
+logs/
+metadata/
+pilot*/
+charts/
+cases.json
+page/data.js
+validation/*.png

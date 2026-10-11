@@ -1,0 +1,9 @@
+{
+  "python": "3.10.13 | packaged by conda-forge | (main, Dec 23 2023, 15:36:39) [GCC 12.3.0]",
+  "executable": "/mnt/d/anaconda3/envs/torch/bin/python",
+  "pythonocc": "7.8.1.1",
+  "numpy_runtime": "2.0.1",
+  "scipy": "1.15.3",
+  "torch": "2.4.1+cu124",
+  "matplotlib": "3.10.0"
+}

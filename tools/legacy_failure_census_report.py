@@ -760,7 +760,7 @@ def write_outputs(root, manifest_path, manifest, records, summary):
     mechanism_groups = (("persistent", "persistent_trim", PERSISTENT_LABELS), ("ever", "trace_mechanisms", TRACE_LABELS), ("upstream", "upstream_mechanisms", UPSTREAM_LABELS))
     extra = [f"{prefix}.{key}" for prefix, _, labels in mechanism_groups for key in labels]
     with (root / "cases.csv").open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fields + extra)
+        writer = csv.DictWriter(handle, fieldnames=fields + extra, lineterminator="\n")
         writer.writeheader()
         for row in records:
             flat = {key: row[key] for key in fields}

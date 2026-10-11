@@ -1,0 +1,60 @@
+{
+  "intended_failure_ids": 369,
+  "unique_case_ids": 369,
+  "all_case_ids_match_manifest": true,
+  "verified_exact_replays": 369,
+  "upstream_current_trace_hash_matches": 369,
+  "terminal_unknown_count": 0,
+  "diagnostic_status": {
+    "trace_status": {
+      "ok": 369
+    },
+    "upstream_status": {
+      "ok": 369
+    },
+    "saved_step_status": {
+      "ok": 369
+    }
+  },
+  "fit_only_regressions_verified": 8,
+  "relevant_pytest": {
+    "passed": 39,
+    "failed": 0,
+    "seconds": 4.29
+  },
+  "source_assets": {
+    "source_asset_count": 1845,
+    "changed_source_assets": [],
+    "all_source_assets_unchanged": true
+  },
+  "browser": {
+    "cases": 369,
+    "atlas": 50,
+    "groups": 104,
+    "verified": 369,
+    "widths": [
+      {
+        "scroll": 1280,
+        "width": 1280
+      },
+      {
+        "scroll": 768,
+        "width": 768
+      },
+      {
+        "scroll": 320,
+        "width": 320
+      }
+    ],
+    "charts": 10,
+    "errors": [],
+    "checked_at": "2026-10-11T08:02:56.769Z",
+    "atlas_link": "../../legacy_failures_20261011/page/index.html#00480996"
+  },
+  "derived_intersections": {
+    "persistent_open_wire_union": 170,
+    "fit_owner_gt_0_01_raw_pair_exact": 239,
+    "near_free_edge_le_0_01_raw_pair_exact": 89
+  },
+  "production_model_or_post_edits": false
+}
