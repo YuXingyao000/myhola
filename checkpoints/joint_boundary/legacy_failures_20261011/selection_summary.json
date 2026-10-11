@@ -1,0 +1,6222 @@
+{
+  "version": "legacy_failure_selection_v1",
+  "created_at_utc": "2026-10-11T06:55:02.356564+00:00",
+  "comparison_root": "/mnt/d/python/checkpoints/joint_boundary/comparison_20261011",
+  "data_root": "/mnt/d/data/deepcad_v7",
+  "sources": {
+    "raw_metrics": {
+      "path": "/mnt/d/python/checkpoints/joint_boundary/comparison_20261011/raw_metrics/posterior_mean/per_object.csv",
+      "sha256": "92e94d6c9adb4c6ec04c6fc73bf75f11e7f9eaef9713618e43335180a39b7fe5"
+    },
+    "optimized": {
+      "path": "/mnt/d/python/checkpoints/joint_boundary/comparison_20261011/post/optimized/samples.csv",
+      "sha256": "10849cb6f0fce73be8475b03f45cb9b007ef8146e0d639597c69586e4b10bb0d"
+    },
+    "fit_only": {
+      "path": "/mnt/d/python/checkpoints/joint_boundary/comparison_20261011/post/fit_only/samples.csv",
+      "sha256": "1739d4df263c508547115801a32916474ecd88fab7f407c0eb77cc5909938c38"
+    }
+  },
+  "selector_sha256": "4e6333ac8fa7f8c762e0d7e177cf9d778f5286130f2cbaa148253ed0c52e51ae",
+  "population": {
+    "accepted_test": 2417,
+    "original_test": 2424,
+    "contract_unsupported": 7,
+    "native_valid": 2048,
+    "native_failed": 369,
+    "selected": 50
+  },
+  "selection_protocol": {
+    "dimensions": [
+      "shape_type",
+      "native_brepcheck_valid",
+      "raw_pair_topology_exact"
+    ],
+    "quota": "min 1 per nonempty stratum; remaining slots proportional to n-1 with exact-integer Hamilton remainders; tie by stratum name",
+    "within_stratum": "sort by GT face count, SHA256('legacy-failure-v1:{id}'), ID; select zero-based floor((j+.5)*n/q) ranks",
+    "frozen_before_in_depth_case_analysis": true,
+    "prevalence_estimator": false
+  },
+  "selected_ids_sha256": "a85e5fe91773f29ac6539fa7acdc3d149854a0469176b2477ef865604a0072ae",
+  "strata": [
+    {
+      "stratum": "compound|brepcheck_invalid|pair_exact",
+      "shape_type": 0,
+      "shape_name": "compound",
+      "native_brepcheck_valid": false,
+      "raw_pair_topology_exact": true,
+      "population_count": 10,
+      "selected_count": 2,
+      "selected_ids": [
+        "00038614",
+        "00800467"
+      ],
+      "selected_zero_based_ranks": [
+        2,
+        7
+      ]
+    },
+    {
+      "stratum": "compound|brepcheck_invalid|pair_inexact",
+      "shape_type": 0,
+      "shape_name": "compound",
+      "native_brepcheck_valid": false,
+      "raw_pair_topology_exact": false,
+      "population_count": 26,
+      "selected_count": 4,
+      "selected_ids": [
+        "00742348",
+        "00907431",
+        "00723343",
+        "00839921"
+      ],
+      "selected_zero_based_ranks": [
+        3,
+        9,
+        16,
+        22
+      ]
+    },
+    {
+      "stratum": "compound|brepcheck_valid|pair_exact",
+      "shape_type": 0,
+      "shape_name": "compound",
+      "native_brepcheck_valid": true,
+      "raw_pair_topology_exact": true,
+      "population_count": 149,
+      "selected_count": 18,
+      "selected_ids": [
+        "00001926",
+        "00904465",
+        "00439331",
+        "00619236",
+        "00223857",
+        "00453108",
+        "00113091",
+        "00081261",
+        "00993199",
+        "00617241",
+        "00284915",
+        "00686748",
+        "00025814",
+        "00016984",
+        "00969037",
+        "00598784",
+        "00492810",
+        "00705130"
+      ],
+      "selected_zero_based_ranks": [
+        4,
+        12,
+        20,
+        28,
+        37,
+        45,
+        53,
+        62,
+        70,
+        78,
+        86,
+        95,
+        103,
+        111,
+        120,
+        128,
+        136,
+        144
+      ]
+    },
+    {
+      "stratum": "compound|brepcheck_valid|pair_inexact",
+      "shape_type": 0,
+      "shape_name": "compound",
+      "native_brepcheck_valid": true,
+      "raw_pair_topology_exact": false,
+      "population_count": 57,
+      "selected_count": 7,
+      "selected_ids": [
+        "00210133",
+        "00239870",
+        "00474374",
+        "00287841",
+        "00610102",
+        "00086425",
+        "00518910"
+      ],
+      "selected_zero_based_ranks": [
+        4,
+        12,
+        20,
+        28,
+        36,
+        44,
+        52
+      ]
+    },
+    {
+      "stratum": "invalid_solid|brepcheck_invalid|pair_exact",
+      "shape_type": 2,
+      "shape_name": "invalid_solid",
+      "native_brepcheck_valid": false,
+      "raw_pair_topology_exact": true,
+      "population_count": 1,
+      "selected_count": 1,
+      "selected_ids": [
+        "00480996"
+      ],
+      "selected_zero_based_ranks": [
+        0
+      ]
+    },
+    {
+      "stratum": "shell|brepcheck_invalid|pair_exact",
+      "shape_type": 3,
+      "shape_name": "shell",
+      "native_brepcheck_valid": false,
+      "raw_pair_topology_exact": true,
+      "population_count": 7,
+      "selected_count": 2,
+      "selected_ids": [
+        "00919405",
+        "00359148"
+      ],
+      "selected_zero_based_ranks": [
+        1,
+        5
+      ]
+    },
+    {
+      "stratum": "shell|brepcheck_invalid|pair_inexact",
+      "shape_type": 3,
+      "shape_name": "shell",
+      "native_brepcheck_valid": false,
+      "raw_pair_topology_exact": false,
+      "population_count": 6,
+      "selected_count": 2,
+      "selected_ids": [
+        "00925104",
+        "00993185"
+      ],
+      "selected_zero_based_ranks": [
+        1,
+        4
+      ]
+    },
+    {
+      "stratum": "shell|brepcheck_valid|pair_exact",
+      "shape_type": 3,
+      "shape_name": "shell",
+      "native_brepcheck_valid": true,
+      "raw_pair_topology_exact": true,
+      "population_count": 101,
+      "selected_count": 12,
+      "selected_ids": [
+        "00535291",
+        "00072791",
+        "00009683",
+        "00211514",
+        "00655174",
+        "00518528",
+        "00917482",
+        "00627745",
+        "00616846",
+        "00471383",
+        "00139443",
+        "00551214"
+      ],
+      "selected_zero_based_ranks": [
+        4,
+        12,
+        21,
+        29,
+        37,
+        46,
+        54,
+        63,
+        71,
+        79,
+        88,
+        96
+      ]
+    },
+    {
+      "stratum": "shell|brepcheck_valid|pair_inexact",
+      "shape_type": 3,
+      "shape_name": "shell",
+      "native_brepcheck_valid": true,
+      "raw_pair_topology_exact": false,
+      "population_count": 12,
+      "selected_count": 2,
+      "selected_ids": [
+        "00834544",
+        "00835783"
+      ],
+      "selected_zero_based_ranks": [
+        3,
+        9
+      ]
+    }
+  ],
+  "failure_population": {
+    "count": 369,
+    "shape_counts": {
+      "shell": 126,
+      "compound": 242,
+      "invalid_solid": 1
+    },
+    "brepcheck_counts": {
+      "valid": 319,
+      "invalid": 50
+    },
+    "status_counts": {
+      "ok": 292,
+      "geometry_error": 77
+    },
+    "geometry_status_counts": {
+      "ok": 292,
+      "error": 77
+    },
+    "pair_exact_counts": {
+      "exact": 268,
+      "inexact": 101
+    },
+    "gt_face_bin_counts": {
+      "10-19": 206,
+      "1-9": 81,
+      "20-30": 82
+    }
+  },
+  "selected_population": {
+    "count": 50,
+    "shape_counts": {
+      "compound": 31,
+      "invalid_solid": 1,
+      "shell": 18
+    },
+    "brepcheck_counts": {
+      "invalid": 11,
+      "valid": 39
+    },
+    "status_counts": {
+      "geometry_error": 13,
+      "ok": 37
+    },
+    "geometry_status_counts": {
+      "error": 13,
+      "ok": 37
+    },
+    "pair_exact_counts": {
+      "exact": 35,
+      "inexact": 15
+    },
+    "gt_face_bin_counts": {
+      "10-19": 29,
+      "20-30": 12,
+      "1-9": 9
+    }
+  },
+  "raw_population_comparison": {
+    "scope": "all 2417 accepted posterior-mean legacy cases, not the selected 50",
+    "unadjusted": {
+      "native_valid": {
+        "object_count": 2048,
+        "metrics": {
+          "face_mae": {
+            "count": 2048,
+            "mean": 0.0019458071557539418,
+            "median": 0.0018463387117826637,
+            "p90": 0.002781183570060522
+          },
+          "face_cd_sq": {
+            "count": 2048,
+            "mean": 4.2318750454596635e-05,
+            "median": 3.374057967019402e-05,
+            "p90": 7.450795108338766e-05
+          },
+          "edge_cd_sq": {
+            "count": 2048,
+            "mean": 4.5950750237671825e-05,
+            "median": 3.197613283244263e-05,
+            "p90": 7.741968401782843e-05
+          },
+          "edge_pred_to_gt_sq": {
+            "count": 2048,
+            "mean": 2.9567042283386655e-05,
+            "median": 2.0594414677343678e-05,
+            "p90": 4.981169538831189e-05
+          },
+          "edge_gt_to_pred_sq": {
+            "count": 2048,
+            "mean": 1.638370795428517e-05,
+            "median": 1.1473180508444599e-05,
+            "p90": 2.7330218218940264e-05
+          },
+          "topology_precision": {
+            "count": 2048,
+            "mean": 0.9997433646620673,
+            "median": 1.0,
+            "p90": 1.0
+          },
+          "topology_recall": {
+            "count": 2048,
+            "mean": 0.9997464312122084,
+            "median": 1.0,
+            "p90": 1.0
+          },
+          "topology_f1": {
+            "count": 2048,
+            "mean": 0.9997363619526597,
+            "median": 1.0,
+            "p90": 1.0
+          },
+          "unique_pair_count_error": {
+            "count": 2048,
+            "mean": 0.0185546875,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "legacy_unilateral_pair_count": {
+            "count": 2048,
+            "mean": 0.0087890625,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "legacy_reciprocal_cd_sq_mean": {
+            "count": 2048,
+            "mean": 4.202610849292591e-05,
+            "median": 3.1966543062548285e-05,
+            "p90": 7.265713209183512e-05
+          },
+          "legacy_reciprocal_cd_sq_max": {
+            "count": 2048,
+            "mean": 0.0002138222720866071,
+            "median": 0.00011719393232848506,
+            "p90": 0.0003766545860492038
+          },
+          "gt_face_count": {
+            "count": 2048,
+            "mean": 12.30615234375,
+            "median": 11.0,
+            "p90": 19.0
+          },
+          "gt_boundary_count": {
+            "count": 2048,
+            "mean": 28.4765625,
+            "median": 24.0,
+            "p90": 48.0
+          },
+          "raw_edge_count": {
+            "count": 2048,
+            "mean": 56.9580078125,
+            "median": 48.0,
+            "p90": 96.0
+          }
+        }
+      },
+      "native_failed": {
+        "object_count": 369,
+        "metrics": {
+          "face_mae": {
+            "count": 369,
+            "mean": 0.002780511437977827,
+            "median": 0.0023950253896444728,
+            "p90": 0.00372769533461792
+          },
+          "face_cd_sq": {
+            "count": 369,
+            "mean": 9.363327729829608e-05,
+            "median": 5.3150621250822735e-05,
+            "p90": 0.00014804160732456996
+          },
+          "edge_cd_sq": {
+            "count": 369,
+            "mean": 0.00032947145029309254,
+            "median": 7.34178347044087e-05,
+            "p90": 0.0005329714987079322
+          },
+          "edge_pred_to_gt_sq": {
+            "count": 369,
+            "mean": 0.0002323863432800151,
+            "median": 4.6898635116469986e-05,
+            "p90": 0.0002862959236233149
+          },
+          "edge_gt_to_pred_sq": {
+            "count": 369,
+            "mean": 9.708510701307746e-05,
+            "median": 2.1878195638905327e-05,
+            "p90": 0.00012176225809538204
+          },
+          "topology_precision": {
+            "count": 369,
+            "mean": 0.9841744512276774,
+            "median": 1.0,
+            "p90": 1.0
+          },
+          "topology_recall": {
+            "count": 369,
+            "mean": 0.9957472738403537,
+            "median": 1.0,
+            "p90": 1.0
+          },
+          "topology_f1": {
+            "count": 369,
+            "mean": 0.9894827641514954,
+            "median": 1.0,
+            "p90": 1.0
+          },
+          "unique_pair_count_error": {
+            "count": 369,
+            "mean": 0.7046070460704607,
+            "median": 0.0,
+            "p90": 2.0
+          },
+          "legacy_unilateral_pair_count": {
+            "count": 369,
+            "mean": 0.3224932249322493,
+            "median": 0.0,
+            "p90": 1.0
+          },
+          "legacy_reciprocal_cd_sq_mean": {
+            "count": 369,
+            "mean": 0.00030835231625628653,
+            "median": 6.747505501557001e-05,
+            "p90": 0.00039417056070767593
+          },
+          "legacy_reciprocal_cd_sq_max": {
+            "count": 369,
+            "mean": 0.004403829574345015,
+            "median": 0.00036486337303011374,
+            "p90": 0.00456349095127905
+          },
+          "gt_face_count": {
+            "count": 369,
+            "mean": 14.915989159891598,
+            "median": 14.0,
+            "p90": 24.0
+          },
+          "gt_boundary_count": {
+            "count": 369,
+            "mean": 33.44173441734417,
+            "median": 30.0,
+            "p90": 58.19999999999999
+          },
+          "raw_edge_count": {
+            "count": 369,
+            "mean": 67.65582655826559,
+            "median": 60.0,
+            "p90": 118.39999999999998
+          }
+        }
+      }
+    },
+    "by_gt_face_bin": {
+      "1-9": {
+        "native_valid": {
+          "object_count": 583,
+          "metrics": {
+            "face_mae": {
+              "count": 583,
+              "mean": 0.0019568332969704737,
+              "median": 0.0018327186418092523,
+              "p90": 0.0028632510180787427
+            },
+            "face_cd_sq": {
+              "count": 583,
+              "mean": 4.567528787217142e-05,
+              "median": 3.3935355566084476e-05,
+              "p90": 8.736127384606723e-05
+            },
+            "edge_cd_sq": {
+              "count": 583,
+              "mean": 4.830964633601157e-05,
+              "median": 3.0593906395897015e-05,
+              "p90": 8.952067285347863e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 583,
+              "mean": 3.0559089215894766e-05,
+              "median": 1.9675574826663432e-05,
+              "p90": 5.706314578989587e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 583,
+              "mean": 1.7750557120116802e-05,
+              "median": 1.090605944902074e-05,
+              "p90": 3.243814481652525e-05
+            },
+            "topology_precision": {
+              "count": 583,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 583,
+              "mean": 0.9997549620191131,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 583,
+              "mean": 0.9998680564718301,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 583,
+              "mean": 0.003430531732418525,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 583,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 583,
+              "mean": 4.270500311746571e-05,
+              "median": 3.100060864337544e-05,
+              "p90": 7.46183870689899e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 583,
+              "mean": 0.00018140826790008862,
+              "median": 0.00010381986788957621,
+              "p90": 0.0003106557454312912
+            },
+            "gt_face_count": {
+              "count": 583,
+              "mean": 7.910806174957118,
+              "median": 8.0,
+              "p90": 9.0
+            },
+            "gt_boundary_count": {
+              "count": 583,
+              "mean": 16.126929674099486,
+              "median": 16.0,
+              "p90": 20.0
+            },
+            "raw_edge_count": {
+              "count": 583,
+              "mean": 32.24699828473413,
+              "median": 32.0,
+              "p90": 40.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 81,
+          "metrics": {
+            "face_mae": {
+              "count": 81,
+              "mean": 0.0026167510611171713,
+              "median": 0.0023915162443544813,
+              "p90": 0.0038236148924531855
+            },
+            "face_cd_sq": {
+              "count": 81,
+              "mean": 9.465698845091734e-05,
+              "median": 6.0591776831591976e-05,
+              "p90": 0.00017649522117808153
+            },
+            "edge_cd_sq": {
+              "count": 81,
+              "mean": 0.0002101790968510985,
+              "median": 6.440758693068774e-05,
+              "p90": 0.00035419707646398846
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 81,
+              "mean": 0.0001098465970497785,
+              "median": 4.278677355356096e-05,
+              "p90": 0.00023674958065163408
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 81,
+              "mean": 0.00010033249980132,
+              "median": 1.9431842453981234e-05,
+              "p90": 0.0001198882751639474
+            },
+            "topology_precision": {
+              "count": 81,
+              "mean": 0.9916802111791218,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 81,
+              "mean": 0.998236331569665,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 81,
+              "mean": 0.9945104520267918,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 81,
+              "mean": 0.09876543209876543,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 81,
+              "mean": 0.012345679012345678,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 81,
+              "mean": 0.00022076181421943456,
+              "median": 5.711229718048667e-05,
+              "p90": 0.0003578763919792866
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 81,
+              "mean": 0.0019145295693448958,
+              "median": 0.00021180835925903698,
+              "p90": 0.002338250549563105
+            },
+            "gt_face_count": {
+              "count": 81,
+              "mean": 7.864197530864198,
+              "median": 8.0,
+              "p90": 9.0
+            },
+            "gt_boundary_count": {
+              "count": 81,
+              "mean": 12.91358024691358,
+              "median": 14.0,
+              "p90": 18.0
+            },
+            "raw_edge_count": {
+              "count": 81,
+              "mean": 25.962962962962962,
+              "median": 28.0,
+              "p90": 36.0
+            }
+          }
+        }
+      },
+      "10-19": {
+        "native_valid": {
+          "object_count": 1292,
+          "metrics": {
+            "face_mae": {
+              "count": 1292,
+              "mean": 0.0019273776182635463,
+              "median": 0.0018427803631095143,
+              "p90": 0.002722481368737885
+            },
+            "face_cd_sq": {
+              "count": 1292,
+              "mean": 4.109081046627502e-05,
+              "median": 3.368071656156266e-05,
+              "p90": 7.254886680225836e-05
+            },
+            "edge_cd_sq": {
+              "count": 1292,
+              "mean": 4.453006140849778e-05,
+              "median": 3.2036106957580504e-05,
+              "p90": 7.179269728917785e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 1292,
+              "mean": 2.906042881717184e-05,
+              "median": 2.0555462694531783e-05,
+              "p90": 4.688538515390159e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 1292,
+              "mean": 1.5469632591325948e-05,
+              "median": 1.1519499496100015e-05,
+              "p90": 2.5450463510777085e-05
+            },
+            "topology_precision": {
+              "count": 1292,
+              "mean": 0.9998093549859443,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 1292,
+              "mean": 0.9997383976810539,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 1292,
+              "mean": 0.9997682480590935,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 1292,
+              "mean": 0.014705882352941176,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 1292,
+              "mean": 0.006191950464396285,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 1292,
+              "mean": 4.1061521081414724e-05,
+              "median": 3.1889646801066874e-05,
+              "p90": 6.727184288891273e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 1292,
+              "mean": 0.00021842600093336466,
+              "median": 0.00012000084633231878,
+              "p90": 0.0003678111847583655
+            },
+            "gt_face_count": {
+              "count": 1292,
+              "mean": 12.839783281733746,
+              "median": 12.0,
+              "p90": 17.0
+            },
+            "gt_boundary_count": {
+              "count": 1292,
+              "mean": 30.185758513931887,
+              "median": 29.0,
+              "p90": 42.0
+            },
+            "raw_edge_count": {
+              "count": 1292,
+              "mean": 60.363777089783284,
+              "median": 58.0,
+              "p90": 84.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 206,
+          "metrics": {
+            "face_mae": {
+              "count": 206,
+              "mean": 0.002996024835980105,
+              "median": 0.0024759623479853497,
+              "p90": 0.0037650611049189014
+            },
+            "face_cd_sq": {
+              "count": 206,
+              "mean": 0.00010868656276850253,
+              "median": 5.7614466960723494e-05,
+              "p90": 0.0001504895309217216
+            },
+            "edge_cd_sq": {
+              "count": 206,
+              "mean": 0.00041144255162549,
+              "median": 7.929398002175974e-05,
+              "p90": 0.0006795999885650145
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 206,
+              "mean": 0.0002981049458395384,
+              "median": 5.408183628560022e-05,
+              "p90": 0.0003388449281829746
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 206,
+              "mean": 0.00011333760578595168,
+              "median": 2.3782539494593612e-05,
+              "p90": 0.00013920180915004225
+            },
+            "topology_precision": {
+              "count": 206,
+              "mean": 0.9843025521678237,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 206,
+              "mean": 0.9953414158906538,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 206,
+              "mean": 0.9893335167080248,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 206,
+              "mean": 0.6067961165048543,
+              "median": 0.0,
+              "p90": 2.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 206,
+              "mean": 0.28640776699029125,
+              "median": 0.0,
+              "p90": 1.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 206,
+              "mean": 0.0004225757590468642,
+              "median": 7.730347633633274e-05,
+              "p90": 0.0004458138719851757
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 206,
+              "mean": 0.0063439195635874145,
+              "median": 0.0004538162153170467,
+              "p90": 0.006204462532312062
+            },
+            "gt_face_count": {
+              "count": 206,
+              "mean": 13.975728155339805,
+              "median": 14.0,
+              "p90": 18.0
+            },
+            "gt_boundary_count": {
+              "count": 206,
+              "mean": 31.4126213592233,
+              "median": 30.0,
+              "p90": 44.0
+            },
+            "raw_edge_count": {
+              "count": 206,
+              "mean": 63.422330097087375,
+              "median": 60.0,
+              "p90": 90.5
+            }
+          }
+        }
+      },
+      "20-30": {
+        "native_valid": {
+          "object_count": 173,
+          "metrics": {
+            "face_mae": {
+              "count": 173,
+              "mean": 0.0020462853182299664,
+              "median": 0.0019403856700556878,
+              "p90": 0.0029101132852179146
+            },
+            "face_cd_sq": {
+              "count": 173,
+              "mean": 4.017792473474364e-05,
+              "median": 3.387082551731796e-05,
+              "p90": 6.86344533546635e-05
+            },
+            "edge_cd_sq": {
+              "count": 173,
+              "mean": 4.861140654958389e-05,
+              "median": 3.4739398024150654e-05,
+              "p90": 7.683539700881277e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 173,
+              "mean": 3.000739625273529e-05,
+              "median": 2.2231313730057603e-05,
+              "p90": 4.8400010093403256e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 173,
+              "mean": 1.860401029684861e-05,
+              "median": 1.2587945616974579e-05,
+              "p90": 2.7330011066977356e-05
+            },
+            "topology_precision": {
+              "count": 173,
+              "mean": 0.9983856889368429,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 173,
+              "mean": 0.9997776789684304,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 173,
+              "mean": 0.9990544269573486,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 173,
+              "mean": 0.09826589595375723,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 173,
+              "mean": 0.057803468208092484,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 173,
+              "mean": 4.694201236324814e-05,
+              "median": 3.777157479151783e-05,
+              "p90": 9.024370853885706e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 173,
+              "mean": 0.0002886739875243501,
+              "median": 0.0001710275254487026,
+              "p90": 0.0005987987258242368
+            },
+            "gt_face_count": {
+              "count": 173,
+              "mean": 23.13294797687861,
+              "median": 22.0,
+              "p90": 26.0
+            },
+            "gt_boundary_count": {
+              "count": 173,
+              "mean": 57.32947976878613,
+              "median": 57.0,
+              "p90": 70.0
+            },
+            "raw_edge_count": {
+              "count": 173,
+              "mean": 114.79768786127168,
+              "median": 115.0,
+              "p90": 143.20000000000005
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 82,
+          "metrics": {
+            "face_mae": {
+              "count": 82,
+              "mean": 0.0024008630298954347,
+              "median": 0.0023306027097229768,
+              "p90": 0.0030916194907946687
+            },
+            "face_cd_sq": {
+              "count": 82,
+              "mean": 5.4805260100431944e-05,
+              "median": 4.245809965064006e-05,
+              "p90": 7.666057951146795e-05
+            },
+            "edge_cd_sq": {
+              "count": 82,
+              "mean": 0.0002413816180287957,
+              "median": 6.306100788921463e-05,
+              "p90": 0.00032597489995551384
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 82,
+              "mean": 0.0001883337495896174,
+              "median": 4.0382446579098897e-05,
+              "p90": 0.00023352980269403343
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 82,
+              "mean": 5.304786843917825e-05,
+              "median": 2.0336482886212065e-05,
+              "p90": 9.049014304268024e-05
+            },
+            "topology_precision": {
+              "count": 82,
+              "mean": 0.976438410377225,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 82,
+              "mean": 0.994308164835036,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 82,
+              "mean": 0.9848913282424213,
+              "median": 0.9967741935483871,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 82,
+              "mean": 1.548780487804878,
+              "median": 0.0,
+              "p90": 3.9000000000000057
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 82,
+              "mean": 0.7195121951219512,
+              "median": 0.0,
+              "p90": 2.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 82,
+              "mean": 0.0001079230656480673,
+              "median": 6.187856557659328e-05,
+              "p90": 0.00020609648477096544
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 82,
+              "mean": 0.001988887655089842,
+              "median": 0.0004248157408600281,
+              "p90": 0.004876553460049021
+            },
+            "gt_face_count": {
+              "count": 82,
+              "mean": 24.24390243902439,
+              "median": 24.0,
+              "p90": 29.900000000000006
+            },
+            "gt_boundary_count": {
+              "count": 82,
+              "mean": 58.81707317073171,
+              "median": 58.0,
+              "p90": 74.0
+            },
+            "raw_edge_count": {
+              "count": 82,
+              "mean": 119.47560975609755,
+              "median": 116.5,
+              "p90": 152.0
+            }
+          }
+        }
+      }
+    },
+    "by_exact_gt_face_count": {
+      "7": {
+        "native_valid": {
+          "object_count": 173,
+          "metrics": {
+            "face_mae": {
+              "count": 173,
+              "mean": 0.001995385836318103,
+              "median": 0.0018259797857732925,
+              "p90": 0.003143815367060857
+            },
+            "face_cd_sq": {
+              "count": 173,
+              "mean": 4.765255656833357e-05,
+              "median": 3.3935355566084476e-05,
+              "p90": 9.764341317762388e-05
+            },
+            "edge_cd_sq": {
+              "count": 173,
+              "mean": 5.3125956086816566e-05,
+              "median": 3.2383764325455396e-05,
+              "p90": 0.00010500450244231585
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 173,
+              "mean": 3.2940430038333346e-05,
+              "median": 2.0386475370226104e-05,
+              "p90": 6.551955863281662e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 173,
+              "mean": 2.018552604848323e-05,
+              "median": 1.1066835939304046e-05,
+              "p90": 4.238146290589167e-05
+            },
+            "topology_precision": {
+              "count": 173,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 173,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 173,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 173,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 173,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 173,
+              "mean": 4.0569339994575913e-05,
+              "median": 2.9058639850392412e-05,
+              "p90": 7.752179834346055e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 173,
+              "mean": 0.00016370998280153923,
+              "median": 8.942894020374549e-05,
+              "p90": 0.00030718858599866063
+            },
+            "gt_face_count": {
+              "count": 173,
+              "mean": 7.0,
+              "median": 7.0,
+              "p90": 7.0
+            },
+            "gt_boundary_count": {
+              "count": 173,
+              "mean": 13.38728323699422,
+              "median": 14.0,
+              "p90": 15.0
+            },
+            "raw_edge_count": {
+              "count": 173,
+              "mean": 26.77456647398844,
+              "median": 28.0,
+              "p90": 30.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 31,
+          "metrics": {
+            "face_mae": {
+              "count": 31,
+              "mean": 0.0026423559632459443,
+              "median": 0.002609457999919786,
+              "p90": 0.0037244145831725937
+            },
+            "face_cd_sq": {
+              "count": 31,
+              "mean": 9.252618572239074e-05,
+              "median": 7.019510537592424e-05,
+              "p90": 0.00015155125972531248
+            },
+            "edge_cd_sq": {
+              "count": 31,
+              "mean": 0.00017153292940615415,
+              "median": 7.34178347044087e-05,
+              "p90": 0.00038698967885252033
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 31,
+              "mean": 0.00011138819999137216,
+              "median": 4.944079377363249e-05,
+              "p90": 0.0002786965487762495
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 31,
+              "mean": 6.014472941478201e-05,
+              "median": 1.893867600810743e-05,
+              "p90": 0.00015024009820088628
+            },
+            "topology_precision": {
+              "count": 31,
+              "mean": 0.9873271889400922,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 31,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 31,
+              "mean": 0.9929103154909606,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 31,
+              "mean": 0.0967741935483871,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 31,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 31,
+              "mean": 0.00020713637254537084,
+              "median": 6.383389791963038e-05,
+              "p90": 0.0005776943604956258
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 31,
+              "mean": 0.0010935312177696,
+              "median": 0.0001656127678304894,
+              "p90": 0.003028921996525542
+            },
+            "gt_face_count": {
+              "count": 31,
+              "mean": 7.0,
+              "median": 7.0,
+              "p90": 7.0
+            },
+            "gt_boundary_count": {
+              "count": 31,
+              "mean": 10.0,
+              "median": 8.0,
+              "p90": 14.0
+            },
+            "raw_edge_count": {
+              "count": 31,
+              "mean": 20.193548387096776,
+              "median": 16.0,
+              "p90": 28.0
+            }
+          }
+        }
+      },
+      "8": {
+        "native_valid": {
+          "object_count": 289,
+          "metrics": {
+            "face_mae": {
+              "count": 289,
+              "mean": 0.001944233952846184,
+              "median": 0.0018234037213460397,
+              "p90": 0.0027938583835445266
+            },
+            "face_cd_sq": {
+              "count": 289,
+              "mean": 4.455632938379355e-05,
+              "median": 3.333094632818138e-05,
+              "p90": 7.358571876592287e-05
+            },
+            "edge_cd_sq": {
+              "count": 289,
+              "mean": 4.571688162060067e-05,
+              "median": 2.912595065509739e-05,
+              "p90": 7.967005682729102e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 289,
+              "mean": 2.8872963265426646e-05,
+              "median": 1.8741246037179324e-05,
+              "p90": 5.169044467694905e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 289,
+              "mean": 1.684391835517403e-05,
+              "median": 1.0417678233899793e-05,
+              "p90": 3.05384259582049e-05
+            },
+            "topology_precision": {
+              "count": 289,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 289,
+              "mean": 0.999505684626792,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 289,
+              "mean": 0.9997338301836571,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 289,
+              "mean": 0.006920415224913495,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 289,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 289,
+              "mean": 4.082512730131388e-05,
+              "median": 3.1264030386117793e-05,
+              "p90": 7.006702315313469e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 289,
+              "mean": 0.00015459140547526966,
+              "median": 0.00010381986788957621,
+              "p90": 0.0002994321110480785
+            },
+            "gt_face_count": {
+              "count": 289,
+              "mean": 8.0,
+              "median": 8.0,
+              "p90": 8.0
+            },
+            "gt_boundary_count": {
+              "count": 289,
+              "mean": 16.643598615916954,
+              "median": 18.0,
+              "p90": 18.0
+            },
+            "raw_edge_count": {
+              "count": 289,
+              "mean": 33.273356401384085,
+              "median": 36.0,
+              "p90": 36.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 30,
+          "metrics": {
+            "face_mae": {
+              "count": 30,
+              "mean": 0.002601553261332166,
+              "median": 0.0023752624901532586,
+              "p90": 0.003882122643913811
+            },
+            "face_cd_sq": {
+              "count": 30,
+              "mean": 9.14396735056228e-05,
+              "median": 6.046990641160389e-05,
+              "p90": 0.00015964177204280038
+            },
+            "edge_cd_sq": {
+              "count": 30,
+              "mean": 0.00031819865499304283,
+              "median": 6.727434185365146e-05,
+              "p90": 0.0003130696979147141
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 30,
+              "mean": 0.0001343267441162992,
+              "median": 4.11981773378675e-05,
+              "p90": 0.00016797031538011819
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 30,
+              "mean": 0.00018387191087674366,
+              "median": 2.062312080610214e-05,
+              "p90": 8.988566596405845e-05
+            },
+            "topology_precision": {
+              "count": 30,
+              "mean": 0.9980392156862745,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 30,
+              "mean": 0.9952380952380953,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 30,
+              "mean": 0.9964257964257964,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 30,
+              "mean": 0.06666666666666667,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 30,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 30,
+              "mean": 0.00032089530707813947,
+              "median": 5.539323812629941e-05,
+              "p90": 0.00026908703735735093
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 30,
+              "mean": 0.0035886799061516355,
+              "median": 0.00024902947707853483,
+              "p90": 0.0009354150713977878
+            },
+            "gt_face_count": {
+              "count": 30,
+              "mean": 8.0,
+              "median": 8.0,
+              "p90": 8.0
+            },
+            "gt_boundary_count": {
+              "count": 30,
+              "mean": 13.466666666666667,
+              "median": 14.0,
+              "p90": 17.1
+            },
+            "raw_edge_count": {
+              "count": 30,
+              "mean": 26.933333333333334,
+              "median": 28.0,
+              "p90": 34.2
+            }
+          }
+        }
+      },
+      "9": {
+        "native_valid": {
+          "object_count": 121,
+          "metrics": {
+            "face_mae": {
+              "count": 121,
+              "mean": 0.0019318053725471684,
+              "median": 0.0018493639009749233,
+              "p90": 0.002595518964679084
+            },
+            "face_cd_sq": {
+              "count": 121,
+              "mean": 4.552083761353633e-05,
+              "median": 3.496241364393568e-05,
+              "p90": 7.243747694467769e-05
+            },
+            "edge_cd_sq": {
+              "count": 121,
+              "mean": 4.7616153905139554e-05,
+              "median": 3.35628249910316e-05,
+              "p90": 8.775971608952276e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 121,
+              "mean": 3.118155564071639e-05,
+              "median": 2.2072409034744824e-05,
+              "p90": 5.733821905983186e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 121,
+              "mean": 1.643459826442316e-05,
+              "median": 1.1779477227816855e-05,
+              "p90": 2.7152655624896824e-05
+            },
+            "topology_precision": {
+              "count": 121,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 121,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 121,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 121,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 121,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 121,
+              "mean": 5.0248423209431134e-05,
+              "median": 3.659492079693532e-05,
+              "p90": 8.774535020211669e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 121,
+              "mean": 0.0002707626196589459,
+              "median": 0.00012178409451604194,
+              "p90": 0.00037761077931700943
+            },
+            "gt_face_count": {
+              "count": 121,
+              "mean": 9.0,
+              "median": 9.0,
+              "p90": 9.0
+            },
+            "gt_boundary_count": {
+              "count": 121,
+              "mean": 18.8099173553719,
+              "median": 20.0,
+              "p90": 21.0
+            },
+            "raw_edge_count": {
+              "count": 121,
+              "mean": 37.6198347107438,
+              "median": 40.0,
+              "p90": 42.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 20,
+          "metrics": {
+            "face_mae": {
+              "count": 20,
+              "mean": 0.0025998601624950806,
+              "median": 0.0023104946121558605,
+              "p90": 0.003891102146815467
+            },
+            "face_cd_sq": {
+              "count": 20,
+              "mean": 0.0001027857050980755,
+              "median": 4.91515926606361e-05,
+              "p90": 0.00019418320530675863
+            },
+            "edge_cd_sq": {
+              "count": 20,
+              "mean": 0.00010805131917784561,
+              "median": 5.5288099994766065e-05,
+              "p90": 0.00022237631030646654
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 20,
+              "mean": 7.073689189052727e-05,
+              "median": 3.543066939227314e-05,
+              "p90": 0.00013361037175021594
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 20,
+              "mean": 3.731442728731835e-05,
+              "median": 1.887581285620018e-05,
+              "p90": 8.87659385562506e-05
+            },
+            "topology_precision": {
+              "count": 20,
+              "mean": 0.9888888888888889,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 20,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 20,
+              "mean": 0.9941176470588236,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 20,
+              "mean": 0.15,
+              "median": 0.0,
+              "p90": 0.10000000000000142
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 20,
+              "mean": 0.05,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 20,
+              "mean": 9.168100952617597e-05,
+              "median": 5.5834474316189496e-05,
+              "p90": 0.00021364759462942922
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 20,
+              "mean": 0.0006758515090764933,
+              "median": 0.00017122569283974017,
+              "p90": 0.002332078201822232
+            },
+            "gt_face_count": {
+              "count": 20,
+              "mean": 9.0,
+              "median": 9.0,
+              "p90": 9.0
+            },
+            "gt_boundary_count": {
+              "count": 20,
+              "mean": 16.6,
+              "median": 17.0,
+              "p90": 20.0
+            },
+            "raw_edge_count": {
+              "count": 20,
+              "mean": 33.45,
+              "median": 34.5,
+              "p90": 40.0
+            }
+          }
+        }
+      },
+      "10": {
+        "native_valid": {
+          "object_count": 374,
+          "metrics": {
+            "face_mae": {
+              "count": 374,
+              "mean": 0.001869616434843516,
+              "median": 0.0017549912239187414,
+              "p90": 0.0026933069427226035
+            },
+            "face_cd_sq": {
+              "count": 374,
+              "mean": 3.9091729892297476e-05,
+              "median": 3.193946712560314e-05,
+              "p90": 7.065034833311095e-05
+            },
+            "edge_cd_sq": {
+              "count": 374,
+              "mean": 4.269910498583261e-05,
+              "median": 2.9667919799157283e-05,
+              "p90": 6.791220036537194e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 374,
+              "mean": 2.7398826915475426e-05,
+              "median": 1.8902480935518674e-05,
+              "p90": 4.420489068518623e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 374,
+              "mean": 1.5300278070357185e-05,
+              "median": 1.039617274492272e-05,
+              "p90": 2.5999980359717305e-05
+            },
+            "topology_precision": {
+              "count": 374,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 374,
+              "mean": 0.999554367201426,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 374,
+              "mean": 0.9997674959311789,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 374,
+              "mean": 0.0106951871657754,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 374,
+              "mean": 0.00267379679144385,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 374,
+              "mean": 3.525747434086735e-05,
+              "median": 2.809247561209646e-05,
+              "p90": 5.6755060194101495e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 374,
+              "mean": 0.00015342833629230091,
+              "median": 9.471073092442842e-05,
+              "p90": 0.0002871349494102343
+            },
+            "gt_face_count": {
+              "count": 374,
+              "mean": 10.0,
+              "median": 10.0,
+              "p90": 10.0
+            },
+            "gt_boundary_count": {
+              "count": 374,
+              "mean": 22.887700534759357,
+              "median": 24.0,
+              "p90": 24.0
+            },
+            "raw_edge_count": {
+              "count": 374,
+              "mean": 45.75133689839572,
+              "median": 48.0,
+              "p90": 48.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 34,
+          "metrics": {
+            "face_mae": {
+              "count": 34,
+              "mean": 0.002492086064087159,
+              "median": 0.0022475861520758755,
+              "p90": 0.003784007617055446
+            },
+            "face_cd_sq": {
+              "count": 34,
+              "mean": 7.347776426233288e-05,
+              "median": 4.674986504397195e-05,
+              "p90": 0.0001540897645102134
+            },
+            "edge_cd_sq": {
+              "count": 34,
+              "mean": 0.0001682546266905999,
+              "median": 9.147766905170051e-05,
+              "p90": 0.0003230190976121362
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 34,
+              "mean": 9.159709354181199e-05,
+              "median": 5.4935974297890415e-05,
+              "p90": 0.0002020954168436588
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 34,
+              "mean": 7.665753314878794e-05,
+              "median": 2.2650004678049345e-05,
+              "p90": 0.00010619776946833566
+            },
+            "topology_precision": {
+              "count": 34,
+              "mean": 0.9944530443756451,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 34,
+              "mean": 0.9944431527551733,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 34,
+              "mean": 0.9942288717009413,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 34,
+              "mean": 0.23529411764705882,
+              "median": 0.0,
+              "p90": 1.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 34,
+              "mean": 0.058823529411764705,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 34,
+              "mean": 0.00014918397838762891,
+              "median": 7.317847575732928e-05,
+              "p90": 0.00038838569059954905
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 34,
+              "mean": 0.0012096879503937805,
+              "median": 0.00028357352384711376,
+              "p90": 0.0017231231069526468
+            },
+            "gt_face_count": {
+              "count": 34,
+              "mean": 10.0,
+              "median": 10.0,
+              "p90": 10.0
+            },
+            "gt_boundary_count": {
+              "count": 34,
+              "mean": 21.235294117647058,
+              "median": 23.0,
+              "p90": 24.0
+            },
+            "raw_edge_count": {
+              "count": 34,
+              "mean": 42.411764705882355,
+              "median": 46.0,
+              "p90": 48.0
+            }
+          }
+        }
+      },
+      "11": {
+        "native_valid": {
+          "object_count": 148,
+          "metrics": {
+            "face_mae": {
+              "count": 148,
+              "mean": 0.0019729383899890103,
+              "median": 0.0019373375515428825,
+              "p90": 0.0028998310090535815
+            },
+            "face_cd_sq": {
+              "count": 148,
+              "mean": 4.3071356539498203e-05,
+              "median": 3.8069302162493544e-05,
+              "p90": 8.385246276941262e-05
+            },
+            "edge_cd_sq": {
+              "count": 148,
+              "mean": 4.4115940442806224e-05,
+              "median": 3.1856178658058557e-05,
+              "p90": 6.770957021219063e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 148,
+              "mean": 2.948372849670085e-05,
+              "median": 2.0733456011012194e-05,
+              "p90": 4.348398484821248e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 148,
+              "mean": 1.4632211946105374e-05,
+              "median": 1.1081698238071638e-05,
+              "p90": 2.4974277161145304e-05
+            },
+            "topology_precision": {
+              "count": 148,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 148,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 148,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 148,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 148,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 148,
+              "mean": 4.066921336534453e-05,
+              "median": 3.365726269515597e-05,
+              "p90": 7.019414856375265e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 148,
+              "mean": 0.0001728163869567932,
+              "median": 0.00012086848435278932,
+              "p90": 0.00033230287354569496
+            },
+            "gt_face_count": {
+              "count": 148,
+              "mean": 11.0,
+              "median": 11.0,
+              "p90": 11.0
+            },
+            "gt_boundary_count": {
+              "count": 148,
+              "mean": 24.094594594594593,
+              "median": 24.0,
+              "p90": 27.0
+            },
+            "raw_edge_count": {
+              "count": 148,
+              "mean": 48.189189189189186,
+              "median": 48.0,
+              "p90": 54.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 18,
+          "metrics": {
+            "face_mae": {
+              "count": 18,
+              "mean": 0.0026266413474790454,
+              "median": 0.002427232067731641,
+              "p90": 0.004223566049850289
+            },
+            "face_cd_sq": {
+              "count": 18,
+              "mean": 0.00010165935730195924,
+              "median": 5.827632690239331e-05,
+              "p90": 0.0002786696746155066
+            },
+            "edge_cd_sq": {
+              "count": 18,
+              "mean": 0.00028222936896282844,
+              "median": 7.85378861816624e-05,
+              "p90": 0.0007033833597677596
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 18,
+              "mean": 0.0001961100296261085,
+              "median": 4.989537576714556e-05,
+              "p90": 0.0006060445386601488
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 18,
+              "mean": 8.611933933671993e-05,
+              "median": 2.8275201563038202e-05,
+              "p90": 0.00019707161294866865
+            },
+            "topology_precision": {
+              "count": 18,
+              "mean": 0.9958791208791209,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 18,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 18,
+              "mean": 0.9979005743711625,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 18,
+              "mean": 0.1111111111111111,
+              "median": 0.0,
+              "p90": 0.3000000000000007
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 18,
+              "mean": 0.05555555555555555,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 18,
+              "mean": 0.0002855698476873865,
+              "median": 7.768312133143914e-05,
+              "p90": 0.0004819004077985862
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 18,
+              "mean": 0.0033462853346328284,
+              "median": 0.0004808617652951761,
+              "p90": 0.0059949546582004545
+            },
+            "gt_face_count": {
+              "count": 18,
+              "mean": 11.0,
+              "median": 11.0,
+              "p90": 11.0
+            },
+            "gt_boundary_count": {
+              "count": 18,
+              "mean": 23.27777777777778,
+              "median": 24.0,
+              "p90": 26.0
+            },
+            "raw_edge_count": {
+              "count": 18,
+              "mean": 46.72222222222222,
+              "median": 48.0,
+              "p90": 52.0
+            }
+          }
+        }
+      },
+      "12": {
+        "native_valid": {
+          "object_count": 161,
+          "metrics": {
+            "face_mae": {
+              "count": 161,
+              "mean": 0.001984082102821479,
+              "median": 0.0018647433565395961,
+              "p90": 0.002816754604029686
+            },
+            "face_cd_sq": {
+              "count": 161,
+              "mean": 4.293211629154805e-05,
+              "median": 3.54375710703491e-05,
+              "p90": 7.912283390146518e-05
+            },
+            "edge_cd_sq": {
+              "count": 161,
+              "mean": 4.480136849128281e-05,
+              "median": 3.474250376584332e-05,
+              "p90": 8.215637028839012e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 161,
+              "mean": 2.8959588598428168e-05,
+              "median": 2.2211471874654115e-05,
+              "p90": 5.471273834127588e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 161,
+              "mean": 1.5841779892854635e-05,
+              "median": 1.2716076251633002e-05,
+              "p90": 2.7921979190804794e-05
+            },
+            "topology_precision": {
+              "count": 161,
+              "mean": 0.9997929606625259,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 161,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 161,
+              "mean": 0.9998947257606065,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 161,
+              "mean": 0.006211180124223602,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 161,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 161,
+              "mean": 4.57695496380716e-05,
+              "median": 3.33603632415812e-05,
+              "p90": 8.428529030134036e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 161,
+              "mean": 0.00022282155222473436,
+              "median": 0.00013902075112798003,
+              "p90": 0.00044404677887602273
+            },
+            "gt_face_count": {
+              "count": 161,
+              "mean": 12.0,
+              "median": 12.0,
+              "p90": 12.0
+            },
+            "gt_boundary_count": {
+              "count": 161,
+              "mean": 27.74534161490683,
+              "median": 30.0,
+              "p90": 30.0
+            },
+            "raw_edge_count": {
+              "count": 161,
+              "mean": 55.50310559006211,
+              "median": 60.0,
+              "p90": 60.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 27,
+          "metrics": {
+            "face_mae": {
+              "count": 27,
+              "mean": 0.0026218606142645122,
+              "median": 0.002482994722817643,
+              "p90": 0.00394849242843015
+            },
+            "face_cd_sq": {
+              "count": 27,
+              "mean": 9.311398414910715e-05,
+              "median": 7.577105771771616e-05,
+              "p90": 0.00014595092368618887
+            },
+            "edge_cd_sq": {
+              "count": 27,
+              "mean": 0.00036817916936604127,
+              "median": 7.47583679410945e-05,
+              "p90": 0.0006270442370843485
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 27,
+              "mean": 0.00014196566034278306,
+              "median": 4.967694711132097e-05,
+              "p90": 0.0002363731573372044
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 27,
+              "mean": 0.00022621350902325807,
+              "median": 2.6894063793996233e-05,
+              "p90": 0.00024370009766188928
+            },
+            "topology_precision": {
+              "count": 27,
+              "mean": 0.9935269429893085,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 27,
+              "mean": 0.9973544973544974,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 27,
+              "mean": 0.9953047009323959,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 27,
+              "mean": 0.2222222222222222,
+              "median": 0.0,
+              "p90": 1.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 27,
+              "mean": 0.14814814814814814,
+              "median": 0.0,
+              "p90": 1.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 27,
+              "mean": 0.0002141944354309009,
+              "median": 8.270593389457696e-05,
+              "p90": 0.00046455453369439716
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 27,
+              "mean": 0.003228812943092144,
+              "median": 0.000380515898831214,
+              "p90": 0.008758029076187128
+            },
+            "gt_face_count": {
+              "count": 27,
+              "mean": 12.0,
+              "median": 12.0,
+              "p90": 12.0
+            },
+            "gt_boundary_count": {
+              "count": 27,
+              "mean": 26.074074074074073,
+              "median": 27.0,
+              "p90": 30.0
+            },
+            "raw_edge_count": {
+              "count": 27,
+              "mean": 52.148148148148145,
+              "median": 52.0,
+              "p90": 60.0
+            }
+          }
+        }
+      },
+      "13": {
+        "native_valid": {
+          "object_count": 94,
+          "metrics": {
+            "face_mae": {
+              "count": 94,
+              "mean": 0.002017406150342181,
+              "median": 0.001942181593151942,
+              "p90": 0.0026978351668055264
+            },
+            "face_cd_sq": {
+              "count": 94,
+              "mean": 4.3970201693594756e-05,
+              "median": 3.920623096275157e-05,
+              "p90": 7.461907258991815e-05
+            },
+            "edge_cd_sq": {
+              "count": 94,
+              "mean": 5.621959485957369e-05,
+              "median": 3.661184530970284e-05,
+              "p90": 7.784890877915306e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 94,
+              "mean": 3.7574036103571524e-05,
+              "median": 2.349854490519674e-05,
+              "p90": 5.528627394474867e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 94,
+              "mean": 1.8645558756002172e-05,
+              "median": 1.3084314235163445e-05,
+              "p90": 2.7211921542063715e-05
+            },
+            "topology_precision": {
+              "count": 94,
+              "mean": 0.9996871088861076,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 94,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 94,
+              "mean": 0.9998412194347411,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 94,
+              "mean": 0.010638297872340425,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 94,
+              "mean": 0.010638297872340425,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 94,
+              "mean": 5.2768831126753676e-05,
+              "median": 3.708403090898341e-05,
+              "p90": 7.01614031096136e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 94,
+              "mean": 0.0003569690101233669,
+              "median": 0.00015025124333544176,
+              "p90": 0.000539499108148317
+            },
+            "gt_face_count": {
+              "count": 94,
+              "mean": 13.0,
+              "median": 13.0,
+              "p90": 13.0
+            },
+            "gt_boundary_count": {
+              "count": 94,
+              "mean": 30.0,
+              "median": 30.0,
+              "p90": 33.0
+            },
+            "raw_edge_count": {
+              "count": 94,
+              "mean": 60.01063829787234,
+              "median": 60.0,
+              "p90": 66.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 14,
+          "metrics": {
+            "face_mae": {
+              "count": 14,
+              "mean": 0.0027482990792076964,
+              "median": 0.0022804698770877087,
+              "p90": 0.004854974139107365
+            },
+            "face_cd_sq": {
+              "count": 14,
+              "mean": 8.143306413794438e-05,
+              "median": 5.443585973481095e-05,
+              "p90": 0.00015839700441628492
+            },
+            "edge_cd_sq": {
+              "count": 14,
+              "mean": 0.00023299546564171727,
+              "median": 5.205833867942876e-05,
+              "p90": 0.0007308180307336419
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 14,
+              "mean": 8.299850930072725e-05,
+              "median": 3.2521781874724046e-05,
+              "p90": 0.00022692006120147193
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 14,
+              "mean": 0.00014999695634099002,
+              "median": 1.9536556804704724e-05,
+              "p90": 0.00043663892553203365
+            },
+            "topology_precision": {
+              "count": 14,
+              "mean": 0.9869549352307972,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 14,
+              "mean": 0.9926948051948052,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 14,
+              "mean": 0.9895119231903288,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 14,
+              "mean": 0.42857142857142855,
+              "median": 0.0,
+              "p90": 1.700000000000001
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 14,
+              "mean": 0.2857142857142857,
+              "median": 0.0,
+              "p90": 0.7000000000000011
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 14,
+              "mean": 0.00011255460164551122,
+              "median": 4.9290059670228174e-05,
+              "p90": 0.0002277177874472909
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 14,
+              "mean": 0.001465657118956,
+              "median": 0.00015037033471399603,
+              "p90": 0.003945294375259885
+            },
+            "gt_face_count": {
+              "count": 14,
+              "mean": 13.0,
+              "median": 13.0,
+              "p90": 13.0
+            },
+            "gt_boundary_count": {
+              "count": 14,
+              "mean": 28.571428571428573,
+              "median": 28.0,
+              "p90": 32.7
+            },
+            "raw_edge_count": {
+              "count": 14,
+              "mean": 57.142857142857146,
+              "median": 56.5,
+              "p90": 64.0
+            }
+          }
+        }
+      },
+      "14": {
+        "native_valid": {
+          "object_count": 205,
+          "metrics": {
+            "face_mae": {
+              "count": 205,
+              "mean": 0.001870405760345511,
+              "median": 0.0018453978241485033,
+              "p90": 0.0026285380489548447
+            },
+            "face_cd_sq": {
+              "count": 205,
+              "mean": 3.73436610572279e-05,
+              "median": 3.158418374859528e-05,
+              "p90": 6.924616641875808e-05
+            },
+            "edge_cd_sq": {
+              "count": 205,
+              "mean": 3.71803785780969e-05,
+              "median": 2.9142732866607095e-05,
+              "p90": 6.504625097732683e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 205,
+              "mean": 2.374289443328692e-05,
+              "median": 1.8742444975533357e-05,
+              "p90": 4.052761361610408e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 205,
+              "mean": 1.343748414480998e-05,
+              "median": 1.0392517603572406e-05,
+              "p90": 2.3173599029808643e-05
+            },
+            "topology_precision": {
+              "count": 205,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 205,
+              "mean": 0.999713055954089,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 205,
+              "mean": 0.9998521803399852,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 205,
+              "mean": 0.00975609756097561,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 205,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 205,
+              "mean": 3.565342256513722e-05,
+              "median": 2.988219720896491e-05,
+              "p90": 5.8311261659757193e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 205,
+              "mean": 0.00018094448618213103,
+              "median": 0.00011592739098498228,
+              "p90": 0.0002681885205750096
+            },
+            "gt_face_count": {
+              "count": 205,
+              "mean": 14.0,
+              "median": 14.0,
+              "p90": 14.0
+            },
+            "gt_boundary_count": {
+              "count": 205,
+              "mean": 33.95609756097561,
+              "median": 36.0,
+              "p90": 36.0
+            },
+            "raw_edge_count": {
+              "count": 205,
+              "mean": 67.89268292682927,
+              "median": 72.0,
+              "p90": 72.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 27,
+          "metrics": {
+            "face_mae": {
+              "count": 27,
+              "mean": 0.0055701741647049925,
+              "median": 0.0023590857532066628,
+              "p90": 0.0032211735675873785
+            },
+            "face_cd_sq": {
+              "count": 27,
+              "mean": 0.0002781104393183481,
+              "median": 5.7614167849660204e-05,
+              "p90": 0.0001092729900236161
+            },
+            "edge_cd_sq": {
+              "count": 27,
+              "mean": 0.0010725440705034053,
+              "median": 0.00010561674666245146,
+              "p90": 0.00039237735267975927
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 27,
+              "mean": 0.0008872289641589086,
+              "median": 6.909773478776963e-05,
+              "p90": 0.00035370941936241774
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 27,
+              "mean": 0.00018531510634449666,
+              "median": 3.068218078030043e-05,
+              "p90": 9.435049396038295e-05
+            },
+            "topology_precision": {
+              "count": 27,
+              "mean": 0.9778743108114925,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 27,
+              "mean": 0.9978213507625272,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 27,
+              "mean": 0.9868129600866672,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 27,
+              "mean": 0.8518518518518519,
+              "median": 0.0,
+              "p90": 3.400000000000002
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 27,
+              "mean": 0.3333333333333333,
+              "median": 0.0,
+              "p90": 1.4000000000000021
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 27,
+              "mean": 0.0019380691163406183,
+              "median": 9.248169939285557e-05,
+              "p90": 0.0004889204372092073
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 27,
+              "mean": 0.02762609872089754,
+              "median": 0.00070604863397027,
+              "p90": 0.00619409347733791
+            },
+            "gt_face_count": {
+              "count": 27,
+              "mean": 14.0,
+              "median": 14.0,
+              "p90": 14.0
+            },
+            "gt_boundary_count": {
+              "count": 27,
+              "mean": 31.185185185185187,
+              "median": 31.0,
+              "p90": 36.0
+            },
+            "raw_edge_count": {
+              "count": 27,
+              "mean": 63.44444444444444,
+              "median": 62.0,
+              "p90": 76.4
+            }
+          }
+        }
+      },
+      "15": {
+        "native_valid": {
+          "object_count": 71,
+          "metrics": {
+            "face_mae": {
+              "count": 71,
+              "mean": 0.0020930329319942893,
+              "median": 0.0019380645945010619,
+              "p90": 0.002602986949516938
+            },
+            "face_cd_sq": {
+              "count": 71,
+              "mean": 5.60573964440611e-05,
+              "median": 3.6997819303254416e-05,
+              "p90": 6.765654928424273e-05
+            },
+            "edge_cd_sq": {
+              "count": 71,
+              "mean": 6.329960435424406e-05,
+              "median": 3.751507711873028e-05,
+              "p90": 9.298260521799982e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 71,
+              "mean": 4.162646096856815e-05,
+              "median": 2.2382483516789148e-05,
+              "p90": 6.221554172792143e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 71,
+              "mean": 2.1673143385675916e-05,
+              "median": 1.313388266646516e-05,
+              "p90": 2.9579245693835068e-05
+            },
+            "topology_precision": {
+              "count": 71,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 71,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 71,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 71,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 71,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 71,
+              "mean": 6.086224729888106e-05,
+              "median": 3.590655844028821e-05,
+              "p90": 7.365555066815223e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 71,
+              "mean": 0.0003949785026376794,
+              "median": 0.00014297502709200056,
+              "p90": 0.00046111217747607514
+            },
+            "gt_face_count": {
+              "count": 71,
+              "mean": 15.0,
+              "median": 15.0,
+              "p90": 15.0
+            },
+            "gt_boundary_count": {
+              "count": 71,
+              "mean": 35.225352112676056,
+              "median": 36.0,
+              "p90": 39.0
+            },
+            "raw_edge_count": {
+              "count": 71,
+              "mean": 70.45070422535211,
+              "median": 72.0,
+              "p90": 78.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 19,
+          "metrics": {
+            "face_mae": {
+              "count": 19,
+              "mean": 0.002491061779799096,
+              "median": 0.0025176413538348344,
+              "p90": 0.0032515029079034875
+            },
+            "face_cd_sq": {
+              "count": 19,
+              "mean": 7.749831912779908e-05,
+              "median": 5.62277386319331e-05,
+              "p90": 0.0001285305571193542
+            },
+            "edge_cd_sq": {
+              "count": 19,
+              "mean": 0.0008305160917025207,
+              "median": 0.00010649692610686945,
+              "p90": 0.0008696256203284268
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 19,
+              "mean": 0.0007952624353395509,
+              "median": 6.640262129732466e-05,
+              "p90": 0.0008362904017257956
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 19,
+              "mean": 3.525365636296969e-05,
+              "median": 2.336826417329736e-05,
+              "p90": 7.51177966325481e-05
+            },
+            "topology_precision": {
+              "count": 19,
+              "mean": 0.9929359652351343,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 19,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 19,
+              "mean": 0.9963827667428774,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 19,
+              "mean": 0.2631578947368421,
+              "median": 0.0,
+              "p90": 1.1999999999999993
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 19,
+              "mean": 0.2631578947368421,
+              "median": 0.0,
+              "p90": 1.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 19,
+              "mean": 0.0003426939734324587,
+              "median": 7.193062058990039e-05,
+              "p90": 0.0004405219264433933
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 19,
+              "mean": 0.009431698301505562,
+              "median": 0.0004059227322732751,
+              "p90": 0.005700071884206164
+            },
+            "gt_face_count": {
+              "count": 19,
+              "mean": 15.0,
+              "median": 15.0,
+              "p90": 15.0
+            },
+            "gt_boundary_count": {
+              "count": 19,
+              "mean": 33.8421052631579,
+              "median": 35.0,
+              "p90": 39.0
+            },
+            "raw_edge_count": {
+              "count": 19,
+              "mean": 67.94736842105263,
+              "median": 70.0,
+              "p90": 78.0
+            }
+          }
+        }
+      },
+      "16": {
+        "native_valid": {
+          "object_count": 94,
+          "metrics": {
+            "face_mae": {
+              "count": 94,
+              "mean": 0.001921502847208726,
+              "median": 0.0018486997325533826,
+              "p90": 0.00276040003595881
+            },
+            "face_cd_sq": {
+              "count": 94,
+              "mean": 3.845677557039893e-05,
+              "median": 3.4294307469981354e-05,
+              "p90": 6.702987846680017e-05
+            },
+            "edge_cd_sq": {
+              "count": 94,
+              "mean": 4.959773297014866e-05,
+              "median": 3.778185764212135e-05,
+              "p90": 6.46796771924352e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 94,
+              "mean": 3.353766828798098e-05,
+              "median": 2.3757280339935324e-05,
+              "p90": 3.9318137017062205e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 94,
+              "mean": 1.606006468216768e-05,
+              "median": 1.302376428225595e-05,
+              "p90": 2.308202081893215e-05
+            },
+            "topology_precision": {
+              "count": 94,
+              "mean": 0.9991805635422658,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 94,
+              "mean": 0.999468085106383,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 94,
+              "mean": 0.99931216902687,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 94,
+              "mean": 0.05319148936170213,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 94,
+              "mean": 0.02127659574468085,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 94,
+              "mean": 3.994605302499045e-05,
+              "median": 3.2132591351584586e-05,
+              "p90": 6.31203174347582e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 94,
+              "mean": 0.0002434647216864257,
+              "median": 0.00012027846146347738,
+              "p90": 0.00038995272707555097
+            },
+            "gt_face_count": {
+              "count": 94,
+              "mean": 16.0,
+              "median": 16.0,
+              "p90": 16.0
+            },
+            "gt_boundary_count": {
+              "count": 94,
+              "mean": 38.223404255319146,
+              "median": 40.0,
+              "p90": 42.0
+            },
+            "raw_edge_count": {
+              "count": 94,
+              "mean": 76.44680851063829,
+              "median": 80.0,
+              "p90": 84.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 14,
+          "metrics": {
+            "face_mae": {
+              "count": 14,
+              "mean": 0.0023749023375645726,
+              "median": 0.002296277489885294,
+              "p90": 0.003215058440857214
+            },
+            "face_cd_sq": {
+              "count": 14,
+              "mean": 5.4729251351629184e-05,
+              "median": 5.132018128656287e-05,
+              "p90": 9.390376013887105e-05
+            },
+            "edge_cd_sq": {
+              "count": 14,
+              "mean": 8.844164477743086e-05,
+              "median": 5.6253345442200376e-05,
+              "p90": 0.00020452963833167268
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 14,
+              "mean": 5.703245990475522e-05,
+              "median": 4.081101190419252e-05,
+              "p90": 9.352325886834036e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 14,
+              "mean": 3.140918487267562e-05,
+              "median": 1.869840603339519e-05,
+              "p90": 5.1658011853560904e-05
+            },
+            "topology_precision": {
+              "count": 14,
+              "mean": 0.9746017474139183,
+              "median": 0.9883720930232558,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 14,
+              "mean": 0.9982142857142857,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 14,
+              "mean": 0.986044707801052,
+              "median": 0.9941176470588236,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 14,
+              "mean": 0.9285714285714286,
+              "median": 0.5,
+              "p90": 2.700000000000001
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 14,
+              "mean": 0.7857142857142857,
+              "median": 0.0,
+              "p90": 2.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 14,
+              "mean": 6.718810907615538e-05,
+              "median": 5.830101951675083e-05,
+              "p90": 0.00010345426343651422
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 14,
+              "mean": 0.0007448094330145703,
+              "median": 0.0003358004139908157,
+              "p90": 0.0019662635689910606
+            },
+            "gt_face_count": {
+              "count": 14,
+              "mean": 16.0,
+              "median": 16.0,
+              "p90": 16.0
+            },
+            "gt_boundary_count": {
+              "count": 14,
+              "mean": 37.5,
+              "median": 38.5,
+              "p90": 40.7
+            },
+            "raw_edge_count": {
+              "count": 14,
+              "mean": 76.07142857142857,
+              "median": 78.0,
+              "p90": 83.4
+            }
+          }
+        }
+      },
+      "17": {
+        "native_valid": {
+          "object_count": 29,
+          "metrics": {
+            "face_mae": {
+              "count": 29,
+              "mean": 0.0020670376900004794,
+              "median": 0.001979976358150421,
+              "p90": 0.00265383397199912
+            },
+            "face_cd_sq": {
+              "count": 29,
+              "mean": 4.3075845826087525e-05,
+              "median": 3.832157414432498e-05,
+              "p90": 6.217696940460757e-05
+            },
+            "edge_cd_sq": {
+              "count": 29,
+              "mean": 4.326081601781447e-05,
+              "median": 3.8698498435368474e-05,
+              "p90": 6.479158946037481e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 29,
+              "mean": 2.8431279195006415e-05,
+              "median": 2.547737134876428e-05,
+              "p90": 4.2034319839866754e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 29,
+              "mean": 1.4829536822808055e-05,
+              "median": 1.2442606800508258e-05,
+              "p90": 2.3019063469590973e-05
+            },
+            "topology_precision": {
+              "count": 29,
+              "mean": 0.9992163009404389,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 29,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 29,
+              "mean": 0.9996036464526358,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 29,
+              "mean": 0.034482758620689655,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 29,
+              "mean": 0.06896551724137931,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 29,
+              "mean": 5.235544753337412e-05,
+              "median": 4.641759497408212e-05,
+              "p90": 7.508934101998258e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 29,
+              "mean": 0.00039262837820025563,
+              "median": 0.00022177453876906505,
+              "p90": 0.0005654757871955217
+            },
+            "gt_face_count": {
+              "count": 29,
+              "mean": 17.0,
+              "median": 17.0,
+              "p90": 17.0
+            },
+            "gt_boundary_count": {
+              "count": 29,
+              "mean": 40.55172413793103,
+              "median": 41.0,
+              "p90": 45.0
+            },
+            "raw_edge_count": {
+              "count": 29,
+              "mean": 81.10344827586206,
+              "median": 82.0,
+              "p90": 90.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 21,
+          "metrics": {
+            "face_mae": {
+              "count": 21,
+              "mean": 0.0028256946156050683,
+              "median": 0.002620329158979334,
+              "p90": 0.004281724292641742
+            },
+            "face_cd_sq": {
+              "count": 21,
+              "mean": 9.120649030267992e-05,
+              "median": 7.518289738034823e-05,
+              "p90": 0.00013818243746161922
+            },
+            "edge_cd_sq": {
+              "count": 21,
+              "mean": 0.00039864455340812784,
+              "median": 0.00016471596089271372,
+              "p90": 0.0013256007636173748
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 21,
+              "mean": 0.0002546899732186883,
+              "median": 0.00011022728432141691,
+              "p90": 0.0008914496997476345
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 21,
+              "mean": 0.00014395458018943936,
+              "median": 3.1512418831499755e-05,
+              "p90": 0.00018000094312909838
+            },
+            "topology_precision": {
+              "count": 21,
+              "mean": 0.9668462678761356,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 21,
+              "mean": 0.9806413496743976,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 21,
+              "mean": 0.9727336418409552,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 21,
+              "mean": 1.3333333333333333,
+              "median": 0.0,
+              "p90": 4.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 21,
+              "mean": 0.42857142857142855,
+              "median": 0.0,
+              "p90": 2.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 21,
+              "mean": 0.0002638046690809337,
+              "median": 0.00012902192873848612,
+              "p90": 0.0007357131994855129
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 21,
+              "mean": 0.005436609126254286,
+              "median": 0.0008918669749271214,
+              "p90": 0.015185642441292675
+            },
+            "gt_face_count": {
+              "count": 21,
+              "mean": 17.0,
+              "median": 17.0,
+              "p90": 17.0
+            },
+            "gt_boundary_count": {
+              "count": 21,
+              "mean": 39.333333333333336,
+              "median": 42.0,
+              "p90": 44.0
+            },
+            "raw_edge_count": {
+              "count": 21,
+              "mean": 79.76190476190476,
+              "median": 80.0,
+              "p90": 93.0
+            }
+          }
+        }
+      },
+      "18": {
+        "native_valid": {
+          "object_count": 69,
+          "metrics": {
+            "face_mae": {
+              "count": 69,
+              "mean": 0.0018124161705984961,
+              "median": 0.0017489664569068045,
+              "p90": 0.0025295888419364586
+            },
+            "face_cd_sq": {
+              "count": 69,
+              "mean": 3.528105008311363e-05,
+              "median": 2.821958637041338e-05,
+              "p90": 6.749435755767418e-05
+            },
+            "edge_cd_sq": {
+              "count": 69,
+              "mean": 3.5455953968751384e-05,
+              "median": 2.918122913950236e-05,
+              "p90": 6.859361973603284e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 69,
+              "mean": 2.2958514070463077e-05,
+              "median": 1.8968645568374713e-05,
+              "p90": 4.662887989583311e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 69,
+              "mean": 1.249743989828831e-05,
+              "median": 1.0427779009106214e-05,
+              "p90": 2.3511930881849237e-05
+            },
+            "topology_precision": {
+              "count": 69,
+              "mean": 0.9993961352657006,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 69,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 69,
+              "mean": 0.9996916435399321,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 69,
+              "mean": 0.028985507246376812,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 69,
+              "mean": 0.014492753623188406,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 69,
+              "mean": 3.5062474339321345e-05,
+              "median": 2.9150121745801585e-05,
+              "p90": 6.123035763504404e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 69,
+              "mean": 0.00017077709754303086,
+              "median": 0.00012863682781380894,
+              "p90": 0.0003230804699372239
+            },
+            "gt_face_count": {
+              "count": 69,
+              "mean": 18.0,
+              "median": 18.0,
+              "p90": 18.0
+            },
+            "gt_boundary_count": {
+              "count": 69,
+              "mean": 45.52173913043478,
+              "median": 48.0,
+              "p90": 48.0
+            },
+            "raw_edge_count": {
+              "count": 69,
+              "mean": 91.08695652173913,
+              "median": 96.0,
+              "p90": 96.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 17,
+          "metrics": {
+            "face_mae": {
+              "count": 17,
+              "mean": 0.002262565361478538,
+              "median": 0.002194709612349807,
+              "p90": 0.003145986393499495
+            },
+            "face_cd_sq": {
+              "count": 17,
+              "mean": 5.0630040323036104e-05,
+              "median": 4.316072466437057e-05,
+              "p90": 8.180292133880228e-05
+            },
+            "edge_cd_sq": {
+              "count": 17,
+              "mean": 0.00012225751764802776,
+              "median": 6.574199019938701e-05,
+              "p90": 0.00020263981531169276
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 17,
+              "mean": 9.437593436896179e-05,
+              "median": 4.238697900018395e-05,
+              "p90": 0.00015915861222033992
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 17,
+              "mean": 2.788158327906597e-05,
+              "median": 2.1260700328049865e-05,
+              "p90": 4.1918198688049894e-05
+            },
+            "topology_precision": {
+              "count": 17,
+              "mean": 0.9740934911514012,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 17,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 17,
+              "mean": 0.9856752640257795,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 17,
+              "mean": 1.1764705882352942,
+              "median": 0.0,
+              "p90": 2.4000000000000004
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 17,
+              "mean": 0.29411764705882354,
+              "median": 0.0,
+              "p90": 1.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 17,
+              "mean": 8.829784539696291e-05,
+              "median": 7.225524375360349e-05,
+              "p90": 0.00012898745871677117
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 17,
+              "mean": 0.0008803576339841743,
+              "median": 0.00032394434962526976,
+              "p90": 0.0019302058041209115
+            },
+            "gt_face_count": {
+              "count": 17,
+              "mean": 18.0,
+              "median": 18.0,
+              "p90": 18.0
+            },
+            "gt_boundary_count": {
+              "count": 17,
+              "mean": 42.88235294117647,
+              "median": 45.0,
+              "p90": 48.0
+            },
+            "raw_edge_count": {
+              "count": 17,
+              "mean": 87.82352941176471,
+              "median": 91.0,
+              "p90": 96.0
+            }
+          }
+        }
+      },
+      "19": {
+        "native_valid": {
+          "object_count": 47,
+          "metrics": {
+            "face_mae": {
+              "count": 47,
+              "mean": 0.001961839623380336,
+              "median": 0.0017246410762557691,
+              "p90": 0.0025726619501559374
+            },
+            "face_cd_sq": {
+              "count": 47,
+              "mean": 4.500287532247344e-05,
+              "median": 3.293083764674412e-05,
+              "p90": 6.588802098801191e-05
+            },
+            "edge_cd_sq": {
+              "count": 47,
+              "mean": 4.376790937085813e-05,
+              "median": 3.4048089736382065e-05,
+              "p90": 6.625094232571655e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 47,
+              "mean": 2.8870432247325877e-05,
+              "median": 2.180664086398075e-05,
+              "p90": 4.841311435029593e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 47,
+              "mean": 1.4897477123532249e-05,
+              "median": 1.2205061233019957e-05,
+              "p90": 2.2257762929654874e-05
+            },
+            "topology_precision": {
+              "count": 47,
+              "mean": 0.9991032490702109,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 47,
+              "mean": 0.9986702127659575,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 47,
+              "mean": 0.9988752665991515,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 47,
+              "mean": 0.06382978723404255,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 47,
+              "mean": 0.02127659574468085,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 47,
+              "mean": 4.668637790817581e-05,
+              "median": 3.563453806871948e-05,
+              "p90": 7.938493701282376e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 47,
+              "mean": 0.0003962849662082935,
+              "median": 0.00014031287316996485,
+              "p90": 0.00042564515562916553
+            },
+            "gt_face_count": {
+              "count": 47,
+              "mean": 19.0,
+              "median": 19.0,
+              "p90": 19.0
+            },
+            "gt_boundary_count": {
+              "count": 47,
+              "mean": 47.12765957446808,
+              "median": 48.0,
+              "p90": 52.0
+            },
+            "raw_edge_count": {
+              "count": 47,
+              "mean": 94.19148936170212,
+              "median": 94.0,
+              "p90": 104.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 15,
+          "metrics": {
+            "face_mae": {
+              "count": 15,
+              "mean": 0.003141834334820183,
+              "median": 0.0029295502334430804,
+              "p90": 0.005211153456010826
+            },
+            "face_cd_sq": {
+              "count": 15,
+              "mean": 0.0001255648412137026,
+              "median": 8.460709339341962e-05,
+              "p90": 0.000283654163455153
+            },
+            "edge_cd_sq": {
+              "count": 15,
+              "mean": 0.0002884675666507643,
+              "median": 0.0002851152068465173,
+              "p90": 0.0006442936289363409
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 15,
+              "mean": 0.00019691880703430882,
+              "median": 0.0002066750645054743,
+              "p90": 0.0004196657397160899
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 15,
+              "mean": 9.15487596164554e-05,
+              "median": 7.710097500368444e-05,
+              "p90": 0.00022505461150313492
+            },
+            "topology_precision": {
+              "count": 15,
+              "mean": 0.9740217558591796,
+              "median": 0.9807692307692307,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 15,
+              "mean": 0.9928880643166358,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 15,
+              "mean": 0.9831056165822101,
+              "median": 0.9902912621359223,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 15,
+              "mean": 0.9333333333333333,
+              "median": 0.0,
+              "p90": 3.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 15,
+              "mean": 0.6,
+              "median": 0.0,
+              "p90": 1.5999999999999996
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 15,
+              "mean": 0.0001772288716335091,
+              "median": 0.00014391998610470394,
+              "p90": 0.0004402435649377339
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 15,
+              "mean": 0.0022079078632827698,
+              "median": 0.0010219336673761292,
+              "p90": 0.007019994602212306
+            },
+            "gt_face_count": {
+              "count": 15,
+              "mean": 19.0,
+              "median": 19.0,
+              "p90": 19.0
+            },
+            "gt_boundary_count": {
+              "count": 15,
+              "mean": 44.06666666666667,
+              "median": 47.0,
+              "p90": 50.6
+            },
+            "raw_edge_count": {
+              "count": 15,
+              "mean": 89.13333333333334,
+              "median": 95.0,
+              "p90": 101.8
+            }
+          }
+        }
+      },
+      "20": {
+        "native_valid": {
+          "object_count": 26,
+          "metrics": {
+            "face_mae": {
+              "count": 26,
+              "mean": 0.0021928536958257176,
+              "median": 0.0021653814946148487,
+              "p90": 0.0031266867524894753
+            },
+            "face_cd_sq": {
+              "count": 26,
+              "mean": 4.689327916786008e-05,
+              "median": 3.960567757710932e-05,
+              "p90": 8.337478310629085e-05
+            },
+            "edge_cd_sq": {
+              "count": 26,
+              "mean": 5.217338473016615e-05,
+              "median": 4.49898892859845e-05,
+              "p90": 9.68816712290367e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 26,
+              "mean": 3.313845068956241e-05,
+              "median": 2.9687918817450166e-05,
+              "p90": 6.132728214294855e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 26,
+              "mean": 1.9034934040603733e-05,
+              "median": 1.6741646918933307e-05,
+              "p90": 3.5554389086088156e-05
+            },
+            "topology_precision": {
+              "count": 26,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 26,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 26,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 26,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 26,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 26,
+              "mean": 5.2340812087724836e-05,
+              "median": 4.469437691329136e-05,
+              "p90": 0.00010277425374326701
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 26,
+              "mean": 0.0003269059490107568,
+              "median": 0.00017465893957669927,
+              "p90": 0.0006771575279496272
+            },
+            "gt_face_count": {
+              "count": 26,
+              "mean": 20.0,
+              "median": 20.0,
+              "p90": 20.0
+            },
+            "gt_boundary_count": {
+              "count": 26,
+              "mean": 51.19230769230769,
+              "median": 52.0,
+              "p90": 54.0
+            },
+            "raw_edge_count": {
+              "count": 26,
+              "mean": 102.38461538461539,
+              "median": 104.0,
+              "p90": 108.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 10,
+          "metrics": {
+            "face_mae": {
+              "count": 10,
+              "mean": 0.002062245827063853,
+              "median": 0.0019159756411128845,
+              "p90": 0.002822053121772991
+            },
+            "face_cd_sq": {
+              "count": 10,
+              "mean": 4.405846750410271e-05,
+              "median": 3.7594849224673045e-05,
+              "p90": 7.456768018623567e-05
+            },
+            "edge_cd_sq": {
+              "count": 10,
+              "mean": 0.00021502625114117323,
+              "median": 7.645179155196456e-05,
+              "p90": 0.00033537448430568544
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 10,
+              "mean": 0.00018010659921629068,
+              "median": 4.009259329190182e-05,
+              "p90": 0.0002785113205585109
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 10,
+              "mean": 3.491965192488253e-05,
+              "median": 1.698352582966534e-05,
+              "p90": 4.749740369868568e-05
+            },
+            "topology_precision": {
+              "count": 10,
+              "mean": 0.975801887994834,
+              "median": 0.9901960784313726,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 10,
+              "mean": 0.982089577950043,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 10,
+              "mean": 0.9785767649856464,
+              "median": 0.984845423317842,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 10,
+              "mean": 1.1,
+              "median": 0.5,
+              "p90": 3.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 10,
+              "mean": 0.5,
+              "median": 0.0,
+              "p90": 2.0999999999999996
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 10,
+              "mean": 7.294063505071361e-05,
+              "median": 6.746208537956327e-05,
+              "p90": 0.0001336411162317542
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 10,
+              "mean": 0.0010438178017180772,
+              "median": 0.0005154675405939432,
+              "p90": 0.0019888587418532624
+            },
+            "gt_face_count": {
+              "count": 10,
+              "mean": 20.0,
+              "median": 20.0,
+              "p90": 20.0
+            },
+            "gt_boundary_count": {
+              "count": 10,
+              "mean": 44.4,
+              "median": 44.0,
+              "p90": 54.0
+            },
+            "raw_edge_count": {
+              "count": 10,
+              "mean": 88.5,
+              "median": 88.5,
+              "p90": 102.6
+            }
+          }
+        }
+      },
+      "21": {
+        "native_valid": {
+          "object_count": 23,
+          "metrics": {
+            "face_mae": {
+              "count": 23,
+              "mean": 0.0023176323366461645,
+              "median": 0.002362684271435091,
+              "p90": 0.003129026953269608
+            },
+            "face_cd_sq": {
+              "count": 23,
+              "mean": 4.810719518407254e-05,
+              "median": 3.877503038731816e-05,
+              "p90": 6.86344533546635e-05
+            },
+            "edge_cd_sq": {
+              "count": 23,
+              "mean": 5.401620219312214e-05,
+              "median": 5.221884802886588e-05,
+              "p90": 8.178074116644359e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 23,
+              "mean": 3.41463475214585e-05,
+              "median": 3.371496641703669e-05,
+              "p90": 5.43812861808011e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 23,
+              "mean": 1.986985467166363e-05,
+              "median": 1.850388161182919e-05,
+              "p90": 2.7498485609842438e-05
+            },
+            "topology_precision": {
+              "count": 23,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 23,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 23,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 23,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 23,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 23,
+              "mean": 5.400327558798845e-05,
+              "median": 5.3732833548858104e-05,
+              "p90": 8.966657811307479e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 23,
+              "mean": 0.000354248910684766,
+              "median": 0.0002872680880303211,
+              "p90": 0.0007046873458061599
+            },
+            "gt_face_count": {
+              "count": 23,
+              "mean": 21.0,
+              "median": 21.0,
+              "p90": 21.0
+            },
+            "gt_boundary_count": {
+              "count": 23,
+              "mean": 48.69565217391305,
+              "median": 48.0,
+              "p90": 56.0
+            },
+            "raw_edge_count": {
+              "count": 23,
+              "mean": 97.3913043478261,
+              "median": 96.0,
+              "p90": 112.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 12,
+          "metrics": {
+            "face_mae": {
+              "count": 12,
+              "mean": 0.0023268837324423087,
+              "median": 0.0023149347388225364,
+              "p90": 0.003076929824558084
+            },
+            "face_cd_sq": {
+              "count": 12,
+              "mean": 5.007870950038425e-05,
+              "median": 4.172486730229364e-05,
+              "p90": 6.388219279421693e-05
+            },
+            "edge_cd_sq": {
+              "count": 12,
+              "mean": 7.763852829458719e-05,
+              "median": 5.451695084195762e-05,
+              "p90": 0.00010979472484331756
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 12,
+              "mean": 5.2280425296048054e-05,
+              "median": 3.6156248290719294e-05,
+              "p90": 7.491096616729776e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 12,
+              "mean": 2.5358102998539134e-05,
+              "median": 1.6990064631793944e-05,
+              "p90": 3.4883758676019785e-05
+            },
+            "topology_precision": {
+              "count": 12,
+              "mean": 0.9904450895016933,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 12,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 12,
+              "mean": 0.9950641025641026,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 12,
+              "mean": 0.5,
+              "median": 0.0,
+              "p90": 1.8000000000000007
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 12,
+              "mean": 0.16666666666666666,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 12,
+              "mean": 0.00011314234168374119,
+              "median": 6.475961610482449e-05,
+              "p90": 0.0001980621271532774
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 12,
+              "mean": 0.0013034857232039588,
+              "median": 0.00037670252818650004,
+              "p90": 0.002960507112890704
+            },
+            "gt_face_count": {
+              "count": 12,
+              "mean": 21.0,
+              "median": 21.0,
+              "p90": 21.0
+            },
+            "gt_boundary_count": {
+              "count": 12,
+              "mean": 48.5,
+              "median": 48.0,
+              "p90": 51.0
+            },
+            "raw_edge_count": {
+              "count": 12,
+              "mean": 97.83333333333333,
+              "median": 97.0,
+              "p90": 104.0
+            }
+          }
+        }
+      },
+      "22": {
+        "native_valid": {
+          "object_count": 46,
+          "metrics": {
+            "face_mae": {
+              "count": 46,
+              "mean": 0.0018201378981711664,
+              "median": 0.001761952386082364,
+              "p90": 0.002521122184906276
+            },
+            "face_cd_sq": {
+              "count": 46,
+              "mean": 3.2589678782010474e-05,
+              "median": 3.0182210317829433e-05,
+              "p90": 5.034896577279253e-05
+            },
+            "edge_cd_sq": {
+              "count": 46,
+              "mean": 3.698148044477032e-05,
+              "median": 2.8371495795579088e-05,
+              "p90": 6.023322891445424e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 46,
+              "mean": 2.400796894076871e-05,
+              "median": 1.789193281985853e-05,
+              "p90": 3.7853326992366335e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 46,
+              "mean": 1.297351150400161e-05,
+              "median": 9.854272573673092e-06,
+              "p90": 2.1464504504100303e-05
+            },
+            "topology_precision": {
+              "count": 46,
+              "mean": 0.9983946705892338,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 46,
+              "mean": 0.9991638795986622,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 46,
+              "mean": 0.9987757673958051,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 46,
+              "mean": 0.043478260869565216,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 46,
+              "mean": 0.06521739130434782,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 46,
+              "mean": 3.7641554299576895e-05,
+              "median": 3.1848432385415054e-05,
+              "p90": 7.099817533919335e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 46,
+              "mean": 0.00022518348732029905,
+              "median": 0.00015237859308325427,
+              "p90": 0.0003327767528689075
+            },
+            "gt_face_count": {
+              "count": 46,
+              "mean": 22.0,
+              "median": 22.0,
+              "p90": 22.0
+            },
+            "gt_boundary_count": {
+              "count": 46,
+              "mean": 55.630434782608695,
+              "median": 57.5,
+              "p90": 60.0
+            },
+            "raw_edge_count": {
+              "count": 46,
+              "mean": 111.28260869565217,
+              "median": 115.5,
+              "p90": 120.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 12,
+          "metrics": {
+            "face_mae": {
+              "count": 12,
+              "mean": 0.0025217075166078374,
+              "median": 0.0025717520223861616,
+              "p90": 0.002954199271741081
+            },
+            "face_cd_sq": {
+              "count": 12,
+              "mean": 7.05703710610136e-05,
+              "median": 5.276687976545389e-05,
+              "p90": 0.00012765139286986595
+            },
+            "edge_cd_sq": {
+              "count": 12,
+              "mean": 0.00022377947695282783,
+              "median": 6.3690378115232e-05,
+              "p90": 0.0004113146295302502
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 12,
+              "mean": 0.00017652022797103395,
+              "median": 3.916911709533532e-05,
+              "p90": 0.00022261951584301058
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 12,
+              "mean": 4.7259248981793945e-05,
+              "median": 2.4521261019896677e-05,
+              "p90": 0.00014507130166103728
+            },
+            "topology_precision": {
+              "count": 12,
+              "mean": 0.9787023049767852,
+              "median": 0.9833287024173382,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 12,
+              "mean": 0.9968553459119497,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 12,
+              "mean": 0.9875382718583663,
+              "median": 0.9915942643215371,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 12,
+              "mean": 1.0833333333333333,
+              "median": 0.5,
+              "p90": 2.9000000000000004
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 12,
+              "mean": 0.5,
+              "median": 0.5,
+              "p90": 1.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 12,
+              "mean": 0.0001440166603091169,
+              "median": 5.2233265708553494e-05,
+              "p90": 0.00014749934374036917
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 12,
+              "mean": 0.004481968180936204,
+              "median": 0.00030309170495995555,
+              "p90": 0.002472058283765319
+            },
+            "gt_face_count": {
+              "count": 12,
+              "mean": 22.0,
+              "median": 22.0,
+              "p90": 22.0
+            },
+            "gt_boundary_count": {
+              "count": 12,
+              "mean": 56.666666666666664,
+              "median": 57.0,
+              "p90": 60.0
+            },
+            "raw_edge_count": {
+              "count": 12,
+              "mean": 115.0,
+              "median": 116.5,
+              "p90": 123.7
+            }
+          }
+        }
+      },
+      "23": {
+        "native_valid": {
+          "object_count": 15,
+          "metrics": {
+            "face_mae": {
+              "count": 15,
+              "mean": 0.0022239663831136723,
+              "median": 0.0020875657208338787,
+              "p90": 0.0028302251445521944
+            },
+            "face_cd_sq": {
+              "count": 15,
+              "mean": 4.530983788712428e-05,
+              "median": 4.46474329249641e-05,
+              "p90": 7.282542451981526e-05
+            },
+            "edge_cd_sq": {
+              "count": 15,
+              "mean": 4.5710602827950184e-05,
+              "median": 4.9255731125850876e-05,
+              "p90": 6.5495272933069e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 15,
+              "mean": 2.852436851757296e-05,
+              "median": 3.068038976587172e-05,
+              "p90": 4.0653810911741976e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 15,
+              "mean": 1.718623431037721e-05,
+              "median": 1.8575341359979157e-05,
+              "p90": 2.50473348816024e-05
+            },
+            "topology_precision": {
+              "count": 15,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 15,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 15,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 15,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 15,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 15,
+              "mean": 4.2991653121070405e-05,
+              "median": 4.229048773979997e-05,
+              "p90": 5.930985076737008e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 15,
+              "mean": 0.00023038621201745263,
+              "median": 0.0001864727443826042,
+              "p90": 0.00042012524117276956
+            },
+            "gt_face_count": {
+              "count": 15,
+              "mean": 23.0,
+              "median": 23.0,
+              "p90": 23.0
+            },
+            "gt_boundary_count": {
+              "count": 15,
+              "mean": 53.8,
+              "median": 58.0,
+              "p90": 62.0
+            },
+            "raw_edge_count": {
+              "count": 15,
+              "mean": 107.6,
+              "median": 116.0,
+              "p90": 124.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 5,
+          "metrics": {
+            "face_mae": {
+              "count": 5,
+              "mean": 0.0023965719071782346,
+              "median": 0.002510364053830637,
+              "p90": 0.0030152875849685026
+            },
+            "face_cd_sq": {
+              "count": 5,
+              "mean": 5.285116073015332e-05,
+              "median": 5.8417014441959835e-05,
+              "p90": 7.492955980375495e-05
+            },
+            "edge_cd_sq": {
+              "count": 5,
+              "mean": 0.00012589481975701087,
+              "median": 8.301649466777527e-05,
+              "p90": 0.00023276724752681682
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 5,
+              "mean": 0.00010107787675640255,
+              "median": 5.1955814721975376e-05,
+              "p90": 0.00020274814397766284
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 5,
+              "mean": 2.4816943000608296e-05,
+              "median": 2.6761911590448093e-05,
+              "p90": 3.336720687064764e-05
+            },
+            "topology_precision": {
+              "count": 5,
+              "mean": 0.9896489104116224,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 5,
+              "mean": 0.9929802955665025,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 5,
+              "mean": 0.9913003663003664,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 5,
+              "mean": 0.2,
+              "median": 0.0,
+              "p90": 0.6000000000000001
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 5,
+              "mean": 0.6,
+              "median": 0.0,
+              "p90": 1.8000000000000003
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 5,
+              "mean": 8.148535474552535e-05,
+              "median": 5.734621204667667e-05,
+              "p90": 0.0001459885253174168
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 5,
+              "mean": 0.001433917199975349,
+              "median": 0.0005069728610445391,
+              "p90": 0.003383748525986177
+            },
+            "gt_face_count": {
+              "count": 5,
+              "mean": 23.0,
+              "median": 23.0,
+              "p90": 23.0
+            },
+            "gt_boundary_count": {
+              "count": 5,
+              "mean": 58.4,
+              "median": 58.0,
+              "p90": 60.8
+            },
+            "raw_edge_count": {
+              "count": 5,
+              "mean": 116.6,
+              "median": 115.0,
+              "p90": 121.6
+            }
+          }
+        }
+      },
+      "24": {
+        "native_valid": {
+          "object_count": 17,
+          "metrics": {
+            "face_mae": {
+              "count": 17,
+              "mean": 0.0021472746734189493,
+              "median": 0.002000380419758585,
+              "p90": 0.00331570209404472
+            },
+            "face_cd_sq": {
+              "count": 17,
+              "mean": 4.486041175123182e-05,
+              "median": 3.2156982005424604e-05,
+              "p90": 8.456021859159866e-05
+            },
+            "edge_cd_sq": {
+              "count": 17,
+              "mean": 8.161480743697024e-05,
+              "median": 3.4739398024150654e-05,
+              "p90": 0.0001432639769768032
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 17,
+              "mean": 3.98831550809443e-05,
+              "median": 2.3910313716451888e-05,
+              "p90": 8.711006476017659e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 17,
+              "mean": 4.173165235602594e-05,
+              "median": 1.3339359460211519e-05,
+              "p90": 5.2199428244916965e-05
+            },
+            "topology_precision": {
+              "count": 17,
+              "mean": 0.9965644921174179,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 17,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 17,
+              "mean": 0.998250528281488,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 17,
+              "mean": 0.23529411764705882,
+              "median": 0.0,
+              "p90": 0.40000000000000036
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 17,
+              "mean": 0.17647058823529413,
+              "median": 0.0,
+              "p90": 1.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 17,
+              "mean": 6.304774370526257e-05,
+              "median": 4.541926757686903e-05,
+              "p90": 0.00010952344375575355
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 17,
+              "mean": 0.00033318572450600467,
+              "median": 0.00021988759624494425,
+              "p90": 0.0007405413053391305
+            },
+            "gt_face_count": {
+              "count": 17,
+              "mean": 24.0,
+              "median": 24.0,
+              "p90": 24.0
+            },
+            "gt_boundary_count": {
+              "count": 17,
+              "mean": 59.705882352941174,
+              "median": 60.0,
+              "p90": 66.8
+            },
+            "raw_edge_count": {
+              "count": 17,
+              "mean": 119.70588235294117,
+              "median": 120.0,
+              "p90": 136.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 8,
+          "metrics": {
+            "face_mae": {
+              "count": 8,
+              "mean": 0.0026450858347305288,
+              "median": 0.00239289988959257,
+              "p90": 0.0037552520852883195
+            },
+            "face_cd_sq": {
+              "count": 8,
+              "mean": 7.222257938021801e-05,
+              "median": 3.791297786518537e-05,
+              "p90": 0.00013846121846113264
+            },
+            "edge_cd_sq": {
+              "count": 8,
+              "mean": 0.0003199787555413054,
+              "median": 4.062679262735795e-05,
+              "p90": 0.0009193690754328745
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 8,
+              "mean": 7.599914273986549e-05,
+              "median": 2.720158404052068e-05,
+              "p90": 0.00017017587980443287
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 8,
+              "mean": 0.00024397961280143995,
+              "median": 1.3425208586837267e-05,
+              "p90": 0.0006360763652084492
+            },
+            "topology_precision": {
+              "count": 8,
+              "mean": 0.9827892628673194,
+              "median": 0.9905660377358491,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 8,
+              "mean": 0.9892241379310345,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 8,
+              "mean": 0.9859476512390708,
+              "median": 0.9952380952380953,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 8,
+              "mean": 0.625,
+              "median": 0.5,
+              "p90": 1.2999999999999998
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 8,
+              "mean": 0.625,
+              "median": 0.5,
+              "p90": 1.2999999999999998
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 8,
+              "mean": 0.00011702446836577936,
+              "median": 6.067584058925805e-05,
+              "p90": 0.00024827212110579267
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 8,
+              "mean": 0.0011244832646444202,
+              "median": 0.0005174218097115007,
+              "p90": 0.0023060761982479027
+            },
+            "gt_face_count": {
+              "count": 8,
+              "mean": 24.0,
+              "median": 24.0,
+              "p90": 24.0
+            },
+            "gt_boundary_count": {
+              "count": 8,
+              "mean": 54.75,
+              "median": 55.0,
+              "p90": 63.9
+            },
+            "raw_edge_count": {
+              "count": 8,
+              "mean": 109.625,
+              "median": 108.5,
+              "p90": 128.7
+            }
+          }
+        }
+      },
+      "25": {
+        "native_valid": {
+          "object_count": 10,
+          "metrics": {
+            "face_mae": {
+              "count": 10,
+              "mean": 0.0021648941745615576,
+              "median": 0.0019253320310720786,
+              "p90": 0.002956679718588323
+            },
+            "face_cd_sq": {
+              "count": 10,
+              "mean": 4.782278250589098e-05,
+              "median": 3.66571849718478e-05,
+              "p90": 8.271457592074091e-05
+            },
+            "edge_cd_sq": {
+              "count": 10,
+              "mean": 6.87723901025839e-05,
+              "median": 4.0634407022200684e-05,
+              "p90": 0.0001432275568254444
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 10,
+              "mean": 4.6110899682798005e-05,
+              "median": 2.5023440258616016e-05,
+              "p90": 0.00010677607415706652
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 10,
+              "mean": 2.2661490419785902e-05,
+              "median": 1.5350103500708045e-05,
+              "p90": 5.3336070668132484e-05
+            },
+            "topology_precision": {
+              "count": 10,
+              "mean": 0.9880000000000001,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 10,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 10,
+              "mean": 0.9936170212765958,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 10,
+              "mean": 0.9,
+              "median": 0.0,
+              "p90": 0.8999999999999968
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 10,
+              "mean": 0.2,
+              "median": 0.0,
+              "p90": 0.1999999999999993
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 10,
+              "mean": 6.246806484878285e-05,
+              "median": 4.252565684677913e-05,
+              "p90": 0.00010497240064900098
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 10,
+              "mean": 0.000525763260541141,
+              "median": 0.00020360485232067413,
+              "p90": 0.0014411670867208245
+            },
+            "gt_face_count": {
+              "count": 10,
+              "mean": 25.0,
+              "median": 25.0,
+              "p90": 25.0
+            },
+            "gt_boundary_count": {
+              "count": 10,
+              "mean": 61.3,
+              "median": 64.5,
+              "p90": 69.0
+            },
+            "raw_edge_count": {
+              "count": 10,
+              "mean": 124.2,
+              "median": 130.0,
+              "p90": 139.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 5,
+          "metrics": {
+            "face_mae": {
+              "count": 5,
+              "mean": 0.0021700192226456923,
+              "median": 0.002273677473034089,
+              "p90": 0.0023553047971508934
+            },
+            "face_cd_sq": {
+              "count": 5,
+              "mean": 4.181964359025655e-05,
+              "median": 4.2761747219005196e-05,
+              "p90": 4.824000109105078e-05
+            },
+            "edge_cd_sq": {
+              "count": 5,
+              "mean": 0.0003433073933719454,
+              "median": 0.00015793939400241455,
+              "p90": 0.0007935960699342248
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 5,
+              "mean": 0.0003167855393564148,
+              "median": 0.00013993939209663584,
+              "p90": 0.0007582968565079432
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 5,
+              "mean": 2.652185401553058e-05,
+              "median": 2.3749011155561174e-05,
+              "p90": 3.963202979983951e-05
+            },
+            "topology_precision": {
+              "count": 5,
+              "mean": 0.9766248643217139,
+              "median": 0.971830985915493,
+              "p90": 0.9940298507462686
+            },
+            "topology_recall": {
+              "count": 5,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 5,
+              "mean": 0.9881177302229934,
+              "median": 0.9857142857142858,
+              "p90": 0.9969924812030075
+            },
+            "unique_pair_count_error": {
+              "count": 5,
+              "mean": 1.6,
+              "median": 2.0,
+              "p90": 2.6
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 5,
+              "mean": 0.6,
+              "median": 0.0,
+              "p90": 1.6
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 5,
+              "mean": 6.358933793207261e-05,
+              "median": 6.270606054098258e-05,
+              "p90": 7.967247126302226e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 5,
+              "mean": 0.0005523110810726299,
+              "median": 0.0006184832472330513,
+              "p90": 0.0007133198679442746
+            },
+            "gt_face_count": {
+              "count": 5,
+              "mean": 25.0,
+              "median": 25.0,
+              "p90": 25.0
+            },
+            "gt_boundary_count": {
+              "count": 5,
+              "mean": 64.6,
+              "median": 66.0,
+              "p90": 67.8
+            },
+            "raw_edge_count": {
+              "count": 5,
+              "mean": 131.8,
+              "median": 133.0,
+              "p90": 139.6
+            }
+          }
+        }
+      },
+      "26": {
+        "native_valid": {
+          "object_count": 21,
+          "metrics": {
+            "face_mae": {
+              "count": 21,
+              "mean": 0.0018697483573027712,
+              "median": 0.001811006399013702,
+              "p90": 0.002265477193183495
+            },
+            "face_cd_sq": {
+              "count": 21,
+              "mean": 3.2287466422782265e-05,
+              "median": 2.859233510415491e-05,
+              "p90": 4.821604561119287e-05
+            },
+            "edge_cd_sq": {
+              "count": 21,
+              "mean": 3.7397958281250665e-05,
+              "median": 3.229396808346124e-05,
+              "p90": 5.142182466216631e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 21,
+              "mean": 2.4093334990278458e-05,
+              "median": 1.9706022466486663e-05,
+              "p90": 3.749292581503927e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 21,
+              "mean": 1.3304623290972224e-05,
+              "median": 1.2587945616974579e-05,
+              "p90": 1.9470670519789816e-05
+            },
+            "topology_precision": {
+              "count": 21,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 21,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 21,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 21,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 21,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 21,
+              "mean": 4.092558946045959e-05,
+              "median": 3.0126457795168767e-05,
+              "p90": 5.441742433723303e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 21,
+              "mean": 0.0002712173763979384,
+              "median": 0.00014482338493035027,
+              "p90": 0.00022948635912365496
+            },
+            "gt_face_count": {
+              "count": 21,
+              "mean": 26.0,
+              "median": 26.0,
+              "p90": 26.0
+            },
+            "gt_boundary_count": {
+              "count": 21,
+              "mean": 66.61904761904762,
+              "median": 68.0,
+              "p90": 72.0
+            },
+            "raw_edge_count": {
+              "count": 21,
+              "mean": 133.23809523809524,
+              "median": 136.0,
+              "p90": 144.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 9,
+          "metrics": {
+            "face_mae": {
+              "count": 9,
+              "mean": 0.002354948018951886,
+              "median": 0.00242954921735106,
+              "p90": 0.003061488408928152
+            },
+            "face_cd_sq": {
+              "count": 9,
+              "mean": 4.519571716398074e-05,
+              "median": 4.014115030878019e-05,
+              "p90": 7.664051033455277e-05
+            },
+            "edge_cd_sq": {
+              "count": 9,
+              "mean": 7.778885078609835e-05,
+              "median": 3.980709062280088e-05,
+              "p90": 0.0001464298287994659
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 9,
+              "mean": 5.5005886573657905e-05,
+              "median": 2.7001373615882702e-05,
+              "p90": 0.00010322319184400284
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 9,
+              "mean": 2.2782964212440427e-05,
+              "median": 1.4067403262459547e-05,
+              "p90": 4.3206636955463064e-05
+            },
+            "topology_precision": {
+              "count": 9,
+              "mean": 0.9629301087132414,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 9,
+              "mean": 0.9969135802469135,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 9,
+              "mean": 0.9788653460763792,
+              "median": 0.9922480620155039,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 9,
+              "mean": 3.111111111111111,
+              "median": 1.0,
+              "p90": 8.600000000000001
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 9,
+              "mean": 1.8888888888888888,
+              "median": 0.0,
+              "p90": 6.4
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 9,
+              "mean": 0.0001067536817400709,
+              "median": 5.591682207544728e-05,
+              "p90": 0.00020554115278523875
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 9,
+              "mean": 0.001157069149234343,
+              "median": 0.0002578852761258915,
+              "p90": 0.0029170542334723834
+            },
+            "gt_face_count": {
+              "count": 9,
+              "mean": 26.0,
+              "median": 26.0,
+              "p90": 26.0
+            },
+            "gt_boundary_count": {
+              "count": 9,
+              "mean": 67.77777777777777,
+              "median": 70.0,
+              "p90": 72.0
+            },
+            "raw_edge_count": {
+              "count": 9,
+              "mean": 139.0,
+              "median": 138.0,
+              "p90": 158.2
+            }
+          }
+        }
+      },
+      "27": {
+        "native_valid": {
+          "object_count": 0,
+          "metrics": {
+            "face_mae": {
+              "count": 0,
+              "mean": null,
+              "median": null,
+              "p90": null
+            },
+            "face_cd_sq": {
+              "count": 0,
+              "mean": null,
+              "median": null,
+              "p90": null
+            },
+            "edge_cd_sq": {
+              "count": 0,
+              "mean": null,
+              "median": null,
+              "p90": null
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 0,
+              "mean": null,
+              "median": null,
+              "p90": null
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 0,
+              "mean": null,
+              "median": null,
+              "p90": null
+            },
+            "topology_precision": {
+              "count": 0,
+              "mean": null,
+              "median": null,
+              "p90": null
+            },
+            "topology_recall": {
+              "count": 0,
+              "mean": null,
+              "median": null,
+              "p90": null
+            },
+            "topology_f1": {
+              "count": 0,
+              "mean": null,
+              "median": null,
+              "p90": null
+            },
+            "unique_pair_count_error": {
+              "count": 0,
+              "mean": null,
+              "median": null,
+              "p90": null
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 0,
+              "mean": null,
+              "median": null,
+              "p90": null
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 0,
+              "mean": null,
+              "median": null,
+              "p90": null
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 0,
+              "mean": null,
+              "median": null,
+              "p90": null
+            },
+            "gt_face_count": {
+              "count": 0,
+              "mean": null,
+              "median": null,
+              "p90": null
+            },
+            "gt_boundary_count": {
+              "count": 0,
+              "mean": null,
+              "median": null,
+              "p90": null
+            },
+            "raw_edge_count": {
+              "count": 0,
+              "mean": null,
+              "median": null,
+              "p90": null
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 4,
+          "metrics": {
+            "face_mae": {
+              "count": 4,
+              "mean": 0.0027794131369099475,
+              "median": 0.003080949080935239,
+              "p90": 0.0031195305810696383
+            },
+            "face_cd_sq": {
+              "count": 4,
+              "mean": 5.602262606221086e-05,
+              "median": 6.225000228580583e-05,
+              "p90": 7.060828394899444e-05
+            },
+            "edge_cd_sq": {
+              "count": 4,
+              "mean": 0.00010716178211569323,
+              "median": 5.291975100245234e-05,
+              "p90": 0.0002106061851117397
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 4,
+              "mean": 8.255291178591659e-05,
+              "median": 3.510834283752647e-05,
+              "p90": 0.00017253879597732373
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 4,
+              "mean": 2.4608870329776647e-05,
+              "median": 1.953205183925373e-05,
+              "p90": 3.806738913441596e-05
+            },
+            "topology_precision": {
+              "count": 4,
+              "mean": 0.9848240666129465,
+              "median": 0.9901960784313726,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 4,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 4,
+              "mean": 0.9922799972304923,
+              "median": 0.995049504950495,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 4,
+              "mean": 1.0,
+              "median": 0.5,
+              "p90": 2.4000000000000004
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 4,
+              "mean": 0.25,
+              "median": 0.0,
+              "p90": 0.7000000000000002
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 4,
+              "mean": 8.126437568609646e-05,
+              "median": 5.9557484937447565e-05,
+              "p90": 0.00013335939324870372
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 4,
+              "mean": 0.0007827337706751737,
+              "median": 0.0003047793891556293,
+              "p90": 0.001709240485686676
+            },
+            "gt_face_count": {
+              "count": 4,
+              "mean": 27.0,
+              "median": 27.0,
+              "p90": 27.0
+            },
+            "gt_boundary_count": {
+              "count": 4,
+              "mean": 60.5,
+              "median": 61.0,
+              "p90": 69.4
+            },
+            "raw_edge_count": {
+              "count": 4,
+              "mean": 122.75,
+              "median": 122.0,
+              "p90": 142.3
+            }
+          }
+        }
+      },
+      "28": {
+        "native_valid": {
+          "object_count": 5,
+          "metrics": {
+            "face_mae": {
+              "count": 5,
+              "mean": 0.00180998728033222,
+              "median": 0.001831157559563291,
+              "p90": 0.0020110353877956164
+            },
+            "face_cd_sq": {
+              "count": 5,
+              "mean": 2.8771544328359994e-05,
+              "median": 3.0628724389821136e-05,
+              "p90": 3.657791156986206e-05
+            },
+            "edge_cd_sq": {
+              "count": 5,
+              "mean": 3.8708698218285004e-05,
+              "median": 3.536433613980072e-05,
+              "p90": 4.8228680768493105e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 5,
+              "mean": 2.5195605454301713e-05,
+              "median": 2.3343834173597212e-05,
+              "p90": 3.1297549027881754e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 5,
+              "mean": 1.3513092763983294e-05,
+              "median": 1.2215223239200416e-05,
+              "p90": 1.693113174061135e-05
+            },
+            "topology_precision": {
+              "count": 5,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 5,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 5,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 5,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 5,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 5,
+              "mean": 3.9992916443985565e-05,
+              "median": 3.981129580332098e-05,
+              "p90": 5.165631908669726e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 5,
+              "mean": 0.00020401022693329395,
+              "median": 0.00021662805748554493,
+              "p90": 0.00026291160759737904
+            },
+            "gt_face_count": {
+              "count": 5,
+              "mean": 28.0,
+              "median": 28.0,
+              "p90": 28.0
+            },
+            "gt_boundary_count": {
+              "count": 5,
+              "mean": 69.6,
+              "median": 72.0,
+              "p90": 73.2
+            },
+            "raw_edge_count": {
+              "count": 5,
+              "mean": 139.2,
+              "median": 144.0,
+              "p90": 146.4
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 4,
+          "metrics": {
+            "face_mae": {
+              "count": 4,
+              "mean": 0.0030263078497883966,
+              "median": 0.0025656693183070244,
+              "p90": 0.004849135819123756
+            },
+            "face_cd_sq": {
+              "count": 4,
+              "mean": 6.045269960160049e-05,
+              "median": 4.105353792590699e-05,
+              "p90": 0.00011612592349615329
+            },
+            "edge_cd_sq": {
+              "count": 4,
+              "mean": 0.00018591402356743243,
+              "median": 7.602366812872979e-05,
+              "p90": 0.0004270971034153804
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 4,
+              "mean": 0.0001498798577263051,
+              "median": 5.400439656584841e-05,
+              "p90": 0.00035537319475916726
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 4,
+              "mean": 3.603416584112731e-05,
+              "median": 2.2019271562881378e-05,
+              "p90": 7.237343422596339e-05
+            },
+            "topology_precision": {
+              "count": 4,
+              "mean": 0.9965753424657534,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 4,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 4,
+              "mean": 0.9982758620689656,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 4,
+              "mean": 0.25,
+              "median": 0.0,
+              "p90": 0.7000000000000002
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 4,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 4,
+              "mean": 0.00012270910816559365,
+              "median": 7.061926848938118e-05,
+              "p90": 0.0002553241944550378
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 4,
+              "mean": 0.004718173517565051,
+              "median": 0.0014381679840652075,
+              "p90": 0.01167603389035797
+            },
+            "gt_face_count": {
+              "count": 4,
+              "mean": 28.0,
+              "median": 28.0,
+              "p90": 28.0
+            },
+            "gt_boundary_count": {
+              "count": 4,
+              "mean": 73.5,
+              "median": 74.0,
+              "p90": 74.0
+            },
+            "raw_edge_count": {
+              "count": 4,
+              "mean": 147.5,
+              "median": 148.0,
+              "p90": 148.0
+            }
+          }
+        }
+      },
+      "29": {
+        "native_valid": {
+          "object_count": 2,
+          "metrics": {
+            "face_mae": {
+              "count": 2,
+              "mean": 0.0020769506590929843,
+              "median": 0.0020769506590929843,
+              "p90": 0.0024381366335998584
+            },
+            "face_cd_sq": {
+              "count": 2,
+              "mean": 4.5948654458624055e-05,
+              "median": 4.5948654458624055e-05,
+              "p90": 6.185667292252941e-05
+            },
+            "edge_cd_sq": {
+              "count": 2,
+              "mean": 3.941376253470273e-05,
+              "median": 3.941376253470273e-05,
+              "p90": 4.956565928488462e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 2,
+              "mean": 2.544940851012076e-05,
+              "median": 2.544940851012076e-05,
+              "p90": 3.1939007524773306e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 2,
+              "mean": 1.396435402458197e-05,
+              "median": 1.396435402458197e-05,
+              "p90": 1.7626651760111315e-05
+            },
+            "topology_precision": {
+              "count": 2,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 2,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 2,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 2,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 2,
+              "mean": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 2,
+              "mean": 4.92155762281136e-05,
+              "median": 4.92155762281136e-05,
+              "p90": 6.297528854613608e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 2,
+              "mean": 0.0002231669547399903,
+              "median": 0.0002231669547399903,
+              "p90": 0.0003247383795535182
+            },
+            "gt_face_count": {
+              "count": 2,
+              "mean": 29.0,
+              "median": 29.0,
+              "p90": 29.0
+            },
+            "gt_boundary_count": {
+              "count": 2,
+              "mean": 55.0,
+              "median": 55.0,
+              "p90": 57.4
+            },
+            "raw_edge_count": {
+              "count": 2,
+              "mean": 110.0,
+              "median": 110.0,
+              "p90": 114.8
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 4,
+          "metrics": {
+            "face_mae": {
+              "count": 4,
+              "mean": 0.0022488164611252992,
+              "median": 0.0022820740554882067,
+              "p90": 0.002765243018974041
+            },
+            "face_cd_sq": {
+              "count": 4,
+              "mean": 4.780206561592303e-05,
+              "median": 4.590653632045156e-05,
+              "p90": 6.888710005802924e-05
+            },
+            "edge_cd_sq": {
+              "count": 4,
+              "mean": 0.00012630314001080015,
+              "median": 0.00012321423690892622,
+              "p90": 0.00020281955724741382
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 4,
+              "mean": 8.634843527894275e-05,
+              "median": 5.8533720024095295e-05,
+              "p90": 0.00016554266783862888
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 4,
+              "mean": 3.99547047318574e-05,
+              "median": 2.4970087023075405e-05,
+              "p90": 7.977412736237775e-05
+            },
+            "topology_precision": {
+              "count": 4,
+              "mean": 0.9336166878999547,
+              "median": 0.9788838612368025,
+              "p90": 0.9961538461538462
+            },
+            "topology_recall": {
+              "count": 4,
+              "mean": 0.987298195631529,
+              "median": 0.9938271604938271,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 4,
+              "mean": 0.9571450970541238,
+              "median": 0.9827333918642083,
+              "p90": 0.9910062590274434
+            },
+            "unique_pair_count_error": {
+              "count": 4,
+              "mean": 7.0,
+              "median": 2.5,
+              "p90": 16.300000000000004
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 4,
+              "mean": 3.0,
+              "median": 2.0,
+              "p90": 5.800000000000001
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 4,
+              "mean": 8.145089457104195e-05,
+              "median": 8.092207973744617e-05,
+              "p90": 0.0001285008228893872
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 4,
+              "mean": 0.0009961531179475181,
+              "median": 0.0008413737077847851,
+              "p90": 0.0018764098268388093
+            },
+            "gt_face_count": {
+              "count": 4,
+              "mean": 29.0,
+              "median": 29.0,
+              "p90": 29.0
+            },
+            "gt_boundary_count": {
+              "count": 4,
+              "mean": 75.5,
+              "median": 77.5,
+              "p90": 80.1
+            },
+            "raw_edge_count": {
+              "count": 4,
+              "mean": 159.0,
+              "median": 152.0,
+              "p90": 185.8
+            }
+          }
+        }
+      },
+      "30": {
+        "native_valid": {
+          "object_count": 8,
+          "metrics": {
+            "face_mae": {
+              "count": 8,
+              "mean": 0.001997577092491514,
+              "median": 0.001717273561779425,
+              "p90": 0.002857564861180764
+            },
+            "face_cd_sq": {
+              "count": 8,
+              "mean": 3.645884862074325e-05,
+              "median": 3.0326422478828906e-05,
+              "p90": 6.258044284105071e-05
+            },
+            "edge_cd_sq": {
+              "count": 8,
+              "mean": 3.6397721156471213e-05,
+              "median": 3.4596358559405656e-05,
+              "p90": 5.3187702577838136e-05
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 8,
+              "mean": 2.376527868380629e-05,
+              "median": 2.2164266232785963e-05,
+              "p90": 3.5301783532122985e-05
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 8,
+              "mean": 1.263244247266492e-05,
+              "median": 1.2293630726381255e-05,
+              "p90": 1.788591904571515e-05
+            },
+            "topology_precision": {
+              "count": 8,
+              "mean": 0.9966216216216216,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 8,
+              "mean": 1.0,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 8,
+              "mean": 0.9982876712328768,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 8,
+              "mean": 0.25,
+              "median": 0.0,
+              "p90": 0.5999999999999996
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 8,
+              "mean": 0.25,
+              "median": 0.0,
+              "p90": 0.5999999999999996
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 8,
+              "mean": 3.591499832720715e-05,
+              "median": 3.138817878004165e-05,
+              "p90": 5.7717237452092416e-05
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 8,
+              "mean": 0.00017441834427138505,
+              "median": 0.00018428473513698324,
+              "p90": 0.0002315557180338184
+            },
+            "gt_face_count": {
+              "count": 8,
+              "mean": 30.0,
+              "median": 30.0,
+              "p90": 30.0
+            },
+            "gt_boundary_count": {
+              "count": 8,
+              "mean": 77.0,
+              "median": 78.0,
+              "p90": 84.0
+            },
+            "raw_edge_count": {
+              "count": 8,
+              "mean": 154.25,
+              "median": 157.0,
+              "p90": 168.0
+            }
+          }
+        },
+        "native_failed": {
+          "object_count": 9,
+          "metrics": {
+            "face_mae": {
+              "count": 9,
+              "mean": 0.002295432322595551,
+              "median": 0.0021906993652616316,
+              "p90": 0.0027719693131150556
+            },
+            "face_cd_sq": {
+              "count": 9,
+              "mean": 5.4516890024340135e-05,
+              "median": 4.077652099345193e-05,
+              "p90": 8.388125117165358e-05
+            },
+            "edge_cd_sq": {
+              "count": 9,
+              "mean": 0.0007491730615727464,
+              "median": 6.354709480923463e-05,
+              "p90": 0.0014089438913778797
+            },
+            "edge_pred_to_gt_sq": {
+              "count": 9,
+              "mean": 0.0007143561793522384,
+              "median": 4.6867820858782894e-05,
+              "p90": 0.0013242032049929262
+            },
+            "edge_gt_to_pred_sq": {
+              "count": 9,
+              "mean": 3.481688222050796e-05,
+              "median": 2.060256848439456e-05,
+              "p90": 7.408360399514806e-05
+            },
+            "topology_precision": {
+              "count": 9,
+              "mean": 0.9622270771448156,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_recall": {
+              "count": 9,
+              "mean": 0.9944444444444444,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "topology_f1": {
+              "count": 9,
+              "mean": 0.9776476822579276,
+              "median": 1.0,
+              "p90": 1.0
+            },
+            "unique_pair_count_error": {
+              "count": 9,
+              "mean": 2.4444444444444446,
+              "median": 0.0,
+              "p90": 7.2
+            },
+            "legacy_unilateral_pair_count": {
+              "count": 9,
+              "mean": 0.5555555555555556,
+              "median": 0.0,
+              "p90": 1.4000000000000004
+            },
+            "legacy_reciprocal_cd_sq_mean": {
+              "count": 9,
+              "mean": 0.0001411474610060327,
+              "median": 9.377813384869232e-05,
+              "p90": 0.00026852752876798113
+            },
+            "legacy_reciprocal_cd_sq_max": {
+              "count": 9,
+              "mean": 0.0030995879289165565,
+              "median": 0.0009147852044831956,
+              "p90": 0.008249548128529183
+            },
+            "gt_face_count": {
+              "count": 9,
+              "mean": 30.0,
+              "median": 30.0,
+              "p90": 30.0
+            },
+            "gt_boundary_count": {
+              "count": 9,
+              "mean": 68.44444444444444,
+              "median": 72.0,
+              "p90": 84.0
+            },
+            "raw_edge_count": {
+              "count": 9,
+              "mean": 141.22222222222223,
+              "median": 152.0,
+              "p90": 168.0
+            }
+          }
+        }
+      }
+    },
+    "face_count_standardized": {
+      "method": "Within each exact GT face count, compare group means; weight both groups by the failed population face-count distribution on common finite-metric support.",
+      "causal_claim": false,
+      "metrics": {
+        "face_mae": {
+          "exact_face_count_weights": {
+            "7": 0.08493150684931507,
+            "8": 0.0821917808219178,
+            "9": 0.0547945205479452,
+            "10": 0.09315068493150686,
+            "11": 0.049315068493150684,
+            "12": 0.07397260273972603,
+            "13": 0.038356164383561646,
+            "14": 0.07397260273972603,
+            "15": 0.052054794520547946,
+            "16": 0.038356164383561646,
+            "17": 0.057534246575342465,
+            "18": 0.04657534246575343,
+            "19": 0.0410958904109589,
+            "20": 0.0273972602739726,
+            "21": 0.03287671232876712,
+            "22": 0.03287671232876712,
+            "23": 0.0136986301369863,
+            "24": 0.021917808219178082,
+            "25": 0.0136986301369863,
+            "26": 0.024657534246575342,
+            "28": 0.010958904109589041,
+            "29": 0.010958904109589041,
+            "30": 0.024657534246575342
+          },
+          "failure_objects_in_common_support": 365,
+          "failure_total": 369,
+          "weighted_means": {
+            "native_valid": 0.001976953102039223,
+            "native_failed": 0.002780523474153914
+          },
+          "failed_minus_valid": 0.000803570372114691
+        },
+        "face_cd_sq": {
+          "exact_face_count_weights": {
+            "7": 0.08493150684931507,
+            "8": 0.0821917808219178,
+            "9": 0.0547945205479452,
+            "10": 0.09315068493150686,
+            "11": 0.049315068493150684,
+            "12": 0.07397260273972603,
+            "13": 0.038356164383561646,
+            "14": 0.07397260273972603,
+            "15": 0.052054794520547946,
+            "16": 0.038356164383561646,
+            "17": 0.057534246575342465,
+            "18": 0.04657534246575343,
+            "19": 0.0410958904109589,
+            "20": 0.0273972602739726,
+            "21": 0.03287671232876712,
+            "22": 0.03287671232876712,
+            "23": 0.0136986301369863,
+            "24": 0.021917808219178082,
+            "25": 0.0136986301369863,
+            "26": 0.024657534246575342,
+            "28": 0.010958904109589041,
+            "29": 0.010958904109589041,
+            "30": 0.024657534246575342
+          },
+          "failure_objects_in_common_support": 365,
+          "failure_total": 369,
+          "weighted_means": {
+            "native_valid": 4.26687845846193e-05,
+            "native_failed": 9.40454488186915e-05
+          },
+          "failed_minus_valid": 5.137666423407221e-05
+        },
+        "edge_cd_sq": {
+          "exact_face_count_weights": {
+            "7": 0.08493150684931507,
+            "8": 0.0821917808219178,
+            "9": 0.0547945205479452,
+            "10": 0.09315068493150686,
+            "11": 0.049315068493150684,
+            "12": 0.07397260273972603,
+            "13": 0.038356164383561646,
+            "14": 0.07397260273972603,
+            "15": 0.052054794520547946,
+            "16": 0.038356164383561646,
+            "17": 0.057534246575342465,
+            "18": 0.04657534246575343,
+            "19": 0.0410958904109589,
+            "20": 0.0273972602739726,
+            "21": 0.03287671232876712,
+            "22": 0.03287671232876712,
+            "23": 0.0136986301369863,
+            "24": 0.021917808219178082,
+            "25": 0.0136986301369863,
+            "26": 0.024657534246575342,
+            "28": 0.010958904109589041,
+            "29": 0.010958904109589041,
+            "30": 0.024657534246575342
+          },
+          "failure_objects_in_common_support": 365,
+          "failure_total": 369,
+          "weighted_means": {
+            "native_valid": 4.684293238789848e-05,
+            "native_failed": 0.00033190772062928334
+          },
+          "failed_minus_valid": 0.00028506478824138484
+        },
+        "edge_pred_to_gt_sq": {
+          "exact_face_count_weights": {
+            "7": 0.08493150684931507,
+            "8": 0.0821917808219178,
+            "9": 0.0547945205479452,
+            "10": 0.09315068493150686,
+            "11": 0.049315068493150684,
+            "12": 0.07397260273972603,
+            "13": 0.038356164383561646,
+            "14": 0.07397260273972603,
+            "15": 0.052054794520547946,
+            "16": 0.038356164383561646,
+            "17": 0.057534246575342465,
+            "18": 0.04657534246575343,
+            "19": 0.0410958904109589,
+            "20": 0.0273972602739726,
+            "21": 0.03287671232876712,
+            "22": 0.03287671232876712,
+            "23": 0.0136986301369863,
+            "24": 0.021917808219178082,
+            "25": 0.0136986301369863,
+            "26": 0.024657534246575342,
+            "28": 0.010958904109589041,
+            "29": 0.010958904109589041,
+            "30": 0.024657534246575342
+          },
+          "failure_objects_in_common_support": 365,
+          "failure_total": 369,
+          "weighted_means": {
+            "native_valid": 3.0021555569293654e-05,
+            "native_failed": 0.00023402835348816962
+          },
+          "failed_minus_valid": 0.00020400679791887598
+        },
+        "edge_gt_to_pred_sq": {
+          "exact_face_count_weights": {
+            "7": 0.08493150684931507,
+            "8": 0.0821917808219178,
+            "9": 0.0547945205479452,
+            "10": 0.09315068493150686,
+            "11": 0.049315068493150684,
+            "12": 0.07397260273972603,
+            "13": 0.038356164383561646,
+            "14": 0.07397260273972603,
+            "15": 0.052054794520547946,
+            "16": 0.038356164383561646,
+            "17": 0.057534246575342465,
+            "18": 0.04657534246575343,
+            "19": 0.0410958904109589,
+            "20": 0.0273972602739726,
+            "21": 0.03287671232876712,
+            "22": 0.03287671232876712,
+            "23": 0.0136986301369863,
+            "24": 0.021917808219178082,
+            "25": 0.0136986301369863,
+            "26": 0.024657534246575342,
+            "28": 0.010958904109589041,
+            "29": 0.010958904109589041,
+            "30": 0.024657534246575342
+          },
+          "failure_objects_in_common_support": 365,
+          "failure_total": 369,
+          "weighted_means": {
+            "native_valid": 1.6821376818604826e-05,
+            "native_failed": 9.787936714111366e-05
+          },
+          "failed_minus_valid": 8.105799032250883e-05
+        },
+        "topology_precision": {
+          "exact_face_count_weights": {
+            "7": 0.08493150684931507,
+            "8": 0.0821917808219178,
+            "9": 0.0547945205479452,
+            "10": 0.09315068493150686,
+            "11": 0.049315068493150684,
+            "12": 0.07397260273972603,
+            "13": 0.038356164383561646,
+            "14": 0.07397260273972603,
+            "15": 0.052054794520547946,
+            "16": 0.038356164383561646,
+            "17": 0.057534246575342465,
+            "18": 0.04657534246575343,
+            "19": 0.0410958904109589,
+            "20": 0.0273972602739726,
+            "21": 0.03287671232876712,
+            "22": 0.03287671232876712,
+            "23": 0.0136986301369863,
+            "24": 0.021917808219178082,
+            "25": 0.0136986301369863,
+            "26": 0.024657534246575342,
+            "28": 0.010958904109589041,
+            "29": 0.010958904109589041,
+            "30": 0.024657534246575342
+          },
+          "failure_objects_in_common_support": 365,
+          "failure_total": 369,
+          "weighted_means": {
+            "native_valid": 0.9994554227008476,
+            "native_failed": 0.9841673321549621
+          },
+          "failed_minus_valid": -0.015288090545885535
+        },
+        "topology_recall": {
+          "exact_face_count_weights": {
+            "7": 0.08493150684931507,
+            "8": 0.0821917808219178,
+            "9": 0.0547945205479452,
+            "10": 0.09315068493150686,
+            "11": 0.049315068493150684,
+            "12": 0.07397260273972603,
+            "13": 0.038356164383561646,
+            "14": 0.07397260273972603,
+            "15": 0.052054794520547946,
+            "16": 0.038356164383561646,
+            "17": 0.057534246575342465,
+            "18": 0.04657534246575343,
+            "19": 0.0410958904109589,
+            "20": 0.0273972602739726,
+            "21": 0.03287671232876712,
+            "22": 0.03287671232876712,
+            "23": 0.0136986301369863,
+            "24": 0.021917808219178082,
+            "25": 0.0136986301369863,
+            "26": 0.024657534246575342,
+            "28": 0.010958904109589041,
+            "29": 0.010958904109589041,
+            "30": 0.024657534246575342
+          },
+          "failure_objects_in_common_support": 365,
+          "failure_total": 369,
+          "weighted_means": {
+            "native_valid": 0.9997940944454118,
+            "native_failed": 0.9957006686221659
+          },
+          "failed_minus_valid": -0.0040934258232459
+        },
+        "topology_f1": {
+          "exact_face_count_weights": {
+            "7": 0.08493150684931507,
+            "8": 0.0821917808219178,
+            "9": 0.0547945205479452,
+            "10": 0.09315068493150686,
+            "11": 0.049315068493150684,
+            "12": 0.07397260273972603,
+            "13": 0.038356164383561646,
+            "14": 0.07397260273972603,
+            "15": 0.052054794520547946,
+            "16": 0.038356164383561646,
+            "17": 0.057534246575342465,
+            "18": 0.04657534246575343,
+            "19": 0.0410958904109589,
+            "20": 0.0273972602739726,
+            "21": 0.03287671232876712,
+            "22": 0.03287671232876712,
+            "23": 0.0136986301369863,
+            "24": 0.021917808219178082,
+            "25": 0.0136986301369863,
+            "26": 0.024657534246575342,
+            "28": 0.010958904109589041,
+            "29": 0.010958904109589041,
+            "30": 0.024657534246575342
+          },
+          "failure_objects_in_common_support": 365,
+          "failure_total": 369,
+          "weighted_means": {
+            "native_valid": 0.9996136295000007,
+            "native_failed": 0.9894521095424105
+          },
+          "failed_minus_valid": -0.010161519957590182
+        },
+        "unique_pair_count_error": {
+          "exact_face_count_weights": {
+            "7": 0.08493150684931507,
+            "8": 0.0821917808219178,
+            "9": 0.0547945205479452,
+            "10": 0.09315068493150686,
+            "11": 0.049315068493150684,
+            "12": 0.07397260273972603,
+            "13": 0.038356164383561646,
+            "14": 0.07397260273972603,
+            "15": 0.052054794520547946,
+            "16": 0.038356164383561646,
+            "17": 0.057534246575342465,
+            "18": 0.04657534246575343,
+            "19": 0.0410958904109589,
+            "20": 0.0273972602739726,
+            "21": 0.03287671232876712,
+            "22": 0.03287671232876712,
+            "23": 0.0136986301369863,
+            "24": 0.021917808219178082,
+            "25": 0.0136986301369863,
+            "26": 0.024657534246575342,
+            "28": 0.010958904109589041,
+            "29": 0.010958904109589041,
+            "30": 0.024657534246575342
+          },
+          "failure_objects_in_common_support": 365,
+          "failure_total": 369,
+          "weighted_means": {
+            "native_valid": 0.03623126787261787,
+            "native_failed": 0.7013698630136985
+          },
+          "failed_minus_valid": 0.6651385951410806
+        },
+        "legacy_unilateral_pair_count": {
+          "exact_face_count_weights": {
+            "7": 0.08493150684931507,
+            "8": 0.0821917808219178,
+            "9": 0.0547945205479452,
+            "10": 0.09315068493150686,
+            "11": 0.049315068493150684,
+            "12": 0.07397260273972603,
+            "13": 0.038356164383561646,
+            "14": 0.07397260273972603,
+            "15": 0.052054794520547946,
+            "16": 0.038356164383561646,
+            "17": 0.057534246575342465,
+            "18": 0.04657534246575343,
+            "19": 0.0410958904109589,
+            "20": 0.0273972602739726,
+            "21": 0.03287671232876712,
+            "22": 0.03287671232876712,
+            "23": 0.0136986301369863,
+            "24": 0.021917808219178082,
+            "25": 0.0136986301369863,
+            "26": 0.024657534246575342,
+            "28": 0.010958904109589041,
+            "29": 0.010958904109589041,
+            "30": 0.024657534246575342
+          },
+          "failure_objects_in_common_support": 365,
+          "failure_total": 369,
+          "weighted_means": {
+            "native_valid": 0.021906555103877526,
+            "native_failed": 0.32328767123287666
+          },
+          "failed_minus_valid": 0.30138111612899915
+        },
+        "legacy_reciprocal_cd_sq_mean": {
+          "exact_face_count_weights": {
+            "7": 0.08493150684931507,
+            "8": 0.0821917808219178,
+            "9": 0.0547945205479452,
+            "10": 0.09315068493150686,
+            "11": 0.049315068493150684,
+            "12": 0.07397260273972603,
+            "13": 0.038356164383561646,
+            "14": 0.07397260273972603,
+            "15": 0.052054794520547946,
+            "16": 0.038356164383561646,
+            "17": 0.057534246575342465,
+            "18": 0.04657534246575343,
+            "19": 0.0410958904109589,
+            "20": 0.0273972602739726,
+            "21": 0.03287671232876712,
+            "22": 0.03287671232876712,
+            "23": 0.0136986301369863,
+            "24": 0.021917808219178082,
+            "25": 0.0136986301369863,
+            "26": 0.024657534246575342,
+            "28": 0.010958904109589041,
+            "29": 0.010958904109589041,
+            "30": 0.024657534246575342
+          },
+          "failure_objects_in_common_support": 365,
+          "failure_total": 369,
+          "weighted_means": {
+            "native_valid": 4.430145514494284e-05,
+            "native_failed": 0.0003108409512214393
+          },
+          "failed_minus_valid": 0.00026653949607649644
+        },
+        "legacy_reciprocal_cd_sq_max": {
+          "exact_face_count_weights": {
+            "7": 0.08493150684931507,
+            "8": 0.0821917808219178,
+            "9": 0.0547945205479452,
+            "10": 0.09315068493150686,
+            "11": 0.049315068493150684,
+            "12": 0.07397260273972603,
+            "13": 0.038356164383561646,
+            "14": 0.07397260273972603,
+            "15": 0.052054794520547946,
+            "16": 0.038356164383561646,
+            "17": 0.057534246575342465,
+            "18": 0.04657534246575343,
+            "19": 0.0410958904109589,
+            "20": 0.0273972602739726,
+            "21": 0.03287671232876712,
+            "22": 0.03287671232876712,
+            "23": 0.0136986301369863,
+            "24": 0.021917808219178082,
+            "25": 0.0136986301369863,
+            "26": 0.024657534246575342,
+            "28": 0.010958904109589041,
+            "29": 0.010958904109589041,
+            "30": 0.024657534246575342
+          },
+          "failure_objects_in_common_support": 365,
+          "failure_total": 369,
+          "weighted_means": {
+            "native_valid": 0.0002458854848963597,
+            "native_failed": 0.004443512816029069
+          },
+          "failed_minus_valid": 0.00419762733113271
+        },
+        "gt_face_count": {
+          "exact_face_count_weights": {
+            "7": 0.08493150684931507,
+            "8": 0.0821917808219178,
+            "9": 0.0547945205479452,
+            "10": 0.09315068493150686,
+            "11": 0.049315068493150684,
+            "12": 0.07397260273972603,
+            "13": 0.038356164383561646,
+            "14": 0.07397260273972603,
+            "15": 0.052054794520547946,
+            "16": 0.038356164383561646,
+            "17": 0.057534246575342465,
+            "18": 0.04657534246575343,
+            "19": 0.0410958904109589,
+            "20": 0.0273972602739726,
+            "21": 0.03287671232876712,
+            "22": 0.03287671232876712,
+            "23": 0.0136986301369863,
+            "24": 0.021917808219178082,
+            "25": 0.0136986301369863,
+            "26": 0.024657534246575342,
+            "28": 0.010958904109589041,
+            "29": 0.010958904109589041,
+            "30": 0.024657534246575342
+          },
+          "failure_objects_in_common_support": 365,
+          "failure_total": 369,
+          "weighted_means": {
+            "native_valid": 14.783561643835615,
+            "native_failed": 14.783561643835615
+          },
+          "failed_minus_valid": 0.0
+        },
+        "gt_boundary_count": {
+          "exact_face_count_weights": {
+            "7": 0.08493150684931507,
+            "8": 0.0821917808219178,
+            "9": 0.0547945205479452,
+            "10": 0.09315068493150686,
+            "11": 0.049315068493150684,
+            "12": 0.07397260273972603,
+            "13": 0.038356164383561646,
+            "14": 0.07397260273972603,
+            "15": 0.052054794520547946,
+            "16": 0.038356164383561646,
+            "17": 0.057534246575342465,
+            "18": 0.04657534246575343,
+            "19": 0.0410958904109589,
+            "20": 0.0273972602739726,
+            "21": 0.03287671232876712,
+            "22": 0.03287671232876712,
+            "23": 0.0136986301369863,
+            "24": 0.021917808219178082,
+            "25": 0.0136986301369863,
+            "26": 0.024657534246575342,
+            "28": 0.010958904109589041,
+            "29": 0.010958904109589041,
+            "30": 0.024657534246575342
+          },
+          "failure_objects_in_common_support": 365,
+          "failure_total": 369,
+          "weighted_means": {
+            "native_valid": 34.885123528240236,
+            "native_failed": 33.14520547945205
+          },
+          "failed_minus_valid": -1.7399180487881836
+        },
+        "raw_edge_count": {
+          "exact_face_count_weights": {
+            "7": 0.08493150684931507,
+            "8": 0.0821917808219178,
+            "9": 0.0547945205479452,
+            "10": 0.09315068493150686,
+            "11": 0.049315068493150684,
+            "12": 0.07397260273972603,
+            "13": 0.038356164383561646,
+            "14": 0.07397260273972603,
+            "15": 0.052054794520547946,
+            "16": 0.038356164383561646,
+            "17": 0.057534246575342465,
+            "18": 0.04657534246575343,
+            "19": 0.0410958904109589,
+            "20": 0.0273972602739726,
+            "21": 0.03287671232876712,
+            "22": 0.03287671232876712,
+            "23": 0.0136986301369863,
+            "24": 0.021917808219178082,
+            "25": 0.0136986301369863,
+            "26": 0.024657534246575342,
+            "28": 0.010958904109589041,
+            "29": 0.010958904109589041,
+            "30": 0.024657534246575342
+          },
+          "failure_objects_in_common_support": 365,
+          "failure_total": 369,
+          "weighted_means": {
+            "native_valid": 69.80139664076792,
+            "native_failed": 67.05205479452054
+          },
+          "failed_minus_valid": -2.7493418462473755
+        }
+      }
+    },
+    "limitations": [
+      "Conditioning on final validity is descriptive, not evidence of causal failure mechanisms.",
+      "Controlling face count does not control geometry type, size, curvature, holes, or training difficulty.",
+      "Topology exactness concerns merged distinct-face adjacency, not complete B-Rep loops, seams, orientation or manifoldness."
+    ]
+  }
+}
