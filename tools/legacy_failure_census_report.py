@@ -716,17 +716,63 @@ def page_payload(records, summary, atlas_ids):
     return {"records": records, "groups": groups, "summary": summary}
 
 
+PLAIN_CHART_GUIDES = {
+    "terminal_stages": ("最后卡在哪一步？", "有的零件连面都没做齐，有的面做出来了却拼不成实体。这张图只说程序停在哪里，不等于已经找到了最早的原因。"),
+    "persistent_trim": ("边没围成圈，还是围成圈后仍裁不出面？", "重点看：始终没有可用闭环的有 73 件；有了闭环却仍裁不出面的有 216 件；另有 143 件在做面时丢弃了一圈没闭合的边。这几组可以重叠。"),
+    "upstream_discrete": ("模型一开始就把哪些面连错了？", "多连：本来不相邻的两个面被连上。漏连：本来相邻的两个面没有连上。它们在后处理开始前就已经存在。"),
+    "ever_observed": ("修复过程中还出过什么问题？", "这些问题曾经发生过，但有些后来修好了。不要把这里的数量当成最终仍未解决的数量。"),
+    "threshold_sensitivity": ("对“足够接近”的要求变严或变松，统计会怎么变？", "距离多小才算两条线靠在一起，需要选一个标准。这张图把几个标准都列出来，避免结论只依赖某一个数字。"),
+    "optimization": ("后处理优化救回了多少零件，又弄坏了多少？", "优化把 998 件从失败变成成功，也让 8 件从成功变失败。所以不能简单说优化没用，但需要查清它什么时候会把形状改坏。"),
+    "geometry_chain": ("单独的面和边看着挺准，拼起来能对上吗？", "左图比较两件事：每个面、每条边有没有拟合好自己，以及边有没有贴在所属的面上。右图显示：程序的优化分数变好了，结果却可能离正确零件更远。"),
+    "curve_sources": ("为什么同一位置会看到好几条边？", "有些是原模型正常输出的两份半边，有些是最后留下的两条独立边。看起来都是多条线，来源却不一样。"),
+    "structure_cooccurrence": ("知道哪两个面该相连，就够了吗？", "还不够。很多失败零件的面连接关系是对的，但边的形状、位置或后续裁剪仍然有问题。"),
+    "success_comparison": ("成功零件和失败零件，哪些地方不同？", "失败零件更常出现多连面、漏连面。右图粗略考虑了面数量的差别；它说明两者有关，还不能证明一种错误解释了全部失败。"),
+}
+
+
+def plain_language_overview(summary):
+    persistent = summary["persistent_trim_mechanisms"]
+    upstream = summary["upstream_mechanisms"]
+    count = lambda key: persistent[key]["positive"]
+    owner = summary["fit_residuals"]["curve_owner"]["thresholds"]["0.01"]["positive"]
+    nearby = summary["saved_step"]["thresholds"]["0.01"]["positive"]
+    extra = upstream["raw_extra_gt_pair"]["positive"]
+    missing = upstream["raw_missing_gt_pair"]["positive"]
+    findings = [
+        ("边没能围成一圈", f"{count('never_closed_admitted')} 件",
+         "至少有一个面的边界，经过修复仍没有形成可用的闭环。就像沿着轮廓剪纸，轮廓还留着口子，程序没法据此剪出这个面。"),
+        ("圈闭合了，面仍然裁不出来", f"{count('closed_admitted_still_failed')} 件",
+         "首尾接上只是第一步。比如线交叉了，或者线没有贴在这个曲面上，闭合了也未必能裁出面。我们已确认这批有闭环仍失败，但还没把每件具体是哪一种情况分清。"),
+        ("难处理的一圈边，被程序丢掉了", f"{count('final_success_discarded_wire')} 件",
+         "程序舍弃没闭合的环，再用剩下的边界做面。面虽然做出来了，却没有保留全部输入边界。如果丢的是孔的边界，孔就可能被填平；目前还不能说这些件都丢了孔。"),
+        ("边和它所属的面没有贴合", f"{owner} 件 · 距离标准 0.01",
+         "单看面和线可能都挺像，但放在一起，线没有落在它应该属于的曲面上。就像两个零件尺寸各差一点，摆到一起就对不上。这是最终测到的偏差，还不能一概归责于模型或后处理。"),
+        ("两条边挨得很近，在 CAD 里却仍各算一条", f"{nearby} 件 · 距离标准 0.01",
+         "这可能解释你看到的“同一个位置有好几条线”：它们靠近，却没有共享同一条 CAD 边。不过靠得近也可能是正常薄壁，不能看见两条就直接合并。"),
+        ("一开始就把面连错了", f"多连 {extra} 件 · 漏连 {missing} 件",
+         "本来不相连的面被预测成相连，或者本来该相连的面没连上。后处理拿到的拼装关系一开始就有错。但多数失败零件的面连接关系其实是对的，问题不止在这里。"),
+    ]
+    items = "".join(f'<li><strong>{html.escape(title)}</strong><span class="finding-count">{html.escape(number)}</span><p>{html.escape(explanation)}</p></li>' for title, number, explanation in findings)
+    return ('<section class="overview"><h2>先用零件本身来理解</h2>'
+            '<p>可以把整个过程想成：先画出面和边，再用边裁出每个面的轮廓，最后把面拼成一个没有破口的实体。失败主要出在下面这些地方。</p>'
+            f'<ol class="findings">{items}</ol>'
+            '<p><strong>现在更值得追的是：这些面和边能不能互相对上，围出正确的边界，最后拼到一起。</strong>仅仅知道哪两个面相邻，或者把线头接上，都还不够。</p>'
+            '<p class="muted">同一零件可能有好几个问题，数量不能直接相加。两项距离统计使用归一化坐标下的 0.01，不是毫米；它们是排查线索，不等于每件失败的唯一原因。</p></section>')
+
+
 def write_page(root, payload, charts):
     page = root / "page"
     page.mkdir(parents=True, exist_ok=True)
     (page / "data.js").write_text("window.CENSUS_DATA=" + json.dumps(payload, ensure_ascii=False, separators=(",", ":"), allow_nan=False) + ";\n")
-    figures = "\n".join(f'<section><h2>{html.escape(chart["title"])}</h2><p>{html.escape(chart["note"])}</p><a href="../charts/{chart["name"]}.svg"><img loading="lazy" src="../charts/{chart["name"]}.png" alt="{html.escape(chart["title"])}"></a></section>' for chart in charts)
+    figures = "\n".join(f'<section><h2>{html.escape(PLAIN_CHART_GUIDES.get(chart["name"], (chart["title"], chart["note"]))[0])}</h2><p>{html.escape(PLAIN_CHART_GUIDES.get(chart["name"], (chart["title"], chart["note"]))[1])}</p><details><summary>查看具体计算方式</summary><p>{html.escape(chart["note"])}</p></details><a href="../charts/{chart["name"]}.svg"><img loading="lazy" src="../charts/{chart["name"]}.png" alt="{html.escape(chart["title"])}"></a></section>' for chart in charts)
+    overview = plain_language_overview(payload["summary"])
     limitations = "".join(f"<li>{html.escape(note)}</li>" for note in LIMITATIONS)
     (page / "index.html").write_text('''<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>原版 VAE 全失败统计</title><style>
 :root{color-scheme:light dark;font-family:system-ui,sans-serif;background:#f5f6f8;color:#202d38}body{max-width:1200px;margin:auto;padding:24px}h1{font-size:26px}h2{font-size:21px}p,li{line-height:1.7}section{background:white;border:1px solid #dce1e5;border-radius:12px;padding:20px;margin:20px 0}img{width:100%;height:auto}button,input{font:inherit;border:1px solid #bac5ce;background:transparent;color:inherit;border-radius:6px;padding:6px 10px}button{cursor:pointer}a{color:#205e8a}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;border-bottom:1px solid #dce1e5;padding:9px}th{position:sticky;top:0;background:#edf1f5}.scroll{overflow:auto;max-height:580px}#ids{display:flex;flex-wrap:wrap;gap:6px}#case{white-space:pre-wrap;overflow-wrap:anywhere;max-height:500px;overflow:auto;background:#f4f6f8;padding:14px;font-size:12px}.muted{color:#5b6874}#counts{font-size:18px;font-weight:600}@media(prefers-color-scheme:dark){:root{background:#111820;color:#e2e7eb}section{background:#18232d;border-color:#354550}th,#case{background:#222f3b}a{color:#8fc6ed}td{border-color:#354550}.muted{color:#acbac5}}@media(max-width:600px){body{padding:10px}section{padding:12px}h1{font-size:22px}table{min-width:650px}}
-</style><h1>原版 VAE：全部原生失败的统计</h1><p id="counts"></p><p>固定 posterior mean 重建、原版解码器、optimized 后处理。只展示数值与记录；机制共现不等于因果。图中标签使用英文以便导出，SVG 可点击下载。</p><section><h2>口径与边界</h2><ul>''' + limitations + '''</ul></section>''' + figures + '''<section><h2>标签与对象清单</h2><p>点击正例或未知数量查看 ID。仅原先 50 件提供既有多视图页面链接；其余对象查看本次记录的数值。分母始终保留全部 369 件。</p><input id="search" aria-label="筛选标签" placeholder="筛选标签 / threshold / stage"><div class="scroll"><table><thead><tr><th>范围</th><th>观察定义</th><th>正例 / 分母</th><th>未知</th></tr></thead><tbody id="labels"></tbody></table></div></section><section><h2 id="selection">选择一个标签</h2><div id="ids"></div><p id="caseLinks"></p><pre id="case">点击 ID 查看数值与证据路径。</pre></section><p class="muted">数据：<a href="../summary.json">summary.json</a> · <a href="../cases.json">cases.json</a> · <a href="../cases.csv">cases.csv</a></p><script src="data.js"></script><script src="app.js"></script></html>''')
+.overview{border-left:4px solid #468273}.findings{padding-left:24px}.findings>li{padding:10px 0}.findings p{margin:6px 0}.finding-count{display:block;color:#5b6874;font-size:14px}summary{cursor:pointer;line-height:1.7}details p{font-size:14px}@media(prefers-color-scheme:dark){.finding-count{color:#acbac5}}
+</style><h1>原版 VAE：零件为什么没做成功？</h1><p id="counts"></p><p>先看下面的通俗说明。需要核对数字时，再往下看图表和逐件记录。</p>''' + overview + '''<section><details><summary>这次统计覆盖了哪些数据，有哪些限制？</summary><ul>''' + limitations + '''</ul></details></section>''' + figures + '''<section><h2>查找具体零件</h2><p>下面保留诊断工具的原始术语，供查证使用。点击数量查看对应零件编号；“未知”表示这一项还判断不了。原先的 50 件可以打开已有三维页面。</p><input id="search" aria-label="筛选标签" placeholder="搜索问题或诊断字段"><div class="scroll"><table><thead><tr><th>检查位置</th><th>检查到的问题</th><th>查到的问题件数 / 全部失败件数</th><th>还判断不了</th></tr></thead><tbody id="labels"></tbody></table></div></section><section><h2 id="selection">选择一个问题</h2><div id="ids"></div><p id="caseLinks"></p><pre id="case">点击零件编号查看记录。</pre></section><p class="muted">数据：<a href="../summary.json">summary.json</a> · <a href="../cases.json">cases.json</a> · <a href="../cases.csv">cases.csv</a></p><script src="data.js"></script><script src="app.js"></script></html>''')
     (page / "app.js").write_text('''"use strict";(()=>{const data=window.CENSUS_DATA;const byId=new Map(data.records.map(r=>[r.id,r]));const p=data.summary.population;
-document.getElementById("counts").textContent=`${p.native_failed} 个失败 / ${p.accepted_test} 个已运行 · ${p.native_valid} 个原生有效 · 原始 ${p.original_test} 件中 ${p.contract_unsupported} 件契约不支持`;
+document.getElementById("counts").textContent=`测试了 ${p.accepted_test} 个零件：${p.native_valid} 个做成有效实体，${p.native_failed} 个失败。本页分析全部失败件。另有 ${p.contract_unsupported} 件不符合本次输入要求，未进入这批测试。`;
 function showCase(id){const row=byId.get(id);if(!row)return;document.getElementById("case").textContent=JSON.stringify(row,null,2);const links=document.getElementById("caseLinks");links.replaceChildren();if(row.has_existing_atlas){const a=document.createElement("a");a.href=`../../legacy_failures_20261011/page/index.html#${id}`;a.textContent=`${id}：打开既有 50 件 atlas`;a.target="_blank";links.append(a);}else links.textContent=`${id}：本页提供数值记录，未新增 3D 页面。`;}
 function showIds(group,state){document.getElementById("selection").textContent=`${group.scope} · ${group.label} · ${state==="positive"?"正例":"未知"}`;const box=document.getElementById("ids");box.replaceChildren();for(const id of group.ids[state]){const b=document.createElement("button");b.textContent=id;b.onclick=()=>showCase(id);box.append(b);}if(!box.children.length)box.textContent="无对象。";document.getElementById("selection").scrollIntoView({behavior:"smooth",block:"start"});}
 function render(){const q=document.getElementById("search").value.toLowerCase();const body=document.getElementById("labels");body.replaceChildren();for(const group of data.groups){if(!`${group.label} ${group.english} ${group.scope}`.toLowerCase().includes(q))continue;const tr=document.createElement("tr");for(const text of [group.scope,group.label]){const td=document.createElement("td");td.textContent=text;tr.append(td);}for(const state of ["positive","unknown"]){const td=document.createElement("td");const b=document.createElement("button");b.textContent=state==="positive"?`${group.positive} / ${group.denominator}`:String(group.unknown);b.onclick=()=>showIds(group,state);td.append(b);tr.append(td);}body.append(tr);}}document.getElementById("search").addEventListener("input",render);render();})();
