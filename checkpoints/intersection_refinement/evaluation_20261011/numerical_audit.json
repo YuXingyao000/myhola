@@ -1,0 +1,87 @@
+{
+  "purpose": "Audit unchanged legacy repeated CUDA inference versus refactored frozen encoder and stored posterior mean",
+  "numeric_settings": {
+    "dtype": "float32",
+    "autocast": false,
+    "seed": 42,
+    "matmul_precision": "highest",
+    "matmul_allow_tf32": false,
+    "cudnn_allow_tf32": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "deterministic_algorithms": false,
+    "torch_version": "2.4.1+cu124",
+    "cuda_version": "12.4",
+    "numpy_version": "2.0.1"
+  },
+  "gpu": "cuda:0",
+  "gpu_name": "NVIDIA GeForce RTX 4090",
+  "repeats_per_method_per_id": 5,
+  "encoder_equal_tensor_count": 243,
+  "checkpoint": "/mnt/d/python/checkpoints/intersection_refinement/frozen/20261011T123836.485257Z/weights/epoch=0010-step=00003993-val_loss=0.039476.ckpt",
+  "legacy_checkpoint": "/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt",
+  "selection": "all 24 IDs selected by initial eight-shard mean audit; no result-based omission",
+  "cpu_algebra_check": [
+    {
+      "model_id": "00000093",
+      "max_abs": 0.0,
+      "exact_equal": true
+    },
+    {
+      "model_id": "00005879",
+      "max_abs": 0.0,
+      "exact_equal": true
+    }
+  ],
+  "runtime_seconds": 4.865748812007951,
+  "summary": {
+    "max_legacy_repeat": 2.8908252716064453e-06,
+    "max_new_repeat": 3.2186508178710938e-06,
+    "max_legacy_vs_new": 3.337860107421875e-06,
+    "max_legacy_vs_cache": 4.291534423828125e-06,
+    "max_new_vs_cache": 3.814697265625e-06,
+    "legacy_runs_pass_atol1e6": 77,
+    "new_runs_pass_atol1e6": 77,
+    "legacy_runs_pass_atol1e5": 120,
+    "new_runs_pass_atol1e5": 120
+  },
+  "sample_ids": [
+    "00000093",
+    "00005879",
+    "00009547",
+    "00000797",
+    "00006588",
+    "00009683",
+    "00001907",
+    "00007186",
+    "00010085",
+    "00001926",
+    "00007551",
+    "00010361",
+    "00002718",
+    "00007648",
+    "00010397",
+    "00003390",
+    "00009016",
+    "00010702",
+    "00003877",
+    "00009051",
+    "00011050",
+    "00005247",
+    "00009254",
+    "00011604"
+  ],
+  "numerical_audit_tolerance": {
+    "previous_atol": 1e-06,
+    "atol": 1e-05,
+    "rtol": 1e-05,
+    "reason": "Unchanged legacy CUDA FP32 inference also fails the previous tolerance (77/120 passes); observed legacy versus cached mean peak 4.291534423828125e-6. CPU original/refactored means match exactly on two real objects. New absolute tolerance provides approximately 2.3x margin over measured legacy variation."
+  },
+  "unchanged_requirements": [
+    "encoder/posterior tensors exactly equal",
+    "original latent array and hash exactly preserved",
+    "source/protocol hashes exactly verified",
+    "model, threshold, input arrays and inference dtype unchanged"
+  ],
+  "detailed_source": "metadata/numerical_audit.json"
+}

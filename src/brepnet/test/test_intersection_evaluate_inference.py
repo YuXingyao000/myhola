@@ -188,3 +188,35 @@ def test_cpu_entrypoint_replay_resume_and_preserved_reference(tmp_path):
     assert file_sha256(source) == reference_sha
     with pytest.raises(FileExistsError):
         main(args)
+
+
+def test_mean_audit_tolerates_cuda_roundoff_but_rejects_real_drift(tmp_path):
+    _, model, legacy_path, _, _, _ = make_models(tmp_path)
+    reference, data, _, protocol, arrays = make_reference(tmp_path, model, legacy_path)
+    expected = arrays["face_latents"].copy()
+    expected[0, 0] = 0.0  # Exercise absolute tolerance where relative error cannot help.
+    arrays = {**arrays, "face_latents": expected,
+              "input_latent_sha256": np.asarray(latent_sha256(expected))}
+    atomic_npz(reference / "raw_predictions/posterior_mean/legacy/example/data.npz", arrays)
+
+    class ControlledMean:
+        def __init__(self, perturbation):
+            self.perturbation = perturbation
+
+        def encode(self, batch, v_test):
+            assert v_test is True
+            return {"face_features": torch.from_numpy(expected.copy())}
+
+        def sample(self, features, v_is_test):
+            assert v_is_test is True
+            result = features.clone()
+            result[0, 0] += self.perturbation
+            return result, None, None
+
+    for perturbation, should_pass in ((4.3e-6, True), (2e-5, False), (1e-3, False)):
+        audit = audit_identity_means(
+            ControlledMean(perturbation), ["example"], reference, data,
+            protocol, json_digest(protocol), torch.device("cpu"),
+        )
+        assert audit["passed"] is should_pass
+        assert audit["max_abs_error"] == pytest.approx(perturbation)

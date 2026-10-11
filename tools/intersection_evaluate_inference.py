@@ -34,7 +34,11 @@ ENCODER_CONFIG_KEYS = (
     "primitive_blocks_per_stage", "kl_reduction",
 )
 MEAN_AUDIT_COUNT = 3
-MEAN_ATOL = 1e-6
+# The unchanged legacy encoder itself varied by up to 4.29e-6 versus its
+# archived CUDA FP32 mean (24 IDs x 5 repeats); CPU old/new paths were exact.
+# This tolerance applies only to the numerical sanity check. Weight equality,
+# reference hashes and the replayed input arrays remain exact requirements.
+MEAN_ATOL = 1e-5
 MEAN_RTOL = 1e-5
 
 
