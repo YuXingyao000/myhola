@@ -1,0 +1,60 @@
+{
+  "variant": "stress_b16",
+  "seed": 42,
+  "batch_per_gpu": 16,
+  "candidate_chunk": 256,
+  "geometry_chunk": 128,
+  "checkpoint": false,
+  "stress": true,
+  "ids": [
+    "00011043",
+    "00003999",
+    "00011043",
+    "00003999",
+    "00011043",
+    "00003999",
+    "00011043",
+    "00003999",
+    "00011043",
+    "00003999",
+    "00011043",
+    "00003999",
+    "00011043",
+    "00003999",
+    "00011043",
+    "00003999"
+  ],
+  "face_counts": [
+    [
+      29,
+      28,
+      29,
+      28,
+      29,
+      28,
+      29,
+      28,
+      29,
+      28,
+      29,
+      28,
+      29,
+      28,
+      29,
+      28
+    ]
+  ],
+  "candidates": [
+    12544
+  ],
+  "timings_seconds": [
+    2.3230148980073864,
+    2.3091641100036213
+  ],
+  "mean_step_seconds": 2.316089504005504,
+  "objects_per_second": 6.908195893262844,
+  "peak_allocated_mib": 13833.919921875,
+  "peak_reserved_mib": 14260.0,
+  "finite_final_loss": true,
+  "scope": "single_gpu_preloaded_batches_forward_backward_clip_adam_no_ddp_or_io"
+}

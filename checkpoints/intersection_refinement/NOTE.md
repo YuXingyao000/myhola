@@ -17,7 +17,7 @@
 
 - 数据：`/mnt/d/data/deepcad_v7`。
 - 初始化：`/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt`，严格加载完整旧 VAE，再转移模块权重。
-- 正式配置使用 `checkpoints/joint_boundary/validation/{train,val,test}_contract_audit/accepted.txt`，数量分别为 46627/3495/2417。测试 split 的 7 个合同拒绝项不能从后续全体比较的原定分母中悄悄删除。
+- 正式配置使用 `checkpoints/joint_boundary/validation/{train,val,test}_contract_audit/accepted.txt`，数量分别为 46480/3495/2417。训练 split 原定 46627 件，其中 147 件被合同审计拒绝；测试 split 的 7 个合同拒绝项也不能从后续全体比较的原定分母中悄悄删除。
 - 单卡大面数检查：验证集 `00011043`、`00003999`。
 - 多卡检查：已保存的 [smoke_train.txt](validation/smoke_train.txt) 32 件和 [smoke_val.txt](validation/smoke_val.txt) 16 件；文件哈希见 summary。
 - 运行目录：`validation/ddp8/20261011T115022.529848Z/`；权重、逐对象几何、日志、每次调用的配置/Git/命令元数据保留本机，不提交 Git。
@@ -53,3 +53,7 @@ python -m src.brepnet.train --config-name train_vae_intersection \
 默认冻结 encoder/posterior，保留原 latent 定义；这不意味着已有 diffusion 对新 decoder 的输出质量已经验证。先比较固定 posterior-mean VAE 重建，再检查 diffusion 生成 latent 的解码，二者输入分布和结论分开。
 
 本轮没有修改面去重、环排序或 vertex 预测，也没有保证闭环/solid。新旧比较须固定 accepted split、原定分母、face 去重策略、后处理版本和优化预算。`model.refinement.enabled=false` 可隔离反馈模块的作用，但仍包含新损失和对称化，不等同于未经修改的 legacy baseline。正式对照尚未运行。
+
+## 后续性能诊断
+
+用户启动正式配置后报告吞吐较低。检查到日志为每轮 2905 步、约 0.80 step/s；检查时该进程已经停止。保持网络与损失定义，测量更大分块、关闭候选 activation checkpoint 与更大 batch；8 卡每卡 batch=16 已完成短运行。建议覆盖参数、实测吞吐与限制见 [性能记录](validation/performance/README.md)，没有修改训练配置默认值。

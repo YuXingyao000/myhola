@@ -1,0 +1,186 @@
+{
+  "variant": "baseline_b2",
+  "seed": 42,
+  "batch_per_gpu": 2,
+  "candidate_chunk": 64,
+  "geometry_chunk": 32,
+  "checkpoint": true,
+  "stress": false,
+  "ids": [
+    "00000061",
+    "00000070",
+    "00000168",
+    "00000329",
+    "00000348",
+    "00000356",
+    "00000413",
+    "00000418",
+    "00000559",
+    "00000633",
+    "00000638",
+    "00000711",
+    "00000712",
+    "00000714",
+    "00000802",
+    "00000842"
+  ],
+  "face_counts": [
+    [
+      7,
+      14
+    ],
+    [
+      14,
+      12
+    ],
+    [
+      20,
+      14
+    ],
+    [
+      13,
+      13
+    ],
+    [
+      18,
+      7
+    ],
+    [
+      14,
+      26
+    ],
+    [
+      18,
+      18
+    ],
+    [
+      19,
+      8
+    ]
+  ],
+  "candidates": [
+    224,
+    314,
+    562,
+    312,
+    348,
+    832,
+    612,
+    398
+  ],
+  "timings_seconds": [
+    0.430076979988371,
+    0.6068846600101097,
+    0.8894363580038771,
+    0.5377706939907512,
+    0.8086096710030688,
+    1.1339043920015683,
+    0.9452181340020616,
+    0.9360159109928645
+  ],
+  "mean_step_seconds": 0.785989599999084,
+  "objects_per_second": 2.5445629306066273,
+  "peak_allocated_mib": 2388.265625,
+  "peak_reserved_mib": 2584.0,
+  "finite_final_loss": true,
+  "scope": "single_gpu_preloaded_batches_forward_backward_clip_adam_no_ddp_or_io",
+  "profile_ranges": [
+    {
+      "name": "encoder",
+      "calls": 1,
+      "cpu_total_ms": 23.04996,
+      "cuda_total_ms": 3.1852689999999995
+    },
+    {
+      "name": "encoder",
+      "calls": 1,
+      "cpu_total_ms": 0.0,
+      "cuda_total_ms": 22.911609000000002
+    },
+    {
+      "name": "posterior",
+      "calls": 1,
+      "cpu_total_ms": 0.6803400000000002,
+      "cuda_total_ms": 0.050688999999983934
+    },
+    {
+      "name": "posterior",
+      "calls": 1,
+      "cpu_total_ms": 0.0,
+      "cuda_total_ms": 0.5923590000000004
+    },
+    {
+      "name": "face_transformer",
+      "calls": 1,
+      "cpu_total_ms": 9.945257999999997,
+      "cuda_total_ms": 1.0087130000000397
+    },
+    {
+      "name": "face_transformer",
+      "calls": 1,
+      "cpu_total_ms": 0.0,
+      "cuda_total_ms": 9.851672999999998
+    },
+    {
+      "name": "inter",
+      "calls": 8,
+      "cpu_total_ms": 198.09516500000007,
+      "cuda_total_ms": 13.588087000003478
+    },
+    {
+      "name": "inter",
+      "calls": 5,
+      "cpu_total_ms": 0.0,
+      "cuda_total_ms": 240.47139999999996
+    },
+    {
+      "name": "face_geometry",
+      "calls": 2,
+      "cpu_total_ms": 10.050984999999972,
+      "cuda_total_ms": 1.640695999999967
+    },
+    {
+      "name": "face_geometry",
+      "calls": 2,
+      "cpu_total_ms": 0.0,
+      "cuda_total_ms": 9.696887000000016
+    },
+    {
+      "name": "edge_geometry",
+      "calls": 17,
+      "cpu_total_ms": 234.73858899999993,
+      "cuda_total_ms": 22.4228659999986
+    },
+    {
+      "name": "edge_geometry",
+      "calls": 10,
+      "cpu_total_ms": 0.0,
+      "cuda_total_ms": 256.828816
+    },
+    {
+      "name": "geometry_read",
+      "calls": 1,
+      "cpu_total_ms": 47.94429000000001,
+      "cuda_total_ms": 5.501849999999132
+    },
+    {
+      "name": "geometry_read",
+      "calls": 1,
+      "cpu_total_ms": 0.0,
+      "cuda_total_ms": 47.800075000000014
+    },
+    {
+      "name": "loss",
+      "calls": 1,
+      "cpu_total_ms": 67.74618400000001,
+      "cuda_total_ms": 6.869132000000128
+    },
+    {
+      "name": "loss",
+      "calls": 1,
+      "cpu_total_ms": 0.0,
+      "cuda_total_ms": 67.592285
+    }
+  ],
+  "profile_top_cuda": "-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  \n                                                   Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg    # of Calls  \n-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  \n                                          edge_geometry         0.00%       0.000us         0.00%       0.000us       0.000us     256.829ms        34.53%     256.829ms      25.683ms            10  \n                                                  inter         0.00%       0.000us         0.00%       0.000us       0.000us     240.471ms        32.33%     240.471ms      48.094ms             5  \n                                                   loss         0.00%       0.000us         0.00%       0.000us       0.000us      67.592ms         9.09%      67.592ms      67.592ms             1  \n                                          geometry_read         0.00%       0.000us         0.00%       0.000us       0.000us      47.800ms         6.43%      47.800ms      47.800ms             1  \n                                                encoder         0.00%       0.000us         0.00%       0.000us       0.000us      22.912ms         3.08%      22.912ms      22.912ms             1  \n                                            aten::copy_         2.95%      24.263ms         5.69%      46.790ms       9.470us      12.670ms         1.70%      12.670ms       2.564us          4941  \n                               Optimizer.step#Adam.step         0.00%       0.000us         0.00%       0.000us       0.000us      11.681ms         1.57%      11.681ms      11.681ms             1  \n                                       face_transformer         0.00%       0.000us         0.00%       0.000us       0.000us       9.852ms         1.32%       9.852ms       9.852ms             1  \n                                          face_geometry         0.00%       0.000us         0.00%       0.000us       0.000us       9.697ms         1.30%       9.697ms       4.848ms             2  \nvoid at::native::unrolled_elementwise_kernel<at::nat...         0.00%       0.000us         0.00%       0.000us       0.000us       8.258ms         1.11%       8.258ms       3.017us          2737  \n                             aten::convolution_backward         1.20%       9.849ms         2.30%      18.904ms     132.195us       5.190ms         0.70%       5.786ms      40.459us           143  \n                                              aten::sum         1.86%      15.295ms         2.72%      22.347ms      14.625us       4.786ms         0.64%       4.798ms       3.140us          1528  \n-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  \nSelf CPU time total: 822.940ms\nSelf CUDA time total: 743.804ms\n"
+}

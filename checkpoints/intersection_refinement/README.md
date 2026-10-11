@@ -97,6 +97,18 @@ python -m src.brepnet.train --config-name train_vae_intersection \
 
 默认 lr=2e-5、max_steps=100000、cube24 训练增强，encoder 与 posterior 冻结且保持 eval；decoder 训练。这是完整旧 decoder 的微调，加上新校对模块的训练。验证沿旧入口使用 posterior sample，正式 test 使用 mean；不能将两者数值混作同一协议。
 
+在本机 RTX 4090 24 GB 上，后续性能检查支持更大的执行分块和 batch。建议在上述命令追加以下覆盖；默认 YAML 暂保留初始保守设置，便于复现。实测、显存压力检查和 8 卡结果见 [性能记录](validation/performance/README.md)。
+
+```bash
+trainer.batch_size=16 \
+model.refinement.candidate_chunk_size=256 \
+model.refinement.geometry_chunk_size=128 \
+model.refinement.checkpoint_candidates=false \
+model.loss_weights.geometry_chunk_size=128
+```
+
+此时全局 batch=128，训练集 46480 件、8 卡与 drop_last 设置下每轮 363 步。分块和关闭重算不改变网络/损失定义；batch 改变优化轨迹和每 step 的样本曝光量，勿按相同步数直接比较训练预算。这里的 `checkpoint_candidates` 仅控制反向重算，与保存 `.ckpt` 无关。
+
 为区分新增 loss 与反馈结构，可在同样的旧 checkpoint 初始化命令后追加：
 
 ```bash
