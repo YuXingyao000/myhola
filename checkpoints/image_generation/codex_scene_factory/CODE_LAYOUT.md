@@ -1,10 +1,10 @@
 # 布景模板生成：代码组织方案
 
-2026-10-12 架构设计；当前只实现[几何内核第一切片](GEOMETRY_CORE.md)，尚未安装依赖或运行模型／Blender。需求以 [模板协议](TEMPLATE_CONTRACT_V0.md) 为准；本文是代码架构说明，不替代该执行协议。
+2026-10-12 架构设计，2026-10-13 更新实现状态；当前已实现[几何内核](GEOMETRY_CORE.md)与 [AABB 保护区域检查](VISIBILITY_CORE.md)，尚未安装依赖或运行模型／Blender。需求以 [模板协议](TEMPLATE_CONTRACT_V0.md) 为准；本文是代码架构说明，不替代该执行协议。
 
 ## 独立子项目
 
-项目放在 `packages/cad_scene_factory/`，计划以自己的 `pyproject.toml` 和 `src/cad_scene_factory/` 作为可独立安装、提取开源的项目。当前只有纯数学模块 `geometry.py` 与对应测试；安装配置和下面的其他文件按实际实现进度添加，不创建空壳模块。
+项目放在 `packages/cad_scene_factory/`，计划以自己的 `pyproject.toml` 和 `src/cad_scene_factory/` 作为可独立安装、提取开源的项目。当前只有纯数学模块 `geometry.py`、`visibility.py` 与对应测试；安装配置和下面的其他文件按实际实现进度添加，不创建空壳模块。
 
 依据：主仓库 [pyproject.toml](../../../pyproject.toml) 直接依赖 Torch、Lightning、diffusers、torch-scatter 等训练栈。场景工具应能在没有 HoLa 模型和数据目录的情况下使用；核心不导入 `src.brepnet`，不读取 DeepCAD 目录约定。需要兼容旧 NPZ 时，由主项目适配层显式转换通用 manifest。
 
@@ -117,4 +117,4 @@ run 清单记录成功、拒收、失败、超时和未审阅。输入摘要不�
 
 建议先完成合同与配置、CAD 准备、一个手写模板及固定渲染，再接 Codex 制作／有限修复，最后扩批量与八卡。这样制作器和渲染器可以独立定位问题，每一步都有可阅读的入口和具体产物。
 
-用户要求从底层逐步实现、先审阅最核心部分。第一切片只有 `geometry.py` 和一个测试文件，负责包围盒、相机投影、支撑高度及保守入镜判断，协议和运行命令见 [GEOMETRY_CORE.md](GEOMETRY_CORE.md)。这是供后续 `cad.py`／Blender 适配共用的数学辅助层，不另建一套渲染器。其余职责尚未实现；没有执行训练、渲染或新的模型制作任务。
+用户要求从底层逐步实现、先审阅最核心部分。第一切片 `geometry.py` 已通过审阅，负责包围盒、相机投影、支撑高度及保守入镜判断，见 [GEOMETRY_CORE.md](GEOMETRY_CORE.md)。第二切片 `visibility.py` 已通过审阅，负责场景 AABB 是否进入相机到目标包围盒的保护区域，见 [VISIBILITY_CORE.md](VISIBILITY_CORE.md)。两者各有一个测试文件，是供后续 CAD／Blender 适配共用的数学辅助层。其余职责尚未实现；没有执行训练、渲染或新的模型制作任务。
