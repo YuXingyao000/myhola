@@ -1,10 +1,10 @@
 # 布景模板生成：代码组织方案
 
-2026-10-12 架构设计，2026-10-13 更新实现状态；当前已实现[几何内核](GEOMETRY_CORE.md)、[AABB 保护区域检查](VISIBILITY_CORE.md)与 [Blender 相机适配](BLENDER_CAMERA.md)。已用现有 Blender 验证相机投影，尚未渲染图片或调用模型。需求以 [模板协议](TEMPLATE_CONTRACT_V0.md) 为准；本文是代码架构说明，不替代该执行协议。
+2026-10-12 架构设计，2026-10-13 更新实现状态；当前已实现[几何内核](GEOMETRY_CORE.md)、[AABB 保护区域检查](VISIBILITY_CORE.md)、[Blender 相机适配](BLENDER_CAMERA.md)与[模板入口读写](TEMPLATE_MANIFEST.md)。已用现有 Blender 验证相机投影，尚未渲染图片或调用模型。需求以 [模板协议](TEMPLATE_CONTRACT_V0.md) 为准；本文是代码架构说明，不替代该执行协议。
 
 ## 独立子项目
 
-项目放在 `packages/cad_scene_factory/`，计划以自己的 `pyproject.toml` 和 `src/cad_scene_factory/` 作为可独立安装、提取开源的项目。当前有纯数学模块 `geometry.py`、`visibility.py`，以及 `blender/render.py` 中的相机配置函数与对应测试；安装配置和下面的其他文件按实际实现进度添加，不创建空壳模块。
+项目放在 `packages/cad_scene_factory/`，计划以自己的 `pyproject.toml` 和 `src/cad_scene_factory/` 作为可独立安装、提取开源的项目。当前有纯数学模块 `geometry.py`、`visibility.py`，`blender/render.py` 中的相机配置函数，以及 `contracts.py` 中的模板入口读写；各有对应测试。安装配置和下面的其他文件按实际实现进度添加，不创建空壳模块。
 
 依据：主仓库 [pyproject.toml](../../../pyproject.toml) 直接依赖 Torch、Lightning、diffusers、torch-scatter 等训练栈。场景工具应能在没有 HoLa 模型和数据目录的情况下使用；核心不导入 `src.brepnet`，不读取 DeepCAD 目录约定。需要兼容旧 NPZ 时，由主项目适配层显式转换通用 manifest。
 
@@ -120,3 +120,5 @@ run 清单记录成功、拒收、失败、超时和未审阅。输入摘要不�
 用户要求从底层逐步实现、先审阅最核心部分。第一切片 `geometry.py` 已通过审阅，负责包围盒、相机投影、支撑高度及保守入镜判断，见 [GEOMETRY_CORE.md](GEOMETRY_CORE.md)。第二切片 `visibility.py` 已通过审阅，负责场景 AABB 是否进入相机到目标包围盒的保护区域，见 [VISIBILITY_CORE.md](VISIBILITY_CORE.md)。两者各有一个测试文件，是供后续 CAD／Blender 适配共用的数学辅助层。
 
 第三切片只实现 `blender/render.py` 中的 `configure_camera()`，将固定相机合同落实到 Blender，并验证数学投影一致性，见 [BLENDER_CAMERA.md](BLENDER_CAMERA.md)。代码与集成测试已通过用户审阅，实际拍摄、场景装配和其余职责尚未实现；没有执行训练、图像渲染或新的模型制作任务。
+
+第四切片 `contracts.py` 定义模板入口清单与连续参数，提供普通 JSON 读写，见 [TEMPLATE_MANIFEST.md](TEMPLATE_MANIFEST.md)。附一个只展示数据格式的 JSON 示例及往返保存测试，已通过用户审阅；不执行模板程序，也不宣称已完成模板包验收或冻结。
