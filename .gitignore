@@ -189,3 +189,12 @@ env.txt
 /checkpoints/intersection_refinement/failure_census_20261011/summary.json
 /checkpoints/intersection_refinement/failure_census_20261011/cases.csv
 /checkpoints/intersection_refinement/failure_census_20261011/optimization_regressions.json
+
+# Repeated per-object evaluation data stay local for every evaluation date.
+# Keep research notes, sample lists, compact summaries, and validation reports.
+/checkpoints/**/failure_census_*/source_preservation.json
+/checkpoints/**/evaluation_*/raw_metrics/*/per_object.csv
+/checkpoints/**/evaluation_*/diagnostics/raw_distribution_per_object.csv
+# Evaluation reference links / reconstructed geometry are runtime assets.
+/checkpoints/**/evaluation_*/post/*/intersection
+/checkpoints/**/evaluation_*/post/*/local/
