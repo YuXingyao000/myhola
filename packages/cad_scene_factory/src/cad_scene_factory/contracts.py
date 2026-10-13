@@ -1,7 +1,9 @@
 """模板包入口；坐标右手系、Z-up，使用共同的归一化单位，不默认是米。"""
 
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 import json
+import math
 from pathlib import Path
 
 from .geometry import BoundingBox, PerspectiveCamera
@@ -35,7 +37,8 @@ class TemplateManifest:
             这是模板为零件集合预留的空间，不是某个 CAD 的实际包围盒。
         placement_range: 当前姿态 CAD 的世界最低点 h=zmin 所允许的
             闭区间 [h_min, h_max]。外围程序据 h 沿 Z 平移整个环境，
-            CAD 和相机保持不动。该区间不表示零件本身的高度范围。
+            CAD 和相机保持不动；这个区间
+            不表示零件本身的高度范围。
         camera_profile: 模板制作／检查所用的世界坐标相机预设，记录
             位置、朝向参考、垂直 FOV 和画幅；由外围程序应用到相机。
         support_object: 构建程序输出的环境支撑对象名称，例如桌面对象。
@@ -104,3 +107,45 @@ def save_template(template: TemplateManifest, path: Path) -> None:
     content = json.dumps(asdict(template), ensure_ascii=False, indent=2, allow_nan=False)
     with path.open("x", encoding="utf-8") as stream:
         stream.write(content + "\n")
+
+
+def resolve_parameters(
+    parameters: Mapping[str, FloatParameter],
+    overrides: Mapping[str, float] | None = None,
+) -> dict[str, float]:
+    """确定一次构建实际使用的完整参数，顺序沿用模板中的参数定义。
+
+    先取每个参数的默认值，再应用本次显式指定的值，最后检查所有实际值。
+    例如默认 table_roughness=0.4，传入 {"table_roughness": 0.35} 后，
+    该参数使用 0.35，其余参数继续使用各自默认值。
+
+    Args:
+        parameters: 模板清单中的参数定义，遵守 FloatParameter 的输入约定。
+        overrides: 仅列出本次需要替换的参数；None 或空字典均使用默认值。
+
+    Returns:
+        可交给构建程序的新字典。不会修改参数定义或调用者的覆盖字典；
+        本函数不做随机采样，参数之间的组合约束由后续场景检查处理。
+
+    Raises:
+        KeyError: 覆盖项的名称没有在模板中定义，避免拼写错误被静默忽略。
+        ValueError: 实际值为 NaN／Inf 或不在允许的闭区间内；不会自动
+            裁剪取值或恢复默认值。minimum=maximum 时只接受该固定值。
+    """
+    values = {name: parameter.default for name, parameter in parameters.items()}
+
+    if overrides is not None:
+        for name, value in overrides.items():
+            if name not in parameters:
+                raise KeyError(f"Unknown template parameter: {name}")
+            values[name] = value
+
+    for name, value in values.items():
+        parameter = parameters[name]
+        if not math.isfinite(value) or not parameter.minimum <= value <= parameter.maximum:
+            raise ValueError(
+                f"Parameter {name!r} must be finite and in "
+                f"[{parameter.minimum}, {parameter.maximum}]; got {value!r}"
+            )
+
+    return values

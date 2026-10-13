@@ -1,6 +1,6 @@
 # 布景模板生成：代码组织方案
 
-2026-10-12 架构设计，2026-10-13 更新实现状态；当前已实现[几何内核](GEOMETRY_CORE.md)、[AABB 保护区域检查](VISIBILITY_CORE.md)、[Blender 相机适配](BLENDER_CAMERA.md)与[模板入口读写](TEMPLATE_MANIFEST.md)。已用现有 Blender 验证相机投影，尚未渲染图片或调用模型。需求以 [模板协议](TEMPLATE_CONTRACT_V0.md) 为准；本文是代码架构说明，不替代该执行协议。
+2026-10-12 架构设计，2026-10-13 更新实现状态；当前已实现[几何内核](GEOMETRY_CORE.md)、[AABB 保护区域检查](VISIBILITY_CORE.md)、[Blender 相机适配](BLENDER_CAMERA.md)、[模板入口读写](TEMPLATE_MANIFEST.md)与[构建参数取值](TEMPLATE_PARAMETERS.md)。已用现有 Blender 验证相机投影，尚未渲染图片或调用模型。需求以 [模板协议](TEMPLATE_CONTRACT_V0.md) 为准；本文是代码架构说明，不替代该执行协议。
 
 ## 独立子项目
 
@@ -122,3 +122,5 @@ run 清单记录成功、拒收、失败、超时和未审阅。输入摘要不�
 第三切片只实现 `blender/render.py` 中的 `configure_camera()`，将固定相机合同落实到 Blender，并验证数学投影一致性，见 [BLENDER_CAMERA.md](BLENDER_CAMERA.md)。代码与集成测试已通过用户审阅，实际拍摄、场景装配和其余职责尚未实现；没有执行训练、图像渲染或新的模型制作任务。
 
 第四切片 `contracts.py` 定义模板入口清单与连续参数，提供普通 JSON 读写，见 [TEMPLATE_MANIFEST.md](TEMPLATE_MANIFEST.md)。附一个只展示数据格式的 JSON 示例及往返保存测试，已通过用户审阅；不执行模板程序，也不宣称已完成模板包验收或冻结。
+
+第五切片在同一文件增加 `resolve_parameters()`：默认值加显式覆盖，检查实际值范围，返回一次构建所需的参数字典，见 [TEMPLATE_PARAMETERS.md](TEMPLATE_PARAMETERS.md)。沿用现有测试文件，未新增功能模块；此改动已通过用户审阅。
