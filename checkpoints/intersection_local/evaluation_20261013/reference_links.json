@@ -1,0 +1,25 @@
+{
+  "created_utc": "2026-10-13T04:20:03.931416+00:00",
+  "links": [
+    {
+      "path": "/mnt/d/python/checkpoints/intersection_local/evaluation_20261013/raw_predictions/posterior_mean/intersection",
+      "source": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011/raw_predictions/posterior_mean/intersection",
+      "access": "reference only; baseline never scheduled for writes"
+    },
+    {
+      "path": "/mnt/d/python/checkpoints/intersection_local/evaluation_20261013/raw_predictions/archived_latents/intersection",
+      "source": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011/raw_predictions/archived_latents/intersection",
+      "access": "reference only; baseline never scheduled for writes"
+    },
+    {
+      "path": "/mnt/d/python/checkpoints/intersection_local/evaluation_20261013/post/fit_only/intersection",
+      "source": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011/post/fit_only/intersection",
+      "access": "reference only; baseline never scheduled for writes"
+    },
+    {
+      "path": "/mnt/d/python/checkpoints/intersection_local/evaluation_20261013/post/optimized/intersection",
+      "source": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011/post/optimized/intersection",
+      "access": "reference only; baseline never scheduled for writes"
+    }
+  ]
+}

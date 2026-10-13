@@ -1,0 +1,114 @@
+{
+  "url": "http://127.0.0.1:8766/checkpoints/intersection_local/failure_census_20261012/page/",
+  "checked_at_utc": "2026-10-12T11:51:47.715Z",
+  "cohort_threshold_checks": [
+    {
+      "cohort": "main",
+      "threshold": "0.002",
+      "count": 1935,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "main",
+      "threshold": "0.006",
+      "count": 1935,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "main",
+      "threshold": "0.01",
+      "count": 1935,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "main",
+      "threshold": "0.08",
+      "count": 1935,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "persistent",
+      "threshold": "0.002",
+      "count": 301,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "persistent",
+      "threshold": "0.006",
+      "count": 301,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "persistent",
+      "threshold": "0.01",
+      "count": 301,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "persistent",
+      "threshold": "0.08",
+      "count": 301,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "regressed",
+      "threshold": "0.002",
+      "count": 1634,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "regressed",
+      "threshold": "0.006",
+      "count": 1634,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "regressed",
+      "threshold": "0.01",
+      "count": 1634,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "regressed",
+      "threshold": "0.08",
+      "count": 1634,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "rescued",
+      "threshold": "0.002",
+      "count": 3,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "rescued",
+      "threshold": "0.006",
+      "count": 3,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "rescued",
+      "threshold": "0.01",
+      "count": 3,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "rescued",
+      "threshold": "0.08",
+      "count": 3,
+      "observation_rows": 28
+    }
+  ],
+  "interactions": {
+    "caseRendered": true,
+    "expectedIds": 78,
+    "displayedIds": 78
+  },
+  "assets_checked": 16,
+  "failed_assets": [],
+  "mobile": {
+    "viewport": 390,
+    "document": 390
+  },
+  "javascript_errors": []
+}

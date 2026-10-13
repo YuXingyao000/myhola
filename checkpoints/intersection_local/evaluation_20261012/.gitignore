@@ -1,0 +1,5 @@
+# Reference links and per-object tables are reproducible from the recorded commands.
+post/*/intersection
+post/*/local/
+raw_metrics/*/per_object.csv
+diagnostics/raw_distribution_per_object.csv

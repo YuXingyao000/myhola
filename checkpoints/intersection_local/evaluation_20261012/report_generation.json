@@ -1,0 +1,38 @@
+{
+  "generated_utc": "2026-10-12T10:46:16.535663+00:00",
+  "command": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 /mnt/d/anaconda3/envs/torch/bin/python -m tools.local_evaluate_report --comparison-root checkpoints/intersection_local/evaluation_20261012",
+  "exit_code": 0,
+  "methods": [
+    "intersection",
+    "local"
+  ],
+  "validation": "load_comparison passed: complete 2417 unique paired IDs, shared input verification, 2417/2424 denominators, all terminal post status rows, validity counts/rates, common STEP geometry means and medians independently checked against CSV.",
+  "visual_review": {
+    "png_viewed": true,
+    "chinese_text_present": true,
+    "all_four_panels_and_numeric_labels_visible": true,
+    "method_identity_clear": true,
+    "notes": "Linear error-ratio axis preserves the large 57.946x edge discrepancy; small face bars retain numerical labels."
+  },
+  "artifacts": {
+    "checkpoints/intersection_local/evaluation_20261012/REPORT.md": "2a035800783208ffb1c4aa1fba778d36dedda199705000ffb17104a4c5079b74",
+    "checkpoints/intersection_local/evaluation_20261012/solid_transitions.json": "1b7602c60a87283123f4b1ea87d4c30abdbb7f43fed3b9a00645542351caad1f",
+    "checkpoints/intersection_local/evaluation_20261012/visualizations/local_comparison.png": "aa0e6e8b1500c12ac937d2199673a94bdad11ed621af4d9a5935d9c1795cd58f",
+    "checkpoints/intersection_local/evaluation_20261012/visualizations/local_comparison.svg": "bd577da576bdbb5e46aad31d277d6b6dd310eb5409a72680a523e3f75783af3d"
+  },
+  "inputs": {
+    "checkpoints/intersection_local/evaluation_20261012/training_audit.json": "e8dcf40842ab7dc6d9d2d03c369268fa70c07b1079d1ef30f4400d1e689ae5e0",
+    "checkpoints/intersection_local/evaluation_20261012/raw_metrics/posterior_mean/summary.json": "54149160d3e75ee99e4096febb3d17944bb2032fee36d1dd6a88aeb420f8e20f",
+    "checkpoints/intersection_local/evaluation_20261012/raw_metrics/posterior_mean/per_object.csv": "1d1e8e805bbf9aa4d05901bd6736257ee9231dc5eb39c6af115dc70a900c232c",
+    "checkpoints/intersection_local/evaluation_20261012/raw_metrics/archived_latents/summary.json": "6c3f6779c33ab3c3e5d7a5108f77c998e82b86ae401de7f9d47686fae9d49b43",
+    "checkpoints/intersection_local/evaluation_20261012/raw_metrics/archived_latents/per_object.csv": "9f19550c966951b8f22d4bc6fb3bd8352e4caa460c080b71e5dcb0116d1ae761",
+    "checkpoints/intersection_local/evaluation_20261012/post/fit_only/summary.json": "6b651a7e0807f96113271e8f9617b3dfa8a0d33316b0d9099b26aed2b5bf9698",
+    "checkpoints/intersection_local/evaluation_20261012/post/fit_only/samples.csv": "76944b2b40bc14f27ba245b4a8bcd53fb17f8ce19038c1f4ea08f677e2c91933",
+    "checkpoints/intersection_local/evaluation_20261012/post/optimized/summary.json": "3420e5bec982d207fd9956614612ecb12781e6979b6fe16c7381fa2d000116e3",
+    "checkpoints/intersection_local/evaluation_20261012/post/optimized/samples.csv": "c1fd06c0d76a1c70879159ddea7ead1dbde1318dfc99bf6951d8b5d0f084ac9d"
+  },
+  "code": {
+    "tools/local_evaluate_report.py": "2d763321d5b3ffb3dceed991259a5da01731cbf876f26d8c86c5fb6a2b59369b",
+    "tools/intersection_evaluate_report.py": "01d043aa544de58c5c687e221b1ff17567509eb920b2f7788fc4cae48b7935c2"
+  }
+}

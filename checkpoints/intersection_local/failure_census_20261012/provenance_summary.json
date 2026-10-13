@@ -1,0 +1,107 @@
+{
+  "version": "legacy_failure_provenance_v1",
+  "method": "local",
+  "protocol_fingerprint": "866d031745daf1abd832dec67a1799fbe5324efd3b198e2711c9bc92a97da649",
+  "intended_count": 1938,
+  "status_counts": {
+    "ok": 1937,
+    "post_error": 1
+  },
+  "instrumentation_error_cases": [],
+  "step_data_equal_count": 1937,
+  "step_data_different_ids": [],
+  "mechanisms": {
+    "wire_not_returned": {
+      "true": 0,
+      "false": 1937,
+      "unknown": 1
+    },
+    "wire_skipped_open_after_fix": {
+      "true": 1922,
+      "false": 16,
+      "unknown": 0
+    },
+    "all_wires_rejected": {
+      "true": 1888,
+      "false": 50,
+      "unknown": 0
+    },
+    "partial_wire_drop_with_face_returned": {
+      "true": 1475,
+      "false": 463,
+      "unknown": 0
+    },
+    "closed_wire_admitted_but_trim_failed": {
+      "true": 1926,
+      "false": 12,
+      "unknown": 0
+    },
+    "face_context_brepcheck_error": {
+      "true": 1926,
+      "false": 12,
+      "unknown": 0
+    },
+    "face_fix_exception": {
+      "true": 8,
+      "false": 1929,
+      "unknown": 1
+    },
+    "periodic_wire_substitution": {
+      "true": 215,
+      "false": 1722,
+      "unknown": 1
+    },
+    "sewing_compound_early_return": {
+      "true": 471,
+      "false": 1467,
+      "unknown": 0
+    },
+    "sewing_free_edges": {
+      "true": 662,
+      "false": 1276,
+      "unknown": 0
+    },
+    "sewing_multiple_edges": {
+      "true": 0,
+      "false": 1937,
+      "unknown": 1
+    },
+    "no_free_edge_but_solid_failed": {
+      "true": 51,
+      "false": 1886,
+      "unknown": 1
+    },
+    "trim_gate_blocked": {
+      "true": 1246,
+      "false": 692,
+      "unknown": 0
+    },
+    "saved_step_rejected": {
+      "true": 10,
+      "false": 1927,
+      "unknown": 1
+    },
+    "saved_check_passed_native_failed": {
+      "true": 0,
+      "false": 1937,
+      "unknown": 1
+    },
+    "uv_specific_failure": {
+      "true": 0,
+      "false": 0,
+      "unknown": 1938
+    }
+  },
+  "elapsed_seconds": {
+    "count": 1938,
+    "finite_count": 1938,
+    "status": "ok",
+    "mean": 13.56099657104445,
+    "max": 102.99555562299793,
+    "rms": 15.005737113860603
+  },
+  "limitations": [
+    "Overlapping stage observations, not unique root causes.",
+    "Unknown measurements remain in the intended denominator."
+  ]
+}

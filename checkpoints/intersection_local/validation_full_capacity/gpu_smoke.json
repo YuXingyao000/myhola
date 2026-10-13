@@ -1,0 +1,133 @@
+{
+  "created_at_utc": "2026-10-12T14:03:10.944162+00:00",
+  "scope": "Implementation validation only; temporary optimizer updates discarded; no formal training started.",
+  "source_checkpoint": "/mnt/d/python/checkpoints/intersection_refinement/frozen/20261011T123836.485257Z/weights/epoch=0010-step=00003993-val_loss=0.039476.ckpt",
+  "source_sha256": "9b18509de2a21f50d8fad41b8c37695842fe2e92745dc779713b0ecac06e2107",
+  "historical_checkpoint": "/mnt/d/python/checkpoints/intersection_local/frozen/20261012T073904.575690Z/weights/epoch=0019-step=00007260-val_loss=0.507484.ckpt",
+  "historical_sha256": "686395c9f47882bfd067b5a523b34b31effa4d4c427552ff065d80e9e284a77c",
+  "seed": 42,
+  "torch": "2.4.1+cu124",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "intersection_config": {
+    "kind": "local_attention",
+    "block_type": "transformer_decoder",
+    "hidden_dim": 512,
+    "num_heads": 8,
+    "num_layers": 8,
+    "ffn_dim": 2048,
+    "dropout": 0.1,
+    "activation": "relu",
+    "candidate_chunk_size": 64,
+    "checkpoint_candidates": true
+  },
+  "batches": [
+    {
+      "batch_size": 2,
+      "ids": [
+        "00001000",
+        "00002505"
+      ],
+      "face_counts": [
+        30,
+        28
+      ],
+      "candidates": 1626,
+      "loss": 3.220050811767578,
+      "step_seconds": 2.064848638983676,
+      "peak_allocated_mib": 2396.59375,
+      "peak_reserved_mib": 3138.0,
+      "gradient_l1": {
+        "inter": 10684.94140625,
+        "face_cnn": 171.80322265625,
+        "face_bbox": 31.045656204223633,
+        "edge_cnn": 1077.014404296875,
+        "classifier": 0.308746337890625,
+        "refiner": 23.918272018432617
+      }
+    },
+    {
+      "batch_size": 16,
+      "ids": [
+        "00001000",
+        "00002505",
+        "00001000",
+        "00002505",
+        "00001000",
+        "00002505",
+        "00001000",
+        "00002505",
+        "00001000",
+        "00002505",
+        "00001000",
+        "00002505",
+        "00001000",
+        "00002505",
+        "00001000",
+        "00002505"
+      ],
+      "face_counts": [
+        30,
+        28,
+        30,
+        28,
+        30,
+        28,
+        30,
+        28,
+        30,
+        28,
+        30,
+        28,
+        30,
+        28,
+        30,
+        28
+      ],
+      "candidates": 13008,
+      "loss": 3.065157413482666,
+      "step_seconds": 9.384155161998933,
+      "peak_allocated_mib": 10972.89453125,
+      "peak_reserved_mib": 12448.0,
+      "gradient_l1": {
+        "inter": 13055.291015625,
+        "face_cnn": 208.26461791992188,
+        "face_bbox": 34.46002960205078,
+        "edge_cnn": 887.3001708984375,
+        "classifier": 0.7725830078125,
+        "refiner": 25.527507781982422
+      }
+    }
+  ],
+  "historical_small_checkpoint_strict_load": true,
+  "retained_state_keys_exact": 581,
+  "initialization": {
+    "source": "/mnt/d/python/checkpoints/intersection_refinement/frozen/20261011T123836.485257Z/weights/epoch=0010-step=00003993-val_loss=0.039476.ckpt",
+    "source_epoch": 10,
+    "source_global_step": 3993,
+    "retained_state_keys": 581,
+    "discarded_legacy_inter_keys": 149,
+    "initialized_local_inter_keys": 157
+  },
+  "parameters": {
+    "total": 182058845,
+    "inter": 34015296,
+    "trainable": 108309973,
+    "old_inter": 33683008
+  },
+  "frozen_tensors_unchanged_after_steps": 243,
+  "full_capacity_strict_state_roundtrip_exact": true,
+  "roundtrip_output_max_abs_difference": {
+    "edge": 1.1920928955078125e-07,
+    "face": 1.7881393432617188e-07,
+    "logits": 4.76837158203125e-07
+  },
+  "roundtrip_output_tolerance": {
+    "atol": 1e-06,
+    "rtol": 1e-05
+  },
+  "exported_items": 2,
+  "status": "passed",
+  "validation_source_sha256": "880713a4f0b77e1c7c31ff4b39a41c682d355bcb04cc885c144c4257f833727f",
+  "model_source_sha256": "dfee4970965ca335068db74957580495b2c74b8827711d8464721bd2a7b64d06",
+  "training_config_sha256": "07012ea05bfd226f002afefb9bd0c0a05b3bd8b0a413c41eab83b1aa216bbe70"
+}

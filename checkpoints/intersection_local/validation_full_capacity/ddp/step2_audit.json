@@ -1,0 +1,29 @@
+{
+  "status": "passed",
+  "checked_utc": "2026-10-12T14:08:51.144244+00:00",
+  "checkpoint": "/mnt/d/python/checkpoints/intersection_local/validation_full_capacity/ddp/20261012T140435.575735Z/weights/last.ckpt",
+  "checkpoint_sha256_at_validation": "6f8181bd63212a64447db0a3ff126f1c2811792599ae18719100fdd8e2e07cd2",
+  "epoch": 1,
+  "global_step": 2,
+  "optimizer_steps": [
+    2
+  ],
+  "optimizer_state_count": 495,
+  "intersection": {
+    "kind": "local_attention",
+    "block_type": "transformer_decoder",
+    "hidden_dim": 512,
+    "num_heads": 8,
+    "num_layers": 8,
+    "ffn_dim": 2048,
+    "dropout": 0.1,
+    "activation": "relu",
+    "candidate_chunk_size": 64,
+    "checkpoint_candidates": true
+  },
+  "intersection_state_keys": 157,
+  "intersection_parameters": 34015296,
+  "frozen_encoder_posterior_tensors_equal_to_source": 243,
+  "saved_initialization_source": "/nonexistent/full-capacity-migration-source.ckpt",
+  "saved_resume_checkpoint": "/mnt/d/python/checkpoints/intersection_local/validation_full_capacity/ddp/20261012T140435.575735Z/weights/last.ckpt"
+}

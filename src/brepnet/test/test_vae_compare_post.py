@@ -143,6 +143,34 @@ class VaeComparePostTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "SHA256"):
             load_reference_rows(reference, current, "fit_only", ["a"], protocol)
 
+    def test_refinement_baseline_reuse_retains_historical_method_and_step_hash(self):
+        reference, current, source, protocol, old_path = self.reference_fixture()
+        for root in (reference, current):
+            (root / "raw_predictions/posterior_mean/legacy").rename(root / "raw_predictions/posterior_mean/intersection")
+        # The fixture symlink's target moved too; point at the same source bytes.
+        current_raw = current / "raw_predictions/posterior_mean/intersection"
+        current_raw.unlink()
+        current_raw.symlink_to(reference / "raw_predictions/posterior_mean/intersection", target_is_directory=True)
+        row = read_json(old_path)
+        row.update(method="intersection", step_exists=True)
+        path = reference / "metadata/post/fit_only/samples/intersection/a.json"
+        atomic_json(path, row)
+        step = reference / "post/fit_only/intersection/a/recon_brep.step"
+        step.parent.mkdir(parents=True)
+        step.write_text("STEP source")
+        before = path.read_bytes()
+        rows, provenance = load_reference_rows(reference, current, "fit_only", ["a"], protocol,
+                                               baseline_method="intersection")
+        self.assertEqual(rows[0]["method"], "intersection")
+        self.assertEqual(rows[0]["source_method"], "intersection")
+        self.assertEqual(rows[0]["source_step_sha256"], sha256_file(step))
+        self.assertEqual(provenance["method"], "intersection")
+        summary = summarize([*rows, {"sample_id": "a", "method": "local", "status": "timeout"}],
+                            1, 2, candidate_method="local", baseline_method="intersection")
+        self.assertEqual(set(summary["methods"]), {"intersection", "local"})
+        self.assertEqual(summary["native_validity_transitions"]["counts"]["intersection_valid_to_local_failed"], 1)
+        self.assertEqual(path.read_bytes(), before)
+
     def test_native_geometry_is_deterministic_and_gt_cache_is_atomic(self):
         from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
         from OCC.Core.Interface import Interface_Static

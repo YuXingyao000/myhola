@@ -239,6 +239,27 @@ def test_cli_rejects_nonfrozen_split_instead_of_claiming_2417_coverage(tmp_path)
         read_frozen_ids(path)
 
 
+def test_local_comparison_preserves_intersection_identity_and_pair_direction(tmp_path):
+    write_gt(tmp_path / "gt" / "example")
+    for method in ("intersection", "local"):
+        folder = tmp_path / "pred" / method / "example"
+        folder.mkdir(parents=True)
+        value = prediction("legacy")
+        if method == "local":
+            value["pred_face"] += 0.1
+        np.savez(folder / "data.npz", **value)
+    rows = evaluate_sample("example", data_root=tmp_path / "gt", prediction_root=tmp_path / "pred",
+                           mode="posterior_mean", baseline_method="intersection", candidate_method="local")
+    result = summarize(rows, ["example"], mode="posterior_mean", original_count=2,
+                       baseline_method="intersection", candidate_method="local")
+    assert set(result["methods"]) == {"intersection", "local"}
+    assert result["baseline_method"] == "intersection"
+    assert result["paired"]["face_mae"]["local_minus_intersection"]["mean"] == pytest.approx(.1)
+    assert result["paired"]["face_mae"]["local_win_fraction"] == 0
+    assert all(row["legacy_reciprocal_pair_count"] == 1 for row in rows)
+    assert "legacy" not in result["methods"]
+
+
 @pytest.mark.parametrize("mode", ["posterior_mean", "archived_latents"])
 @pytest.mark.parametrize("candidate_method", ["joint", "intersection"])
 def test_complete_cli_writes_json_summary_and_matching_per_object_csv(tmp_path, monkeypatch, mode, candidate_method):

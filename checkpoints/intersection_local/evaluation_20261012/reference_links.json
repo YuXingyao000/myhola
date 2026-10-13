@@ -1,0 +1,40 @@
+{
+  "comparison_baseline": "intersection",
+  "candidate": "local",
+  "baseline_root": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011",
+  "latent_reference_root": "/mnt/d/python/checkpoints/joint_boundary/comparison_20261011",
+  "links": [
+    {
+      "kind": "raw",
+      "mode": "posterior_mean",
+      "method": "intersection",
+      "path": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011/raw_predictions/posterior_mean/intersection",
+      "reference_root": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011",
+      "reuse": "read_only_symlink"
+    },
+    {
+      "kind": "raw",
+      "mode": "archived_latents",
+      "method": "intersection",
+      "path": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011/raw_predictions/archived_latents/intersection",
+      "reference_root": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011",
+      "reuse": "read_only_symlink"
+    },
+    {
+      "kind": "post",
+      "mode": "fit_only",
+      "method": "intersection",
+      "path": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011/post/fit_only/intersection",
+      "reference_root": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011",
+      "reuse": "read_only_symlink"
+    },
+    {
+      "kind": "post",
+      "mode": "optimized",
+      "method": "intersection",
+      "path": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011/post/optimized/intersection",
+      "reference_root": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011",
+      "reuse": "read_only_symlink"
+    }
+  ]
+}

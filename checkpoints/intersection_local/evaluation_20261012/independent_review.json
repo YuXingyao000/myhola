@@ -1,0 +1,161 @@
+{
+  "created_utc": "2026-10-12T11:06:20.644075+00:00",
+  "reviewer": "audit_training_local",
+  "review_builder_sha256": "699a27a393a8d72ad446ea756e50c8d1c50d46dafaa7ba57365a9406bc6cc3be",
+  "independent_method": "No pipeline metric or summarizer imports; raw CSV statistics, terminal JSONs, NPZ arrays and hashes checked directly.",
+  "code": {
+    "files": {
+      "tools/intersection_evaluate_inference.py": {
+        "sha256": "1e56ae11ec5de2885cfce6558d134e8d956646924b5141d4bd4ba959eacd490f",
+        "changed_functions_vs_head": [
+          "build_parser",
+          "load_intersection",
+          "main"
+        ],
+        "unchanged_function_count": 8
+      },
+      "tools/vae_compare_metrics.py": {
+        "sha256": "b184c34b1607932c08dbac69f91014c15fc06f20841e494df2bb1cae6076741b",
+        "changed_functions_vs_head": [
+          "comparison_methods",
+          "evaluate_sample",
+          "main",
+          "summarize"
+        ],
+        "unchanged_function_count": 11
+      },
+      "tools/vae_compare_post.py": {
+        "sha256": "67d8848a9479c631e950e321bdde5f10f0fc837171f38f9d761da04159322ca4",
+        "changed_functions_vs_head": [
+          "build_parser",
+          "comparison_methods",
+          "load_reference_rows",
+          "main",
+          "summarize",
+          "write_summary"
+        ],
+        "unchanged_function_count": 19
+      }
+    },
+    "production_post_and_shared_unchanged_vs_head": true,
+    "manual_review": "Changed functions implement method identities, output/reference paths, provenance and aggregation. Raw distance/topology formulas and post worker/validity/sampling/timeout logic are unchanged."
+  },
+  "inputs": {
+    "posterior_mean": {
+      "intended": 2417,
+      "local_prediction_count": 2417,
+      "status_counts": {
+        "ok": 2417
+      },
+      "exact_input_array_comparisons": 2417,
+      "input_hash_manifest_sha256": "4ac6050cabf1c124891043772a3cbc74aea2942faa3321e3c16979da054aa89c",
+      "source_hashes_unchanged": true,
+      "all_candidate_threshold_exports_verified": true,
+      "mean_audit_shards": 8,
+      "max_reencoding_mean_abs_error": 2.384185791015625e-06
+    },
+    "archived_latents": {
+      "intended": 2417,
+      "local_prediction_count": 2417,
+      "status_counts": {
+        "ok": 2417
+      },
+      "exact_input_array_comparisons": 2417,
+      "input_hash_manifest_sha256": "4abb644ae1efecd4ae6bc5a428cd126f10a75e4e5d3be5d0cd2adf81f2499124",
+      "source_hashes_unchanged": true,
+      "all_candidate_threshold_exports_verified": true,
+      "mean_audit_shards": 8,
+      "max_reencoding_mean_abs_error": 2.6226043701171875e-06
+    }
+  },
+  "raw": {
+    "posterior_mean": {
+      "row_count": 4834,
+      "stats_blocks_independently_recalculated": 54,
+      "objects_with_exact_adjacency": {
+        "intersection": 2321,
+        "local": 1270
+      },
+      "baseline_metrics_exactly_equal_previous": true,
+      "baseline_csv_exact_except_prediction_path": true,
+      "paired_differences_verified": true,
+      "summary_sha256": "54149160d3e75ee99e4096febb3d17944bb2032fee36d1dd6a88aeb420f8e20f",
+      "csv_sha256": "1d1e8e805bbf9aa4d05901bd6736257ee9231dc5eb39c6af115dc70a900c232c"
+    },
+    "archived_latents": {
+      "row_count": 4834,
+      "stats_blocks_independently_recalculated": 54,
+      "objects_with_exact_adjacency": {
+        "intersection": null,
+        "local": null
+      },
+      "baseline_metrics_exactly_equal_previous": true,
+      "baseline_csv_exact_except_prediction_path": true,
+      "paired_differences_verified": true,
+      "summary_sha256": "6c3f6779c33ab3c3e5d7a5108f77c998e82b86ae401de7f9d47686fae9d49b43",
+      "csv_sha256": "9f19550c966951b8f22d4bc6fb3bd8352e4caa460c080b71e5dcb0116d1ae761"
+    }
+  },
+  "post": {
+    "fit_only": {
+      "terminal_records_per_method": {
+        "intersection": 2417,
+        "local": 2417
+      },
+      "transition_counts": {
+        "both_valid": 82,
+        "intersection_failed_to_local_valid": 17,
+        "intersection_valid_to_local_failed": 980,
+        "both_failed": 1338,
+        "unknown": 0
+      },
+      "counts_and_fixed_denominator_rates_verified": true,
+      "common_geometry_count": 1479,
+      "baseline_summary_exactly_equal_previous": true,
+      "baseline_record_hashes_unchanged_since_reuse": 2417,
+      "baseline_step_hashes_unchanged_since_reuse": 2417,
+      "post_algorithms_unchanged": true,
+      "source_step_hash_limitation": "Checks protect assets since this evaluation's reuse snapshot, not against unrecorded historical mutations.",
+      "summary_sha256": "6b651a7e0807f96113271e8f9617b3dfa8a0d33316b0d9099b26aed2b5bf9698",
+      "csv_sha256": "76944b2b40bc14f27ba245b4a8bcd53fb17f8ce19038c1f4ea08f677e2c91933"
+    },
+    "optimized": {
+      "terminal_records_per_method": {
+        "intersection": 2417,
+        "local": 2417
+      },
+      "transition_counts": {
+        "both_valid": 479,
+        "intersection_failed_to_local_valid": 3,
+        "intersection_valid_to_local_failed": 1634,
+        "both_failed": 301,
+        "unknown": 0
+      },
+      "counts_and_fixed_denominator_rates_verified": true,
+      "common_geometry_count": 1698,
+      "baseline_summary_exactly_equal_previous": true,
+      "baseline_record_hashes_unchanged_since_reuse": 2417,
+      "baseline_step_hashes_unchanged_since_reuse": 2417,
+      "post_algorithms_unchanged": true,
+      "source_step_hash_limitation": "Checks protect assets since this evaluation's reuse snapshot, not against unrecorded historical mutations.",
+      "summary_sha256": "3420e5bec982d207fd9956614612ecb12781e6979b6fe16c7381fa2d000116e3",
+      "csv_sha256": "c1fd06c0d76a1c70879159ddea7ead1dbde1318dfc99bf6951d8b5d0f084ac9d"
+    }
+  },
+  "pending": [],
+  "intersection_capacity": {
+    "scope": "Only model.decoder.inter; not total VAE capacity",
+    "methods": {
+      "intersection": {
+        "state_keys": 149,
+        "state_elements": 33683008
+      },
+      "local": {
+        "state_keys": 37,
+        "state_elements": 311616
+      }
+    },
+    "artifact_sha256": "d870d5e4d229ce9d8345313ede8346b3a94154b41bacc57f476169dc3c914156"
+  },
+  "status": "passed"
+}

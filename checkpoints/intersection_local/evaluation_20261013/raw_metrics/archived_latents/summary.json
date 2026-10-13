@@ -1,0 +1,791 @@
+{
+  "mode": "archived_latents",
+  "baseline_method": "intersection",
+  "candidate_method": "local",
+  "intended_count": 2417,
+  "original_count": 2424,
+  "contract_unsupported_count": 7,
+  "methods": {
+    "intersection": {
+      "coverage": {
+        "files_present": {
+          "count": 2417,
+          "intended_fraction": 1.0,
+          "original_fraction": 0.9971122112211221
+        },
+        "raw_schema_and_metrics_ok": {
+          "count": 2417,
+          "intended_fraction": 1.0,
+          "original_fraction": 0.9971122112211221
+        },
+        "face_geometry_computable": {
+          "count": 2417,
+          "intended_fraction": 1.0,
+          "original_fraction": 0.9971122112211221
+        },
+        "edge_geometry_computable": {
+          "count": 2417,
+          "intended_fraction": 1.0,
+          "original_fraction": 0.9971122112211221
+        },
+        "aligned_face_mae_computable": {
+          "count": 0,
+          "intended_fraction": 0.0,
+          "original_fraction": 0.0
+        },
+        "topology_scores_computable": {
+          "count": 0,
+          "intended_fraction": 0.0,
+          "original_fraction": 0.0
+        }
+      },
+      "status_counts": {
+        "ok": 2417
+      },
+      "stage_status_counts": {
+        "gt_status": {
+          "ok": 2417
+        },
+        "prediction_status": {
+          "ok": 2417
+        },
+        "face_status": {
+          "ok": 2417
+        },
+        "edge_status": {
+          "ok": 2417
+        },
+        "face_mae_status": {
+          "not_applicable": 2417
+        },
+        "internal_topology_status": {
+          "ok": 2417
+        },
+        "topology_status": {
+          "not_applicable": 2417
+        }
+      },
+      "metrics": {
+        "face_mae": {
+          "count": 0,
+          "mean": null,
+          "median": null,
+          "p90": null
+        },
+        "face_cd_sq": {
+          "count": 2417,
+          "mean": 0.0051292545468208245,
+          "median": 0.0022519102600685446,
+          "p90": 0.010074363539403646
+        },
+        "face_pred_to_gt_sq": {
+          "count": 2417,
+          "mean": 0.0024365707062524275,
+          "median": 0.0010589318608900152,
+          "p90": 0.004836560275948119
+        },
+        "face_gt_to_pred_sq": {
+          "count": 2417,
+          "mean": 0.002692683840568397,
+          "median": 0.0010889653741449048,
+          "p90": 0.004878880118860187
+        },
+        "edge_cd_sq": {
+          "count": 2417,
+          "mean": 0.013054118634000097,
+          "median": 0.004656318270744426,
+          "p90": 0.030192738154965777
+        },
+        "edge_pred_to_gt_sq": {
+          "count": 2417,
+          "mean": 0.005467994927981235,
+          "median": 0.0019411749889824829,
+          "p90": 0.011748587033430288
+        },
+        "edge_gt_to_pred_sq": {
+          "count": 2417,
+          "mean": 0.0075861237060188625,
+          "median": 0.0022534382773132943,
+          "p90": 0.016625974681667113
+        },
+        "topology_precision": {
+          "count": 0,
+          "mean": null,
+          "median": null,
+          "p90": null
+        },
+        "topology_recall": {
+          "count": 0,
+          "mean": null,
+          "median": null,
+          "p90": null
+        },
+        "topology_f1": {
+          "count": 0,
+          "mean": null,
+          "median": null,
+          "p90": null
+        },
+        "pred_face_count": {
+          "count": 2417,
+          "mean": 12.063715349606952,
+          "median": 11.0,
+          "p90": 18.0
+        },
+        "gt_face_count": {
+          "count": 2417,
+          "mean": 12.704592470004137,
+          "median": 11.0,
+          "p90": 20.0
+        },
+        "raw_edge_count": {
+          "count": 2417,
+          "mean": 53.659081505999175,
+          "median": 48.0,
+          "p90": 84.0
+        },
+        "gt_boundary_count": {
+          "count": 2417,
+          "mean": 29.234588332643774,
+          "median": 24.0,
+          "p90": 48.0
+        },
+        "unique_pair_count": {
+          "count": 2417,
+          "mean": 26.829540752999588,
+          "median": 24.0,
+          "p90": 42.0
+        },
+        "unique_pair_count_error": {
+          "count": 0,
+          "mean": null,
+          "median": null,
+          "p90": null
+        },
+        "same_face_count": {
+          "count": 2417,
+          "mean": 0.0,
+          "median": 0.0,
+          "p90": 0.0
+        },
+        "invalid_face_index_count": {
+          "count": 2417,
+          "mean": 0.0,
+          "median": 0.0,
+          "p90": 0.0
+        },
+        "invalid_edge_index_count": {
+          "count": 2417,
+          "mean": 0.0,
+          "median": 0.0,
+          "p90": 0.0
+        },
+        "repeated_edge_reference_count": {
+          "count": 2417,
+          "mean": 0.0,
+          "median": 0.0,
+          "p90": 0.0
+        },
+        "joint_duplicate_pair_count": {
+          "count": 0,
+          "mean": null,
+          "median": null,
+          "p90": null
+        },
+        "joint_query_count_error": {
+          "count": 0,
+          "mean": null,
+          "median": null,
+          "p90": null
+        },
+        "legacy_directed_duplicate_count": {
+          "count": 2417,
+          "mean": 0.0,
+          "median": 0.0,
+          "p90": 0.0
+        },
+        "legacy_unilateral_pair_count": {
+          "count": 2417,
+          "mean": 0.0,
+          "median": 0.0,
+          "p90": 0.0
+        },
+        "legacy_reciprocal_pair_count": {
+          "count": 2417,
+          "mean": 26.829540752999588,
+          "median": 24.0,
+          "p90": 42.0
+        },
+        "legacy_reciprocal_cd_sq_mean": {
+          "count": 2417,
+          "mean": 0.0002870477129529266,
+          "median": 0.00012119109287204049,
+          "p90": 0.000611939271081061
+        },
+        "legacy_reciprocal_cd_sq_max": {
+          "count": 2417,
+          "mean": 0.0036007088612592495,
+          "median": 0.0008938672054833105,
+          "p90": 0.006922302615913556
+        }
+      },
+      "topology_micro": {
+        "objects": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      }
+    },
+    "local": {
+      "coverage": {
+        "files_present": {
+          "count": 2417,
+          "intended_fraction": 1.0,
+          "original_fraction": 0.9971122112211221
+        },
+        "raw_schema_and_metrics_ok": {
+          "count": 2417,
+          "intended_fraction": 1.0,
+          "original_fraction": 0.9971122112211221
+        },
+        "face_geometry_computable": {
+          "count": 2417,
+          "intended_fraction": 1.0,
+          "original_fraction": 0.9971122112211221
+        },
+        "edge_geometry_computable": {
+          "count": 2417,
+          "intended_fraction": 1.0,
+          "original_fraction": 0.9971122112211221
+        },
+        "aligned_face_mae_computable": {
+          "count": 0,
+          "intended_fraction": 0.0,
+          "original_fraction": 0.0
+        },
+        "topology_scores_computable": {
+          "count": 0,
+          "intended_fraction": 0.0,
+          "original_fraction": 0.0
+        }
+      },
+      "status_counts": {
+        "ok": 2417
+      },
+      "stage_status_counts": {
+        "gt_status": {
+          "ok": 2417
+        },
+        "prediction_status": {
+          "ok": 2417
+        },
+        "face_status": {
+          "ok": 2417
+        },
+        "edge_status": {
+          "ok": 2417
+        },
+        "face_mae_status": {
+          "not_applicable": 2417
+        },
+        "internal_topology_status": {
+          "ok": 2417
+        },
+        "topology_status": {
+          "not_applicable": 2417
+        }
+      },
+      "metrics": {
+        "face_mae": {
+          "count": 0,
+          "mean": null,
+          "median": null,
+          "p90": null
+        },
+        "face_cd_sq": {
+          "count": 2417,
+          "mean": 0.0051064963738469684,
+          "median": 0.0022348633796851905,
+          "p90": 0.009903134981765909
+        },
+        "face_pred_to_gt_sq": {
+          "count": 2417,
+          "mean": 0.002425820301251281,
+          "median": 0.0010474264724820324,
+          "p90": 0.004797263479582061
+        },
+        "face_gt_to_pred_sq": {
+          "count": 2417,
+          "mean": 0.0026806760725956876,
+          "median": 0.0010755144078715996,
+          "p90": 0.0048724399521842795
+        },
+        "edge_cd_sq": {
+          "count": 2417,
+          "mean": 0.013146626728897716,
+          "median": 0.004882838568046546,
+          "p90": 0.03100987797027082
+        },
+        "edge_pred_to_gt_sq": {
+          "count": 2417,
+          "mean": 0.005797683072966783,
+          "median": 0.002118134962625621,
+          "p90": 0.012317372501584612
+        },
+        "edge_gt_to_pred_sq": {
+          "count": 2417,
+          "mean": 0.007348943655930932,
+          "median": 0.0022711139401810293,
+          "p90": 0.0158399685463309
+        },
+        "topology_precision": {
+          "count": 0,
+          "mean": null,
+          "median": null,
+          "p90": null
+        },
+        "topology_recall": {
+          "count": 0,
+          "mean": null,
+          "median": null,
+          "p90": null
+        },
+        "topology_f1": {
+          "count": 0,
+          "mean": null,
+          "median": null,
+          "p90": null
+        },
+        "pred_face_count": {
+          "count": 2417,
+          "mean": 12.063715349606952,
+          "median": 11.0,
+          "p90": 18.0
+        },
+        "gt_face_count": {
+          "count": 2417,
+          "mean": 12.704592470004137,
+          "median": 11.0,
+          "p90": 20.0
+        },
+        "raw_edge_count": {
+          "count": 2417,
+          "mean": 55.328920148944974,
+          "median": 48.0,
+          "p90": 90.0
+        },
+        "gt_boundary_count": {
+          "count": 2417,
+          "mean": 29.234588332643774,
+          "median": 24.0,
+          "p90": 48.0
+        },
+        "unique_pair_count": {
+          "count": 2417,
+          "mean": 27.664460074472487,
+          "median": 24.0,
+          "p90": 45.0
+        },
+        "unique_pair_count_error": {
+          "count": 0,
+          "mean": null,
+          "median": null,
+          "p90": null
+        },
+        "same_face_count": {
+          "count": 2417,
+          "mean": 0.0,
+          "median": 0.0,
+          "p90": 0.0
+        },
+        "invalid_face_index_count": {
+          "count": 2417,
+          "mean": 0.0,
+          "median": 0.0,
+          "p90": 0.0
+        },
+        "invalid_edge_index_count": {
+          "count": 2417,
+          "mean": 0.0,
+          "median": 0.0,
+          "p90": 0.0
+        },
+        "repeated_edge_reference_count": {
+          "count": 2417,
+          "mean": 0.0,
+          "median": 0.0,
+          "p90": 0.0
+        },
+        "joint_duplicate_pair_count": {
+          "count": 0,
+          "mean": null,
+          "median": null,
+          "p90": null
+        },
+        "joint_query_count_error": {
+          "count": 0,
+          "mean": null,
+          "median": null,
+          "p90": null
+        },
+        "legacy_directed_duplicate_count": {
+          "count": 2417,
+          "mean": 0.0,
+          "median": 0.0,
+          "p90": 0.0
+        },
+        "legacy_unilateral_pair_count": {
+          "count": 2417,
+          "mean": 0.0,
+          "median": 0.0,
+          "p90": 0.0
+        },
+        "legacy_reciprocal_pair_count": {
+          "count": 2417,
+          "mean": 27.664460074472487,
+          "median": 24.0,
+          "p90": 45.0
+        },
+        "legacy_reciprocal_cd_sq_mean": {
+          "count": 2417,
+          "mean": 0.00034284345064844533,
+          "median": 6.548351448642102e-05,
+          "p90": 0.0004020051864777432
+        },
+        "legacy_reciprocal_cd_sq_max": {
+          "count": 2417,
+          "mean": 0.005411338874689269,
+          "median": 0.0003369102204829376,
+          "p90": 0.004048651088675906
+        }
+      },
+      "topology_micro": {
+        "objects": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      }
+    }
+  },
+  "paired": {
+    "face_mae": {
+      "common_count": 0,
+      "intersection": {
+        "count": 0,
+        "mean": null,
+        "median": null,
+        "p90": null
+      },
+      "local": {
+        "count": 0,
+        "mean": null,
+        "median": null,
+        "p90": null
+      },
+      "local_minus_intersection": {
+        "count": 0,
+        "mean": null,
+        "median": null,
+        "p90": null
+      },
+      "better_direction": "lower",
+      "local_win_fraction": null,
+      "tie_fraction": null,
+      "tie_absolute_tolerance": 1e-12
+    },
+    "face_cd_sq": {
+      "common_count": 2417,
+      "intersection": {
+        "count": 2417,
+        "mean": 0.0051292545468208245,
+        "median": 0.0022519102600685446,
+        "p90": 0.010074363539403646
+      },
+      "local": {
+        "count": 2417,
+        "mean": 0.0051064963738469684,
+        "median": 0.0022348633796851905,
+        "p90": 0.009903134981765909
+      },
+      "local_minus_intersection": {
+        "count": 2417,
+        "mean": -2.275817297385602e-05,
+        "median": -8.52053873312943e-06,
+        "p90": 8.99862477002236e-05
+      },
+      "better_direction": "lower",
+      "local_win_fraction": 0.5655771617707902,
+      "tie_fraction": 0.0,
+      "tie_absolute_tolerance": 1e-12
+    },
+    "face_pred_to_gt_sq": {
+      "common_count": 2417,
+      "intersection": {
+        "count": 2417,
+        "mean": 0.0024365707062524275,
+        "median": 0.0010589318608900152,
+        "p90": 0.004836560275948119
+      },
+      "local": {
+        "count": 2417,
+        "mean": 0.002425820301251281,
+        "median": 0.0010474264724820324,
+        "p90": 0.004797263479582061
+      },
+      "local_minus_intersection": {
+        "count": 2417,
+        "mean": -1.0750405001146652e-05,
+        "median": -2.2870755681607922e-06,
+        "p90": 4.955873224602924e-05
+      },
+      "better_direction": "lower",
+      "local_win_fraction": 0.5345469590401324,
+      "tie_fraction": 0.0,
+      "tie_absolute_tolerance": 1e-12
+    },
+    "face_gt_to_pred_sq": {
+      "common_count": 2417,
+      "intersection": {
+        "count": 2417,
+        "mean": 0.002692683840568397,
+        "median": 0.0010889653741449048,
+        "p90": 0.004878880118860187
+      },
+      "local": {
+        "count": 2417,
+        "mean": 0.0026806760725956876,
+        "median": 0.0010755144078715996,
+        "p90": 0.0048724399521842795
+      },
+      "local_minus_intersection": {
+        "count": 2417,
+        "mean": -1.2007767972709328e-05,
+        "median": -5.91976767930864e-06,
+        "p90": 5.031122791020847e-05
+      },
+      "better_direction": "lower",
+      "local_win_fraction": 0.5697145221348779,
+      "tie_fraction": 0.0,
+      "tie_absolute_tolerance": 1e-12
+    },
+    "edge_cd_sq": {
+      "common_count": 2417,
+      "intersection": {
+        "count": 2417,
+        "mean": 0.013054118634000097,
+        "median": 0.004656318270744426,
+        "p90": 0.030192738154965777
+      },
+      "local": {
+        "count": 2417,
+        "mean": 0.013146626728897716,
+        "median": 0.004882838568046546,
+        "p90": 0.03100987797027082
+      },
+      "local_minus_intersection": {
+        "count": 2417,
+        "mean": 9.250809489762017e-05,
+        "median": 6.832235144320136e-05,
+        "p90": 0.0010992890659283217
+      },
+      "better_direction": "lower",
+      "local_win_fraction": 0.37567232105916426,
+      "tie_fraction": 0.0,
+      "tie_absolute_tolerance": 1e-12
+    },
+    "edge_pred_to_gt_sq": {
+      "common_count": 2417,
+      "intersection": {
+        "count": 2417,
+        "mean": 0.005467994927981235,
+        "median": 0.0019411749889824829,
+        "p90": 0.011748587033430288
+      },
+      "local": {
+        "count": 2417,
+        "mean": 0.005797683072966783,
+        "median": 0.002118134962625621,
+        "p90": 0.012317372501584612
+      },
+      "local_minus_intersection": {
+        "count": 2417,
+        "mean": 0.00032968814498554946,
+        "median": 4.221575388983377e-05,
+        "p90": 0.0008472487971979639
+      },
+      "better_direction": "lower",
+      "local_win_fraction": 0.3591228796028134,
+      "tie_fraction": 0.0,
+      "tie_absolute_tolerance": 1e-12
+    },
+    "edge_gt_to_pred_sq": {
+      "common_count": 2417,
+      "intersection": {
+        "count": 2417,
+        "mean": 0.0075861237060188625,
+        "median": 0.0022534382773132943,
+        "p90": 0.016625974681667113
+      },
+      "local": {
+        "count": 2417,
+        "mean": 0.007348943655930932,
+        "median": 0.0022711139401810293,
+        "p90": 0.0158399685463309
+      },
+      "local_minus_intersection": {
+        "count": 2417,
+        "mean": -0.00023718005008792933,
+        "median": 1.984747099927299e-05,
+        "p90": 0.0004160065693836585
+      },
+      "better_direction": "lower",
+      "local_win_fraction": 0.4290442697558957,
+      "tie_fraction": 0.0,
+      "tie_absolute_tolerance": 1e-12
+    },
+    "topology_precision": {
+      "common_count": 0,
+      "intersection": {
+        "count": 0,
+        "mean": null,
+        "median": null,
+        "p90": null
+      },
+      "local": {
+        "count": 0,
+        "mean": null,
+        "median": null,
+        "p90": null
+      },
+      "local_minus_intersection": {
+        "count": 0,
+        "mean": null,
+        "median": null,
+        "p90": null
+      },
+      "better_direction": "higher",
+      "local_win_fraction": null,
+      "tie_fraction": null,
+      "tie_absolute_tolerance": 1e-12
+    },
+    "topology_recall": {
+      "common_count": 0,
+      "intersection": {
+        "count": 0,
+        "mean": null,
+        "median": null,
+        "p90": null
+      },
+      "local": {
+        "count": 0,
+        "mean": null,
+        "median": null,
+        "p90": null
+      },
+      "local_minus_intersection": {
+        "count": 0,
+        "mean": null,
+        "median": null,
+        "p90": null
+      },
+      "better_direction": "higher",
+      "local_win_fraction": null,
+      "tie_fraction": null,
+      "tie_absolute_tolerance": 1e-12
+    },
+    "topology_f1": {
+      "common_count": 0,
+      "intersection": {
+        "count": 0,
+        "mean": null,
+        "median": null,
+        "p90": null
+      },
+      "local": {
+        "count": 0,
+        "mean": null,
+        "median": null,
+        "p90": null
+      },
+      "local_minus_intersection": {
+        "count": 0,
+        "mean": null,
+        "median": null,
+        "p90": null
+      },
+      "better_direction": "higher",
+      "local_win_fraction": null,
+      "tie_fraction": null,
+      "tie_absolute_tolerance": 1e-12
+    },
+    "unique_pair_count_error": {
+      "common_count": 0,
+      "intersection": {
+        "count": 0,
+        "mean": null,
+        "median": null,
+        "p90": null
+      },
+      "local": {
+        "count": 0,
+        "mean": null,
+        "median": null,
+        "p90": null
+      },
+      "local_minus_intersection": {
+        "count": 0,
+        "mean": null,
+        "median": null,
+        "p90": null
+      },
+      "better_direction": "lower",
+      "local_win_fraction": null,
+      "tie_fraction": null,
+      "tie_absolute_tolerance": 1e-12
+    }
+  },
+  "diagnostic_convention": "legacy_* columns describe the directed-half-edge representation used by legacy, intersection and local; joint_* columns apply only to shared-boundary queries.",
+  "limitations": [
+    "This compares two trained models with different training histories, not an equal-budget architecture ablation.",
+    "Raw geometry uses the original 16x16 face grid and 16-point curves: no area/arc-length weighting or parameter alignment.",
+    "Squared CD is the SUM of directional means in normalized global XYZ; it does not penalize coincident duplicates.",
+    "Edge CD includes ALL thresholded curves, including duplicate pairs and same-face assignments; no GT selection or post adaptation.",
+    "GT boundaries are the audited merged non-seam representatives, not native CAD physical edges or UV trimming loops.",
+    "Unordered topology P/R/F1 concerns valid distinct-face pairs only; invalid rows and duplicate entities are reported separately.",
+    "Legacy reciprocal half-edges are expected, not duplicates. Raw edge/query counts and representation-specific duplicate counts are not paired differences.",
+    "Legacy reciprocal discrepancy uses one direction pair per unordered pair; directed-duplicate groups are excluded from this discrepancy and counted separately.",
+    "Geometry means are computable subsets; all missing, malformed, nonfinite and empty cases remain in intended coverage denominators.",
+    "Archived latents have no established GT face correspondence: aligned MAE, GT topology P/R/F1 and count-error comparisons are omitted.",
+    "Neither raw reconstruction nor archived-latent replay establishes OCC validity or a complete real-photo reconstruction result."
+  ],
+  "empty_pair_convention": "both empty: P=R=F1=1; prediction-only empty: P=1,R=0,F1=0; GT-only empty: P=0,R=1,F1=0",
+  "shared_input_status_counts": {
+    "verified": 2417
+  },
+  "protocol_valid": true,
+  "paired_topology_micro": {
+    "intersection": {
+      "objects": 0,
+      "precision": null,
+      "recall": null,
+      "f1": null
+    },
+    "local": {
+      "objects": 0,
+      "precision": null,
+      "recall": null,
+      "f1": null
+    }
+  },
+  "created_at_utc": "2026-10-13T04:24:12.827793+00:00",
+  "workers": 16,
+  "data_root": "/mnt/d/data/deepcad_v7",
+  "prediction_root": "/mnt/d/python/checkpoints/intersection_local/evaluation_20261013/raw_predictions/archived_latents",
+  "split_list": "/mnt/d/python/checkpoints/joint_boundary/validation/test_contract_audit/accepted.txt",
+  "split_sha256": "2864849e8240134c6033cc6cd64efa19337f67fea94b89a493690ae84355b7b3",
+  "protocol": "comparison_20261011_v1_raw",
+  "reciprocal_tolerance": 0.01,
+  "closed_tolerance": 1e-05,
+  "allow_closed_phase": true,
+  "gt_source": "data_root/data.npz via build_shared_boundary_targets, never prediction GT fields"
+}

@@ -1,0 +1,38 @@
+{
+  "fit_only": {
+    "source_protocol_path": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011/metadata/post/fit_only/protocol.json",
+    "source_protocol_sha256": "297042a1d09d0638e8a490aedde3c85280e36ff7ecdc9fa2f4ace530fb46d1fb",
+    "post_algorithm_files": {
+      "src/brepnet/post/chamferdist_torch.py": "fbc787a1530525b7eeeb18142ec2c53094193bbb2cc97069e70caa392bc3afa7",
+      "src/brepnet/post/constants.py": "76312fc450b073ef6ef475bb154fb9eba982146e14f0ba1c4919d939c227399b",
+      "src/brepnet/post/construct_brep.py": "3d66dfeb05afbfa288797f9b1bd488efc333d6e66776acb354934f9a4a6b65f4",
+      "src/brepnet/post/debug.py": "65ecf432f00b8dd5ab01e305d1eba18b508a06cdaf72abf98ebc59e2b157f4fe",
+      "src/brepnet/post/distance.py": "2156ebd91b647da54d505b4f2a1f4c0ce6fd50c551a9ec2e2ea2e8d96e6cbafc",
+      "src/brepnet/post/geometry_optimization.py": "46e660a3fd4997794ed10eacbeaee3d96bf1306178001473c2f54dddd0d46850",
+      "src/brepnet/post/mesh.py": "a66d843b06a460aefa2aae5ad2afc485b7e4d5573465a5eb3828e37a1de676ff",
+      "src/brepnet/post/occ_fit.py": "aca77a713e40d863ab125f144108e40bf162be7f85b77b0da5f7375d631ae8e6",
+      "src/brepnet/post/occ_topology.py": "2652cd061ab814cc8d3d73fa34224aa1b94efcde2c72406d7e76357d77774ab6",
+      "src/brepnet/post/shape.py": "4594df3cbb46b96251c3b6d6e160be70214abe07cfedaced9a0d26bce2aa3f59",
+      "src/brepnet/post/utils.py": "7a9656d1c942d2035867026600a601be34ec95420631e1c8cfe03cecd742edb2"
+    },
+    "all_exact_match": true
+  },
+  "optimized": {
+    "source_protocol_path": "/mnt/d/python/checkpoints/intersection_refinement/evaluation_20261011/metadata/post/optimized/protocol.json",
+    "source_protocol_sha256": "956a9ec5955188da7662ffea66315ca1a487fc6603759dfbec37a2d1a0432cda",
+    "post_algorithm_files": {
+      "src/brepnet/post/chamferdist_torch.py": "fbc787a1530525b7eeeb18142ec2c53094193bbb2cc97069e70caa392bc3afa7",
+      "src/brepnet/post/constants.py": "76312fc450b073ef6ef475bb154fb9eba982146e14f0ba1c4919d939c227399b",
+      "src/brepnet/post/construct_brep.py": "3d66dfeb05afbfa288797f9b1bd488efc333d6e66776acb354934f9a4a6b65f4",
+      "src/brepnet/post/debug.py": "65ecf432f00b8dd5ab01e305d1eba18b508a06cdaf72abf98ebc59e2b157f4fe",
+      "src/brepnet/post/distance.py": "2156ebd91b647da54d505b4f2a1f4c0ce6fd50c551a9ec2e2ea2e8d96e6cbafc",
+      "src/brepnet/post/geometry_optimization.py": "46e660a3fd4997794ed10eacbeaee3d96bf1306178001473c2f54dddd0d46850",
+      "src/brepnet/post/mesh.py": "a66d843b06a460aefa2aae5ad2afc485b7e4d5573465a5eb3828e37a1de676ff",
+      "src/brepnet/post/occ_fit.py": "aca77a713e40d863ab125f144108e40bf162be7f85b77b0da5f7375d631ae8e6",
+      "src/brepnet/post/occ_topology.py": "2652cd061ab814cc8d3d73fa34224aa1b94efcde2c72406d7e76357d77774ab6",
+      "src/brepnet/post/shape.py": "4594df3cbb46b96251c3b6d6e160be70214abe07cfedaced9a0d26bce2aa3f59",
+      "src/brepnet/post/utils.py": "7a9656d1c942d2035867026600a601be34ec95420631e1c8cfe03cecd742edb2"
+    },
+    "all_exact_match": true
+  }
+}

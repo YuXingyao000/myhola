@@ -26,13 +26,16 @@ ACCEPTED_COUNT = 2417
 ORIGINAL_COUNT = 2424
 ACCEPTED_SHA256 = "2864849e8240134c6033cc6cd64efa19337f67fea94b89a493690ae84355b7b3"
 METHODS = ("legacy", "joint")
-CANDIDATE_METHODS = ("joint", "intersection")
+CANDIDATE_METHODS = ("joint", "intersection", "local")
+BASELINE_METHODS = ("legacy", "intersection")
 
 
-def comparison_methods(candidate_method="joint"):
+def comparison_methods(candidate_method="joint", baseline_method="legacy"):
     if candidate_method not in CANDIDATE_METHODS:
         raise ValueError(f"Unsupported candidate method: {candidate_method}")
-    return ("legacy", candidate_method)
+    if baseline_method not in BASELINE_METHODS or baseline_method == candidate_method:
+        raise ValueError(f"Unsupported baseline/candidate pair: {baseline_method}/{candidate_method}")
+    return (baseline_method, candidate_method)
 
 MODES = ("posterior_mean", "archived_latents")
 GEOMETRY_METRICS = (
@@ -241,8 +244,8 @@ def _load_prediction(path: Path) -> dict:
         ) if key in source}
 
 
-def evaluate_sample(model_id: str, *, data_root: Path, prediction_root: Path, mode: str, candidate_method: str = "joint") -> list[dict]:
-    methods = comparison_methods(candidate_method)
+def evaluate_sample(model_id: str, *, data_root: Path, prediction_root: Path, mode: str, candidate_method: str = "joint", baseline_method: str = "legacy") -> list[dict]:
+    methods = comparison_methods(candidate_method, baseline_method)
     rows = []
     try:
         with np.load(data_root / model_id / "data.npz", allow_pickle=False) as source:
@@ -309,13 +312,13 @@ def _micro_topology(rows: list[dict]) -> dict:
 
 
 def summarize(rows: list[dict], ids: list[str], *, mode: str, original_count: int = ORIGINAL_COUNT,
-              candidate_method: str = "joint") -> dict:
-    methods = comparison_methods(candidate_method)
+              candidate_method: str = "joint", baseline_method: str = "legacy") -> dict:
+    methods = comparison_methods(candidate_method, baseline_method)
     if len(ids) > original_count:
         raise ValueError("Intended count cannot exceed the original population")
-    summary = {"mode": mode, "candidate_method": candidate_method, "intended_count": len(ids), "original_count": original_count,
+    summary = {"mode": mode, "baseline_method": baseline_method, "candidate_method": candidate_method, "intended_count": len(ids), "original_count": original_count,
                "contract_unsupported_count": original_count - len(ids), "methods": {}, "paired": {},
-               "diagnostic_convention": "legacy_* columns describe the directed-half-edge representation used by legacy and intersection; joint_* columns apply only to shared-boundary queries.",
+               "diagnostic_convention": "legacy_* columns describe the directed-half-edge representation used by legacy, intersection and local; joint_* columns apply only to shared-boundary queries.",
                "limitations": LIMITATIONS,
                "empty_pair_convention": "both empty: P=R=F1=1; prediction-only empty: P=1,R=0,F1=0; GT-only empty: P=0,R=1,F1=0"}
     lookup = {(row["method"], row["model_id"]): row for row in rows}
@@ -341,26 +344,26 @@ def summarize(rows: list[dict], ids: list[str], *, mode: str, original_count: in
             "metrics": {key: statistics([row[key] for row in group if _finite(row, key)]) for key in METRICS},
             "topology_micro": _micro_topology(group),
         }
-    shared = Counter(lookup["legacy", item]["shared_input_status"] for item in ids)
+    shared = Counter(lookup[baseline_method, item]["shared_input_status"] for item in ids)
     summary["shared_input_status_counts"] = dict(shared)
     summary["protocol_valid"] = not (shared["mismatch"] or shared["missing_digest"])
     for key in PAIRED_METRICS:
-        matched = [(lookup["legacy", item], lookup[candidate_method, item]) for item in ids
-                   if lookup["legacy", item]["shared_input_status"] == "verified"
-                   and _finite(lookup["legacy", item], key) and _finite(lookup[candidate_method, item], key)]
+        matched = [(lookup[baseline_method, item], lookup[candidate_method, item]) for item in ids
+                   if lookup[baseline_method, item]["shared_input_status"] == "verified"
+                   and _finite(lookup[baseline_method, item], key) and _finite(lookup[candidate_method, item], key)]
         old = [first[key] for first, _ in matched]
         new = [second[key] for _, second in matched]
         differences = np.asarray(new) - np.asarray(old)
         direction = "higher" if key in TOPOLOGY_METRICS else "lower"
         wins = differences > 1e-12 if direction == "higher" else differences < -1e-12
         summary["paired"][key] = {
-            "common_count": len(matched), "legacy": statistics(old), candidate_method: statistics(new),
-            f"{candidate_method}_minus_legacy": statistics(differences), "better_direction": direction,
+            "common_count": len(matched), baseline_method: statistics(old), candidate_method: statistics(new),
+            f"{candidate_method}_minus_{baseline_method}": statistics(differences), "better_direction": direction,
             f"{candidate_method}_win_fraction": float(wins.mean()) if len(matched) else None,
             "tie_fraction": float((np.abs(differences) <= 1e-12).mean()) if len(matched) else None,
             "tie_absolute_tolerance": 1e-12,
         }
-    shared_ids = [item for item in ids if lookup["legacy", item]["shared_input_status"] == "verified"
+    shared_ids = [item for item in ids if lookup[baseline_method, item]["shared_input_status"] == "verified"
                   and all(_finite(lookup[method, item], "topology_f1") for method in methods)]
     summary["paired_topology_micro"] = {method: _micro_topology([lookup[method, item] for item in shared_ids]) for method in methods}
     return summary
@@ -383,6 +386,7 @@ def main() -> int:
     parser.add_argument("--split-list", type=Path, required=True)
     parser.add_argument("--comparison-root", type=Path, required=True)
     parser.add_argument("--mode", choices=MODES, required=True)
+    parser.add_argument("--baseline-method", choices=BASELINE_METHODS, default="legacy")
     parser.add_argument("--candidate-method", choices=CANDIDATE_METHODS, default="joint")
     parser.add_argument("--workers", type=int, default=16)
     args = parser.parse_args()
@@ -393,14 +397,14 @@ def main() -> int:
     if (output / "per_object.csv").exists() or (output / "summary.json").exists():
         parser.error("Metrics already exist; use a fresh comparison root to prevent mixing protocols")
     prediction_root = args.comparison_root / "raw_predictions" / args.mode
-    evaluate = partial(evaluate_sample, data_root=args.data_root, prediction_root=prediction_root, mode=args.mode, candidate_method=args.candidate_method)
+    evaluate = partial(evaluate_sample, data_root=args.data_root, prediction_root=prediction_root, mode=args.mode, candidate_method=args.candidate_method, baseline_method=args.baseline_method)
     rows = []
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
         for index, pair in enumerate(pool.map(evaluate, ids), start=1):
             rows.extend(pair)
             if index % 250 == 0:
                 print(f"Scored {index}/{len(ids)} objects", flush=True)
-    summary = summarize(rows, ids, mode=args.mode, candidate_method=args.candidate_method)
+    summary = summarize(rows, ids, mode=args.mode, candidate_method=args.candidate_method, baseline_method=args.baseline_method)
     summary.update(
         created_at_utc=datetime.now(timezone.utc).isoformat(), workers=args.workers,
         data_root=str(args.data_root.resolve()), prediction_root=str(prediction_root.resolve()),

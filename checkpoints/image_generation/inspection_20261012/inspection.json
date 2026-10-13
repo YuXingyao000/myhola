@@ -1,0 +1,549 @@
+{
+  "seed": 20261012,
+  "report": "/mnt/d/python/experiments/2026-5-30/dataset_evaluation/deepcad_v7_cond_quality_report.json",
+  "condition_root": "/mnt/d/data/deepcad_v7_cond",
+  "purpose": "qualitative inspection only; no population rate estimated",
+  "samples": [
+    {
+      "model_id": "00476323",
+      "silhouette_iou": 0.793347054569728,
+      "dino_cosine": 0.3789128363132477,
+      "clip_realism": 0.2398565709590912,
+      "selection": "uniform_without_replacement_from_historical_report_seed_20261012",
+      "real_photo_keys": [
+        "blender",
+        "flux",
+        "flux_masked"
+      ],
+      "shapes": {
+        "occ": [
+          224,
+          224,
+          3
+        ],
+        "blender": [
+          512,
+          512,
+          3
+        ],
+        "flux": [
+          512,
+          512,
+          3
+        ]
+      },
+      "status": "loaded",
+      "input_sha256": {
+        "imgs.npz": "5c9c55bc33269047f4b2bb2aa887e24ad02f426dfa331939ac3fae39864bd107",
+        "real_photo.npz": "44b974994a29d768ba66f786781d46bc2b355da68053b5cf26b450e7c73357dc"
+      },
+      "reference_mask_centroid": {
+        "xy": [
+          113,
+          126
+        ],
+        "on_foreground": true,
+        "protocol": "current quality_metrics.py luminance threshold 250; not a rerun of SAM2"
+      }
+    },
+    {
+      "model_id": "00014190",
+      "silhouette_iou": 0.8901541914301151,
+      "dino_cosine": 0.36492425203323364,
+      "clip_realism": 0.24561528861522675,
+      "selection": "uniform_without_replacement_from_historical_report_seed_20261012",
+      "real_photo_keys": [
+        "blender",
+        "flux",
+        "flux_masked"
+      ],
+      "shapes": {
+        "occ": [
+          224,
+          224,
+          3
+        ],
+        "blender": [
+          512,
+          512,
+          3
+        ],
+        "flux": [
+          512,
+          512,
+          3
+        ]
+      },
+      "status": "loaded",
+      "input_sha256": {
+        "imgs.npz": "0f96aeb484868923cfe94a9f8b18a155459b468b5ebd8e0d5a4a9f086aeb1214",
+        "real_photo.npz": "1a53849d7553d2ef5b5ffe947f8ff077d21be1f5d332891e33175f6e1c7340f6"
+      },
+      "reference_mask_centroid": {
+        "xy": [
+          119,
+          115
+        ],
+        "on_foreground": true,
+        "protocol": "current quality_metrics.py luminance threshold 250; not a rerun of SAM2"
+      }
+    },
+    {
+      "model_id": "00975879",
+      "silhouette_iou": 0.07891050583657587,
+      "dino_cosine": 0.14577464759349823,
+      "clip_realism": 0.2376929521560669,
+      "selection": "uniform_without_replacement_from_historical_report_seed_20261012",
+      "real_photo_keys": [
+        "blender",
+        "flux",
+        "flux_masked"
+      ],
+      "shapes": {
+        "occ": [
+          224,
+          224,
+          3
+        ],
+        "blender": [
+          512,
+          512,
+          3
+        ],
+        "flux": [
+          512,
+          512,
+          3
+        ]
+      },
+      "status": "loaded",
+      "input_sha256": {
+        "imgs.npz": "2a2c626539c62d893ea9ceab9fc4612d6e500a5fbdf84301c391ff9c78457fd3",
+        "real_photo.npz": "4b1534db39b1106bf9a57fb0ad00fff355229f93e2d4aa7eb4bad5a77fdb34e4"
+      },
+      "reference_mask_centroid": {
+        "xy": [
+          116,
+          109
+        ],
+        "on_foreground": true,
+        "protocol": "current quality_metrics.py luminance threshold 250; not a rerun of SAM2"
+      }
+    },
+    {
+      "model_id": "00064282",
+      "silhouette_iou": 0.5280150622363237,
+      "dino_cosine": 0.4928194284439087,
+      "clip_realism": 0.2529752254486084,
+      "selection": "uniform_without_replacement_from_historical_report_seed_20261012",
+      "real_photo_keys": [
+        "blender",
+        "flux",
+        "flux_masked"
+      ],
+      "shapes": {
+        "occ": [
+          224,
+          224,
+          3
+        ],
+        "blender": [
+          512,
+          512,
+          3
+        ],
+        "flux": [
+          512,
+          512,
+          3
+        ]
+      },
+      "status": "loaded",
+      "input_sha256": {
+        "imgs.npz": "4196f5aa3743eee0c5bd8364cdaad27fc971962b6283618b952d51ec86580105",
+        "real_photo.npz": "cebb5ec430e084bf11defda25cd15ceb9a43c9654f5f66c09672cc0ef4213c9e"
+      },
+      "reference_mask_centroid": {
+        "xy": [
+          116,
+          111
+        ],
+        "on_foreground": true,
+        "protocol": "current quality_metrics.py luminance threshold 250; not a rerun of SAM2"
+      }
+    },
+    {
+      "model_id": "00002886",
+      "silhouette_iou": 0.8983434235912447,
+      "dino_cosine": 0.40265515446662903,
+      "clip_realism": 0.23413315415382385,
+      "selection": "uniform_without_replacement_from_historical_report_seed_20261012",
+      "real_photo_keys": [
+        "blender",
+        "flux",
+        "flux_masked"
+      ],
+      "shapes": {
+        "occ": [
+          224,
+          224,
+          3
+        ],
+        "blender": [
+          512,
+          512,
+          3
+        ],
+        "flux": [
+          512,
+          512,
+          3
+        ]
+      },
+      "status": "loaded",
+      "input_sha256": {
+        "imgs.npz": "793e9a827b88c3589c064baa049998da6cc42282ce2073e719f7f4a0a24e0590",
+        "real_photo.npz": "2777b1855657993e510229d957cf43124d0f431f7a6c31f06a18e8c940ddd4fc"
+      },
+      "reference_mask_centroid": {
+        "xy": [
+          106,
+          111
+        ],
+        "on_foreground": true,
+        "protocol": "current quality_metrics.py luminance threshold 250; not a rerun of SAM2"
+      }
+    },
+    {
+      "model_id": "00054810",
+      "silhouette_iou": 0.8519712601326456,
+      "dino_cosine": 0.31858277320861816,
+      "clip_realism": 0.23483900725841522,
+      "selection": "uniform_without_replacement_from_historical_report_seed_20261012",
+      "real_photo_keys": [
+        "blender",
+        "flux",
+        "flux_masked"
+      ],
+      "shapes": {
+        "occ": [
+          224,
+          224,
+          3
+        ],
+        "blender": [
+          512,
+          512,
+          3
+        ],
+        "flux": [
+          512,
+          512,
+          3
+        ]
+      },
+      "status": "loaded",
+      "input_sha256": {
+        "imgs.npz": "6159d5e3ea15698e43be6b3e6ac80574d77ad5e767611db7f85b502f165e38b4",
+        "real_photo.npz": "0236dfbf111c0f968041d560d4a821013a6ab7097d81b27be329e365c2cb88ca"
+      },
+      "reference_mask_centroid": {
+        "xy": [
+          111,
+          101
+        ],
+        "on_foreground": true,
+        "protocol": "current quality_metrics.py luminance threshold 250; not a rerun of SAM2"
+      }
+    },
+    {
+      "model_id": "00656170",
+      "silhouette_iou": 0.9367006985491672,
+      "dino_cosine": 0.57151198387146,
+      "clip_realism": 0.24048665165901184,
+      "selection": "uniform_without_replacement_from_historical_report_seed_20261012",
+      "real_photo_keys": [
+        "blender",
+        "flux",
+        "flux_masked"
+      ],
+      "shapes": {
+        "occ": [
+          224,
+          224,
+          3
+        ],
+        "blender": [
+          512,
+          512,
+          3
+        ],
+        "flux": [
+          512,
+          512,
+          3
+        ]
+      },
+      "status": "loaded",
+      "input_sha256": {
+        "imgs.npz": "0e96a0bf9b57034efab20f4b2b307d8f854f642eac9acff082ee0024f29dc3f8",
+        "real_photo.npz": "24d3a56d52277aa0c626daa7eca79adcadd75dfad5563387279572f99e97369b"
+      },
+      "reference_mask_centroid": {
+        "xy": [
+          108,
+          100
+        ],
+        "on_foreground": true,
+        "protocol": "current quality_metrics.py luminance threshold 250; not a rerun of SAM2"
+      }
+    },
+    {
+      "model_id": "00925324",
+      "silhouette_iou": 0.2218354545124914,
+      "dino_cosine": 0.38676854968070984,
+      "clip_realism": 0.22825832664966583,
+      "selection": "uniform_without_replacement_from_historical_report_seed_20261012",
+      "real_photo_keys": [
+        "blender",
+        "flux",
+        "flux_masked"
+      ],
+      "shapes": {
+        "occ": [
+          224,
+          224,
+          3
+        ],
+        "blender": [
+          512,
+          512,
+          3
+        ],
+        "flux": [
+          512,
+          512,
+          3
+        ]
+      },
+      "status": "loaded",
+      "input_sha256": {
+        "imgs.npz": "131548a108afb0c079e8e8ab21df4f80bd40eb51e4a0bb706e4e076de77fb804",
+        "real_photo.npz": "db4665070026fb7150737bcb2f1ef66df0f87178d31f476ed117997b58145740"
+      },
+      "reference_mask_centroid": {
+        "xy": [
+          102,
+          118
+        ],
+        "on_foreground": true,
+        "protocol": "current quality_metrics.py luminance threshold 250; not a rerun of SAM2"
+      }
+    },
+    {
+      "model_id": "00615312",
+      "silhouette_iou": 0.5793607325943128,
+      "dino_cosine": 0.5055570602416992,
+      "clip_realism": 0.236901193857193,
+      "selection": "uniform_without_replacement_from_historical_report_seed_20261012",
+      "real_photo_keys": [
+        "blender",
+        "flux",
+        "flux_masked"
+      ],
+      "shapes": {
+        "occ": [
+          224,
+          224,
+          3
+        ],
+        "blender": [
+          512,
+          512,
+          3
+        ],
+        "flux": [
+          512,
+          512,
+          3
+        ]
+      },
+      "status": "loaded",
+      "input_sha256": {
+        "imgs.npz": "07461221973e5d251f5e6a30b6b789cc67b308b04e7a8eaae6f214e8cd2f3308",
+        "real_photo.npz": "9a438efdfff47f49f2874ff56ded68020b35dfa3e46af8cbd14e83715560a9b3"
+      },
+      "reference_mask_centroid": {
+        "xy": [
+          111,
+          138
+        ],
+        "on_foreground": true,
+        "protocol": "current quality_metrics.py luminance threshold 250; not a rerun of SAM2"
+      }
+    },
+    {
+      "model_id": "00785339",
+      "silhouette_iou": 0.006464375287011197,
+      "dino_cosine": 0.5914572477340698,
+      "clip_realism": 0.2613920271396637,
+      "selection": "uniform_without_replacement_from_historical_report_seed_20261012",
+      "real_photo_keys": [
+        "blender",
+        "flux",
+        "flux_masked"
+      ],
+      "shapes": {
+        "occ": [
+          224,
+          224,
+          3
+        ],
+        "blender": [
+          512,
+          512,
+          3
+        ],
+        "flux": [
+          512,
+          512,
+          3
+        ]
+      },
+      "status": "loaded",
+      "input_sha256": {
+        "imgs.npz": "d50fed24d344560f2f5bfaa3d8187557a20a104480516da298df8bb51469f8e9",
+        "real_photo.npz": "1a02111cbf933bca1fb01b086125ba67899f8872d6a8fd52ab9eb34b62bded57"
+      },
+      "reference_mask_centroid": {
+        "xy": [
+          101,
+          115
+        ],
+        "on_foreground": false,
+        "protocol": "current quality_metrics.py luminance threshold 250; not a rerun of SAM2"
+      }
+    },
+    {
+      "model_id": "00089080",
+      "silhouette_iou": 0.04395693353841172,
+      "dino_cosine": 0.6018240451812744,
+      "clip_realism": 0.2327132672071457,
+      "selection": "uniform_without_replacement_from_historical_report_seed_20261012",
+      "real_photo_keys": [
+        "blender",
+        "flux",
+        "flux_masked"
+      ],
+      "shapes": {
+        "occ": [
+          224,
+          224,
+          3
+        ],
+        "blender": [
+          512,
+          512,
+          3
+        ],
+        "flux": [
+          512,
+          512,
+          3
+        ]
+      },
+      "status": "loaded",
+      "input_sha256": {
+        "imgs.npz": "5e9df7d5b2e36b0013d23b4a914edb112c7a67cd228cef5f9b56c8e8625493cc",
+        "real_photo.npz": "72ccd1ffc5534c62f7a245c934f37ca683fb5506d353cbb6ba41536db680aebb"
+      },
+      "reference_mask_centroid": {
+        "xy": [
+          92,
+          100
+        ],
+        "on_foreground": true,
+        "protocol": "current quality_metrics.py luminance threshold 250; not a rerun of SAM2"
+      }
+    },
+    {
+      "model_id": "00272609",
+      "silhouette_iou": 0.7499139201454406,
+      "dino_cosine": 0.6061488389968872,
+      "clip_realism": 0.2719719409942627,
+      "selection": "uniform_without_replacement_from_historical_report_seed_20261012",
+      "real_photo_keys": [
+        "blender",
+        "flux",
+        "flux_masked"
+      ],
+      "shapes": {
+        "occ": [
+          224,
+          224,
+          3
+        ],
+        "blender": [
+          512,
+          512,
+          3
+        ],
+        "flux": [
+          512,
+          512,
+          3
+        ]
+      },
+      "status": "loaded",
+      "input_sha256": {
+        "imgs.npz": "c60df18befe67891f5300e27b76cf1b30e50ee1832b806bbc4bf5871b433e8dd",
+        "real_photo.npz": "01a65095d645a8b2ba525578ddebaf48c1a059c259147eb69013f29f01811d0d"
+      },
+      "reference_mask_centroid": {
+        "xy": [
+          113,
+          118
+        ],
+        "on_foreground": true,
+        "protocol": "current quality_metrics.py luminance threshold 250; not a rerun of SAM2"
+      }
+    }
+  ],
+  "scope": "Read-only qualitative inspection of 12 existing pairs; no generation, segmentation-model inference or dataset-wide score recomputation.",
+  "observations": [
+    {
+      "scope": "sample_only",
+      "finding": "All 12 sampled FLUX images show a wooden desktop setting; office electronics recur. This does not estimate full-dataset diversity."
+    },
+    {
+      "model_ids": [
+        "00002886",
+        "00656170"
+      ],
+      "finding": "FLUX appearance is visually stone-like/mottled; Blender source also contains prominent surface texture. This is an appearance judgment, not verified material classification or proof of the generation prompt."
+    },
+    {
+      "model_ids": [
+        "00975879"
+      ],
+      "finding": "Thin source part appears substantially thickened in FLUX, with added hardware-like details."
+    },
+    {
+      "model_ids": [
+        "00925324"
+      ],
+      "finding": "FLUX shows screw-like details absent from the rendered source."
+    },
+    {
+      "model_ids": [
+        "00785339"
+      ],
+      "finding": "Gross visible shape appears closer than historical IoU 0.0065 suggests. Current reference-mask centroid lies outside foreground, inside the hole. No saved historical SAM mask was examined; historical failure cause is unconfirmed."
+    }
+  ],
+  "limitations": [
+    "One stored FLUX image per sampled CAD: does not measure within-CAD cross-seed stability.",
+    "Historical quality scores were loaded from the old report, not recomputed on current assets.",
+    "No calibrated realism labels, population error rate, or full 3D geometric certification."
+  ]
+}

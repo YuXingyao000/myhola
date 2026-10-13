@@ -10,6 +10,7 @@ from pathlib import Path
 
 
 METHODS = ("legacy", "intersection")
+SUPPORTED_METHODS = (*METHODS, "local")
 _RECORD_ALIASES = {"raw": "raw_legacy", "post": "post_legacy", "fit": "fit_legacy"}
 _PATH_ALIASES = {
     "raw_npz": "raw_legacy_npz",
@@ -22,7 +23,7 @@ _PATH_ALIASES = {
 
 def case_method(case: dict) -> str:
     method = case.get("method", "legacy")
-    if method not in METHODS:
+    if method not in SUPPORTED_METHODS:
         raise ValueError(f"Unsupported census method {method!r} for {case.get('id')}")
     return method
 
