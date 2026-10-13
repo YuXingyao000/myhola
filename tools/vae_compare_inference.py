@@ -106,7 +106,7 @@ def load_models(legacy_path: Path, joint_path: Path, device: torch.device,
                 intended_ids: list[str]):
     from omegaconf import OmegaConf
     from src.brepnet.models.vae import AutoEncoder_light
-    from src.brepnet.models.joint_vae import AutoEncoder_joint
+    from src.brepnet.models.vae import AutoEncoder_joint
 
     legacy_checkpoint, joint_checkpoint = safe_checkpoint(legacy_path), safe_checkpoint(joint_path)
     historical = legacy_checkpoint.get("hyper_parameters", {}).get("model", {})
@@ -302,8 +302,8 @@ def main(argv: list[str] | None = None) -> int:
     device = torch.device(args.device)
     started = time.monotonic()
     legacy, joint, audit = load_models(args.legacy_checkpoint, args.joint_checkpoint, device, ids)
-    sources = ("tools/vae_compare_inference.py", "src/brepnet/models/vae.py", "src/brepnet/models/joint_vae.py",
-               "src/brepnet/models/joint_decoder.py", "src/brepnet/models/blocks.py", "src/brepnet/dataset.py",
+    sources = ("tools/vae_compare_inference.py", "src/brepnet/models/vae.py",
+               "src/brepnet/models/blocks.py", "src/brepnet/dataset.py",
                "src/brepnet/data/shared_boundaries.py")
     protocol = {"version": PROTOCOL_VERSION, "mode": args.mode, "numeric_settings": settings,
                 "legacy_checkpoint": str(args.legacy_checkpoint.resolve()),

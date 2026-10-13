@@ -6,7 +6,7 @@ import pytest
 import torch
 from torch import nn
 
-from src.brepnet.models.intersection_decoder import (
+from src.brepnet.models.blocks import (
     IntersectionDecoder,
     enumerate_candidate_pairs,
 )
@@ -210,3 +210,153 @@ def test_bad_latent_contracts_rejected():
         model(torch.randn(2, 4), torch.tensor([3]))
     with pytest.raises(ValueError, match="finite"):
         model(torch.full((2, 4), torch.nan), torch.tensor([2]))
+
+
+def make_conditioned_decoder(*, enabled=True, checkpoint_candidates=False):
+    """Use the actual CNN/MLP head layout at a small, inexpensive width."""
+    from src.brepnet.models.vae import AutoEncoder_light
+    from src.brepnet.test.test_intersection_vae import tiny_config
+
+    config = tiny_config()
+    config["refinement"]["checkpoint_candidates"] = checkpoint_candidates
+    model = IntersectionDecoder(
+        AutoEncoder_light(config), config["refinement"],
+        curve_conditioning_cfg={"enabled": enabled, "hidden_dim": 128},
+    )
+    # Deterministic direct/checkpoint comparisons still exercise training paths.
+    for module in model.modules():
+        if isinstance(module, nn.Dropout):
+            module.p = 0.0
+        elif isinstance(module, nn.MultiheadAttention):
+            module.dropout = 0.0
+    return model
+
+
+def activate_conditioning(model):
+    with torch.no_grad():
+        for head in (
+            model.edge_geometry.conditioning.point_affine,
+            model.edge_geometry.conditioning.bbox_affine,
+        ):
+            head.weight.normal_(std=.02)
+            head.bias.normal_(std=.01)
+
+
+def test_zero_conditioning_preserves_all_old_outputs_and_registration_order():
+    torch.manual_seed(81)
+    original = make_conditioned_decoder(enabled=False).eval()
+    activate_residuals(original)
+    conditioned = make_conditioned_decoder().eval()
+    mismatch = conditioned.load_state_dict(original.state_dict(), strict=False)
+    assert not mismatch.unexpected_keys
+    assert mismatch.missing_keys
+    assert all(key.startswith("edge_geometry.conditioning.") for key in mismatch.missing_keys)
+    old_names = list(dict(original.named_parameters()))
+    retained_names = [
+        key for key, _ in conditioned.named_parameters()
+        if not key.startswith("edge_geometry.conditioning.")
+    ]
+    assert retained_names == old_names
+    z, counts = torch.randn(5, 8), torch.tensor([3, 2])
+    with torch.no_grad():
+        before, after = original(z, counts), conditioned(z, counts)
+    for stage in ("coarse", "refined"):
+        a, b = getattr(before, stage), getattr(after, stage)
+        for feature in ("face_features", "edge_features", "edge_logits"):
+            torch.testing.assert_close(getattr(a, feature), getattr(b, feature), rtol=0, atol=0)
+        for primitive in ("face_geometry", "edge_geometry"):
+            for component in ("local_points", "center_scale", "points"):
+                torch.testing.assert_close(
+                    getattr(getattr(a, primitive), component),
+                    getattr(getattr(b, primitive), component), rtol=0, atol=0,
+                )
+
+
+def test_conditioning_only_changes_final_edges_and_reads_refined_owner_pair():
+    torch.manual_seed(82)
+    model = make_conditioned_decoder().eval()
+    activate_residuals(model)
+    z, counts = torch.randn(3, 8), torch.tensor([3])
+    with torch.no_grad():
+        before = model(z, counts)
+        teacher_before = model.edge_geometry(before.coarse.edge_features)
+    activate_conditioning(model)
+    seen = []
+    handle = model.edge_geometry.conditioning.register_forward_pre_hook(
+        lambda _module, args: seen.append(args[0].detach().clone())
+    )
+    with torch.no_grad():
+        after = model(z, counts)
+        teacher_after = model.edge_geometry(before.coarse.edge_features)
+    handle.remove()
+    expected = torch.cat((
+        after.refined.edge_features,
+        after.refined.face_features[after.pairs.indices[:, 0]],
+        after.refined.face_features[after.pairs.indices[:, 1]],
+    ), dim=-1)
+    torch.testing.assert_close(torch.cat(seen), expected, rtol=0, atol=0)
+    for stage in ("coarse", "refined"):
+        a, b = getattr(before, stage), getattr(after, stage)
+        for field in ("face_features", "edge_features", "edge_logits"):
+            torch.testing.assert_close(getattr(a, field), getattr(b, field), rtol=0, atol=0)
+        torch.testing.assert_close(a.face_geometry.points, b.face_geometry.points, rtol=0, atol=0)
+    torch.testing.assert_close(before.coarse.edge_geometry.points, after.coarse.edge_geometry.points, rtol=0, atol=0)
+    torch.testing.assert_close(teacher_before.points, teacher_after.points, rtol=0, atol=0)
+    assert not torch.allclose(before.refined.edge_geometry.local_points, after.refined.edge_geometry.local_points)
+    assert not torch.allclose(before.refined.edge_geometry.center_scale, after.refined.edge_geometry.center_scale)
+
+
+def test_active_conditioning_has_gradients_to_both_owner_features():
+    torch.manual_seed(83)
+    model = make_conditioned_decoder().eval()
+    activate_conditioning(model)
+    edge = torch.randn(2, model.edge_dim, requires_grad=True)
+    first = torch.randn(2, model.face_dim, requires_grad=True)
+    second = torch.randn(2, model.face_dim, requires_grad=True)
+    geometry = model.edge_geometry(edge, torch.cat((edge, first, second), -1))
+    geometry.points.square().mean().backward()
+    for value in (edge, first, second):
+        assert value.grad is not None and torch.isfinite(value.grad).all()
+        assert (value.grad.abs().sum(-1) > 0).all()
+    projection_grad = model.edge_geometry.conditioning.projection[0].weight.grad
+    assert projection_grad is not None and projection_grad.abs().sum() > 0
+
+
+@pytest.mark.parametrize("active", [False, True])
+def test_conditioned_chunk_checkpoint_gradients_match_direct(active):
+    torch.manual_seed(84)
+    direct = make_conditioned_decoder()
+    activate_residuals(direct)
+    if active:
+        activate_conditioning(direct)
+    checkpointed = deepcopy(direct)
+    checkpointed.checkpoint_candidates = True
+    z = torch.randn(3, 8)
+    outputs = []
+    for model in (direct, checkpointed):
+        output = model(z, torch.tensor([3]))
+        loss = (
+            output.refined.edge_geometry.points.square().mean()
+            + output.refined.face_geometry.points.square().mean()
+            + output.refined.edge_logits.square().mean()
+        )
+        loss.backward()
+        outputs.append(output)
+    torch.testing.assert_close(outputs[0].refined.edge_geometry.points, outputs[1].refined.edge_geometry.points)
+    for (name, parameter), (other_name, other) in zip(direct.named_parameters(), checkpointed.named_parameters()):
+        assert name == other_name
+        assert parameter.grad is not None and other.grad is not None, name
+        assert torch.isfinite(parameter.grad).all(), name
+        torch.testing.assert_close(parameter.grad, other.grad, atol=1e-6, rtol=1e-4, msg=name)
+    for head in (direct.edge_geometry.conditioning.point_affine, direct.edge_geometry.conditioning.bbox_affine):
+        assert head.weight.grad.abs().sum() > 0
+
+
+def test_conditioned_single_faces_keep_empty_edge_contract():
+    model = make_conditioned_decoder().eval()
+    activate_conditioning(model)
+    output = model(torch.randn(2, 8), torch.tensor([1, 1]))
+    assert output.refined.edge_geometry.local_points.shape == (0, 16, 6)
+    assert output.refined.edge_geometry.center_scale.shape == (0, 4)
+    assert output.refined.edge_geometry.points.shape == (0, 16, 3)
+    assert output.refined.edge_logits.shape == (0,)

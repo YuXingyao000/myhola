@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 import torch
 
-from src.brepnet.models.intersection_vae import AutoEncoder_intersection
+from src.brepnet.models.vae import AutoEncoder_intersection
 from src.brepnet.models.vae import AutoEncoder_light
 from src.brepnet.test.test_intersection_vae import tiny_config
 from src.brepnet.test.test_shared_boundaries import make_boundary_arrays
@@ -105,6 +105,40 @@ def test_strict_meta_loading_and_renamed_encoder_audit(tmp_path):
         load_intersection(new_path, legacy_path, torch.device("cpu"), [])
 
 
+def test_local_checkpoint_replay_does_not_require_old_migration_source(tmp_path):
+    _, _, legacy_path, refinement_path, _, config = make_models(tmp_path)
+    local_config = {
+        **deepcopy(config), "init_legacy_checkpoint": None,
+        "init_refinement_checkpoint": str(refinement_path),
+        "intersection": {
+            "kind": "local_attention", "hidden_dim": 16, "num_heads": 2,
+            "num_layers": 2, "ffn_dim": 32, "dropout": 0.,
+            "candidate_chunk_size": 3, "checkpoint_candidates": True,
+        },
+    }
+    expected = AutoEncoder_intersection(local_config).eval()
+    local_path = tmp_path / "local.ckpt"
+    torch.save({
+        "state_dict": {f"model.{key}": value for key, value in expected.state_dict().items()},
+        "hyper_parameters": {"model": local_config}, "epoch": 3, "global_step": 30,
+    }, local_path)
+    refinement_path.unlink()
+    assert legacy_path.is_file()  # The independent encoder audit still needs its baseline.
+    actual, audit = load_intersection(local_path, legacy_path, torch.device("cpu"), ["example"])
+    assert audit["strict_load"] and audit["encoder_equal"]
+    assert audit["checkpoint_model_config"]["init_refinement_checkpoint"] == str(refinement_path)
+    assert actual.decoder.intersection_kind == "local_attention"
+    assert not actual.training and not any(param.requires_grad for param in actual.parameters())
+    for name, value in actual.state_dict().items():
+        torch.testing.assert_close(value, expected.state_dict()[name], atol=0, rtol=0)
+    latent = torch.randn(3, expected.face_feature_dim)
+    with torch.inference_mode():
+        first, second = expected.decode_latents(latent), actual.decode_latents(latent)
+    assert first.keys() == second.keys()
+    for key in first:
+        np.testing.assert_array_equal(first[key], second[key])
+
+
 def test_reference_hashes_and_actual_source_are_checked(tmp_path):
     _, model, legacy_path, _, _, _ = make_models(tmp_path)
     reference, data, split, protocol, arrays = make_reference(tmp_path, model, legacy_path)
@@ -167,17 +201,32 @@ def test_mean_audit_records_numerical_error_and_resume_rejects_changed_inputs(tm
     assert not audit["passed"] and audit["max_abs_error"] > 0
 
 
-def test_cpu_entrypoint_replay_resume_and_preserved_reference(tmp_path):
-    _, model, legacy_path, checkpoint, _, _ = make_models(tmp_path)
+@pytest.mark.parametrize("method", ["intersection", "local"])
+def test_cpu_entrypoint_replay_resume_and_preserved_reference(tmp_path, method):
+    _, model, legacy_path, checkpoint, _, config = make_models(tmp_path)
+    if method == "local":
+        local_config = {**deepcopy(config), "init_legacy_checkpoint": None,
+                        "init_refinement_checkpoint": str(checkpoint),
+                        "intersection": {"kind": "local_attention", "hidden_dim": 16,
+                                         "num_heads": 2, "num_layers": 1, "ffn_dim": 32,
+                                         "dropout": 0., "candidate_chunk_size": 3}}
+        model = AutoEncoder_intersection(local_config).eval()
+        checkpoint = tmp_path / "local.ckpt"
+        torch.save({"state_dict": {f"model.{key}": value for key, value in model.state_dict().items()},
+                    "hyper_parameters": {"model": local_config}, "epoch": 3, "global_step": 30}, checkpoint)
     reference, data, split, _, arrays = make_reference(tmp_path, model, legacy_path)
     output = tmp_path / "evaluation"
     source = reference / "raw_predictions/posterior_mean/legacy/example/data.npz"
     reference_sha = file_sha256(source)
     args = ["--checkpoint", str(checkpoint), "--legacy-checkpoint", str(legacy_path),
             "--reference-root", str(reference), "--data-root", str(data), "--split-list", str(split),
-            "--output-root", str(output), "--mode", "posterior_mean", "--device", "cpu"]
+            "--output-root", str(output), "--mode", "posterior_mean", "--device", "cpu", "--method", method]
     assert main(args) == 0
-    result_path = output / "raw_predictions/posterior_mean/intersection/example/data.npz"
+    result_path = output / "raw_predictions/posterior_mean" / method / "example/data.npz"
+    protocol = json.loads((output / "metadata/inference/posterior_mean/protocol.json").read_text())
+    assert protocol["method"] == method
+    if method == "local":
+        assert "src/brepnet/models/blocks.py" in protocol["source_sha256"]
     with np.load(result_path, allow_pickle=False) as actual:
         np.testing.assert_array_equal(actual["face_latents"], arrays["face_latents"])
         assert str(actual["reference_protocol_sha256"]) == str(arrays["protocol_sha256"])

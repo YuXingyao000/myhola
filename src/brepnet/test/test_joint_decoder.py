@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 import torch
 
-from src.brepnet.models.joint_decoder import JointBoundaryDecoder
-from src.brepnet.models.joint_losses import boundary_costs, joint_boundary_loss, match_boundaries
+from src.brepnet.models.blocks import JointBoundaryDecoder
+from src.brepnet.models.vae import boundary_costs, joint_boundary_loss, match_boundaries
 
 
 LOSS_WEIGHTS = dict(face=1.0, curve=1.0, existence=0.1, ownership=0.1, consistency=0.1)
@@ -144,7 +144,7 @@ def synthetic_encoder_batch():
 
 
 def test_legacy_encoder_migration_cache_identity_frozen_eval_and_strict_reload(tmp_path):
-    from src.brepnet.models.joint_vae import AutoEncoder_joint
+    from src.brepnet.models.vae import AutoEncoder_joint
     from src.brepnet.models.vae import AutoEncoder_light
 
     torch.manual_seed(15)
@@ -190,7 +190,7 @@ def test_legacy_encoder_migration_cache_identity_frozen_eval_and_strict_reload(t
 
 
 def test_finetuning_backpropagates_encoder_and_export_uses_predictions_only():
-    from src.brepnet.models.joint_vae import AutoEncoder_joint
+    from src.brepnet.models.vae import AutoEncoder_joint
 
     torch.manual_seed(16)
     model = AutoEncoder_joint(small_vae_config(freeze_encoder=False, joint_existence_threshold=0.0)).train()
@@ -208,7 +208,7 @@ def test_finetuning_backpropagates_encoder_and_export_uses_predictions_only():
 
 
 def test_same_face_and_duplicate_predictions_are_preserved_raw():
-    from src.brepnet.models.joint_vae import AutoEncoder_joint
+    from src.brepnet.models.vae import AutoEncoder_joint
 
     model = AutoEncoder_joint(small_vae_config(joint_existence_threshold=0.0)).eval()
     z = torch.randn(2, 8)
@@ -239,7 +239,7 @@ def test_factories_and_frozen_decoder_keep_latent_derivatives():
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA unavailable")
 def test_cuda_bfloat16_forward_backward_and_numpy_export():
-    from src.brepnet.models.joint_vae import AutoEncoder_joint
+    from src.brepnet.models.vae import AutoEncoder_joint
 
     def to_device(value):
         if isinstance(value, torch.Tensor):

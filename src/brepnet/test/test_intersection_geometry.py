@@ -3,7 +3,7 @@
 import pytest
 import torch
 
-from src.brepnet.models.intersection_geometry import closest_polyline_points, closest_surface_points
+from src.brepnet.models.blocks import closest_polyline_points, closest_surface_points
 
 
 def plane_grid(dtype=torch.float32, device="cpu"):

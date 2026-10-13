@@ -98,7 +98,7 @@ def audit_encoder_state(new_weights: dict, legacy_weights: dict,
 def load_intersection(checkpoint_path: Path, legacy_path: Path, device: torch.device,
                       ids: list[str]) -> tuple[torch.nn.Module, dict]:
     from omegaconf import OmegaConf
-    from src.brepnet.models.intersection_vae import AutoEncoder_intersection
+    from src.brepnet.models.vae import AutoEncoder_intersection
 
     checkpoint, legacy_checkpoint = safe_checkpoint(checkpoint_path), safe_checkpoint(legacy_path)
     config = checkpoint.get("hyper_parameters", {}).get("model")
@@ -121,6 +121,7 @@ def load_intersection(checkpoint_path: Path, legacy_path: Path, device: torch.de
             "training_split": training_split_provenance(source, ids),
         }
     runtime_config = {**config, "checkpoint": None, "init_legacy_checkpoint": None,
+                      "init_refinement_checkpoint": None,
                       "restoring_checkpoint": True, "mode": "frozen_inference"}
     with torch.device("meta"):
         model = AutoEncoder_intersection(runtime_config)
@@ -273,6 +274,7 @@ def build_parser() -> argparse.ArgumentParser:
     for name in ("legacy-checkpoint", "reference-root", "data-root", "split-list", "output-root"):
         parser.add_argument(f"--{name}", type=Path, required=True)
     parser.add_argument("--mode", choices=("posterior_mean", "archived_latents"), required=True)
+    parser.add_argument("--method", choices=("intersection", "local"), default="intersection")
     parser.add_argument("--num-shards", type=int, default=1)
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--device", default="cuda:0")
@@ -298,15 +300,14 @@ def main(argv: list[str] | None = None) -> int:
     numeric = configure_fp32()
     device = torch.device(args.device)
     model, model_audit = load_intersection(args.checkpoint, args.legacy_checkpoint, device, ids)
+    if args.method == "local" and model.decoder.intersection_kind != "local_attention":
+        raise ValueError("Method local requires a local_attention checkpoint")
     source_files = ["tools/intersection_evaluate_inference.py", "tools/vae_compare_inference.py",
                     "src/brepnet/models/vae.py", "src/brepnet/models/blocks.py",
-                    "src/brepnet/models/holistic_encoder.py", "src/brepnet/dataset.py",
+                    "src/brepnet/dataset.py",
                     "src/brepnet/data/shared_boundaries.py"]
-    source_files.extend(str(path.relative_to(REPOSITORY)) for path in sorted(
-        (REPOSITORY / "src/brepnet/models").glob("intersection_*.py")
-    ))
     protocol = {
-        "version": PROTOCOL_VERSION, "mode": args.mode, "method": "intersection",
+        "version": PROTOCOL_VERSION, "mode": args.mode, "method": args.method,
         "checkpoint": str(args.checkpoint.resolve()), "checkpoint_sha256": file_sha256(args.checkpoint),
         "legacy_checkpoint": str(args.legacy_checkpoint.resolve()), "legacy_checkpoint_sha256": legacy_digest,
         "reference_root": str(args.reference_root.resolve()),
@@ -354,9 +355,9 @@ def main(argv: list[str] | None = None) -> int:
     with status_path.open("a" if args.resume else "x") as stream, torch.inference_mode():
         for index, model_id in enumerate(shard_ids):
             started = time.monotonic()
-            row = {"model_id": model_id, "mode": args.mode, "method": "intersection",
+            row = {"model_id": model_id, "mode": args.mode, "method": args.method,
                    "shard": args.shard_index, "status": "failed"}
-            path = args.output_root / "raw_predictions" / args.mode / "intersection" / model_id / "data.npz"
+            path = args.output_root / "raw_predictions" / args.mode / args.method / model_id / "data.npz"
             try:
                 latents, provenance = read_reference_input(
                     args.reference_root, args.data_root, model_id, args.mode, reference, reference_digest

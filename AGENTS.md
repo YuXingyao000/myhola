@@ -34,9 +34,8 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 |---|---|
 | `src/brepnet/train.py` | Hydra + Lightning 统一 VAE / diffusion 入口 |
 | `src/brepnet/dataset.py` | 当前 `Diffusion_dataset`，以及仍有旧字段的 VAE / legacy 数据路径 |
-| `src/brepnet/models/vae.py` | 面／半边编码、拓扑特征融合、每面 latent、neural intersection、几何解码 |
-| `src/brepnet/models/joint_vae.py`、`joint_decoder.py`、`joint_losses.py` | 新 shared-boundary VAE 与面／边双向解码；保持旧 encoder 合同，具体实现见 `checkpoints/joint_boundary/PLAN.md` |
-| `src/brepnet/models/intersection_vae.py`、`intersection_decoder.py`、`intersection_refiner.py`、`intersection_losses.py` | 保留旧 HoLa 内核与线性 classifier 的单轮几何反馈实验；显式模块与协议见 `checkpoints/intersection_refinement/README.md` |
+| `src/brepnet/models/vae.py` | 原 AutoEncoder／Light，HolisticEncoder／FacePosterior，AutoEncoder_intersection／AutoEncoder_joint 的装配、权重迁移、损失与导出 |
+| `src/brepnet/models/blocks.py` | 原网络 block，IntersectionDecoder／IntersectionRefiner／LocalPairIntersection、几何投影与状态结构、JointBoundaryDecoder；新增 FacePairConditioning 仅用于可选的最终边几何头调制 |
 | `src/brepnet/run_management.py`、`prediction_export.py` | 独立 run 目录、配置／Git 溯源、逐对象原始预测导出 |
 | `src/brepnet/models/diffusion.py` | diffusion 装配、损失、采样与 VAE 解码 |
 | `src/brepnet/models/diffusion_latents.py` | cached mean/std 或 VAE 编码 |
@@ -51,6 +50,10 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 典型路径：图片 → 冻结 DINOv2 patch tokens → 前端 cross-attention fuser → face-latent DDPM → 冻结 VAE 的面几何与成对 intersection 解码 → OCC 后处理。默认每面 32 维、最多 30 个 token、random duplicate padding。这是已有实现，不是未来架构要求。
 
 细节见 [源码指南](src/brepnet/AGENTS.md)、[数据指南](src/brepnet/data/AGENTS.md)、[评估指南](src/brepnet/eval/AGENTS.md)。
+
+2026-10-13 按原文件组织归并 VAE 实验代码：移除 `models/` 下原 `intersection_*` 六个文件、`joint_*` 三个文件及 `holistic_encoder.py`、`local_intersection.py`，实现集中到 `vae.py`／`blocks.py`。已有模型名称、模块属性层级和旧 checkpoint state key 保留，trainer 继续共用 config 装配。历史 PLAN／NOTE 的旧路径保留为当时记录，当前入口以本地图及主题 README 为准。
+
+可选最终 curve 条件调制见 [配置与迁移说明](checkpoints/intersection_refinement/curve_conditioning/README.md)：`model.curve_conditioning.enabled` 默认 `false`、`hidden_dim=128`；启用后仅在 refined edge CNN 与 center/scale MLP 的最终输出层前调制。`init_refinement_checkpoint` 对 local 分支只替换旧 inter，对此条件分支保留所有旧参数、仅初始化新增 conditioning；两者均为新 run 初始化，完整模型加载／resume 仍严格匹配。
 
 ## 架构讨论必须处理的问题
 

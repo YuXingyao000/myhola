@@ -142,10 +142,12 @@ class UnifiedTrainer(pl.LightningModule):
                 raise ValueError(
                     "AutoEncoder_intersection rejects trainer.init_from_checkpoint. "
                     "Use model.init_legacy_checkpoint for strict original VAE migration, "
+                    "model.init_refinement_checkpoint for validated refinement migration, "
                     "model.checkpoint for new-model initialization, or trainer.resume_from_checkpoint."
                 )
             if has_resume:
                 model_cfg.init_legacy_checkpoint = None
+                OmegaConf.update(model_cfg, "init_refinement_checkpoint", None, force_add=True)
                 model_cfg.checkpoint = None
                 OmegaConf.update(model_cfg, "restoring_checkpoint", True, force_add=True)
         self.model = build_model(model_cfg, cfg.condition)
