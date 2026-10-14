@@ -1,4 +1,4 @@
-"""Audited paired census for previous refinement versus local intersection."""
+"""Audited paired census for previous refinement versus an explicit candidate."""
 from __future__ import annotations
 
 import argparse
@@ -6,12 +6,13 @@ from collections import Counter
 import csv
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 
 from tools.failure_census_contract import case_method, case_path, case_record
 from tools import intersection_failure_report as measures
 from tools import legacy_failure_census_report as legacy
-from tools.paired_failure_manifest import read_json
+from tools.paired_failure_manifest import CANDIDATE_METHODS, LABELS as METHOD_LABELS, paired_methods, read_json
 
 VERSION = "paired_failure_report_v1"
 THRESHOLDS = measures.THRESHOLDS
@@ -28,7 +29,8 @@ ROLES = ("baseline", "candidate")
 LABELS = {"baseline": "上一版 Intersection refinement", "candidate": "本版局部注意力"}
 
 
-def validate_cohorts(candidate, baseline, frozen):
+def validate_cohorts(candidate, baseline, frozen, candidate_method="local"):
+    paired_methods(candidate_method)
     def index(cases, method):
         result = {}
         for case in cases:
@@ -39,7 +41,7 @@ def validate_cohorts(candidate, baseline, frozen):
                 raise ValueError(f"Unknown native validity: {method}/{sid}")
             result[sid] = case
         return result
-    new, old = index(candidate, "local"), index(baseline, "intersection")
+    new, old = index(candidate, candidate_method), index(baseline, "intersection")
     if new.keys() != old.keys():
         raise ValueError("Paired methods must have identical census IDs")
     groups = {key: [] for key in COHORTS}
@@ -145,9 +147,15 @@ def audit_source_preservation(root):
 def build_report(root, baseline_root):
     paths = {name: root / name for name in ("manifest.json", "baseline_manifest.json", "baseline_control_manifest.json", "baseline_reuse.json")}
     manifest, baseline, controls, reuse = [read_json(paths[name]) for name in paths]
-    if manifest.get("baseline_method") != "intersection" or manifest.get("candidate_method") != "local":
+    candidate_method = manifest.get("candidate_method")
+    if manifest.get("baseline_method") != "intersection" or candidate_method not in CANDIDATE_METHODS:
         raise ValueError("Wrong paired methods")
-    groups = validate_cohorts(manifest["cases"], baseline["cases"], manifest["cohorts"])
+    if manifest.get("method") != candidate_method or any(
+            document.get("method") != "intersection" or document.get("candidate_method") != candidate_method
+            for document in (baseline, controls)):
+        raise ValueError("Paired manifest identities differ")
+    labels = {"baseline": METHOD_LABELS["intersection"], "candidate": METHOD_LABELS[candidate_method]}
+    groups = validate_cohorts(manifest["cases"], baseline["cases"], manifest["cohorts"], candidate_method)
     population = manifest["population"]
     if (population.get("accepted_test") != 2417 or population.get("original_test") != 2424
             or population.get("contract_unsupported") != 7
@@ -198,7 +206,7 @@ def build_report(root, baseline_root):
             "transitions": {t: {name: paired_transitions(subset, name, t) for name, *_ in OBSERVATIONS} for t in THRESHOLDS},
             "continuous": paired_continuous(subset)}
     summary = {"schema": VERSION, "created_at_utc": datetime.now(timezone.utc).isoformat(),
-               "population": population, "methods": {"baseline": "intersection", "candidate": "local"}, "method_labels": LABELS,
+               "population": population, "methods": {"baseline": "intersection", "candidate": candidate_method}, "method_labels": labels,
                "main": measures.summarize_records([row for row in new.values() if not row["original_native_valid"]]),
                "baseline_failures": measures.summarize_records([row for row in old.values() if not row["original_native_valid"]]),
                "cohorts": cohort_results, "audit": audit,
@@ -211,8 +219,8 @@ def build_report(root, baseline_root):
                    "只在原终态、STEP DATA精确一致且没有观测错误时采用阶段轨迹；缺测保留原分母。",
                    "边面距离是固定采样的归一化XYZ长度，不是毫米、Hausdorff距离或可裁剪性的证明。",
                    "面级错误只统计最终失败的decoder面；候选自身与所属上下文去重合并，OCC错误码不是唯一根因。",
-                   "本次额外微调曝光与上一版不同，无法把全部收益或退步因果归于局部注意力；不代表端到端照片重建结果。",
-                   "原HoLa的50件3D图库只作历史参考，页面不将其视作本次local几何。"]}
+                   f"本次额外微调曝光与上一版不同，无法把全部收益或退步因果归于{labels['candidate']}；不代表端到端照片重建结果。",
+                   "原HoLa的50件3D图库只作历史参考，页面不将其视作本版几何。"]}
     summary["highlights"] = highlights(summary)
     return pairs, summary
 
@@ -337,7 +345,7 @@ def make_charts(summary: dict, directory: Path, font_path: Path | None = None) -
 def report_markdown(summary, charts):
     main = summary["main"]
     den = main["denominator"]
-    lines = ["# 局部注意力 intersection：与上一版 refinement 的失败对照", "",
+    lines = [f"# {summary['method_labels']['candidate']}：与上一版 refinement 的失败对照", "",
              *summary["highlights"], "",
              "[交互统计页面](page/index.html) · [紧凑统计](compact_summary.json) · [逐件CSV](cases.csv) · [冻结协议](PLAN.md)", "",
              f"本版失败轨迹完整一致 {main['verified_traces']}/{den}。各行是可重叠观察，未知保留分母；阈值0.006为归一化长度。",
@@ -388,7 +396,8 @@ def page_payload(pairs, summary, charts, atlas_ids):
     def compact(row):
         return {key: row[key] for key in ("id", "method", "original_native_valid", "terminal_stage", "trace_verified", "flags", "owner_stages", "failed_face_context", "persistent_trim", "faces_without_boundary", "optimization_delta", "source_files")}
     return {"schema": VERSION, "population": summary["population"], "main": summary["main"],
-            "method_labels": LABELS, "highlights": summary["highlights"], "cohort_labels": COHORTS,
+            "method_labels": summary["method_labels"], "methods": summary["methods"],
+            "highlights": summary["highlights"], "cohort_labels": COHORTS,
             "cohort_counts": {key: value["count"] for key, value in summary["cohorts"].items()},
             "thresholds": list(THRESHOLDS), "terminal_labels": TERMINALS,
             "observations": [{"key": key, "label": label, "english": english, "criterion": criterion, "uses_threshold": threshold} for key, label, english, criterion, threshold in OBSERVATIONS],
@@ -477,12 +486,24 @@ def write_outputs(root, pairs, summary, charts):
                 row.update({f"{role}__{t}__{key}": record["flags"][t][key] for t in THRESHOLDS for key, *_ in OBSERVATIONS})
             writer.writerow(row)
     (root / "REPORT.md").write_text(report_markdown(summary, charts))
-    atlas = Path(__file__).resolve().parents[1] / "checkpoints/joint_boundary/legacy_failures_20261011/selected_ids.txt"
-    payload = page_payload(pairs, summary, charts, set(atlas.read_text().split()) if atlas.is_file() else set())
+    atlas_root = Path(__file__).resolve().parents[1] / "checkpoints/joint_boundary/legacy_failures_20261011"
+    atlas = atlas_root / "selected_ids.txt"
+    atlas_available = atlas.is_file() and all((atlas_root / name).is_file() for name in (
+        "page/index.html", "page/data.js", "page/vendor/three-0.160.1.min.js"))
+    payload = page_payload(pairs, summary, charts, set(atlas.read_text().split()) if atlas_available else set())
     page = root / "page"
     page.mkdir(exist_ok=True)
-    (page / "index.html").write_text(PAGE_HTML)
-    (page / "app.js").write_text(PAGE_JS)
+    label = summary["method_labels"]["candidate"]
+    html = PAGE_HTML.replace("局部注意力与上一版refinement", label + "与上一版refinement")
+    html = html.replace("LOCAL INTERSECTION", summary["methods"]["candidate"].upper())
+    atlas_url = os.path.relpath(atlas_root / "page", page) + "/"
+    old_url = "../../../joint_boundary/legacy_failures_20261011/page/"
+    html = html.replace(old_url, atlas_url)
+    if not atlas_available:
+        html = html.replace(f'<a href="{atlas_url}">原HoLa历史50件图库</a>',
+                            '<span class="muted">原HoLa历史图库为独立资源</span>')
+    (page / "index.html").write_text(html)
+    (page / "app.js").write_text(PAGE_JS.replace(old_url, atlas_url))
     (page / "data.js").write_text("window.PAIRED_CENSUS_DATA=" + json.dumps(payload, ensure_ascii=False, allow_nan=False).replace("</", "<\\/") + ";\n")
 
 

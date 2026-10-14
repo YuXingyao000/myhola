@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 METHODS = ("legacy", "intersection")
-SUPPORTED_METHODS = (*METHODS, "local")
+SUPPORTED_METHODS = (*METHODS, "local", "conditioned")
 _RECORD_ALIASES = {"raw": "raw_legacy", "post": "post_legacy", "fit": "fit_legacy"}
 _PATH_ALIASES = {
     "raw_npz": "raw_legacy_npz",

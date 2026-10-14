@@ -29,7 +29,7 @@ from typing import Any
 
 
 METHODS = ("legacy", "joint")
-CANDIDATE_METHODS = ("joint", "intersection", "local")
+CANDIDATE_METHODS = ("joint", "intersection", "local", "conditioned")
 BASELINE_METHODS = ("legacy", "intersection")
 
 

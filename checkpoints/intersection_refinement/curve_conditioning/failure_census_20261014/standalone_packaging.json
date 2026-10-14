@@ -1,0 +1,82 @@
+{
+  "schema": "paired_census_standalone_v1",
+  "scope": "Presentation packaging only; scientific measurements remain unchanged.",
+  "experiment_identity": "2026-10-14 · 曲线条件调制 · 验证最佳epoch157 / step57354",
+  "sources": [
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/curve_conditioning/failure_census_20261014/page/index.html",
+      "sha256": "2cc2d8a7a94c64a932d1ef7da34f8e8ade7f735da5e55ad7226d3da92ad5dcba"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/curve_conditioning/failure_census_20261014/page/app.js",
+      "sha256": "c56b0a5372b1005ac280a8402de80711afab1fac53281a8e0412e50c445aa484"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/curve_conditioning/failure_census_20261014/page/data.js",
+      "sha256": "a817453c5072446326c8331b2b12955add06829f053572f0b711047ed2a1a6a8"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/curve_conditioning/failure_census_20261014/visualizations/main_failure_observations.png",
+      "sha256": "6ee1fccfe8121fc97214306ac6aacfb3f448b4a2cc81b9c5a0e5e1e4f5e05970"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/curve_conditioning/failure_census_20261014/visualizations/main_failure_observations.svg",
+      "sha256": "650de583b36ce2960ec60c25ea3c57d45243b3c72b909066f38d0fa2bcf9787e"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/curve_conditioning/failure_census_20261014/visualizations/paired_observation_changes.png",
+      "sha256": "f101b0bdad6e067d50072aa3b42b617a7e4bad1803f6136ac910bb89137607c6"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/curve_conditioning/failure_census_20261014/visualizations/paired_observation_changes.svg",
+      "sha256": "d0f122f766aa1503efefc57bb7bf9f4290f66428689a859e42acde23069bea8a"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/curve_conditioning/failure_census_20261014/visualizations/owner_residual_before_after.png",
+      "sha256": "40f1ec87a02654795e8874ef0b91a7b4ed9f0c935897562e1765eee30650fa0b"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/curve_conditioning/failure_census_20261014/visualizations/owner_residual_before_after.svg",
+      "sha256": "9aca6a0569b33f98f8e374efb3010e6c767aececeb8b6928ac9569ab86b51ade"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/curve_conditioning/failure_census_20261014/visualizations/persistent_face_context_errors.png",
+      "sha256": "05e11a3f6b7354b2daa06785092be2a46b764b2a881f35dd7dbb2cb94fd485ac"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/curve_conditioning/failure_census_20261014/visualizations/persistent_face_context_errors.svg",
+      "sha256": "5ead079897f91f769072bd9844e323c45f97774c3089f9d3bb0b83155f4a798b"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/curve_conditioning/failure_census_20261014/NOTE.md",
+      "sha256": "5c805ff4c5bc74f206e79ac72cecee14a6e1d97297849c50595a1ad13a9bae07"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/curve_conditioning/failure_census_20261014/REPORT.md",
+      "sha256": "e47b9c929c245a7cd28ba4726343948cea824033b0e2d23534e4a8af113a90ac"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/curve_conditioning/failure_census_20261014/compact_summary.json",
+      "sha256": "4a66841954a16546694510dff54568690c7ea39ea936a9e2583deff07e6fa3da"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/curve_conditioning/failure_census_20261014/cases.csv",
+      "sha256": "401f4652bf593f3289d47dc3c8f002a1e063009e7b5030f2259f188e1d56749f"
+    }
+  ],
+  "output": {
+    "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/curve_conditioning/failure_census_20261014/page/standalone.html",
+    "sha256": "a2c9b0bebc719f83f505287f9e14722d14724dfc47f023069e65e0b3e43c5447",
+    "bytes": 14066417
+  },
+  "pair_count": 349,
+  "main_denominator": 306,
+  "embedded_charts": 4,
+  "embedded_downloads": [
+    "NOTE.md",
+    "REPORT.md",
+    "compact_summary.json",
+    "cases.csv"
+  ],
+  "historical_3d_atlas": "Not embedded; clearly labelled independent historical resource."
+}

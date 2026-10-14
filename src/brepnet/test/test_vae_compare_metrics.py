@@ -239,23 +239,24 @@ def test_cli_rejects_nonfrozen_split_instead_of_claiming_2417_coverage(tmp_path)
         read_frozen_ids(path)
 
 
-def test_local_comparison_preserves_intersection_identity_and_pair_direction(tmp_path):
+@pytest.mark.parametrize("candidate_method", ["local", "conditioned"])
+def test_local_comparison_preserves_intersection_identity_and_pair_direction(tmp_path, candidate_method):
     write_gt(tmp_path / "gt" / "example")
-    for method in ("intersection", "local"):
+    for method in ("intersection", candidate_method):
         folder = tmp_path / "pred" / method / "example"
         folder.mkdir(parents=True)
         value = prediction("legacy")
-        if method == "local":
+        if method == candidate_method:
             value["pred_face"] += 0.1
         np.savez(folder / "data.npz", **value)
     rows = evaluate_sample("example", data_root=tmp_path / "gt", prediction_root=tmp_path / "pred",
-                           mode="posterior_mean", baseline_method="intersection", candidate_method="local")
+                           mode="posterior_mean", baseline_method="intersection", candidate_method=candidate_method)
     result = summarize(rows, ["example"], mode="posterior_mean", original_count=2,
-                       baseline_method="intersection", candidate_method="local")
-    assert set(result["methods"]) == {"intersection", "local"}
+                       baseline_method="intersection", candidate_method=candidate_method)
+    assert set(result["methods"]) == {"intersection", candidate_method}
     assert result["baseline_method"] == "intersection"
-    assert result["paired"]["face_mae"]["local_minus_intersection"]["mean"] == pytest.approx(.1)
-    assert result["paired"]["face_mae"]["local_win_fraction"] == 0
+    assert result["paired"]["face_mae"][f"{candidate_method}_minus_intersection"]["mean"] == pytest.approx(.1)
+    assert result["paired"]["face_mae"][f"{candidate_method}_win_fraction"] == 0
     assert all(row["legacy_reciprocal_pair_count"] == 1 for row in rows)
     assert "legacy" not in result["methods"]
 

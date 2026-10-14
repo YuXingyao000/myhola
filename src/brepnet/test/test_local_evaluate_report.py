@@ -85,3 +85,61 @@ def test_local_report_refuses_overwrite_and_renders_chinese_artifacts(local_fixt
     assert json.loads(Path(result["transitions"]).read_text())["optimized"]["counts"]["old_success_new_failure"] == 1
     with pytest.raises(FileExistsError, match="overwrite"):
         local.generate_report(local_fixture, font)
+
+
+def test_conditioned_report_uses_explicit_identity_and_current_links(local_fixture):
+    def replace_candidate(value):
+        if isinstance(value, dict):
+            return {key.replace("local", "conditioned"): replace_candidate(item)
+                    for key, item in value.items()}
+        if isinstance(value, list):
+            return [replace_candidate(item) for item in value]
+        return value.replace("local", "conditioned") if isinstance(value, str) else value
+
+    for path in local_fixture.rglob("*.json"):
+        write_json(path, replace_candidate(json.loads(path.read_text())))
+    for path in local_fixture.rglob("*.csv"):
+        with path.open() as handle:
+            rows = [replace_candidate(row) for row in csv.DictReader(handle)]
+        write_csv(path, rows)
+    data = generic.load_comparison(local_fixture, methods=("intersection", "conditioned"))
+    text = local.build_report(data, "conditioned", failure_census_link="failures/REPORT.md",
+                              raw_distribution_link=None)
+    assert "本版曲线条件调制（`conditioned`）" in text
+    assert "局部注意力" not in text and "20261012" not in text
+    assert "failures/REPORT.md" in text and "RAW_DISTRIBUTION.md" not in text
+    assert data["transitions"]["optimized"]["ids"]["old_success_new_failure"] == ["b"]
+    with pytest.raises(ValueError, match="Unexpected method"):
+        generic.load_comparison(local_fixture, methods=local.METHODS)
+    font = Path("/root/.cache/hola-browser-libs/fonts/NotoSansCJKsc-Regular.otf")
+    if font.is_file():
+        result = local.generate_report(local_fixture, font, "conditioned", raw_distribution_link=None)
+        assert Path(result["png"]).name == "conditioned_comparison.png"
+        assert Path(result["png"]).stat().st_size > 1000
+        assert "本版曲线条件调制" in Path(result["svg"]).read_text()
+        assert "本版局部注意力" not in Path(result["svg"]).read_text()
+
+
+def test_reciprocal_note_reads_diagnostic_evidence_and_rejects_mismatch(local_fixture):
+    data = generic.load_comparison(local_fixture, methods=local.METHODS)
+    metric = "legacy_reciprocal_cd_sq_mean"
+    data["raw"]["posterior_mean"]["methods"]["local"]["metrics"][metric]["mean"] = 2.
+    paired = {
+        "intersection": {"count": 4, "mean": 1., "median": 1.},
+        "local": {"count": 4, "mean": 2., "median": .5},
+        "common_count": 4, "win_count": 3, "win_fraction": .75,
+        "tail": {"candidate_error_top1pct": {"count": 1, "candidate_error_share": .75,
+                                             "positive_delta_share": .96, "remaining_mean_ratio": .86}}}
+    diagnostic = {"methods": ["intersection", "local"], "modes": {"posterior_mean": {"cohorts": {
+        "all": {"metrics": {metric: paired}},
+        "both_adjacency_exact": {"count": 3, "metrics": {metric: {"mean_ratio": .8}}}}}}}
+    text = local.build_report(data, reciprocal_diagnostic=diagnostic, outlier_probe_available=True)
+    assert "主要受少数尾部对象推动" in text and "3/4 件（75.00%）" in text
+    assert "diagnostics/RECIPROCAL.md" in text and "diagnostics/OUTLIER_PAIR_PROBE.md" in text
+    assert "全体均值仍保留为主结果" in text
+    paired["local"]["median"] = 1.5
+    text = local.build_report(data, reciprocal_diagnostic=diagnostic)
+    assert "主要受少数尾部对象推动" not in text
+    paired["local"]["mean"] = 2.1
+    with pytest.raises(ValueError, match="disagrees with raw summary"):
+        local.build_report(data, reciprocal_diagnostic=diagnostic)

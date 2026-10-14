@@ -274,12 +274,25 @@ def build_parser() -> argparse.ArgumentParser:
     for name in ("legacy-checkpoint", "reference-root", "data-root", "split-list", "output-root"):
         parser.add_argument(f"--{name}", type=Path, required=True)
     parser.add_argument("--mode", choices=("posterior_mean", "archived_latents"), required=True)
-    parser.add_argument("--method", choices=("intersection", "local"), default="intersection")
+    parser.add_argument("--method", choices=("intersection", "local", "conditioned"), default="intersection")
     parser.add_argument("--num-shards", type=int, default=1)
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--resume", action="store_true")
     return parser
+
+
+def validate_method(model: torch.nn.Module, method: str) -> None:
+    """Keep experimental identity explicit while using the same strict loader."""
+    kind = model.decoder.intersection_kind
+    conditioned = model.decoder.curve_conditioning_enabled
+    expected = {"intersection": ("legacy", False), "local": ("local_attention", False),
+                "conditioned": ("legacy", True)}
+    if method not in expected or (kind, conditioned) != expected[method]:
+        raise ValueError(f"Method {method} does not match checkpoint intersection={kind}, "
+                         f"curve_conditioning={conditioned}")
+    if method == "conditioned" and not model.decoder.refinement_enabled:
+        raise ValueError("Method conditioned requires enabled refinement")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -300,8 +313,7 @@ def main(argv: list[str] | None = None) -> int:
     numeric = configure_fp32()
     device = torch.device(args.device)
     model, model_audit = load_intersection(args.checkpoint, args.legacy_checkpoint, device, ids)
-    if args.method == "local" and model.decoder.intersection_kind != "local_attention":
-        raise ValueError("Method local requires a local_attention checkpoint")
+    validate_method(model, args.method)
     source_files = ["tools/intersection_evaluate_inference.py", "tools/vae_compare_inference.py",
                     "src/brepnet/models/vae.py", "src/brepnet/models/blocks.py",
                     "src/brepnet/dataset.py",

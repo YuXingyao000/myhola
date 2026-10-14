@@ -18,11 +18,20 @@ from tools.vae_compare_post import REFERENCE_CONTRACT_FIELDS, TERMINAL, fingerpr
 
 VERSION = "paired_failure_manifest_v1"
 METHODS = ("intersection", "local")
+CANDIDATE_METHODS = ("local", "conditioned")
 COHORTS = ("both_failed", "new_failure", "rescued", "both_valid")
-LABELS = {"intersection": "上一版 Intersection refinement", "local": "本版局部注意力"}
+LABELS = {"intersection": "上一版 Intersection refinement", "local": "本版局部注意力",
+          "conditioned": "曲线条件调制"}
 
 
-def read_table(path: Path, id_key: str) -> dict:
+def paired_methods(candidate_method="local"):
+    if candidate_method not in CANDIDATE_METHODS:
+        raise ValueError(f"Unsupported paired candidate {candidate_method!r}")
+    return "intersection", candidate_method
+
+
+def read_table(path: Path, id_key: str, candidate_method="local") -> dict:
+    methods = paired_methods(candidate_method)
     rows = {}
     with path.open(newline="") as handle:
         reader = csv.DictReader(handle)
@@ -33,7 +42,7 @@ def read_table(path: Path, id_key: str) -> dict:
                 raise ValueError(f"Malformed CSV row: {path}")
             row = {key: typed_value(key, value) for key, value in source.items()}
             sid, method = row.get(id_key), row.get("method")
-            if not isinstance(sid, str) or not re.fullmatch(r"\d{8}", sid) or method not in METHODS:
+            if not isinstance(sid, str) or not re.fullmatch(r"\d{8}", sid) or method not in methods:
                 raise ValueError(f"Invalid comparison identity/method: {sid!r}/{method!r}")
             if (method, sid) in rows:
                 raise ValueError(f"Duplicate identity: {method}/{sid}")
@@ -41,17 +50,18 @@ def read_table(path: Path, id_key: str) -> dict:
     return rows
 
 
-def partition_population(raw: dict, post: dict, fit: dict, ids: list[str]) -> dict:
-    expected = {(method, sid) for method in METHODS for sid in ids}
+def partition_population(raw: dict, post: dict, fit: dict, ids: list[str], candidate_method="local") -> dict:
+    methods = paired_methods(candidate_method)
+    expected = {(method, sid) for method in methods for sid in ids}
     if not ids or len(set(ids)) != len(ids):
         raise ValueError("Intended IDs must be nonempty and unique")
     if any(set(table) != expected for table in (raw, post, fit)):
         raise ValueError("Raw/post/fit must contain exactly the intended IDs for both methods")
     groups = {key: [] for key in COHORTS}
-    transitions = {method: Counter() for method in METHODS}
+    transitions = {method: Counter() for method in methods}
     regressions = []
     for sid in sorted(ids):
-        for method in METHODS:
+        for method in methods:
             r = raw[method, sid]
             if r.get("status") != "ok" or r.get("mode") != "posterior_mean" or r.get("shared_input_status") != "verified":
                 raise ValueError(f"Raw contract not verified: {method}/{sid}")
@@ -65,19 +75,20 @@ def partition_population(raw: dict, post: dict, fit: dict, ids: list[str]) -> di
                     raise ValueError(f"Wrong representation: {method}/{sid}")
             a, b = fit[method, sid]["native_valid_solid"], post[method, sid]["native_valid_solid"]
             transitions[method][f"fit_{'valid' if a else 'failed'}_optimized_{'valid' if b else 'failed'}"] += 1
-            if method == "local" and a and not b:
+            if method == candidate_method and a and not b:
                 regressions.append(sid)
-        hashes = [raw[m, sid].get("input_latent_sha256") for m in METHODS]
+        hashes = [raw[m, sid].get("input_latent_sha256") for m in methods]
         if hashes[0] != hashes[1] or not isinstance(hashes[0], str) or not re.fullmatch(r"[a-f0-9]{64}", hashes[0]):
             raise ValueError(f"Paired input latent hashes differ/absent: {sid}")
-        old, new = [post[m, sid]["native_valid_solid"] for m in METHODS]
+        old, new = [post[m, sid]["native_valid_solid"] for m in methods]
         group = "both_valid" if old and new else "rescued" if new else "new_failure" if old else "both_failed"
         groups[group].append(sid)
     return {"cohorts": groups, "optimization_regression_ids": regressions,
             "fit_only_vs_optimized_all_accepted": {m: dict(v) for m, v in transitions.items()}}
 
 
-def validate_protocols(comparison, reference, data_root, split, audit):
+def validate_protocols(comparison, reference, data_root, split, audit, candidate_method="local"):
+    paired_methods(candidate_method)
     protocols = {}
     for mode in ("fit_only", "optimized"):
         current_path = comparison / "metadata/post" / mode / "protocol.json"
@@ -91,7 +102,7 @@ def validate_protocols(comparison, reference, data_root, split, audit):
                     "original_test_count": 2424, "timeout_seconds": 180,
                     "max_optimize_iter": 200, "adaptive_max_optimize_iter": 600 if mode == "optimized" else 0,
                     "drop_num": 0, "use_cuda": False, "threads_per_process": 1,
-                    "baseline_method": "intersection", "candidate_method": "local"}
+                    "baseline_method": "intersection", "candidate_method": candidate_method}
         for key, value in required.items():
             if current.get(key) != value:
                 raise ValueError(f"Frozen post protocol differs: {mode}/{key}")
@@ -169,21 +180,22 @@ def audit_reuse(case, historical_case, baseline_root, protocols, audit):
     return result
 
 
-def build_manifests(comparison, reference, baseline, data_root, split):
+def build_manifests(comparison, reference, baseline, data_root, split, candidate_method="local"):
+    methods = paired_methods(candidate_method)
     audit = AssetAudit()
     ids = split.read_text().split()
     if len(ids) != 2417 or sha256_file(split) != SPLIT_SHA256:
         raise ValueError("Expected the frozen 2417-ID accepted split")
     paths = {"raw_metrics": comparison / "raw_metrics/posterior_mean/per_object.csv",
              "optimized": comparison / "post/optimized/samples.csv", "fit_only": comparison / "post/fit_only/samples.csv"}
-    raw, post, fit = [read_table(paths[key], id_key) for key, id_key in
+    raw, post, fit = [read_table(paths[key], id_key, candidate_method) for key, id_key in
                       (("raw_metrics", "model_id"), ("optimized", "sample_id"), ("fit_only", "sample_id"))]
-    partition = partition_population(raw, post, fit, ids)
-    protocols = validate_protocols(comparison, reference, data_root, split, audit)
+    partition = partition_population(raw, post, fit, ids, candidate_method)
+    protocols = validate_protocols(comparison, reference, data_root, split, audit, candidate_method)
     raw_summary_path = comparison / "raw_metrics/posterior_mean/summary.json"
     raw_summary = read_json(raw_summary_path)
     if (raw_summary.get("split_sha256") != SPLIT_SHA256 or raw_summary.get("baseline_method") != "intersection"
-            or raw_summary.get("candidate_method") != "local" or raw_summary.get("protocol_valid") is not True
+            or raw_summary.get("candidate_method") != candidate_method or raw_summary.get("protocol_valid") is not True
             or raw_summary.get("shared_input_status_counts") != {"verified": 2417}):
         raise ValueError("Raw summary input protocol differs")
     sources = {key: audit.add(path) for key, path in paths.items()}
@@ -193,7 +205,7 @@ def build_manifests(comparison, reference, baseline, data_root, split):
     selected = sorted(failed + groups["rescued"])
     cohort_of = {sid: key for key, values in groups.items() for sid in values}
     cases = {method: [make_case(sid, method, cohort_of[sid], raw, post, fit, comparison, reference,
-                               data_root, protocols, audit) for sid in selected] for method in METHODS}
+                               data_root, protocols, audit) for sid in selected] for method in methods}
     historical_path = baseline / "manifest.json"
     historical = read_json(historical_path)
     if historical.get("method") != "intersection":
@@ -220,15 +232,17 @@ def build_manifests(comparison, reference, baseline, data_root, split):
                   "new_diagnostic_cases": len(selected), "baseline_additional_controls": len(controls)}
     common = {"schema": VERSION, "created_at_utc": datetime.now(timezone.utc).isoformat(),
               "comparison_root": str(comparison), "reference_root": str(reference), "baseline_census_root": str(baseline),
-              "baseline_method": "intersection", "candidate_method": "local", "method_labels": LABELS,
+              "baseline_method": "intersection", "candidate_method": candidate_method,
+              "method_labels": {method: LABELS[method] for method in methods},
               "data_root": str(data_root), "sources": sources, "post_protocols": protocols, "population": population,
               **partition, "failed_ids": failed,
               "face_identity_contract": {"gt_order_preserved": True, "face_deduplication": "not_applied",
                     "evidence": "Frozen shared posterior-mean inputs preserve GT face slots; not STEP subshape numbering."},
               "selection_protocol": {"sampling": False,
-                    "main_failure_rule": "local optimized native_valid_solid is False; missing diagnosis stays in denominator",
+                    "main_failure_rule": f"{candidate_method} optimized native_valid_solid is False; missing diagnosis stays in denominator",
                     "control_scope": "Outcome-selected rescued/failed cohorts, not representative of all successes"}}
-    manifest = dict(common, method="local", cases=cases["local"], scope="All local failures plus all rescued controls")
+    manifest = dict(common, method=candidate_method, cases=cases[candidate_method],
+                    scope=f"All {candidate_method} failures plus all rescued controls")
     baseline_controls = dict(common, method="intersection", cases=controls, scope="All selected baseline IDs lacking verified reusable diagnosis")
     baseline_cases = dict(common, method="intersection", cases=cases["intersection"], scope="Identical paired baseline IDs; includes historical reuse")
     reuse = {"schema": "paired_failure_baseline_reuse_v1", "baseline_manifest": audit.add(historical_path),
@@ -245,6 +259,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("comparison-root", "reference-root", "baseline-census-root", "data-root", "split-list", "output-root"):
         parser.add_argument("--" + name, type=Path, required=True)
+    parser.add_argument("--candidate-method", choices=CANDIDATE_METHODS, default="local")
     args = parser.parse_args(argv)
     comparison, reference, baseline, data_root, split, root = [p.resolve() for p in
         (args.comparison_root, args.reference_root, args.baseline_census_root, args.data_root, args.split_list, args.output_root)]
@@ -254,7 +269,7 @@ def main(argv=None):
              "failed_ids.txt", "new_failure_ids.txt", "both_failed_ids.txt", "rescued_ids.txt", "optimization_regression_ids.txt"]
     if any((root / name).exists() for name in names):
         raise FileExistsError("Frozen census files already exist; select a new root")
-    documents = build_manifests(comparison, reference, baseline, data_root, split)
+    documents = build_manifests(comparison, reference, baseline, data_root, split, args.candidate_method)
     root.mkdir(parents=True, exist_ok=True)
     for name, value in documents.items():
         (root / name).write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + "\n")

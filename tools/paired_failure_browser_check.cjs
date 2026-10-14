@@ -55,6 +55,12 @@ async function main() {
       if (await evaluate('Boolean(window.PAIRED_CENSUS_VIEW)')) break;
       await new Promise(resolve => setTimeout(resolve, 100));
     }
+    const identity = await evaluate('({methods: window.PAIRED_CENSUS_DATA.methods, labels: window.PAIRED_CENSUS_DATA.method_labels})');
+    if (identity.methods) {
+      assert.equal(identity.methods.baseline, 'intersection');
+      assert(['local', 'conditioned'].includes(identity.methods.candidate));
+      if (identity.methods.candidate === 'conditioned') assert.equal(identity.labels.candidate, '曲线条件调制');
+    }
     const cohortCounts = await evaluate('({main: window.PAIRED_CENSUS_DATA.main.denominator, ...window.PAIRED_CENSUS_DATA.cohort_counts})');
     assert.equal(await evaluate('window.PAIRED_CENSUS_VIEW?.denominator'), cohortCounts.main);
     const checks = [];
@@ -114,7 +120,7 @@ async function main() {
     assert(mobile.document <= mobile.viewport, JSON.stringify(mobile));
     await screenshot('mobile.png');
     assert.equal(errors.length, 0, JSON.stringify(errors));
-    const report = {url, checked_at_utc: new Date().toISOString(), cohort_threshold_checks: checks,
+    const report = {url, checked_at_utc: new Date().toISOString(), method_identity: identity, cohort_threshold_checks: checks,
       interactions, assets_checked: assets.length, failed_assets: assets.filter(asset => asset.status !== 200), mobile, javascript_errors: errors};
     await fs.writeFile(path.join(destination, 'browser_check.json'), JSON.stringify(report, null, 2) + '\n');
     console.log(JSON.stringify(report));

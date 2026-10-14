@@ -5,18 +5,18 @@ from pathlib import Path
 import pytest
 
 from tools.failure_census_contract import METHODS as HISTORICAL_METHODS, case_method, case_record
-from tools.paired_failure_manifest import METHODS, partition_population, read_table
+from tools.paired_failure_manifest import METHODS, paired_methods, partition_population, read_table
 from tools.paired_failure_report import (
     COHORTS, PAGE_HTML, PAGE_JS, THRESHOLDS, audit_source_preservation,
-    diagnostic_audit, optimization_counterfactual, paired_transitions, validate_cohorts,
+    diagnostic_audit, optimization_counterfactual, page_payload, paired_transitions, validate_cohorts,
 )
 
 
-def tables():
+def tables(candidate_method="local"):
     ids = [f'{i:08}' for i in range(1, 5)]
     raw, post, fit = {}, {}, {}
     for i, sid in enumerate(ids):
-        for method in METHODS:
+        for method in paired_methods(candidate_method):
             key = method, sid
             raw[key] = {'model_id': sid, 'method': method, 'status': 'ok', 'mode': 'posterior_mean',
                         'shared_input_status': 'verified', 'input_latent_sha256': 'a'*64}
@@ -30,6 +30,7 @@ def tables():
 def test_method_extension_preserves_historical_pair_and_disallows_aliases():
     assert HISTORICAL_METHODS == ('legacy', 'intersection')
     assert case_method({'method': 'local'}) == 'local'
+    assert case_method({'method': 'conditioned'}) == 'conditioned'
     for method in ['refinement', 'intersection_local', None]:
         with pytest.raises(ValueError):
             case_method({'method': method})
@@ -37,12 +38,13 @@ def test_method_extension_preserves_historical_pair_and_disallows_aliases():
         case_record({'id': '1', 'method': 'local', 'raw_legacy': {}}, 'raw')
 
 
-def test_dynamic_partition_retains_all_four_cohorts_and_optimization_regressions():
-    ids, raw, post, fit = tables()
-    result = partition_population(raw, post, fit, ids)
+@pytest.mark.parametrize('candidate_method', ['local', 'conditioned'])
+def test_dynamic_partition_retains_all_four_cohorts_and_optimization_regressions(candidate_method):
+    ids, raw, post, fit = tables(candidate_method)
+    result = partition_population(raw, post, fit, ids, candidate_method)
     assert result['cohorts'] == {'both_failed': [ids[0]], 'new_failure': [ids[1]], 'rescued': [ids[2]], 'both_valid': [ids[3]]}
     assert result['optimization_regression_ids'] == [ids[1]]
-    assert sum(result['fit_only_vs_optimized_all_accepted']['local'].values()) == 4
+    assert sum(result['fit_only_vs_optimized_all_accepted'][candidate_method].values()) == 4
 
 
 @pytest.mark.parametrize('defect', ['missing', 'unknown', 'hash', 'extra', 'nonterminal'])
@@ -58,29 +60,41 @@ def test_partition_rejects_mixed_or_incomplete_inputs(defect):
         partition_population(raw, post, fit, ids)
 
 
-def test_csv_preserves_ids_and_hashes_and_rejects_old_legacy(tmp_path):
+@pytest.mark.parametrize('candidate_method', ['local', 'conditioned'])
+def test_csv_preserves_ids_and_hashes_and_rejects_old_legacy(tmp_path, candidate_method):
     path = tmp_path / 'rows.csv'
-    path.write_text('model_id,method,status,input_latent_sha256\n00000001,local,ok,'+'1'*64+'\n')
-    assert read_table(path, 'model_id')['local', '00000001']['input_latent_sha256'] == '1'*64
-    path.write_text(path.read_text().replace(',local,', ',legacy,'))
+    path.write_text(f'model_id,method,status,input_latent_sha256\n00000001,{candidate_method},ok,'+'1'*64+'\n')
+    assert read_table(path, 'model_id', candidate_method)[candidate_method, '00000001']['input_latent_sha256'] == '1'*64
+    path.write_text(path.read_text().replace(f',{candidate_method},', ',legacy,'))
     with pytest.raises(ValueError, match='method'):
-        read_table(path, 'model_id')
+        read_table(path, 'model_id', candidate_method)
+
+
+def test_conditioned_is_explicit_and_cannot_relabel_local_rows():
+    ids, raw, post, fit = tables('conditioned')
+    with pytest.raises(ValueError, match='intended IDs'):
+        partition_population(raw, post, fit, ids)
+    with pytest.raises(ValueError, match='Unsupported paired'):
+        paired_methods('intersection')
+    with pytest.raises(ValueError, match='Missing/invalid'):
+        case_record({'id': '1', 'method': 'conditioned', 'raw_legacy': {}}, 'raw')
 
 
 def case(sid, method, valid):
     return {'id': sid, 'method': method, 'post_record': {'method': method, 'sample_id': sid, 'native_valid_solid': valid}}
 
 
-def test_dynamic_cohorts_validate_actual_identity_and_empty_groups():
-    new = [case('1', 'local', False), case('2', 'local', True)]
+@pytest.mark.parametrize('candidate_method', ['local', 'conditioned'])
+def test_dynamic_cohorts_validate_actual_identity_and_empty_groups(candidate_method):
+    new = [case('1', candidate_method, False), case('2', candidate_method, True)]
     old = [case('1', 'intersection', False), case('2', 'intersection', False)]
     frozen = {'both_failed': ['1'], 'new_failure': [], 'rescued': ['2']}
-    assert validate_cohorts(new, old, frozen) == {'persistent': ['1'], 'regressed': [], 'rescued': ['2']}
+    assert validate_cohorts(new, old, frozen, candidate_method) == {'persistent': ['1'], 'regressed': [], 'rescued': ['2']}
     with pytest.raises(ValueError):
-        validate_cohorts(new, old, {**frozen, 'rescued': ['3']})
+        validate_cohorts(new, old, {**frozen, 'rescued': ['3']}, candidate_method)
     old[1]['post_record']['native_valid_solid'] = True
     with pytest.raises(ValueError, match='Both-success'):
-        validate_cohorts(new, old, frozen)
+        validate_cohorts(new, old, frozen, candidate_method)
 
 
 def test_paired_unknown_and_empty_counts():
@@ -121,3 +135,14 @@ def test_page_is_dynamic_and_baseline_not_labelled_original_hola():
     assert 'den?100*values[s].length/den:0' in PAGE_JS
     assert 'population.baseline_native_valid' in PAGE_JS
     assert '原版 HoLa' not in PAGE_JS
+
+
+def test_conditioned_page_retains_explicit_methods_and_labels_for_empty_scope():
+    summary = {'population': {}, 'main': {'denominator': 0},
+               'method_labels': {'baseline': '上一版 Intersection refinement', 'candidate': '曲线条件调制'},
+               'methods': {'baseline': 'intersection', 'candidate': 'conditioned'},
+               'highlights': [], 'cohorts': {key: {'count': 0} for key in COHORTS}, 'limitations': []}
+    payload = page_payload([], summary, [], set())
+    assert payload['methods']['candidate'] == 'conditioned'
+    assert payload['method_labels']['candidate'] == '曲线条件调制'
+    assert payload['pairs'] == []

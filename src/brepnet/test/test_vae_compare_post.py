@@ -165,10 +165,11 @@ class VaeComparePostTests(unittest.TestCase):
         self.assertEqual(rows[0]["source_method"], "intersection")
         self.assertEqual(rows[0]["source_step_sha256"], sha256_file(step))
         self.assertEqual(provenance["method"], "intersection")
-        summary = summarize([*rows, {"sample_id": "a", "method": "local", "status": "timeout"}],
-                            1, 2, candidate_method="local", baseline_method="intersection")
-        self.assertEqual(set(summary["methods"]), {"intersection", "local"})
-        self.assertEqual(summary["native_validity_transitions"]["counts"]["intersection_valid_to_local_failed"], 1)
+        for candidate in ("local", "conditioned"):
+            summary = summarize([*rows, {"sample_id": "a", "method": candidate, "status": "timeout"}],
+                                1, 2, candidate_method=candidate, baseline_method="intersection")
+            self.assertEqual(set(summary["methods"]), {"intersection", candidate})
+            self.assertEqual(summary["native_validity_transitions"]["counts"][f"intersection_valid_to_{candidate}_failed"], 1)
         self.assertEqual(path.read_bytes(), before)
 
     def test_native_geometry_is_deterministic_and_gt_cache_is_atomic(self):
