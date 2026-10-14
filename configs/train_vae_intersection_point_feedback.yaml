@@ -1,0 +1,26 @@
+defaults:
+  - train_vae_intersection
+  - _self_
+
+# Added 2026-10-14: a new run initialized from trained curve conditioning.
+# Supply model.init_curve_feedback_checkpoint and dataset paths explicitly.
+trainer:
+  exp_name: intersection_refinement/point_feedback
+  batch_size: 16
+  max_epochs: 10000
+  max_steps: 1000000
+  max_time: "00:08:00:00"
+
+model:
+  curve_conditioning:
+    enabled: true
+  curve_point_feedback:
+    enabled: true
+    hidden_dim: 128
+    feature_dim: 64
+  refinement:
+    candidate_chunk_size: 256
+    geometry_chunk_size: 128
+    checkpoint_candidates: false
+  loss_weights:
+    geometry_chunk_size: 128

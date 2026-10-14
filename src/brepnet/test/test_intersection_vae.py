@@ -274,3 +274,144 @@ def test_curve_frozen_encoder_and_zero_head_gradient_startup(tmp_path):
     # At exact zero initialization, hidden projection learns after the affine head moves.
     assert condition.projection[0].weight.grad is not None
     assert torch.count_nonzero(condition.projection[0].weight.grad) == 0
+
+
+def point_feedback_config(**changes):
+    return curve_config(
+        curve_point_feedback={"enabled": True, "hidden_dim": 16, "feature_dim": 8},
+        **changes,
+    )
+
+
+def save_point_feedback_baseline(path):
+    model = AutoEncoder_intersection(curve_config()).eval()
+    with torch.no_grad():
+        for head in (
+            model.decoder.refiner.face_delta,
+            model.decoder.refiner.edge_delta,
+            model.decoder.edge_geometry.conditioning.point_affine,
+            model.decoder.edge_geometry.conditioning.bbox_affine,
+        ):
+            head.weight.normal_(std=.02)
+            head.bias.normal_(std=.01)
+    torch.save({
+        "epoch": 157, "global_step": 57354,
+        "state_dict": {"model." + key: value for key, value in model.state_dict().items()},
+    }, path)
+    return model
+
+
+def test_point_feedback_migration_preserves_every_trained_weight_prediction_and_loss(tmp_path):
+    torch.manual_seed(95)
+    path = tmp_path / "conditioned.ckpt"
+    old = save_point_feedback_baseline(path)
+    new = AutoEncoder_intersection(point_feedback_config(init_curve_feedback_checkpoint=str(path))).eval()
+    retained = old.state_dict()
+    added = set(new.state_dict()) - set(retained)
+    assert added and all(key.startswith("decoder.curve_point_feedback.") for key in added)
+    for key, value in retained.items():
+        torch.testing.assert_close(new.state_dict()[key], value, rtol=0, atol=0)
+    assert [key for key, _ in new.named_parameters() if key not in added] == list(dict(old.named_parameters()))
+    report = new.initialization_report
+    assert report["source_global_step"] == 57354
+    assert report["initialized_curve_point_feedback_keys"] == sorted(added)
+    with torch.no_grad():
+        first_loss, first = old(encoder_batch(), v_test=True)
+        second_loss, second = new(encoder_batch(), v_test=True)
+    for key in first_loss:
+        torch.testing.assert_close(second_loss[key], first_loss[key], rtol=0, atol=0)
+    for a, b in zip(first["items"], second["items"]):
+        for key in a:
+            np.testing.assert_array_equal(a[key], b[key])
+
+
+@pytest.mark.parametrize("corruption", [
+    "missing_classifier", "missing_conditioning", "missing_refiner", "missing_inter",
+    "extra", "shape", "already_feedback", "duplicate_normalized_key", "non_tensor",
+])
+def test_point_feedback_migration_rejects_partial_or_incompatible_sources(tmp_path, corruption):
+    path = tmp_path / "conditioned.ckpt"
+    save_point_feedback_baseline(path)
+    checkpoint = torch.load(path, weights_only=False)
+    state = checkpoint["state_dict"]
+    if corruption.startswith("missing_"):
+        prefixes = {
+            "missing_classifier": "model.decoder.classifier.",
+            "missing_conditioning": "model.decoder.edge_geometry.conditioning.",
+            "missing_refiner": "model.decoder.refiner.",
+            "missing_inter": "model.decoder.inter.",
+        }
+        for key in list(state):
+            if key.startswith(prefixes[corruption]):
+                del state[key]
+    elif corruption == "extra":
+        state["model.extra.weight"] = torch.ones(1)
+    elif corruption == "shape":
+        state["model.decoder.classifier.bias"] = torch.ones(2)
+    elif corruption == "non_tensor":
+        state["model.decoder.classifier.bias"] = "not a tensor"
+    elif corruption == "duplicate_normalized_key":
+        state["decoder.classifier.bias"] = state["model.decoder.classifier.bias"]
+    else:
+        model = AutoEncoder_intersection(point_feedback_config())
+        checkpoint["state_dict"] = {"model." + key: value for key, value in model.state_dict().items()}
+    torch.save(checkpoint, path)
+    with pytest.raises((ValueError, RuntimeError)):
+        AutoEncoder_intersection(point_feedback_config(init_curve_feedback_checkpoint=str(path)))
+
+
+def test_point_feedback_frozen_training_reaches_output_then_hidden_layers(tmp_path):
+    torch.manual_seed(96)
+    path = tmp_path / "conditioned.ckpt"
+    save_point_feedback_baseline(path)
+    model = AutoEncoder_intersection(point_feedback_config(
+        init_curve_feedback_checkpoint=str(path), freeze_encoder=True,
+    )).train()
+    assert not model.encoder.training and not model.posterior.training
+    optimizer = torch.optim.Adam((p for p in model.parameters() if p.requires_grad), lr=1e-4)
+    loss, _ = model(encoder_batch())
+    assert all(value.isfinite().all() for value in loss.values())
+    loss["total_loss"].backward()
+    block = model.decoder.curve_point_feedback
+    assert block.delta.weight.grad is not None and block.delta.weight.grad.abs().sum() > 0
+    assert block.point_encoder[0].weight.grad is not None
+    assert torch.count_nonzero(block.point_encoder[0].weight.grad) == 0
+    assert all(parameter.grad is None for parameter in model.encoder.parameters())
+    assert all(parameter.grad is None for parameter in model.posterior.parameters())
+    optimizer.step()
+    optimizer.zero_grad(set_to_none=True)
+    model(encoder_batch())[0]["total_loss"].backward()
+    assert block.point_encoder[0].weight.grad.abs().sum() > 0
+    assert all(torch.isfinite(parameter.grad).all() for parameter in model.parameters() if parameter.grad is not None)
+
+
+def test_point_feedback_full_checkpoint_and_optimizer_restore_are_strict(tmp_path):
+    torch.manual_seed(97)
+    model = AutoEncoder_intersection(point_feedback_config())
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    model(encoder_batch())[0]["total_loss"].backward()
+    optimizer.step()
+    path = tmp_path / "feedback.ckpt"
+    torch.save({
+        "state_dict": {"model." + key: value for key, value in model.state_dict().items()},
+        "optimizer_states": [optimizer.state_dict()], "epoch": 1, "global_step": 1,
+    }, path)
+    loaded = torch.load(path, weights_only=False)
+    strict = AutoEncoder_intersection(point_feedback_config(checkpoint=str(path))).eval()
+    resumed = AutoEncoder_intersection(point_feedback_config(restoring_checkpoint=True)).eval()
+    resumed.load_state_dict({key.removeprefix("model."): value for key, value in loaded["state_dict"].items()}, strict=True)
+    restored_optimizer = torch.optim.Adam(resumed.parameters(), lr=1e-4)
+    restored_optimizer.load_state_dict(loaded["optimizer_states"][0])
+    model.eval()
+    with torch.no_grad():
+        expected = model(encoder_batch(), v_test=True)[0]["total_loss"]
+        for candidate in (strict, resumed):
+            actual = candidate(encoder_batch(), v_test=True)[0]["total_loss"]
+            torch.testing.assert_close(actual, expected, rtol=0, atol=0)
+    for first, second in zip(optimizer.state.values(), restored_optimizer.state.values()):
+        for key in first:
+            torch.testing.assert_close(first[key], second[key], rtol=0, atol=0)
+    loaded["state_dict"].pop(next(key for key in loaded["state_dict"] if key.startswith("model.decoder.curve_point_feedback.")))
+    torch.save(loaded, path)
+    with pytest.raises(RuntimeError, match="Missing key"):
+        AutoEncoder_intersection(point_feedback_config(checkpoint=str(path)))

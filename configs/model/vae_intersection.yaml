@@ -11,6 +11,7 @@ kl_reduction: sum
 freeze_encoder: true
 init_legacy_checkpoint: null
 init_refinement_checkpoint: null
+init_curve_feedback_checkpoint: null
 checkpoint: null
 trainable_scope: all
 edge_threshold: 0.5
@@ -25,6 +26,14 @@ intersection:
 curve_conditioning:
   enabled: false
   hidden_dim: 128
+
+# Added 2026-10-14: final curve points read final predicted owner surfaces.
+# No pooling or point-index embeddings; 27,139 new parameters at baseline dims.
+# The XYZ delta head is zero-initialized; all original heads/losses are retained.
+curve_point_feedback:
+  enabled: false
+  hidden_dim: 128
+  feature_dim: 64
 
 # One pass: the original face Transformer is called only before refinement.
 refinement:

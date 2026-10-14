@@ -7,7 +7,9 @@ import torch
 from torch import nn
 
 from src.brepnet.models.blocks import (
+    CurvePointFeedback,
     IntersectionDecoder,
+    PrimitiveGeometry,
     enumerate_candidate_pairs,
 )
 
@@ -212,7 +214,7 @@ def test_bad_latent_contracts_rejected():
         model(torch.full((2, 4), torch.nan), torch.tensor([2]))
 
 
-def make_conditioned_decoder(*, enabled=True, checkpoint_candidates=False):
+def make_conditioned_decoder(*, enabled=True, checkpoint_candidates=False, point_feedback=None):
     """Use the actual CNN/MLP head layout at a small, inexpensive width."""
     from src.brepnet.models.vae import AutoEncoder_light
     from src.brepnet.test.test_intersection_vae import tiny_config
@@ -222,6 +224,7 @@ def make_conditioned_decoder(*, enabled=True, checkpoint_candidates=False):
     model = IntersectionDecoder(
         AutoEncoder_light(config), config["refinement"],
         curve_conditioning_cfg={"enabled": enabled, "hidden_dim": 128},
+        curve_point_feedback_cfg=point_feedback,
     )
     # Deterministic direct/checkpoint comparisons still exercise training paths.
     for module in model.modules():
@@ -360,3 +363,210 @@ def test_conditioned_single_faces_keep_empty_edge_contract():
     assert output.refined.edge_geometry.center_scale.shape == (0, 4)
     assert output.refined.edge_geometry.points.shape == (0, 16, 3)
     assert output.refined.edge_logits.shape == (0,)
+
+
+def make_point_feedback_decoder(*, enabled=True, checkpoint_candidates=False):
+    return make_conditioned_decoder(
+        checkpoint_candidates=checkpoint_candidates,
+        point_feedback={"enabled": enabled, "hidden_dim": 16, "feature_dim": 8},
+    )
+
+
+def activate_point_feedback(model):
+    """Emulate a learned nonzero output head while retaining the hidden mapping."""
+    head = [module for module in model.curve_point_feedback.modules() if isinstance(module, nn.Linear)][-1]
+    with torch.no_grad():
+        head.weight.normal_(std=.02)
+        head.bias.normal_(std=.01)
+    return head
+
+
+def test_point_feedback_zero_start_preserves_conditioned_checkpoint_outputs():
+    torch.manual_seed(91)
+    original = make_conditioned_decoder().eval()
+    activate_residuals(original)
+    activate_conditioning(original)
+    disabled = make_point_feedback_decoder(enabled=False).eval()
+    disabled.load_state_dict(original.state_dict(), strict=True)
+    assert list(disabled.state_dict()) == list(original.state_dict())
+
+    feedback = make_point_feedback_decoder().eval()
+    mismatch = feedback.load_state_dict(original.state_dict(), strict=False)
+    assert mismatch.missing_keys and not mismatch.unexpected_keys
+    assert all(name.startswith("curve_point_feedback.") for name in mismatch.missing_keys)
+    retained_names = [name for name, _ in feedback.named_parameters() if not name.startswith("curve_point_feedback.")]
+    assert retained_names == list(dict(original.named_parameters()))
+    z, counts = torch.randn(5, 8), torch.tensor([3, 2])
+    with torch.no_grad():
+        before = original(z, counts)
+        after = feedback(z, counts)
+    for stage_name in ("coarse", "refined"):
+        first, second = getattr(before, stage_name), getattr(after, stage_name)
+        for field in ("face_features", "edge_features", "edge_logits"):
+            torch.testing.assert_close(getattr(first, field), getattr(second, field), rtol=0, atol=0)
+        for primitive in ("face_geometry", "edge_geometry"):
+            for field in ("local_points", "center_scale", "points"):
+                torch.testing.assert_close(
+                    getattr(getattr(first, primitive), field),
+                    getattr(getattr(second, primitive), field), rtol=0, atol=0,
+                )
+
+
+def test_point_feedback_changes_only_final_xyz_and_preserves_export_consistency():
+    torch.manual_seed(92)
+    model = make_point_feedback_decoder().eval()
+    activate_residuals(model)
+    activate_conditioning(model)
+    z, counts = torch.randn(3, 8), torch.tensor([3])
+    with torch.no_grad():
+        before = model(z, counts)
+        teacher_before = model.edge_geometry(before.coarse.edge_features)
+    activate_point_feedback(model)
+    with torch.no_grad():
+        after = model(z, counts)
+        teacher_after = model.edge_geometry(before.coarse.edge_features)
+    for stage_name in ("coarse", "refined"):
+        first, second = getattr(before, stage_name), getattr(after, stage_name)
+        for field in ("face_features", "edge_features", "edge_logits"):
+            torch.testing.assert_close(getattr(first, field), getattr(second, field), rtol=0, atol=0)
+        torch.testing.assert_close(first.face_geometry.points, second.face_geometry.points, rtol=0, atol=0)
+    torch.testing.assert_close(before.coarse.edge_geometry.points, after.coarse.edge_geometry.points, rtol=0, atol=0)
+    torch.testing.assert_close(teacher_before.points, teacher_after.points, rtol=0, atol=0)
+    old_edge, new_edge = before.refined.edge_geometry, after.refined.edge_geometry
+    torch.testing.assert_close(old_edge.center_scale, new_edge.center_scale, rtol=0, atol=0)
+    torch.testing.assert_close(old_edge.local_points[..., 3:], new_edge.local_points[..., 3:], rtol=0, atol=0)
+    assert not torch.allclose(old_edge.points, new_edge.points)
+    reconstructed = new_edge.local_points[..., :3] * new_edge.center_scale[:, None, 3:] + new_edge.center_scale[:, None, :3]
+    torch.testing.assert_close(new_edge.points, reconstructed, rtol=2e-6, atol=2e-7)
+
+
+def test_point_feedback_checkpointed_and_mixed_precision_gradients():
+    torch.manual_seed(93)
+    direct = make_point_feedback_decoder()
+    activate_residuals(direct)
+    activate_conditioning(direct)
+    activate_point_feedback(direct)
+    checkpointed = deepcopy(direct)
+    checkpointed.checkpoint_candidates = True
+    z = torch.randn(3, 8)
+    predictions = []
+    for model in (direct, checkpointed):
+        with torch.autocast("cpu", dtype=torch.bfloat16):
+            output = model(z, torch.tensor([3]))
+            loss = output.refined.edge_geometry.points.square().mean() + output.refined.face_geometry.points.square().mean()
+        loss.backward()
+        assert output.refined.edge_geometry.points.dtype == torch.float32
+        assert torch.isfinite(loss)
+        predictions.append(output.refined.edge_geometry.points)
+    torch.testing.assert_close(predictions[0], predictions[1], rtol=0, atol=0)
+    for (name, parameter), (other_name, other) in zip(direct.named_parameters(), checkpointed.named_parameters()):
+        assert name == other_name
+        if parameter.grad is None:
+            assert other.grad is None, name
+            continue
+        assert torch.isfinite(parameter.grad).all(), name
+        torch.testing.assert_close(parameter.grad, other.grad, atol=1e-6, rtol=1e-4, msg=name)
+    for name, parameter in direct.curve_point_feedback.named_parameters():
+        assert parameter.grad is not None and torch.isfinite(parameter.grad).all(), name
+        assert parameter.grad.abs().sum() > 0, name
+
+
+def test_point_feedback_empty_candidates_are_valid():
+    model = make_point_feedback_decoder().eval()
+    activate_point_feedback(model)
+    output = model(torch.randn(2, 8), torch.tensor([1, 1]))
+    assert output.refined.edge_geometry.local_points.shape == (0, 16, 6)
+    assert output.refined.edge_geometry.center_scale.shape == (0, 4)
+    assert output.refined.edge_geometry.points.shape == (0, 16, 3)
+    assert output.refined.edge_logits.shape == (0,)
+
+
+def point_feedback_geometry(points):
+    bbox = points.new_tensor([.15, -.2, .3, .7]).expand(points.shape[0], -1).clone()
+    spatial_dims = (None,) * (points.ndim - 2)
+    expanded = bbox[(slice(None), *spatial_dims)]
+    local = (points - expanded[..., :3]) / expanded[..., 3:]
+    directions = torch.nn.functional.normalize(torch.ones_like(points), dim=-1)
+    return PrimitiveGeometry(torch.cat((local, directions), -1), bbox, points)
+
+
+def test_point_feedback_is_local_permutation_equivariant_and_keeps_closed_seam():
+    """No point-index encoding should split identical samples at a closed seam."""
+    torch.manual_seed(94)
+    block = CurvePointFeedback(4, 8, hidden_dim=16, feature_dim=8, geometry_chunk_size=2)
+    with torch.no_grad():
+        block.delta.weight.normal_(std=.1)
+        block.delta.bias.normal_(std=.01)
+    t = torch.linspace(-.8, .8, 16)
+    curve = torch.stack((t, .2 + t.square(), .1 + .1 * t), dim=-1)
+    curve[-1] = curve[0]
+    edge = point_feedback_geometry(curve[None].repeat(2, 1, 1))
+    a, b = torch.meshgrid(torch.linspace(-1., 1., 3), torch.linspace(-1., 1., 3), indexing="ij")
+    face = point_feedback_geometry(torch.stack((
+        torch.stack((a, b, torch.zeros_like(a)), -1),
+        torch.stack((a, torch.zeros_like(a), b), -1),
+    )))
+    features = torch.randn(2, 8, requires_grad=True)
+    owners = torch.randn(2, 4, requires_grad=True)
+    pairs = torch.tensor([[0, 1], [1, 0]])
+    result = block(edge, face, features, owners, pairs)
+    delta = result.points - edge.points
+    assert delta.std(dim=1).amax() > 1e-4
+    torch.testing.assert_close(result.points[:, 0], result.points[:, -1], rtol=0, atol=0)
+    permutation = torch.randperm(16)
+    shuffled = PrimitiveGeometry(edge.local_points[:, permutation], edge.center_scale, edge.points[:, permutation])
+    reordered = block(shuffled, face, features, owners, pairs)
+    torch.testing.assert_close(reordered.points, result.points[:, permutation], rtol=0, atol=0)
+    result.points.square().mean().backward()
+    for value in (features, owners):
+        assert value.grad is not None and torch.isfinite(value.grad).all()
+        assert (value.grad.abs().sum(-1) > 0).all()
+
+
+def test_point_feedback_exact_zero_scale_preserves_geometry_without_clipping_other_scales():
+    torch.manual_seed(98)
+    block = CurvePointFeedback(4, 8, hidden_dim=16, feature_dim=8, geometry_chunk_size=2)
+    displacement = torch.tensor([.01, -.02, .03])
+    with torch.no_grad():
+        block.delta.bias.copy_(displacement)
+    local = torch.randn(4, 16, 6).requires_grad_()
+    bbox = torch.tensor([
+        [.15, -.2, .3, 0.],
+        [.15, -.2, .3, .7],
+        [.15, -.2, .3, -.7],
+        [.15, -.2, .3, 1e-8],
+    ], requires_grad=True)
+    points = local[..., :3] * bbox[:, None, 3:] + bbox[:, None, :3]
+    edge = PrimitiveGeometry(local, bbox, points)
+    face = point_feedback_geometry(torch.randn(2, 3, 3, 3))
+    result = block(edge, face, torch.randn(4, 8), torch.randn(2, 4), torch.tensor([[0, 1]] * 4))
+    torch.testing.assert_close(result.local_points[0], local[0], rtol=0, atol=0)
+    torch.testing.assert_close(result.points[0], points[0], rtol=0, atol=0)
+    torch.testing.assert_close(result.center_scale, bbox, rtol=0, atol=0)
+    torch.testing.assert_close(result.local_points[..., 3:], local[..., 3:], rtol=0, atol=0)
+    # Ordinary, negative, and very small nonzero scales all retain the full delta.
+    torch.testing.assert_close(result.points[1:], points[1:] + displacement, rtol=0, atol=0)
+    torch.testing.assert_close(
+        result.local_points[1:, :, :3],
+        local[1:, :, :3] + displacement / bbox[1:, None, 3:], rtol=0, atol=0,
+    )
+    reconstructed = result.local_points[..., :3] * bbox[:, None, 3:] + bbox[:, None, :3]
+    torch.testing.assert_close(result.points, reconstructed, rtol=2e-6, atol=2e-7)
+    collapsed_delta_grad = torch.autograd.grad(result.points[0].sum(), block.delta.bias, retain_graph=True)[0]
+    assert torch.count_nonzero(collapsed_delta_grad) == 0
+    loss = result.local_points.abs().mean() + result.points.square().mean()
+    loss.backward()
+    for value in (local, bbox, *block.parameters()):
+        assert value.grad is not None and torch.isfinite(value.grad).all()
+    assert local.grad[0].abs().sum() > 0
+    assert bbox.grad[0, 3].abs() > 0
+
+
+@pytest.mark.parametrize("scale", [float("nan"), float("inf"), -float("inf")])
+def test_point_feedback_rejects_nonfinite_coordinate_scale(scale):
+    block = CurvePointFeedback(4, 8, hidden_dim=16, feature_dim=8, geometry_chunk_size=2)
+    edge = point_feedback_geometry(torch.randn(2, 16, 3))
+    face = point_feedback_geometry(torch.randn(2, 3, 3, 3))
+    edge.center_scale[0, 3] = scale
+    with pytest.raises(ValueError, match="scale"):
+        block(edge, face, torch.randn(2, 8), torch.randn(2, 4), torch.tensor([[0, 1], [1, 0]]))

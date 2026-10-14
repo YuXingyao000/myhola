@@ -1197,7 +1197,7 @@ def validate_encoder_batch(batch: Mapping[str, Tensor]) -> None:
 
 
 class AutoEncoder_intersection(nn.Module):
-    """Legacy geometry heads, optional inter/refiner and final curve conditioning."""
+    """Legacy geometry heads with optional refinement and final curve feedback."""
 
     def __init__(self, cfg: dict):
         super().__init__()
@@ -1217,21 +1217,41 @@ class AutoEncoder_intersection(nn.Module):
 
         legacy_path, full_path = cfg["init_legacy_checkpoint"], cfg["checkpoint"]
         refinement_path = cfg.get("init_refinement_checkpoint")
+        curve_feedback_path = cfg.get("init_curve_feedback_checkpoint")
         restoring = bool(cfg.get("restoring_checkpoint", False))
-        sources = (legacy_path, refinement_path, full_path)
+        sources = (legacy_path, refinement_path, curve_feedback_path, full_path)
         if sum(bool(path) for path in sources) > 1:
-            raise ValueError("Choose only one of init_legacy_checkpoint, init_refinement_checkpoint or checkpoint")
+            raise ValueError(
+                "Choose only one of init_legacy_checkpoint, init_refinement_checkpoint, "
+                "init_curve_feedback_checkpoint or checkpoint"
+            )
         if restoring and any(sources):
             raise ValueError("Resume must restore the new checkpoint without a second initialization")
         if (self.freeze_encoder or self.runtime_mode == "frozen_inference") and not (any(sources) or restoring):
             raise ValueError(
                 "Refusing to freeze random weights: provide init_legacy_checkpoint, "
-                "init_refinement_checkpoint or checkpoint"
+                "init_refinement_checkpoint, init_curve_feedback_checkpoint or checkpoint"
             )
         intersection_cfg = cfg.get("intersection")
         curve_conditioning_cfg = cfg.get("curve_conditioning")
+        curve_point_feedback_cfg = cfg.get("curve_point_feedback")
         conditioning_enabled = bool((curve_conditioning_cfg or {}).get("enabled", False))
+        curve_feedback_enabled = bool((curve_point_feedback_cfg or {}).get("enabled", False))
         intersection_kind = (intersection_cfg or {}).get("kind", "legacy")
+        if curve_feedback_enabled and (
+            intersection_kind != "legacy" or not cfg["refinement"]["enabled"] or not conditioning_enabled
+        ):
+            raise ValueError(
+                "Curve point feedback requires legacy intersection with refinement "
+                "and curve_conditioning enabled"
+            )
+        if curve_feedback_path and not curve_feedback_enabled:
+            raise ValueError("init_curve_feedback_checkpoint requires enabled curve_point_feedback")
+        if curve_feedback_enabled and (legacy_path or refinement_path):
+            raise ValueError(
+                "Curve point feedback must retain trained conditioning: use "
+                "init_curve_feedback_checkpoint, checkpoint or resume"
+            )
         if refinement_path and not (
             intersection_kind == "local_attention" or conditioning_enabled
         ):
@@ -1250,6 +1270,7 @@ class AutoEncoder_intersection(nn.Module):
         self.decoder = IntersectionDecoder(
             legacy, cfg["refinement"], intersection_cfg,
             curve_conditioning_cfg=curve_conditioning_cfg,
+            curve_point_feedback_cfg=curve_point_feedback_cfg,
         )
         self.criterion = IntersectionLoss(cfg["loss_weights"])
         self.initialization_report: dict = {}
@@ -1258,6 +1279,8 @@ class AutoEncoder_intersection(nn.Module):
                 self._init_curve_conditioning(refinement_path)
             else:
                 self._init_from_refinement(refinement_path, legacy.inter.state_dict())
+        if curve_feedback_path:
+            self._init_curve_feedback(curve_feedback_path)
         if full_path:
             checkpoint = torch.load(str(full_path), map_location="cpu", weights_only=False)
             state = checkpoint.get("state_dict", checkpoint)
@@ -1361,6 +1384,57 @@ class AutoEncoder_intersection(nn.Module):
             "initialized_curve_conditioning_parameters": sum(value.numel() for value in fresh.values()),
         }
         logger.info("Curve conditioning initialization: %s", self.initialization_report)
+
+    def _init_curve_feedback(self, path: str) -> None:
+        """Add only point feedback to a complete, already-conditioned refinement model.
+
+        All source tensors, including learned conditioning, must be present with
+        exactly their existing shapes. Only decoder.curve_point_feedback is new.
+        Full feedback checkpoints use strict checkpoint / resume loading instead.
+        """
+        checkpoint = torch.load(str(path), map_location="cpu", weights_only=False)
+        if not isinstance(checkpoint, Mapping):
+            raise ValueError("Curve feedback source must contain a state_dict mapping")
+        raw_state = checkpoint.get("state_dict", checkpoint)
+        if not isinstance(raw_state, Mapping):
+            raise ValueError("Curve feedback source state_dict must be a mapping")
+        source = {}
+        for key, value in raw_state.items():
+            if not isinstance(key, str):
+                raise ValueError("Curve feedback source state keys must be strings")
+            normalized = key.removeprefix("model.")
+            if normalized in source:
+                raise ValueError(f"Ambiguous checkpoint key after removing model prefix: {normalized}")
+            source[normalized] = value
+
+        prefix = "decoder.curve_point_feedback."
+        current = self.state_dict()
+        fresh = {key: value for key, value in current.items() if key.startswith(prefix)}
+        if not fresh:
+            raise ValueError("Curve feedback migration requires enabled curve_point_feedback parameters")
+        expected = {key for key in current if not key.startswith(prefix)}
+        missing = sorted(expected - source.keys())
+        unexpected = sorted(source.keys() - expected)
+        mismatched = sorted(
+            key for key in expected & source.keys()
+            if not isinstance(source[key], Tensor) or source[key].shape != current[key].shape
+        )
+        if missing or unexpected or mismatched:
+            raise ValueError(
+                "Curve feedback migration requires the complete conditioned legacy-inter refinement model "
+                "without existing point feedback; "
+                f"missing={missing}, unexpected={unexpected}, shape_mismatch={mismatched}"
+            )
+        self.load_state_dict({**source, **fresh}, strict=True)
+        self.initialization_report = {
+            "source": str(path),
+            "source_epoch": checkpoint.get("epoch"),
+            "source_global_step": checkpoint.get("global_step"),
+            "retained_state_keys": len(source),
+            "initialized_curve_point_feedback_keys": sorted(fresh),
+            "initialized_curve_point_feedback_parameters": sum(value.numel() for value in fresh.values()),
+        }
+        logger.info("Curve point feedback initialization: %s", self.initialization_report)
 
     def train(self, mode: bool = True):
         super().train(mode and self.runtime_mode != "frozen_inference")

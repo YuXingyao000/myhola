@@ -727,6 +727,28 @@ def weighted_incident_mean(
     return (sums / totals.clamp_min(1e-6)).to(messages.dtype)
 
 
+def curve_surface_observations(
+    curves: Tensor, surfaces: Tensor, face_pairs: Tensor, chunk_size: int,
+) -> Tensor:
+    """Read 17 FP32 geometric values per curve sample from predicted owners."""
+    with torch.autocast(device_type=curves.device.type, enabled=False):
+        curves = curves.float()
+        first_closest, first_distances = closest_surface_points(
+            curves, surfaces[face_pairs[:, 0]].float(), chunk_size,
+        )
+        second_closest, second_distances = closest_surface_points(
+            curves, surfaces[face_pairs[:, 1]].float(), chunk_size,
+        )
+        return torch.cat(
+            (
+                curves, first_closest, second_closest,
+                curves - first_closest, curves - second_closest,
+                first_distances.unsqueeze(-1), second_distances.unsqueeze(-1),
+            ),
+            dim=-1,
+        )
+
+
 class GeometryRead(nn.Module):
     """Read each candidate curve against its two predicted owner surfaces.
 
@@ -750,33 +772,85 @@ class GeometryRead(nn.Module):
 
     def forward(self, curves: Tensor, surfaces: Tensor, face_pairs: Tensor) -> Tensor:
         # Geometric differences must not be rounded to bf16 before encoding.
-        with torch.autocast(device_type=curves.device.type, enabled=False):
-            curves = curves.float()
-            first_surfaces = surfaces[face_pairs[:, 0]].float()
-            second_surfaces = surfaces[face_pairs[:, 1]].float()
-            first_closest, first_distances = closest_surface_points(
-                curves, first_surfaces, self.chunk_size
-            )
-            second_closest, second_distances = closest_surface_points(
-                curves, second_surfaces, self.chunk_size
-            )
-            observations = torch.cat(
-                (
-                    curves,
-                    first_closest,
-                    second_closest,
-                    curves - first_closest,
-                    curves - second_closest,
-                    first_distances.unsqueeze(-1),
-                    second_distances.unsqueeze(-1),
-                ),
-                dim=-1,
-            )
+        observations = curve_surface_observations(curves, surfaces, face_pairs, self.chunk_size)
         point_features = self.point_encoder(observations)
         pooled = torch.cat(
             (point_features.mean(dim=1), point_features.amax(dim=1)), dim=-1
         )
         return self.pool_projection(pooled)
+
+
+class CurvePointFeedback(nn.Module):
+    """Added 2026-10-14: final curve XYZ feedback without spatial pooling.
+
+    Read final predicted surfaces at every final curve point, concatenate the
+    ordered owner/edge features, and predict a global XYZ displacement. The
+    shared MLP has no point index or dropout: coincident curve samples with
+    identical conditions receive identical updates. GT never enters forward.
+    """
+
+    def __init__(
+        self, face_dim: int, edge_dim: int, hidden_dim: int = 128,
+        feature_dim: int = 64, geometry_chunk_size: int = 32,
+    ):
+        super().__init__()
+        if min(face_dim, edge_dim, hidden_dim, feature_dim, geometry_chunk_size) <= 0:
+            raise ValueError("Curve feedback dimensions and chunk size must be positive.")
+        self.geometry_chunk_size = geometry_chunk_size
+        self.point_encoder = nn.Sequential(
+            nn.Linear(17 + edge_dim + 2 * face_dim, hidden_dim), nn.SiLU(),
+            nn.Linear(hidden_dim, feature_dim), nn.SiLU(),
+        )
+        self.delta = nn.Linear(feature_dim, 3)
+        nn.init.zeros_(self.delta.weight)
+        nn.init.zeros_(self.delta.bias)
+
+    def forward(
+        self, edge_geometry: PrimitiveGeometry, face_geometry: PrimitiveGeometry,
+        edge_features: Tensor, face_features: Tensor, pair_indices: Tensor,
+    ) -> PrimitiveGeometry:
+        if edge_features.shape[0] == 0:
+            return edge_geometry
+        # BF16 bbox outputs can be exactly zero, including valid candidates.
+        # With the original bbox held fixed, such a collapsed curve cannot
+        # represent a nonzero XYZ delta. Leave its new residual zero; the old
+        # geometry/bbox supervision still updates the original decoder. This
+        # is an exact degeneracy mask, never an epsilon clamp on small curves.
+        scale = edge_geometry.center_scale[:, None, 3:].float()
+        if not bool(torch.isfinite(scale).all()):
+            raise ValueError("Curve feedback requires finite predicted bbox scales.")
+        invertible = scale != 0
+        denominator = torch.where(invertible, scale, torch.ones_like(scale))
+        deltas = []
+        for start in range(0, edge_features.shape[0], self.geometry_chunk_size):
+            stop = start + self.geometry_chunk_size
+            owners = pair_indices[start:stop]
+            observations = curve_surface_observations(
+                edge_geometry.points[start:stop], face_geometry.points,
+                owners, self.geometry_chunk_size,
+            )
+            condition = torch.cat(
+                (edge_features[start:stop], face_features[owners].flatten(1)), dim=-1,
+            )
+            point_inputs = torch.cat(
+                (observations, condition[:, None].expand(-1, observations.shape[1], -1)), dim=-1,
+            )
+            # Small final coordinate corrections must not be quantized by AMP.
+            with torch.autocast(device_type=point_inputs.device.type, enabled=False):
+                deltas.append(self.delta(self.point_encoder(point_inputs.float())))
+        global_delta = torch.cat(deltas) * invertible
+        with torch.autocast(device_type=global_delta.device.type, enabled=False):
+            local_points = torch.cat(
+                (
+                    edge_geometry.local_points[..., :3].float() + global_delta / denominator,
+                    edge_geometry.local_points[..., 3:].float(),
+                ),
+                dim=-1,
+            )
+            points = edge_geometry.points.float() + global_delta
+        return PrimitiveGeometry(
+            local_points=local_points, center_scale=edge_geometry.center_scale, points=points,
+        )
 
 
 class IntersectionRefiner(nn.Module):
@@ -1089,6 +1163,7 @@ class IntersectionDecoder(nn.Module):
     def __init__(
         self, legacy: AutoEncoder_light, cfg: dict, intersection_cfg: dict | None = None,
         curve_conditioning_cfg: dict | None = None,
+        curve_point_feedback_cfg: dict | None = None,
     ):
         super().__init__()
         self.face_dim = legacy.face_feature_dim
@@ -1098,10 +1173,14 @@ class IntersectionDecoder(nn.Module):
         self.refinement_enabled = bool(cfg["enabled"])
         conditioning_cfg = {} if curve_conditioning_cfg is None else curve_conditioning_cfg
         self.curve_conditioning_enabled = bool(conditioning_cfg.get("enabled", False))
+        feedback_cfg = curve_point_feedback_cfg or {}
+        self.curve_point_feedback_enabled = bool(feedback_cfg.get("enabled", False))
         if self.curve_conditioning_enabled and (
             not self.refinement_enabled or (intersection_cfg or {}).get("kind", "legacy") != "legacy"
         ):
             raise ValueError("Curve conditioning requires legacy intersection with refinement enabled.")
+        if self.curve_point_feedback_enabled and not self.curve_conditioning_enabled:
+            raise ValueError("Curve point feedback requires the retained curve conditioning path.")
         if self.chunk_size <= 0 or int(cfg["geometry_chunk_size"]) <= 0:
             raise ValueError("Candidate and geometry chunk sizes must be positive.")
         if int(cfg["hidden_dim"]) <= 0 or int(cfg["geometry_dim"]) <= 0:
@@ -1135,6 +1214,16 @@ class IntersectionDecoder(nn.Module):
         self.refiner = (
             IntersectionRefiner(self.face_dim, self.edge_dim, cfg)
             if self.refinement_enabled else None
+        )
+        # Default-off registers no new state keys in historical checkpoints.
+        self.curve_point_feedback = (
+            CurvePointFeedback(
+                self.face_dim, self.edge_dim,
+                hidden_dim=int(feedback_cfg.get("hidden_dim", 128)),
+                feature_dim=int(feedback_cfg.get("feature_dim", 64)),
+                geometry_chunk_size=int(cfg["geometry_chunk_size"]),
+            )
+            if self.curve_point_feedback_enabled else None
         )
 
     def _run_candidates(self, feature_pairs: Tensor) -> Tensor:
@@ -1222,6 +1311,14 @@ class IntersectionDecoder(nn.Module):
             # Reuse exactly the same geometry heads and linear classifier.
             refined = self._decode_stage(
                 faces + delta_face, edges + delta_edge, pairs, condition_curves=True,
+            )
+
+        if self.curve_point_feedback is not None:
+            # Final local/global geometry is updated together, so reconstruction,
+            # incidence, twin supervision and exported curves all see this result.
+            refined.edge_geometry = self.curve_point_feedback(
+                refined.edge_geometry, refined.face_geometry,
+                refined.edge_features, refined.face_features, pairs.indices,
             )
 
         return RefinementOutput(

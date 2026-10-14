@@ -34,6 +34,8 @@
 
 对 `AutoEncoder_joint`，旧 encoder 权重只能通过 `model.init_encoder_checkpoint` 做显式组件迁移；完整新模型权重初始化使用 `model.checkpoint` 严格加载；恢复优化器／步数使用 `trainer.resume_from_checkpoint`。新模型禁止旧 trainer permissive `init_from_checkpoint`；resume 时不重复迁移旧 encoder，也不能在无权重来源时冻结随机 encoder。新 VAE `v_test=True` 返回 `{"items": list[dict]}`，每个对象保留本地实体编号与表示标签；旧 VAE 测试保持 batch=1，不能把整个 batch 重复写入各样本。
 
+`train_vae_intersection_point_feedback` 在已训练 conditioning 上新增最终曲线逐点反馈，见 [协议](../../checkpoints/intersection_refinement/point_feedback/PLAN.md)。`blocks.py:CurvePointFeedback` 用每点17维预测几何观察加E/两个owner F，145→128→64→3末层零初始化，新增27139参数。所有几何读取与新增MLP/坐标加法使用FP32，原主干仍遵循既有AMP。无点序号/空间池化/GT筛选；方向分量、bbox、face输出不直接修改；local XYZ和global XYZ同时修正。`init_curve_feedback_checkpoint` 仅允许从完整已conditioned、无feedback的legacy/refinement来源新增这6个tensor，full/resume保持严格加载；通用trainer的resume清除此初始化来源。`trainer.max_time` 默认null，本轮配置8小时；Timer时间计入checkpoint，续训须设置足够的累计预算。
+
 ## Diffusion：实际数据流
 
 1. `dataset.py:Diffusion_dataset` 读取 cache 并完成 padding；`diffusion_latents.py:LatentProvider` 取 mean，或用 std 采样。非 cache 分支调用冻结 VAE 再由 padder 打包。
