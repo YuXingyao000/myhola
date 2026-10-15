@@ -16,7 +16,7 @@ from tools.intersection_evaluate_inference import (
     load_intersection, main, read_reference_input, read_reference_protocol, validate_method,
 )
 from tools.vae_compare_inference import (
-    atomic_npz, file_sha256, json_digest, latent_sha256, load_identity_geometry,
+    atomic_npz, configure_fp32, file_sha256, json_digest, latent_sha256, load_identity_geometry,
 )
 
 
@@ -296,3 +296,51 @@ def test_mean_audit_tolerates_cuda_roundoff_but_rejects_real_drift(tmp_path):
         )
         assert audit["passed"] is should_pass
         assert audit["max_abs_error"] == pytest.approx(perturbation)
+
+
+@pytest.mark.parametrize("method", ["encoder_edge_value", "encoder_gat_control"])
+def test_changed_encoder_uses_own_mean_and_strict_resume(tmp_path, method):
+    configure_fp32()  # Match CLI CPU reduction threads for the independent mean.
+    _, reference_model, legacy_path, _, _, config = make_models(tmp_path)
+    reference, data, split, _, arrays = make_reference(tmp_path, reference_model, legacy_path)
+    config = {**deepcopy(config), "freeze_encoder": False, "init_legacy_checkpoint": None,
+              "restoring_checkpoint": True, "curve_conditioning": {"enabled": True, "hidden_dim": 8},
+              "encoder_edge_value": {"enabled": method == "encoder_edge_value", "hidden_dim": 8}}
+    model = AutoEncoder_intersection(config).eval().requires_grad_(False)
+    checkpoint = tmp_path / "changed_encoder.ckpt"
+    torch.save({"state_dict": {f"model.{key}": value for key, value in model.state_dict().items()},
+                "hyper_parameters": {"model": config}, "global_step": 1089}, checkpoint)
+    batch, _ = load_identity_geometry(data / "example/data.npz", "example", torch.device("cpu"))
+    with torch.inference_mode():
+        expected = model.sample(model.encode(batch, v_test=True)["face_features"], v_is_test=True)[0].numpy()
+    assert not np.array_equal(expected, arrays["face_latents"])
+    output = tmp_path / "new_evaluation"
+    args = ["--checkpoint", str(checkpoint), "--legacy-checkpoint", str(legacy_path),
+            "--reference-root", str(reference), "--data-root", str(data), "--split-list", str(split),
+            "--output-root", str(output), "--mode", "posterior_mean", "--device", "cpu",
+            "--method", method, "--input-source", "checkpoint_posterior"]
+    assert main(args) == 0
+    raw = output / "raw_predictions/posterior_mean" / method / "example/data.npz"
+    with np.load(raw, allow_pickle=False) as values:
+        saved = {name: values[name] for name in values.files}
+    np.testing.assert_array_equal(saved["face_latents"], expected)
+    assert str(saved["encoder_checkpoint_sha256"]) == file_sha256(checkpoint)
+    assert str(saved["input_source_sha256"]) == file_sha256(data / "example/data.npz")
+    assert str(saved["input_latent_sha256"]) == latent_sha256(expected)
+    assert main([*args, "--resume"]) == 0
+    saved["face_latents"][0, 0] += 1
+    atomic_npz(raw, saved)
+    assert main([*args, "--resume"]) == 1
+    with pytest.raises(ValueError, match="requires|require"):
+        main(args[:-2])
+    wrong_method = "encoder_gat_control" if method == "encoder_edge_value" else "encoder_edge_value"
+    with pytest.raises(ValueError, match="does not match"):
+        validate_method(model, wrong_method)
+
+
+def test_checkpoint_posterior_rejects_archived_latents_before_loading(tmp_path):
+    args = ["--checkpoint", "unused", "--legacy-checkpoint", "unused", "--reference-root", "unused",
+            "--data-root", "unused", "--split-list", "unused", "--output-root", str(tmp_path),
+            "--mode", "archived_latents", "--input-source", "checkpoint_posterior"]
+    with pytest.raises(ValueError, match="never archived"):
+        main(args)

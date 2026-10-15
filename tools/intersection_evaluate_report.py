@@ -159,15 +159,25 @@ def numerical_audit_paragraphs(record: dict | None) -> list[str]:
     return paragraphs
 
 
-def load_comparison(root: Path, methods: tuple[str, str] = METHODS) -> dict:
+def load_comparison(root: Path, methods: tuple[str, str] = METHODS, *,
+                    raw_modes: tuple[str, ...] = ("posterior_mean", "archived_latents"),
+                    input_contract: str = "identical_latents") -> dict:
     """Validate completion and fixed denominators before publishing anything."""
     raw = {}
     expected_ids = None
     split_digest = None
-    for mode in ("posterior_mean", "archived_latents"):
+    if not raw_modes or any(mode not in {"posterior_mean", "archived_latents"} for mode in raw_modes):
+        raise ValueError("Report requires explicit supported raw modes")
+    if input_contract not in {"identical_latents", "same_geometry_source"}:
+        raise ValueError("Unknown report input contract")
+    if input_contract == "same_geometry_source" and raw_modes != ("posterior_mean",):
+        raise ValueError("Changed encoder comparison cannot use archived latent replay")
+    for mode in raw_modes:
         directory = root / "raw_metrics" / mode
         summary = read_json(directory / "summary.json")
         rows = read_rows(directory / "per_object.csv", "model_id", methods)
+        if summary.get("input_contract", "identical_latents") != input_contract:
+            raise ValueError(f"Unexpected raw input contract for {mode}")
         if summary["intended_count"] != EXPECTED_INTENDED or summary["original_count"] != EXPECTED_ORIGINAL:
             raise ValueError(f"Unexpected fixed denominators for raw/{mode}")
         if summary["mode"] != mode or set(summary["methods"]) != set(methods):

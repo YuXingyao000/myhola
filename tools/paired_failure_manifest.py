@@ -18,11 +18,13 @@ from tools.vae_compare_post import REFERENCE_CONTRACT_FIELDS, TERMINAL, fingerpr
 
 VERSION = "paired_failure_manifest_v1"
 METHODS = ("intersection", "local")
-CANDIDATE_METHODS = ("local", "conditioned", "point_feedback")
+CANDIDATE_METHODS = ("local", "conditioned", "point_feedback", "encoder_edge_value", "encoder_gat_control")
 BASELINE_METHODS = ("intersection", "conditioned")
+INPUT_CONTRACTS = ("identical_latents", "same_geometry_source")
 COHORTS = ("both_failed", "new_failure", "rescued", "both_valid")
 LABELS = {"intersection": "上一版 Intersection refinement", "local": "本版局部注意力",
-          "conditioned": "曲线条件调制", "point_feedback": "逐点曲线反馈"}
+          "conditioned": "曲线条件调制", "point_feedback": "逐点曲线反馈",
+          "encoder_edge_value": "Encoder 边内容消息", "encoder_gat_control": "原 GAT 全量解冻对照"}
 
 
 def paired_methods(candidate_method="local", baseline_method="intersection"):
@@ -53,7 +55,30 @@ def read_table(path: Path, id_key: str, candidate_method="local", baseline_metho
     return rows
 
 
-def partition_population(raw: dict, post: dict, fit: dict, ids: list[str], candidate_method="local", baseline_method="intersection") -> dict:
+def validate_input_pair(rows: list[dict], sid: str, input_contract: str) -> None:
+    """Keep historical latent equality separate from current-encoder reconstruction."""
+    if input_contract not in INPUT_CONTRACTS:
+        raise ValueError(f"Unsupported input contract {input_contract!r}")
+    for row in rows:
+        if row.get("input_contract", "identical_latents") != input_contract:
+            raise ValueError(f"Paired input contract differs: {sid}")
+    hashes = [row.get("input_latent_sha256") for row in rows]
+    if any(not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest) for digest in hashes):
+        raise ValueError(f"Paired input latent hashes absent/invalid: {sid}")
+    if input_contract == "identical_latents":
+        if hashes[0] != hashes[1]:
+            raise ValueError(f"Paired input latent hashes differ/absent: {sid}")
+        return
+    if any(row.get("latent_digest_status") != "verified" for row in rows):
+        raise ValueError(f"Own posterior latent digest not verified: {sid}")
+    sources = [row.get("input_source_sha256") for row in rows]
+    actual = [row.get("actual_gt_source_sha256") for row in rows]
+    if (any(not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest) for digest in sources + actual)
+            or len(set(sources + actual)) != 1):
+        raise ValueError(f"Paired geometry source hashes differ/absent: {sid}")
+
+
+def partition_population(raw: dict, post: dict, fit: dict, ids: list[str], candidate_method="local", baseline_method="intersection", input_contract="identical_latents") -> dict:
     methods = paired_methods(candidate_method, baseline_method)
     expected = {(method, sid) for method in methods for sid in ids}
     if not ids or len(set(ids)) != len(ids):
@@ -80,9 +105,7 @@ def partition_population(raw: dict, post: dict, fit: dict, ids: list[str], candi
             transitions[method][f"fit_{'valid' if a else 'failed'}_optimized_{'valid' if b else 'failed'}"] += 1
             if method == candidate_method and a and not b:
                 regressions.append(sid)
-        hashes = [raw[m, sid].get("input_latent_sha256") for m in methods]
-        if hashes[0] != hashes[1] or not isinstance(hashes[0], str) or not re.fullmatch(r"[a-f0-9]{64}", hashes[0]):
-            raise ValueError(f"Paired input latent hashes differ/absent: {sid}")
+        validate_input_pair([raw[m, sid] for m in methods], sid, input_contract)
         old, new = [post[m, sid]["native_valid_solid"] for m in methods]
         group = "both_valid" if old and new else "rescued" if new else "new_failure" if old else "both_failed"
         groups[group].append(sid)
@@ -162,6 +185,10 @@ def make_case(sid, method, cohort, raw, post, fit, comparison, reference, data_r
             raise ValueError(f"Missing raw fingerprint: {method}/{sid}")
         case["source_records"][stage] = asset
     assets = {key: audit.add(path, raw_hash if key == "raw_npz" else None) for key, path in paths.items()}
+    if raw[method, sid].get("input_contract") == "same_geometry_source":
+        source_hash = raw[method, sid].get("input_source_sha256")
+        if source_hash != assets["gt_npz"]["sha256"]:
+            raise ValueError(f"Paired geometry source differs from actual GT asset: {method}/{sid}")
     case["path_exists"] = {key: item["exists"] for key, item in assets.items()}
     case["asset_sha256"] = {key: item["sha256"] for key, item in assets.items()}
     return case
@@ -183,7 +210,7 @@ def audit_reuse(case, historical_case, baseline_root, protocols, audit, baseline
     return result
 
 
-def build_manifests(comparison, reference, baseline, data_root, split, candidate_method="local", baseline_method="intersection"):
+def build_manifests(comparison, reference, baseline, data_root, split, candidate_method="local", baseline_method="intersection", input_contract="identical_latents"):
     methods = paired_methods(candidate_method, baseline_method)
     audit = AssetAudit()
     ids = split.read_text().split()
@@ -193,13 +220,14 @@ def build_manifests(comparison, reference, baseline, data_root, split, candidate
              "optimized": comparison / "post/optimized/samples.csv", "fit_only": comparison / "post/fit_only/samples.csv"}
     raw, post, fit = [read_table(paths[key], id_key, candidate_method, baseline_method) for key, id_key in
                       (("raw_metrics", "model_id"), ("optimized", "sample_id"), ("fit_only", "sample_id"))]
-    partition = partition_population(raw, post, fit, ids, candidate_method, baseline_method)
+    partition = partition_population(raw, post, fit, ids, candidate_method, baseline_method, input_contract)
     protocols = validate_protocols(comparison, reference, data_root, split, audit, candidate_method, baseline_method)
     raw_summary_path = comparison / "raw_metrics/posterior_mean/summary.json"
     raw_summary = read_json(raw_summary_path)
     if (raw_summary.get("split_sha256") != SPLIT_SHA256 or raw_summary.get("baseline_method") != baseline_method
             or raw_summary.get("candidate_method") != candidate_method or raw_summary.get("protocol_valid") is not True
-            or raw_summary.get("shared_input_status_counts") != {"verified": 2417}):
+            or raw_summary.get("shared_input_status_counts") != {"verified": 2417}
+            or raw_summary.get("input_contract", "identical_latents") != input_contract):
         raise ValueError("Raw summary input protocol differs")
     sources = {key: audit.add(path) for key, path in paths.items()}
     sources.update(raw_summary=audit.add(raw_summary_path), split=audit.add(split))
@@ -236,11 +264,14 @@ def build_manifests(comparison, reference, baseline, data_root, split, candidate
     common = {"schema": VERSION, "created_at_utc": datetime.now(timezone.utc).isoformat(),
               "comparison_root": str(comparison), "reference_root": str(reference), "baseline_census_root": str(baseline),
               "baseline_method": baseline_method, "candidate_method": candidate_method,
+              "input_contract": input_contract,
               "method_labels": {method: LABELS[method] for method in methods},
               "data_root": str(data_root), "sources": sources, "post_protocols": protocols, "population": population,
               **partition, "failed_ids": failed,
               "face_identity_contract": {"gt_order_preserved": True, "face_deduplication": "not_applied",
-                    "evidence": "Frozen shared posterior-mean inputs preserve GT face slots; not STEP subshape numbering."},
+                    "evidence": ("Same verified CAD source and canonical GT face ordering; each checkpoint supplies its own posterior mean. Not STEP subshape numbering."
+                                 if input_contract == "same_geometry_source" else
+                                 "Frozen shared posterior-mean inputs preserve GT face slots; not STEP subshape numbering.")},
               "selection_protocol": {"sampling": False,
                     "main_failure_rule": f"{candidate_method} optimized native_valid_solid is False; missing diagnosis stays in denominator",
                     "control_scope": "Outcome-selected rescued/failed cohorts, not representative of all successes"}}
@@ -264,6 +295,7 @@ def main(argv=None):
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--candidate-method", choices=CANDIDATE_METHODS, default="local")
     parser.add_argument("--baseline-method", choices=BASELINE_METHODS, default="intersection")
+    parser.add_argument("--input-contract", choices=INPUT_CONTRACTS, default="identical_latents")
     args = parser.parse_args(argv)
     comparison, reference, baseline, data_root, split, root = [p.resolve() for p in
         (args.comparison_root, args.reference_root, args.baseline_census_root, args.data_root, args.split_list, args.output_root)]
@@ -273,7 +305,7 @@ def main(argv=None):
              "failed_ids.txt", "new_failure_ids.txt", "both_failed_ids.txt", "rescued_ids.txt", "optimization_regression_ids.txt"]
     if any((root / name).exists() for name in names):
         raise FileExistsError("Frozen census files already exist; select a new root")
-    documents = build_manifests(comparison, reference, baseline, data_root, split, args.candidate_method, args.baseline_method)
+    documents = build_manifests(comparison, reference, baseline, data_root, split, args.candidate_method, args.baseline_method, args.input_contract)
     root.mkdir(parents=True, exist_ok=True)
     for name, value in documents.items():
         (root / name).write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + "\n")

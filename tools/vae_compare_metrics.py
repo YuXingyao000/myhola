@@ -26,8 +26,10 @@ ACCEPTED_COUNT = 2417
 ORIGINAL_COUNT = 2424
 ACCEPTED_SHA256 = "2864849e8240134c6033cc6cd64efa19337f67fea94b89a493690ae84355b7b3"
 METHODS = ("legacy", "joint")
-CANDIDATE_METHODS = ("joint", "intersection", "local", "conditioned", "point_feedback")
-BASELINE_METHODS = ("legacy", "intersection", "conditioned")
+CANDIDATE_METHODS = ("joint", "intersection", "local", "conditioned", "point_feedback",
+                     "encoder_edge_value", "encoder_gat_control")
+BASELINE_METHODS = ("legacy", "intersection", "conditioned", "encoder_gat_control")
+INPUT_CONTRACTS = ("identical_latents", "same_geometry_source")
 
 
 def comparison_methods(candidate_method="joint", baseline_method="legacy"):
@@ -169,10 +171,11 @@ def evaluate_prediction(prediction: dict, gt_faces: np.ndarray, gt_curves: np.nd
            "gt_face_count": len(gt_faces), "gt_boundary_count": len(gt_curves)}
     for key in METRICS:
         row.setdefault(key, None)
-    if "input_latent_sha256" in prediction:
-        digest = np.asarray(prediction["input_latent_sha256"])
-        if digest.ndim == 0:
-            row["input_latent_sha256"] = str(digest.item())
+    for key in ("input_latent_sha256", "input_source_sha256", "input_source_kind", "encoder_checkpoint_sha256"):
+        if key in prediction:
+            value = np.asarray(prediction[key])
+            if value.ndim == 0:
+                row[key] = str(value.item())
     allowed_tags = {"shared_boundary_v1"} if method == "joint" else {"legacy_half_edges", "legacy_directed_v1"}
     tag = np.asarray(prediction.get("representation", "legacy_half_edges" if method == "legacy" else ""))
     if tag.ndim != 0 or str(tag.item()) not in allowed_tags:
@@ -240,15 +243,22 @@ def _load_prediction(path: Path) -> dict:
     with np.load(path, allow_pickle=False) as source:
         return {key: source[key] for key in (
             "representation", "pred_face", "pred_edge", "pred_edge_face_connectivity",
-            "pred_edge_confidence", "input_latent_sha256",
+            "pred_edge_confidence", "input_latent_sha256", "input_source_sha256",
+            "face_latents", "input_source_kind", "encoder_checkpoint_sha256",
         ) if key in source}
 
 
-def evaluate_sample(model_id: str, *, data_root: Path, prediction_root: Path, mode: str, candidate_method: str = "joint", baseline_method: str = "legacy") -> list[dict]:
+def evaluate_sample(model_id: str, *, data_root: Path, prediction_root: Path, mode: str,
+                    candidate_method: str = "joint", baseline_method: str = "legacy",
+                    input_contract: str = "identical_latents") -> list[dict]:
     methods = comparison_methods(candidate_method, baseline_method)
+    if input_contract not in INPUT_CONTRACTS or (input_contract == "same_geometry_source" and mode != "posterior_mean"):
+        raise ValueError("same_geometry_source requires canonical posterior_mean reconstruction")
     rows = []
     try:
-        with np.load(data_root / model_id / "data.npz", allow_pickle=False) as source:
+        gt_path = data_root / model_id / "data.npz"
+        gt_source_digest = hashlib.sha256(gt_path.read_bytes()).hexdigest() if input_contract == "same_geometry_source" else None
+        with np.load(gt_path, allow_pickle=False) as source:
             gt_faces = source["sample_points_faces"]
             targets = build_shared_boundary_targets(
                 gt_faces, source["sample_points_lines"], source["edge_face_connectivity"],
@@ -267,6 +277,9 @@ def evaluate_sample(model_id: str, *, data_root: Path, prediction_root: Path, mo
         path = prediction_root / method / model_id / "data.npz"
         base = {"model_id": model_id, "method": method, "mode": mode, "prediction_file": str(path),
                 "prediction_file_exists": path.is_file(), "error": ""}
+        if input_contract == "same_geometry_source":
+            base.update(input_contract=input_contract, actual_gt_source_sha256=gt_source_digest,
+                        latent_digest_status="missing_digest")
         if not path.is_file():
             base.update(status="failed", gt_status="ok", prediction_status="missing_prediction")
         else:
@@ -274,16 +287,30 @@ def evaluate_sample(model_id: str, *, data_root: Path, prediction_root: Path, mo
                 arrays = _load_prediction(path)
                 base.update(evaluate_prediction(arrays, gt_faces, targets["curves"], targets["face_pairs"],
                                                 method=method, mode=mode))
+                if input_contract == "same_geometry_source" and "face_latents" in arrays and base.get("input_latent_sha256"):
+                    latents = arrays["face_latents"]
+                    if latents.dtype != np.float32 or latents.shape != (len(gt_faces), 32) or not np.isfinite(latents).all():
+                        base["latent_digest_status"] = "mismatch"
+                    else:
+                        digest = hashlib.sha256(str(latents.shape).encode())
+                        digest.update(np.ascontiguousarray(latents).tobytes())
+                        base["latent_digest_status"] = "verified" if digest.hexdigest() == base["input_latent_sha256"] else "mismatch"
             except Exception as exc:
                 base.update(status="failed", gt_status="ok", prediction_status="unreadable_or_invalid_prediction",
                             error=f"{type(exc).__name__}: {exc}")
         rows.append(base)
-    digests = [row.get("input_latent_sha256") for row in rows]
+    digest_key = "input_source_sha256" if input_contract == "same_geometry_source" else "input_latent_sha256"
+    digests = [row.get(digest_key) for row in rows]
     both_loaded = all(row["prediction_status"] == "ok" for row in rows)
     if both_loaded and all(digests):
         shared_status = "verified" if digests[0] == digests[1] else "mismatch"
     else:
         shared_status = "missing_digest" if both_loaded else "not_verified"
+    if both_loaded and input_contract == "same_geometry_source":
+        if not all(digests) or any(row["latent_digest_status"] == "missing_digest" for row in rows):
+            shared_status = "missing_digest"
+        elif digests != [gt_source_digest, gt_source_digest] or any(row["latent_digest_status"] != "verified" for row in rows):
+            shared_status = "mismatch"
     for row in rows:
         row["shared_input_status"] = shared_status
     return rows
@@ -312,8 +339,11 @@ def _micro_topology(rows: list[dict]) -> dict:
 
 
 def summarize(rows: list[dict], ids: list[str], *, mode: str, original_count: int = ORIGINAL_COUNT,
-              candidate_method: str = "joint", baseline_method: str = "legacy") -> dict:
+              candidate_method: str = "joint", baseline_method: str = "legacy",
+              input_contract: str = "identical_latents") -> dict:
     methods = comparison_methods(candidate_method, baseline_method)
+    if input_contract not in INPUT_CONTRACTS or (input_contract == "same_geometry_source" and mode != "posterior_mean"):
+        raise ValueError("same_geometry_source requires canonical posterior_mean reconstruction")
     if len(ids) > original_count:
         raise ValueError("Intended count cannot exceed the original population")
     summary = {"mode": mode, "baseline_method": baseline_method, "candidate_method": candidate_method, "intended_count": len(ids), "original_count": original_count,
@@ -321,6 +351,10 @@ def summarize(rows: list[dict], ids: list[str], *, mode: str, original_count: in
                "diagnostic_convention": "legacy_* columns describe the directed-half-edge representation used by legacy, intersection, local, conditioned and point_feedback; joint_* columns apply only to shared-boundary queries.",
                "limitations": LIMITATIONS,
                "empty_pair_convention": "both empty: P=R=F1=1; prediction-only empty: P=1,R=0,F1=0; GT-only empty: P=0,R=1,F1=0"}
+    summary["input_contract"] = input_contract
+    if input_contract == "same_geometry_source":
+        summary["shared_input_meaning"] = "Same canonical GT source bytes; each checkpoint supplies its own verified float32 posterior mean. Latent equality is not required."
+        summary["diagnostic_convention"] = "legacy_* columns describe directed half edges, including encoder_edge_value and encoder_gat_control; joint_* only describes shared-boundary queries."
     lookup = {(row["method"], row["model_id"]): row for row in rows}
     if len(lookup) != len(rows) or set(lookup) != {(method, item) for method in methods for item in ids}:
         raise ValueError("Exactly one metric row per method and intended ID is required")
@@ -388,6 +422,7 @@ def main() -> int:
     parser.add_argument("--mode", choices=MODES, required=True)
     parser.add_argument("--baseline-method", choices=BASELINE_METHODS, default="legacy")
     parser.add_argument("--candidate-method", choices=CANDIDATE_METHODS, default="joint")
+    parser.add_argument("--input-contract", choices=INPUT_CONTRACTS, default="identical_latents")
     parser.add_argument("--workers", type=int, default=16)
     args = parser.parse_args()
     if args.workers < 1:
@@ -397,14 +432,17 @@ def main() -> int:
     if (output / "per_object.csv").exists() or (output / "summary.json").exists():
         parser.error("Metrics already exist; use a fresh comparison root to prevent mixing protocols")
     prediction_root = args.comparison_root / "raw_predictions" / args.mode
-    evaluate = partial(evaluate_sample, data_root=args.data_root, prediction_root=prediction_root, mode=args.mode, candidate_method=args.candidate_method, baseline_method=args.baseline_method)
+    evaluate = partial(evaluate_sample, data_root=args.data_root, prediction_root=prediction_root, mode=args.mode,
+                       candidate_method=args.candidate_method, baseline_method=args.baseline_method,
+                       input_contract=args.input_contract)
     rows = []
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
         for index, pair in enumerate(pool.map(evaluate, ids), start=1):
             rows.extend(pair)
             if index % 250 == 0:
                 print(f"Scored {index}/{len(ids)} objects", flush=True)
-    summary = summarize(rows, ids, mode=args.mode, candidate_method=args.candidate_method, baseline_method=args.baseline_method)
+    summary = summarize(rows, ids, mode=args.mode, candidate_method=args.candidate_method,
+                        baseline_method=args.baseline_method, input_contract=args.input_contract)
     summary.update(
         created_at_utc=datetime.now(timezone.utc).isoformat(), workers=args.workers,
         data_root=str(args.data_root.resolve()), prediction_root=str(prediction_root.resolve()),

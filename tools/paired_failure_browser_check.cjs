@@ -57,12 +57,18 @@ async function main() {
     }
     const identity = await evaluate('({methods: window.PAIRED_CENSUS_DATA.methods, labels: window.PAIRED_CENSUS_DATA.method_labels})');
     if (identity.methods) {
-      assert(['intersection/local', 'intersection/conditioned', 'conditioned/point_feedback']
+      assert(['intersection/local', 'intersection/conditioned', 'conditioned/point_feedback',
+        'conditioned/encoder_edge_value', 'conditioned/encoder_gat_control']
         .includes(`${identity.methods.baseline}/${identity.methods.candidate}`));
       if (identity.methods.candidate === 'conditioned') assert.equal(identity.labels.candidate, '曲线条件调制');
       if (identity.methods.candidate === 'point_feedback') {
         assert.equal(identity.labels.baseline, '曲线条件调制');
         assert.equal(identity.labels.candidate, '逐点曲线反馈');
+      }
+      if (identity.methods.candidate.startsWith('encoder_')) {
+        assert.equal(identity.labels.baseline, '曲线条件调制');
+        assert.equal(await evaluate('window.PAIRED_CENSUS_DATA.input_contract'), 'same_geometry_source');
+        assert.equal(identity.labels.candidate, identity.methods.candidate === 'encoder_edge_value' ? 'Encoder 边内容消息' : '原 GAT 全量解冻对照');
       }
       assert.equal(await evaluate('window.PAIRED_CENSUS_DATA.pairs.filter(p => ["baseline", "candidate"].some(role => p[role].method !== window.PAIRED_CENSUS_DATA.methods[role])).length'), 0);
     }

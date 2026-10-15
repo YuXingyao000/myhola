@@ -208,6 +208,7 @@ def build_report(root, baseline_root):
             "continuous": paired_continuous(subset)}
     summary = {"schema": VERSION, "created_at_utc": datetime.now(timezone.utc).isoformat(),
                "population": population, "methods": {"baseline": baseline_method, "candidate": candidate_method}, "method_labels": labels,
+               "input_contract": manifest.get("input_contract", "identical_latents"),
                "main": measures.summarize_records([row for row in new.values() if not row["original_native_valid"]]),
                "baseline_failures": measures.summarize_records([row for row in old.values() if not row["original_native_valid"]]),
                "cohorts": cohort_results, "audit": audit,
@@ -220,8 +221,12 @@ def build_report(root, baseline_root):
                    "只在原终态、STEP DATA精确一致且没有观测错误时采用阶段轨迹；缺测保留原分母。",
                    "边面距离是固定采样的归一化XYZ长度，不是毫米、Hausdorff距离或可裁剪性的证明。",
                    "面级错误只统计最终失败的decoder面；候选自身与所属上下文去重合并，OCC错误码不是唯一根因。",
-                   f"本次额外微调曝光与上一版不同，无法把全部收益或退步因果归于{labels['candidate']}；不代表端到端照片重建结果。",
+                   ("本页相对conditioned同时改变Encoder/posterior解冻、KL参与训练及微调曝光；新值消息的结构判断须另看同曝光原GAT对照，不能把全部差异归于消息MLP。"
+                    if candidate_method in ("encoder_edge_value", "encoder_gat_control") else
+                    f"本次额外微调曝光与上一版不同，无法把全部收益或退步因果归于{labels['candidate']}；不代表端到端照片重建结果。"),
                    "原HoLa的50件3D图库只作历史参考，页面不将其视作本版几何。"]}
+    if summary["input_contract"] == "same_geometry_source":
+        summary["limitations"].append("两侧核验相同CAD来源与GT面顺序，各自Encoder产生各自posterior mean；不要求latent相同，也不证明旧latent cache/diffusion兼容，不代表照片重建结果。")
     summary["highlights"] = highlights(summary)
     return pairs, summary
 
@@ -254,6 +259,7 @@ def compact_summary(summary):
                         "context_face_count": v["context_face_count"], "cad_counts": [v["cad"][c] for c in columns]} for k, v in context["codes"].items()}},
                 "earliest_observation": {t: {k: [v["count"], v["with_earlier_unknown_count"]] for k, v in rows.items()} for t, rows in value["earliest_observation"].items()}}
     result = {key: summary[key] for key in ("schema", "created_at_utc", "population", "methods", "method_labels", "highlights", "sources", "limitations", "fit_only_vs_optimized_all_accepted")}
+    result["input_contract"] = summary.get("input_contract", "identical_latents")
     result.update(schema="paired_failure_compact_summary_v1", columns={"observations": list(columns), "transitions": list(transition_columns)},
                   definitions={key: {"label": label, "criterion": criterion, "uses_threshold": threshold} for key, label, _, criterion, threshold in OBSERVATIONS},
                   main=group(summary["main"]), baseline_failures=group(summary["baseline_failures"]),
@@ -398,6 +404,7 @@ def page_payload(pairs, summary, charts, atlas_ids):
         return {key: row[key] for key in ("id", "method", "original_native_valid", "terminal_stage", "trace_verified", "flags", "owner_stages", "failed_face_context", "persistent_trim", "faces_without_boundary", "optimization_delta", "source_files")}
     return {"schema": VERSION, "population": summary["population"], "main": summary["main"],
             "method_labels": summary["method_labels"], "methods": summary["methods"],
+            "input_contract": summary.get("input_contract", "identical_latents"),
             "highlights": summary["highlights"], "cohort_labels": COHORTS,
             "cohort_counts": {key: value["count"] for key, value in summary["cohorts"].items()},
             "thresholds": list(THRESHOLDS), "terminal_labels": TERMINALS,

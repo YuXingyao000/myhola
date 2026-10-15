@@ -32,6 +32,8 @@ def test_method_extension_preserves_historical_pair_and_disallows_aliases():
     assert case_method({'method': 'local'}) == 'local'
     assert case_method({'method': 'conditioned'}) == 'conditioned'
     assert case_method({'method': 'point_feedback'}) == 'point_feedback'
+    assert case_method({'method': 'encoder_edge_value'}) == 'encoder_edge_value'
+    assert case_method({'method': 'encoder_gat_control'}) == 'encoder_gat_control'
     for method in ['refinement', 'intersection_local', None]:
         with pytest.raises(ValueError):
             case_method({'method': method})
@@ -190,3 +192,49 @@ def test_point_feedback_page_keeps_distinct_method_labels():
     payload = page_payload([], summary, [], set())
     assert payload['methods'] == {'baseline': 'conditioned', 'candidate': 'point_feedback'}
     assert payload['method_labels'] == {'baseline': '曲线条件调制', 'candidate': '逐点曲线反馈'}
+
+
+@pytest.mark.parametrize('candidate_method', ['encoder_edge_value', 'encoder_gat_control'])
+def test_current_encoders_require_explicit_same_geometry_contract(candidate_method):
+    ids, raw, post, fit = tables(candidate_method, 'conditioned')
+    for (method, sid), row in raw.items():
+        row.update(input_contract='same_geometry_source', input_source_sha256='c'*64,
+                   actual_gt_source_sha256='c'*64, latent_digest_status='verified',
+                   input_latent_sha256=('a' if method == 'conditioned' else 'b')*64)
+    result = partition_population(raw, post, fit, ids, candidate_method, 'conditioned', 'same_geometry_source')
+    assert result['cohorts'] == {'both_failed': [ids[0]], 'new_failure': [ids[1]],
+                                 'rescued': [ids[2]], 'both_valid': [ids[3]]}
+    # This is not a new meaning silently assigned to the historical default.
+    with pytest.raises(ValueError, match='input contract'):
+        partition_population(raw, post, fit, ids, candidate_method, 'conditioned')
+
+
+@pytest.mark.parametrize('defect', ['source', 'actual_gt', 'missing', 'latent', 'own_latent', 'contract', 'unknown_contract'])
+def test_same_geometry_contract_rejects_misattribution(defect):
+    candidate = 'encoder_edge_value'
+    ids, raw, post, fit = tables(candidate, 'conditioned')
+    for (method, sid), row in raw.items():
+        row.update(input_contract='same_geometry_source', input_source_sha256='c'*64,
+                   actual_gt_source_sha256='c'*64, latent_digest_status='verified',
+                   input_latent_sha256=('a' if method == 'conditioned' else 'b')*64)
+    row = raw[candidate, ids[0]]
+    if defect == 'source': row['input_source_sha256'] = 'd'*64
+    elif defect == 'actual_gt': row['actual_gt_source_sha256'] = 'd'*64
+    elif defect == 'missing': row.pop('input_source_sha256')
+    elif defect == 'latent': row['input_latent_sha256'] = 'not-a-digest'
+    elif defect == 'own_latent': row['latent_digest_status'] = 'mismatch'
+    elif defect == 'contract': row.pop('input_contract')
+    contract = 'unknown' if defect == 'unknown_contract' else 'same_geometry_source'
+    with pytest.raises(ValueError):
+        partition_population(raw, post, fit, ids, candidate, 'conditioned', contract)
+
+
+def test_current_encoder_page_carries_input_contract():
+    summary = {'population': {}, 'main': {'denominator': 0},
+               'method_labels': {'baseline': '曲线条件调制', 'candidate': 'Encoder 边内容消息'},
+               'methods': {'baseline': 'conditioned', 'candidate': 'encoder_edge_value'},
+               'input_contract': 'same_geometry_source',
+               'highlights': [], 'cohorts': {key: {'count': 0} for key in COHORTS}, 'limitations': []}
+    payload = page_payload([], summary, [], set())
+    assert payload['input_contract'] == 'same_geometry_source'
+    assert payload['methods']['candidate'] == 'encoder_edge_value'

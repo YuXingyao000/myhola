@@ -1,0 +1,63 @@
+{
+  "status": "passed",
+  "test_count": 64,
+  "real_smoke_count": 4,
+  "samples": [
+    {
+      "arm": "candidate",
+      "method": "encoder_edge_value",
+      "sample_id": "00000093",
+      "faces": 18,
+      "edges": 88,
+      "own_mean_differs_from_legacy": true,
+      "source_sha256": "15685877c2f3a2026641e2e49a1ccfc5a23b1d44ff2e1d7b3d4168174f0a5fa8",
+      "latent_sha256": "7c3b9c4fb4fc2f84136e9e53bfce5da4f3149c22a52d39490575c62e3761f722",
+      "raw_sha256": "e277509772352b07f30f60b3360f41e07cab84457bab59eafb76543b24c5c213",
+      "metric_pair_verified": true
+    },
+    {
+      "arm": "candidate",
+      "method": "encoder_edge_value",
+      "sample_id": "00480145",
+      "faces": 12,
+      "edges": 54,
+      "own_mean_differs_from_legacy": true,
+      "source_sha256": "dd154eecf8ea93612c85b99d6082fe06b7d3cf58bcf71f83ca08dfa7a6b7a033",
+      "latent_sha256": "ad1b08fdf879b27048e65372b98c6c90d4384092540047a5d184196a4118bb32",
+      "raw_sha256": "6ab4ae55596e3f1c580fd74616eed1011f6d4b234021a5b0b82e901d7adcb96d",
+      "metric_pair_verified": true
+    },
+    {
+      "arm": "control",
+      "method": "encoder_gat_control",
+      "sample_id": "00000093",
+      "faces": 18,
+      "edges": 88,
+      "own_mean_differs_from_legacy": true,
+      "source_sha256": "15685877c2f3a2026641e2e49a1ccfc5a23b1d44ff2e1d7b3d4168174f0a5fa8",
+      "latent_sha256": "ddfa7de986fd42bb6d9b1cf598efb9f09690c6a5871fcc84973e2b7491b15390",
+      "raw_sha256": "d182770fd83adcef3b95e1548739320d671831f906d8063af6f999994cd2c622",
+      "metric_pair_verified": true
+    },
+    {
+      "arm": "control",
+      "method": "encoder_gat_control",
+      "sample_id": "00480145",
+      "faces": 12,
+      "edges": 54,
+      "own_mean_differs_from_legacy": true,
+      "source_sha256": "dd154eecf8ea93612c85b99d6082fe06b7d3cf58bcf71f83ca08dfa7a6b7a033",
+      "latent_sha256": "3fa978c956aabf47a4b910f43940d6a4c358c8b8415bc5b69a6ce19bf50df4c4",
+      "raw_sha256": "6cbd134ef6c73e71f6455ad34600f85f678b8da88acd7d241a292263ef51437b",
+      "metric_pair_verified": true
+    }
+  ],
+  "tests": "python -m pytest -q src/brepnet/test/test_intersection_evaluate_inference.py src/brepnet/test/test_vae_compare_metrics.py src/brepnet/test/test_vae_compare_post.py src/brepnet/test/test_intersection_evaluate_report.py",
+  "numeric_test_note": "Initial independent CPU mean test used 2 threads versus production 1; after matching thread settings all exact comparisons passed; no production tolerance changed.",
+  "source_sha256": {
+    "tools/intersection_evaluate_inference.py": "4a30cdd87c1949c97398c3748fcf86cb5340c466fee161eecc618e272ea38f9e",
+    "tools/vae_compare_metrics.py": "7be118936ba0315bf19d30d719b71501048b8f9793058057737cf5bb6407c3f4",
+    "tools/vae_compare_post.py": "cd3d63b534dd1a7664460ba36a2e1f8e4d7cc9162e4c6eb2f3228564db9107d7",
+    "tools/intersection_evaluate_report.py": "d9bd1fc2d2cf3866704f6ddef3e9b5e697f8f687df7b506b599c0076da0494e8"
+  }
+}

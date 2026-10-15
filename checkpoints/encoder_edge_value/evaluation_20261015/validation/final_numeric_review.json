@@ -1,0 +1,184 @@
+{
+  "reviewed_at_utc": "2026-10-15T13:43:27.093365+00:00",
+  "reviewer": "independent audit sub-agent",
+  "scope": "Read-only numerical/interpretation review; no model, training or frozen audit changes. Only this review artifact is written.",
+  "passed": true,
+  "fixed_denominator": 2417,
+  "checks": [
+    "Four raw populations and eight post populations each contain the fixed 2417 unique IDs. All endpoint raw descriptive statistics, adjacency counts, native-solid counts/rates and terminal status counts match independent CSV recomputation.",
+    "Every endpoint paired numerical change, fit/optimized transition count and transition ID independently reproduces.",
+    "REPORT displayed means, rounded rates, relative changes, raw/owner paired win counts, owner coverage and all solid transition claims match CSV values.",
+    "00335203 missing/restored boundary and signed 118.5% / 102.69% net-mean contributions reproduce from CSV and NPZ; all objects remain in principal denominators.",
+    "All 21 endpoint provenance hashes match current source files; visually inspected four-checkpoint PNG agrees with source data, denominator and metric directions."
+  ],
+  "post_counts": {
+    "conditioned": {
+      "fit_only": {
+        "valid": 1047,
+        "invalid": 1370,
+        "unknown": 0,
+        "rate": 0.43318163011998345,
+        "status_counts": {
+          "geometry_error": 349,
+          "ok": 2064,
+          "step_read_error": 4
+        }
+      },
+      "optimized": {
+        "valid": 2111,
+        "invalid": 306,
+        "unknown": 0,
+        "rate": 0.873396772858916,
+        "status_counts": {
+          "ok": 2294,
+          "geometry_error": 123
+        }
+      }
+    },
+    "control_1089": {
+      "fit_only": {
+        "valid": 1030,
+        "invalid": 1387,
+        "unknown": 0,
+        "rate": 0.4261481175010343,
+        "status_counts": {
+          "geometry_error": 281,
+          "ok": 2131,
+          "timeout": 4,
+          "step_read_error": 1
+        }
+      },
+      "optimized": {
+        "valid": 2110,
+        "invalid": 307,
+        "unknown": 0,
+        "rate": 0.8729830368225072,
+        "status_counts": {
+          "ok": 2299,
+          "geometry_error": 118
+        }
+      }
+    },
+    "candidate_1089": {
+      "fit_only": {
+        "valid": 1019,
+        "invalid": 1398,
+        "unknown": 0,
+        "rate": 0.42159702110053787,
+        "status_counts": {
+          "geometry_error": 292,
+          "ok": 2122,
+          "step_read_error": 3
+        }
+      },
+      "optimized": {
+        "valid": 2118,
+        "invalid": 299,
+        "unknown": 0,
+        "rate": 0.8762929251137774,
+        "status_counts": {
+          "ok": 2287,
+          "geometry_error": 129,
+          "timeout": 1
+        }
+      }
+    },
+    "candidate_14520": {
+      "fit_only": {
+        "valid": 1017,
+        "invalid": 1400,
+        "unknown": 0,
+        "rate": 0.4207695490277203,
+        "status_counts": {
+          "geometry_error": 258,
+          "ok": 2157,
+          "step_read_error": 2
+        }
+      },
+      "optimized": {
+        "valid": 2095,
+        "invalid": 322,
+        "unknown": 0,
+        "rate": 0.8667769962763757,
+        "status_counts": {
+          "ok": 2299,
+          "geometry_error": 118
+        }
+      }
+    }
+  },
+  "report_numeric_claims_recomputed": {
+    "candidate_vs_control_face_mae_percent": -2.7501288995758877,
+    "candidate_vs_control_face_cd_percent": -3.8888199472474017,
+    "candidate_vs_control_edge_cd_median_percent": 5.743575263223333,
+    "endpoint_vs_candidate_face_mae_percent": 12.637808303258913,
+    "endpoint_vs_candidate_face_cd_percent": 24.5744755567751,
+    "endpoint_vs_candidate_edge_cd_percent": -15.381264620304158,
+    "candidate_vs_control_edge_improved": 901,
+    "owner_candidate_vs_control_mean_percent": -7.32802688258335,
+    "owner_candidate_vs_control_median_percent": 5.804117858692481,
+    "owner_candidate_vs_control_improved": 875
+  },
+  "outlier_00335203": {
+    "candidate_1089_vs_conditioned": {
+      "single_object_macro_delta": 1.4084942117274901e-05,
+      "full_macro_delta": 1.1885816467755276e-05,
+      "single_share_of_net_delta_percent": 118.50210000705948,
+      "other_2416_macro_delta_on_fixed_denominator": -2.1991256495196264e-06
+    },
+    "candidate_14520_vs_candidate_1089": {
+      "single_object_macro_delta": -1.4148250408635517e-05,
+      "full_macro_delta": -1.3777244300080969e-05,
+      "single_share_of_net_delta_percent": 102.69289054090714,
+      "other_2416_macro_delta_on_fixed_denominator": 3.7100610855454824e-07
+    },
+    "candidate_1089_pair_probabilities": [
+      0.14307524263858795,
+      0.14307524263858795
+    ],
+    "candidate_14520_pair_probabilities": [
+      0.9924396276473999,
+      0.9924396276473999
+    ]
+  },
+  "interpretation_review": {
+    "supports": "Early new-GAT face metrics improve over matched-step unfreezing control; final solid benefit is small and heterogeneous. Endpoint loses early face/solid gains; edge mean recovery is tail dominated.",
+    "not_supported": "No stable architecture superiority, uniform edge improvement, reduced postprocessing dependence or full-budget architecture comparison is claimed.",
+    "user_decision": "User explicitly authorized unchanged-config continuation from final weights; continuation does not change the measured scientific conclusion."
+  },
+  "expected_pending_text": [
+    "REPORT introduction says failure charts and continuation launch verification are still being finalized.",
+    "REPORT failure section says final completion status/statistics will be added. Root owns both updates."
+  ],
+  "material_errors_found": [],
+  "source_sha256": {
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_metrics/posterior_mean/per_object.csv": "eb426e9034060792bd5ac8207606fa02b6621bb5df784dc1406d311d9e06dd4a",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/post/fit_only/samples.csv": "dde50e952b555629fc52d92573aa8d75b81b8f04705a4c6995f0040d66480f9b",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/post/optimized/samples.csv": "d5dcbc00cb5d20ef67cab9c7934eef2cce9f84de7b6b1486a4b8d83cd4bffe54",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/control/raw_metrics/posterior_mean/per_object.csv": "b9313d1caf365263cca369264b3de1a2f38235a47f02ce797231536bc0823a5a",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/control/post/fit_only/samples.csv": "65f2cf50a192435e2f4fee0b546a24f38b74cf87c36a105cc07dec6e8b56693b",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/control/post/optimized/samples.csv": "198132a5d47eb966b87f185eaff5588cc8af59136be8be8715ae21637d222e42",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_metrics/posterior_mean/per_object.csv": "6819b5635d957baccfe1f419b866be20f5868f53cb693317b037e02c62f3ed75",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/post/fit_only/samples.csv": "6916f1002058c49736852ea19964bca6ada890b259bc3355817ab85fa19aa8a4",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/post/optimized/samples.csv": "e5cdf972e514eb91e1c655a014f2a47b672a4b039e08f74034c5984b5e7f494e",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/owner_per_object.csv": "4a64c9301b77bc05df2b2d5670612a6eca55250da6985e759758c3f973d62a53",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00335203/data.npz": "7b41a029485bf28fff8c7e90de253322513fc17443118fbc86a0c2e1e0381492",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00335203/data.npz": "01643175485ee5972d92bd39f54d341e73ce0bc2178231bca16c734414f768db",
+    "/mnt/d/python_curve_eval/checkpoints/joint_boundary/validation/test_contract_audit/accepted.txt": "2864849e8240134c6033cc6cd64efa19337f67fea94b89a493690ae84355b7b3",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/summarize_endpoint.py": "be7eedaa71ef65499c4a07205829e19f41a7cdf967072e007569e10c1820b023",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/PLAN.md": "1ed9e360ad11a5948d7f9c9860ed51f13ccd4e19853115935225875ad15a92b0",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_metrics/posterior_mean/summary.json": "2d49b8aa56d6c70689a83bf16a48e026f5c0b926ce3523c18df53ab165113ed4",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/post/fit_only/summary.json": "bfeaa2679d37f9116ac419eebe859019ef234f7da65dabd2f0b4f3396309a04e",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/post/optimized/summary.json": "81e95cb4e2076ee38fe55cc67b21101f3d5425a2d32976bcaf2ebe421774994f",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/control/raw_metrics/posterior_mean/summary.json": "342bbdbd6fbb69ccb609c1c845e8f85ad615467999b997cb650eb77177d87995",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/control/post/fit_only/summary.json": "7abdfa5468b8c3ff2f5b22c2cccaa62b76e9fec101bd9ea0fb03b0cf44a473d9",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/control/post/optimized/summary.json": "3054eb10e1d07735fa24c65971df5566e9cbe1e292c9705be8ec0be229fa5b16",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_metrics/posterior_mean/summary.json": "ed27f007cb0d3b136dfd655c3f7542c66982ad6175f428dd93f21658f95b0adb",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/post/fit_only/summary.json": "c29fb620189b591830b0954109b95371dfb5448128496955356d1684f8d82f08",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/post/optimized/summary.json": "fe0bf05af4831c407e0775b8c4e449dd24202dd65d96e9200df4bcb030816fbf",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/REPORT.md": "81ebd121faefd5e8224f1c16a7a0b759ffcfda9956abec8008ce4d7544de68b0",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_diagnostics.json": "9b09f069319deccd9411def9e9199b412f1d0cefb474979669ffccc89626af1e",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/visualizations/four_checkpoint_summary.png": "c149bcb2ae14c6676a2fa7e9436a605fac38a2fe8204ffc34536b5b75cf67cb3",
+    "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/visualizations/four_checkpoint_summary.svg": "b743f1d729bfb0e2233f5495a0d360ebad100930c816036022acffc7408d60fd"
+  }
+}

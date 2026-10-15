@@ -298,3 +298,42 @@ def test_complete_cli_writes_json_summary_and_matching_per_object_csv(tmp_path, 
         row = next(row for row in rows if row["method"] == method)
         assert summary["methods"][method]["metrics"]["face_cd_sq"]["mean"] == float(row["face_cd_sq"])
     assert summary["paired"]["face_cd_sq"]["common_count"] == 1
+
+
+@pytest.mark.parametrize("corruption", [None, "source", "latent", "missing_latent"])
+def test_own_posterior_contract_checks_gt_bytes_and_each_latent(tmp_path, corruption):
+    from tools.vae_compare_inference import file_sha256, latent_sha256
+
+    write_gt(tmp_path / "gt/example")
+    gt_digest = file_sha256(tmp_path / "gt/example/data.npz")
+    for index, method in enumerate(("conditioned", "encoder_edge_value")):
+        folder = tmp_path / "pred" / method / "example"
+        folder.mkdir(parents=True)
+        value = prediction("legacy")
+        latents = np.full((2, 32), index, dtype=np.float32)
+        value.update(face_latents=latents, input_latent_sha256=np.asarray(latent_sha256(latents)),
+                     input_source_sha256=np.asarray(gt_digest))
+        if index == 1:
+            if corruption == "source":
+                value["input_source_sha256"] = np.asarray("wrong")
+            elif corruption == "latent":
+                value["face_latents"][0, 0] += 1
+            elif corruption == "missing_latent":
+                del value["face_latents"]
+        np.savez(folder / "data.npz", **value)
+    kwargs = {"data_root": tmp_path / "gt", "prediction_root": tmp_path / "pred",
+              "mode": "posterior_mean", "baseline_method": "conditioned", "candidate_method": "encoder_edge_value"}
+    # Old default still rejects distinct means, even with identical source geometry.
+    default_rows = evaluate_sample("example", **kwargs)
+    assert default_rows[0]["shared_input_status"] == "mismatch"
+    rows = evaluate_sample("example", **kwargs, input_contract="same_geometry_source")
+    result = summarize(rows, ["example"], mode="posterior_mean", baseline_method="conditioned",
+                       candidate_method="encoder_edge_value", input_contract="same_geometry_source")
+    assert result["input_contract"] == "same_geometry_source"
+    assert result["protocol_valid"] is (corruption is None)
+    assert result["paired"]["edge_cd_sq"]["common_count"] == (1 if corruption is None else 0)
+    if corruption is None:
+        assert all(row["latent_digest_status"] == "verified" for row in rows)
+        assert all(row["actual_gt_source_sha256"] == row["input_source_sha256"] for row in rows)
+    with pytest.raises(ValueError, match="canonical posterior_mean"):
+        evaluate_sample("example", **{**kwargs, "mode": "archived_latents"}, input_contract="same_geometry_source")

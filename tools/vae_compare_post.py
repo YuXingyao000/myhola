@@ -29,8 +29,9 @@ from typing import Any
 
 
 METHODS = ("legacy", "joint")
-CANDIDATE_METHODS = ("joint", "intersection", "local", "conditioned", "point_feedback")
-BASELINE_METHODS = ("legacy", "intersection", "conditioned")
+CANDIDATE_METHODS = ("joint", "intersection", "local", "conditioned", "point_feedback",
+                     "encoder_edge_value", "encoder_gat_control")
+BASELINE_METHODS = ("legacy", "intersection", "conditioned", "encoder_gat_control")
 
 
 def comparison_methods(candidate_method="joint", baseline_method="legacy"):
