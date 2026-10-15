@@ -143,3 +143,39 @@ def test_reciprocal_note_reads_diagnostic_evidence_and_rejects_mismatch(local_fi
     paired["local"]["mean"] = 2.1
     with pytest.raises(ValueError, match="disagrees with raw summary"):
         local.build_report(data, reciprocal_diagnostic=diagnostic)
+
+
+def test_feedback_report_uses_conditioned_baseline_without_relabeling_sources(local_fixture):
+    mapping = {"intersection": "conditioned", "local": "point_feedback"}
+
+    def replace(value):
+        if isinstance(value, dict):
+            return {mapping.get(key, key): replace(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [replace(item) for item in value]
+        return mapping.get(value, value) if isinstance(value, str) else value
+
+    for path in local_fixture.rglob("*.json"):
+        write_json(path, replace(json.loads(path.read_text())))
+    for path in local_fixture.rglob("*.csv"):
+        with path.open() as handle:
+            rows = [replace(row) for row in csv.DictReader(handle)]
+        write_csv(path, rows)
+    methods = local.comparison_methods("point_feedback", "conditioned")
+    data = generic.load_comparison(local_fixture, methods=methods)
+    text = local.build_report(data, "point_feedback", baseline_method="conditioned",
+                              raw_distribution_link=None)
+    assert "上一版曲线条件调制（`conditioned`）" in text
+    assert "本版逐点几何反馈（`point_feedback`）" in text
+    assert "上一版 Intersection refinement" not in text
+    assert data["transitions"]["optimized"]["ids"]["old_success_new_failure"] == ["b"]
+    assert data["transitions"]["optimized"]["ids"]["old_failure_new_success"] == ["c"]
+    with pytest.raises(ValueError, match="Unexpected method"):
+        generic.load_comparison(local_fixture, methods=("intersection", "point_feedback"))
+    font = Path("/root/.cache/hola-browser-libs/fonts/NotoSansCJKsc-Regular.otf")
+    if font.is_file():
+        result = local.generate_report(local_fixture, font, "point_feedback",
+                                       baseline_method="conditioned", raw_distribution_link=None)
+        svg = Path(result["svg"]).read_text()
+        assert "上一版曲线条件调制" in svg and "本版逐点几何反馈" in svg
+        assert "上一版 Intersection refinement" not in svg

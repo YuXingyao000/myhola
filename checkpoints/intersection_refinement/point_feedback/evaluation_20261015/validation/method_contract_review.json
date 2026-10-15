@@ -1,0 +1,25 @@
+{
+  "scope": "method identity, source reuse and evaluation contract; no new measurements",
+  "candidate_method": "point_feedback",
+  "baseline_method": "conditioned",
+  "passed": true,
+  "checks": {
+    "checkpoint_identity": "CLI point_feedback requires legacy inter + enabled conditioning + enabled point feedback + refinement; all other method labels rejected by regression tests",
+    "strict_loading": "complete trained state strict-loads; all initialization paths cleared only at runtime; original checkpoint config remains in audit",
+    "legacy_audit_key": "model_audit.intersection retains the existing model-family audit key; actual method is protocol.method=point_feedback",
+    "old_behavior": "legacy/local/conditioned regression routes retained; no metric formula or production post changes",
+    "same_inputs": "both modes use original archived float32 input arrays; all 2417 baseline/candidate input hashes verified per mode",
+    "baseline_provenance": "raw and post conditioned paths resolve to original historical symlinks; reference records keep original fingerprints and source method; candidate-only post scheduling",
+    "fixed_denominator": "2417 intended, 2424 original with 7 unsupported; every method per post mode has 2417 terminal records",
+    "post_budget": "two modes each 32 CPU single-thread workers, 180s whole-case timeout, 200 nominal/600 adaptive optimized, drop_num=0; all 11 production post hashes unchanged",
+    "timeout_semantics": "optimized 00301329 keeps already-confirmed native valid solid despite later geometry timeout; 00433597 remains native-invalid",
+    "gradient_or_gt": "evaluation invokes inference only; no optimizer, retraining, GT topology filtering, dedup, new sampling or test-based checkpoint selection"
+  },
+  "evidence": [
+    "tool_tests.json",
+    "inference_smoke_summary.json",
+    "inference_coverage.json",
+    "raw_baseline_reuse.json",
+    "evaluation_completion.json"
+  ]
+}

@@ -29,8 +29,8 @@ ROLES = ("baseline", "candidate")
 LABELS = {"baseline": "上一版 Intersection refinement", "candidate": "本版局部注意力"}
 
 
-def validate_cohorts(candidate, baseline, frozen, candidate_method="local"):
-    paired_methods(candidate_method)
+def validate_cohorts(candidate, baseline, frozen, candidate_method="local", baseline_method="intersection"):
+    paired_methods(candidate_method, baseline_method)
     def index(cases, method):
         result = {}
         for case in cases:
@@ -41,7 +41,7 @@ def validate_cohorts(candidate, baseline, frozen, candidate_method="local"):
                 raise ValueError(f"Unknown native validity: {method}/{sid}")
             result[sid] = case
         return result
-    new, old = index(candidate, candidate_method), index(baseline, "intersection")
+    new, old = index(candidate, candidate_method), index(baseline, baseline_method)
     if new.keys() != old.keys():
         raise ValueError("Paired methods must have identical census IDs")
     groups = {key: [] for key in COHORTS}
@@ -148,14 +148,15 @@ def build_report(root, baseline_root):
     paths = {name: root / name for name in ("manifest.json", "baseline_manifest.json", "baseline_control_manifest.json", "baseline_reuse.json")}
     manifest, baseline, controls, reuse = [read_json(paths[name]) for name in paths]
     candidate_method = manifest.get("candidate_method")
-    if manifest.get("baseline_method") != "intersection" or candidate_method not in CANDIDATE_METHODS:
-        raise ValueError("Wrong paired methods")
+    baseline_method = manifest.get("baseline_method")
+    paired_methods(candidate_method, baseline_method)
     if manifest.get("method") != candidate_method or any(
-            document.get("method") != "intersection" or document.get("candidate_method") != candidate_method
+            document.get("method") != baseline_method or document.get("candidate_method") != candidate_method
+            or document.get("baseline_method") != baseline_method
             for document in (baseline, controls)):
         raise ValueError("Paired manifest identities differ")
-    labels = {"baseline": METHOD_LABELS["intersection"], "candidate": METHOD_LABELS[candidate_method]}
-    groups = validate_cohorts(manifest["cases"], baseline["cases"], manifest["cohorts"], candidate_method)
+    labels = {"baseline": METHOD_LABELS[baseline_method], "candidate": METHOD_LABELS[candidate_method]}
+    groups = validate_cohorts(manifest["cases"], baseline["cases"], manifest["cohorts"], candidate_method, baseline_method)
     population = manifest["population"]
     if (population.get("accepted_test") != 2417 or population.get("original_test") != 2424
             or population.get("contract_unsupported") != 7
@@ -206,7 +207,7 @@ def build_report(root, baseline_root):
             "transitions": {t: {name: paired_transitions(subset, name, t) for name, *_ in OBSERVATIONS} for t in THRESHOLDS},
             "continuous": paired_continuous(subset)}
     summary = {"schema": VERSION, "created_at_utc": datetime.now(timezone.utc).isoformat(),
-               "population": population, "methods": {"baseline": "intersection", "candidate": candidate_method}, "method_labels": labels,
+               "population": population, "methods": {"baseline": baseline_method, "candidate": candidate_method}, "method_labels": labels,
                "main": measures.summarize_records([row for row in new.values() if not row["original_native_valid"]]),
                "baseline_failures": measures.summarize_records([row for row in old.values() if not row["original_native_valid"]]),
                "cohorts": cohort_results, "audit": audit,
@@ -345,7 +346,7 @@ def make_charts(summary: dict, directory: Path, font_path: Path | None = None) -
 def report_markdown(summary, charts):
     main = summary["main"]
     den = main["denominator"]
-    lines = [f"# {summary['method_labels']['candidate']}：与上一版 refinement 的失败对照", "",
+    lines = [f"# {summary['method_labels']['candidate']}：与{summary['method_labels']['baseline']}的失败对照", "",
              *summary["highlights"], "",
              "[交互统计页面](page/index.html) · [紧凑统计](compact_summary.json) · [逐件CSV](cases.csv) · [冻结协议](PLAN.md)", "",
              f"本版失败轨迹完整一致 {main['verified_traces']}/{den}。各行是可重叠观察，未知保留分母；阈值0.006为归一化长度。",
@@ -387,7 +388,7 @@ def report_markdown(summary, charts):
     lines.extend(["", summary["optimization_counterfactual"]["note"], "", "[完整反事实路径](optimization_regressions.json)", "", "## 图表", ""])
     for chart in charts:
         lines.extend([f"![{chart['caption']}]({chart['png']})", "", chart["caption"], ""])
-    lines.extend(["## 来源与解释边界", "", f"复用已有intersection诊断{summary['audit']['baseline_reuse']['eligible_count']}件，新增baseline对照{summary['audit']['baseline_controls']['checked_count']}件；来源资产检查{summary['audit']['source_preservation']['asset_count']}个，变化0个。", ""])
+    lines.extend(["## 来源与解释边界", "", f"复用已有{summary['methods']['baseline']}诊断{summary['audit']['baseline_reuse']['eligible_count']}件，新增baseline对照{summary['audit']['baseline_controls']['checked_count']}件；来源资产检查{summary['audit']['source_preservation']['asset_count']}个，变化0个。", ""])
     lines.extend("- " + value for value in summary["limitations"])
     return "\n".join(lines) + "\n"
 
@@ -494,7 +495,7 @@ def write_outputs(root, pairs, summary, charts):
     page = root / "page"
     page.mkdir(exist_ok=True)
     label = summary["method_labels"]["candidate"]
-    html = PAGE_HTML.replace("局部注意力与上一版refinement", label + "与上一版refinement")
+    html = PAGE_HTML.replace("局部注意力与上一版refinement", label + "与" + summary["method_labels"]["baseline"])
     html = html.replace("LOCAL INTERSECTION", summary["methods"]["candidate"].upper())
     atlas_url = os.path.relpath(atlas_root / "page", page) + "/"
     old_url = "../../../joint_boundary/legacy_failures_20261011/page/"

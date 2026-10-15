@@ -1,0 +1,445 @@
+{
+  "scope": "fixed trained network final-branch comparison; not a retraining causal ablation",
+  "checkpoint": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/20261014T153723.959456Z/weights/epoch=0034-step=00012705-val_loss=0.037230.ckpt",
+  "checkpoint_sha256": "1a61c40de044f59131aac8e22faca3a434855c60d7e0e974566209b0ad8129aa",
+  "model_epoch": 34,
+  "global_step": 12705,
+  "numeric_settings": {
+    "dtype": "float32",
+    "autocast": false,
+    "seed": 42,
+    "matmul_precision": "highest",
+    "matmul_allow_tf32": false,
+    "cudnn_allow_tf32": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "deterministic_algorithms": false,
+    "torch_version": "2.4.1+cu124",
+    "cuda_version": "12.4",
+    "numpy_version": "2.0.1"
+  },
+  "device": "NVIDIA GeForce RTX 4090",
+  "comparison_protocol": "one full decode; final module input/output share identical upstream execution",
+  "initial_check_record": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/evaluation_20261015/diagnostics/feedback_branch_initial_check.json",
+  "fixed_cases": {
+    "00335203": [
+      0,
+      6
+    ],
+    "00326127": [
+      3,
+      11
+    ]
+  },
+  "source_sha256": {
+    "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/evaluation_20261015/diagnostics/feedback_branch_probe.py": "502dab576a32f343b076c44180322fee25dc60212aec71cd870058e0fbccf1ed",
+    "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/evaluation_20261015/diagnostics/FEEDBACK_BRANCH_SPEC.md": "995562fed7e12c6367b33d3662bc436596ad80cd419f07e208c9cd64ea98e0ee",
+    "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/evaluation_20261015/diagnostics/feedback_branch_initial_check.json": "9e485a8c58bffcd4ecc3ef257155f07fc7470517d78d3566a8e8436c99108346",
+    "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/evaluation_20261015/diagnostics/outlier_pair_probe.json": "c36db9bd17deb822f373199e5af64118735890d0cc796292302c1a4290b9391c",
+    "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/evaluation_20261015/metadata/inference/posterior_mean/protocol.json": "45b3da2b2f21247898463210f99f16d51ab209c598f85a270e9f1794a7368c47",
+    "/mnt/d/python_curve_eval/src/brepnet/models/blocks.py": "fa2f1f4a15efbb8bb2a659fb07bd1f5fafe1d4269837f362c3f04d3356f6a081",
+    "/mnt/d/python_curve_eval/src/brepnet/models/vae.py": "225c537a2a7a612111ddf3c1a1743a157c7929e0db91263ffcf6e221fbc09848",
+    "/mnt/d/python_curve_eval/tools/intersection_evaluate_inference.py": "2278c4f882b0f8dc4d2dbe4a9959d90885cac0e2768c53dd115cb631c3f0b560",
+    "/mnt/d/python_curve_eval/tools/vae_compare_metrics.py": "bae4e901e8f18ad86d151c4dc9cf8e59b6427213be01ba975dd578d30e632a01",
+    "/mnt/d/python_curve_eval/src/brepnet/data/shared_boundaries.py": "f0a740bf6050439613d0c113ab69ff7a506790741818fc03d998e4c0b2d7f1aa",
+    "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/evaluation_20261015/raw_predictions/posterior_mean/point_feedback/00335203/data.npz": "c89f110eea77effc561ba658ca8028e0972cff42ef6cdc67579ebbf608dc5dfe",
+    "/mnt/d/python/checkpoints/joint_boundary/comparison_20261011/raw_predictions/posterior_mean/legacy/00335203/data.npz": "7b4b2cad228cedd59edf4fd41eb88a114f70e8cbd8757cbf4a5d0fcc145c3889",
+    "/mnt/d/data/deepcad_v7/00335203/data.npz": "ece8facb045c430740f1ebcb978e9b0cfdbd45edca6607abfbfafd7e1470ecd8",
+    "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/evaluation_20261015/raw_predictions/posterior_mean/point_feedback/00326127/data.npz": "c49875ed7e40435f8d32a562ca62e2d3a45b8eaea0262603a0db355d96f7d32a",
+    "/mnt/d/python/checkpoints/joint_boundary/comparison_20261011/raw_predictions/posterior_mean/legacy/00326127/data.npz": "7e0ef7e0991a9a3a35f92a6ee74a367767ca0c1dfa2125f9d48f63e904de3df1",
+    "/mnt/d/data/deepcad_v7/00326127/data.npz": "dc87f7c74e845dc79f594bb64eb293a1a91a55133569c0551fdd2a49bd372279"
+  },
+  "samples": {
+    "00335203": {
+      "faces": 9,
+      "candidate_count": 72,
+      "active_halfedge_count": 16,
+      "input_latent_sha256": "a7a1de9ec1528cff7f5d29f5731343748642569a737ef3fc0e8d831a051b3102",
+      "exact_unchanged_tensor_checks": {
+        "tensor_count": 22,
+        "exact": true
+      },
+      "direction_channels_exact_unchanged": true,
+      "shared_prefix_inputs_not_mutated": {
+        "edge_geometry": {
+          "tensor_count": 3,
+          "exact": true
+        },
+        "face_geometry": {
+          "tensor_count": 3,
+          "exact": true
+        },
+        "features_and_pairs": {
+          "tensor_count": 3,
+          "exact": true
+        }
+      },
+      "captured_prefix_matches_final_state": {
+        "tensor_count": 6,
+        "exact": true
+      },
+      "raw_export_replay": {
+        "pred_face": {
+          "exact": false,
+          "max_abs_error": 4.470348358154297e-07
+        },
+        "pred_edge": {
+          "exact": false,
+          "max_abs_error": 1.7881393432617188e-07
+        },
+        "pred_edge_face_connectivity": {
+          "exact": true,
+          "max_abs_error": 0.0
+        },
+        "pred_face_adj": {
+          "exact": true,
+          "max_abs_error": 0.0
+        },
+        "pred_face_adj_prob": {
+          "exact": false,
+          "max_abs_error": 1.0408340855860843e-16
+        },
+        "all_candidate_pairs": {
+          "exact": true,
+          "max_abs_error": 0.0
+        },
+        "all_candidate_prob": {
+          "exact": false,
+          "max_abs_error": 1.0408340855860843e-16
+        },
+        "coarse_candidate_prob": {
+          "exact": true,
+          "max_abs_error": 0.0
+        }
+      },
+      "all_candidate_delta": {
+        "point_count": 1152,
+        "mean": 1.5711353031885073e-05,
+        "median": 1.6632723781355883e-05,
+        "p90": 2.2813359818882653e-05,
+        "max": 2.9862046003580566e-05
+      },
+      "active_candidate_delta": {
+        "point_count": 256,
+        "mean": 1.1503797764059296e-05,
+        "median": 8.994277717422486e-06,
+        "p90": 2.3054890372362925e-05,
+        "max": 2.9862046003580566e-05
+      },
+      "selected_gt_pair": [
+        0,
+        6
+      ],
+      "gt_source_edge_id": 0,
+      "pair_is_exported_before_and_after": false,
+      "selected_pair_twin_cd_sq_before": 0.000730038413787281,
+      "selected_pair_twin_cd_sq_after": 0.0007299037508296279,
+      "curves": [
+        {
+          "candidate_row": 5,
+          "directed_pair": [
+            0,
+            6
+          ],
+          "raw_edge_id": null,
+          "active_before_and_after": false,
+          "probability_before_and_after": 0.17828050255775452,
+          "delta_norm": {
+            "point_count": 16,
+            "mean": 1.0788658767270845e-05,
+            "median": 1.0830954210995607e-05,
+            "p90": 1.1465422171748253e-05,
+            "max": 1.1526296212382542e-05
+          },
+          "centroid_before": [
+            0.01783713325858116,
+            -0.3559216558933258,
+            7.023386569926515e-05
+          ],
+          "centroid_after": [
+            0.017829662188887596,
+            -0.35591572523117065,
+            7.529200229328126e-05
+          ],
+          "own_gt_cd_sq_before": 0.0004530993325957218,
+          "own_gt_cd_sq_after": 0.00045286198002945243,
+          "owner_distances_before": {
+            "0": {
+              "samples": 16,
+              "mean": 0.007726227124939353,
+              "max": 0.009233569278405018
+            },
+            "6": {
+              "samples": 16,
+              "mean": 0.0890775037945086,
+              "max": 0.09134228295130406
+            }
+          },
+          "owner_distances_after": {
+            "0": {
+              "samples": 16,
+              "mean": 0.00772612220897057,
+              "max": 0.009236526927972217
+            },
+            "6": {
+              "samples": 16,
+              "mean": 0.08907695697009614,
+              "max": 0.09134465249814407
+            }
+          }
+        },
+        {
+          "candidate_row": 48,
+          "directed_pair": [
+            6,
+            0
+          ],
+          "raw_edge_id": null,
+          "active_before_and_after": false,
+          "probability_before_and_after": 0.17828050255775452,
+          "delta_norm": {
+            "point_count": 16,
+            "mean": 1.7242476086354573e-05,
+            "median": 1.7185763126505698e-05,
+            "p90": 1.8035408919603747e-05,
+            "max": 1.810599007941629e-05
+          },
+          "centroid_before": [
+            0.02014271542429924,
+            -0.34223395586013794,
+            0.00017700972966849804
+          ],
+          "centroid_after": [
+            0.0201262254267931,
+            -0.34222936630249023,
+            0.0001789372181519866
+          ],
+          "own_gt_cd_sq_before": 5.022530744888684e-05,
+          "own_gt_cd_sq_after": 5.019325866382975e-05,
+          "owner_distances_before": {
+            "0": {
+              "samples": 16,
+              "mean": 0.008989710149504223,
+              "max": 0.010135121257481096
+            },
+            "6": {
+              "samples": 16,
+              "mean": 0.07580080326118431,
+              "max": 0.0773100395936277
+            }
+          },
+          "owner_distances_after": {
+            "0": {
+              "samples": 16,
+              "mean": 0.00899288491273571,
+              "max": 0.010132982769969745
+            },
+            "6": {
+              "samples": 16,
+              "mean": 0.07580221655158471,
+              "max": 0.07730015786424815
+            }
+          }
+        }
+      ],
+      "arrays_path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/evaluation_20261015/diagnostics/feedback_branch_arrays/00335203.npz",
+      "arrays_sha256": "fcc9060919174c42a1fa1854253f3203ca783e0c1ba8f6f705289240b6c1cad3"
+    },
+    "00326127": {
+      "faces": 13,
+      "candidate_count": 156,
+      "active_halfedge_count": 72,
+      "input_latent_sha256": "3d843dfa573ef037a4ef3afe7a1e13156e11eae25f716f38dbd986f64b5fe04c",
+      "exact_unchanged_tensor_checks": {
+        "tensor_count": 22,
+        "exact": true
+      },
+      "direction_channels_exact_unchanged": true,
+      "shared_prefix_inputs_not_mutated": {
+        "edge_geometry": {
+          "tensor_count": 3,
+          "exact": true
+        },
+        "face_geometry": {
+          "tensor_count": 3,
+          "exact": true
+        },
+        "features_and_pairs": {
+          "tensor_count": 3,
+          "exact": true
+        }
+      },
+      "captured_prefix_matches_final_state": {
+        "tensor_count": 6,
+        "exact": true
+      },
+      "raw_export_replay": {
+        "pred_face": {
+          "exact": false,
+          "max_abs_error": 5.960464477539062e-07
+        },
+        "pred_edge": {
+          "exact": false,
+          "max_abs_error": 2.980232238769531e-07
+        },
+        "pred_edge_face_connectivity": {
+          "exact": true,
+          "max_abs_error": 0.0
+        },
+        "pred_face_adj": {
+          "exact": true,
+          "max_abs_error": 0.0
+        },
+        "pred_face_adj_prob": {
+          "exact": false,
+          "max_abs_error": 5.4569682106375694e-11
+        },
+        "all_candidate_pairs": {
+          "exact": true,
+          "max_abs_error": 0.0
+        },
+        "all_candidate_prob": {
+          "exact": false,
+          "max_abs_error": 5.4569682106375694e-11
+        },
+        "coarse_candidate_prob": {
+          "exact": true,
+          "max_abs_error": 0.0
+        }
+      },
+      "all_candidate_delta": {
+        "point_count": 2496,
+        "mean": 1.5288320276438915e-05,
+        "median": 1.245801133122779e-05,
+        "p90": 2.5840560680257566e-05,
+        "max": 4.495892460050717e-05
+      },
+      "active_candidate_delta": {
+        "point_count": 1152,
+        "mean": 1.2001655958319755e-05,
+        "median": 1.0399055494950212e-05,
+        "p90": 2.013349956353623e-05,
+        "max": 2.994153173139606e-05
+      },
+      "selected_gt_pair": [
+        3,
+        11
+      ],
+      "gt_source_edge_id": 25,
+      "pair_is_exported_before_and_after": true,
+      "selected_pair_twin_cd_sq_before": 0.22764212332033512,
+      "selected_pair_twin_cd_sq_after": 0.22764261419720933,
+      "curves": [
+        {
+          "candidate_row": 46,
+          "directed_pair": [
+            3,
+            11
+          ],
+          "raw_edge_id": 26,
+          "active_before_and_after": true,
+          "probability_before_and_after": 0.9996297359466553,
+          "delta_norm": {
+            "point_count": 16,
+            "mean": 9.895302579632397e-06,
+            "median": 9.89738261392377e-06,
+            "p90": 9.938965882501222e-06,
+            "max": 9.954154132910841e-06
+          },
+          "centroid_before": [
+            0.0007602795958518982,
+            0.858615517616272,
+            -0.8686320781707764
+          ],
+          "centroid_after": [
+            0.0007674917578697205,
+            0.8586199879646301,
+            -0.8686268329620361
+          ],
+          "own_gt_cd_sq_before": 0.0030929640345925737,
+          "own_gt_cd_sq_after": 0.0030929407498022886,
+          "owner_distances_before": {
+            "3": {
+              "samples": 16,
+              "mean": 0.0039810494511944745,
+              "max": 0.0048088156555021735
+            },
+            "11": {
+              "samples": 16,
+              "mean": 0.0006629105234612034,
+              "max": 0.001141870384715428
+            }
+          },
+          "owner_distances_after": {
+            "3": {
+              "samples": 16,
+              "mean": 0.003975921499451168,
+              "max": 0.004803483263008775
+            },
+            "11": {
+              "samples": 16,
+              "mean": 0.0006595494570192082,
+              "max": 0.0011374291857794397
+            }
+          }
+        },
+        {
+          "candidate_row": 135,
+          "directed_pair": [
+            11,
+            3
+          ],
+          "raw_edge_id": 61,
+          "active_before_and_after": true,
+          "probability_before_and_after": 0.9996297359466553,
+          "delta_norm": {
+            "point_count": 16,
+            "mean": 1.7347773952380864e-05,
+            "median": 1.734148841917424e-05,
+            "p90": 1.7377164817465458e-05,
+            "max": 1.738875489123507e-05
+          },
+          "centroid_before": [
+            0.005659281741827726,
+            0.8563447594642639,
+            -0.8824085593223572
+          ],
+          "centroid_after": [
+            0.005647806916385889,
+            0.8563433885574341,
+            -0.8823956251144409
+          ],
+          "own_gt_cd_sq_before": 0.2093711863308349,
+          "own_gt_cd_sq_after": 0.20937187509855237,
+          "owner_distances_before": {
+            "3": {
+              "samples": 16,
+              "mean": 0.01756771740247899,
+              "max": 0.03180283385459758
+            },
+            "11": {
+              "samples": 16,
+              "mean": 0.004891825979736577,
+              "max": 0.013565107517089905
+            }
+          },
+          "owner_distances_after": {
+            "3": {
+              "samples": 16,
+              "mean": 0.017554829415719758,
+              "max": 0.031789950210510835
+            },
+            "11": {
+              "samples": 16,
+              "mean": 0.004892816356582996,
+              "max": 0.013563809552672274
+            }
+          }
+        }
+      ],
+      "arrays_path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/evaluation_20261015/diagnostics/feedback_branch_arrays/00326127.npz",
+      "arrays_sha256": "ca29becc13ed35901e68d23bef8689bef879342a5ab5a64539b26b50fbc7447d"
+    }
+  },
+  "status": "passed"
+}

@@ -5,22 +5,22 @@ from pathlib import Path
 import pytest
 
 from tools.failure_census_contract import METHODS as HISTORICAL_METHODS, case_method, case_record
-from tools.paired_failure_manifest import METHODS, paired_methods, partition_population, read_table
+from tools.paired_failure_manifest import METHODS, audit_reuse, paired_methods, partition_population, read_table
 from tools.paired_failure_report import (
     COHORTS, PAGE_HTML, PAGE_JS, THRESHOLDS, audit_source_preservation,
     diagnostic_audit, optimization_counterfactual, page_payload, paired_transitions, validate_cohorts,
 )
 
 
-def tables(candidate_method="local"):
+def tables(candidate_method="local", baseline_method="intersection"):
     ids = [f'{i:08}' for i in range(1, 5)]
     raw, post, fit = {}, {}, {}
     for i, sid in enumerate(ids):
-        for method in paired_methods(candidate_method):
+        for method in paired_methods(candidate_method, baseline_method):
             key = method, sid
             raw[key] = {'model_id': sid, 'method': method, 'status': 'ok', 'mode': 'posterior_mean',
                         'shared_input_status': 'verified', 'input_latent_sha256': 'a'*64}
-            valid = (i in (1, 3)) if method == 'intersection' else (i in (2, 3))
+            valid = (i in (1, 3)) if method == baseline_method else (i in (2, 3))
             post[key] = {'sample_id': sid, 'method': method, 'status': 'ok', 'mode': 'optimized',
                          'native_valid_solid': valid, 'representation': 'legacy_half_edges'}
             fit[key] = {**post[key], 'mode': 'fit_only', 'native_valid_solid': i == 1}
@@ -31,6 +31,7 @@ def test_method_extension_preserves_historical_pair_and_disallows_aliases():
     assert HISTORICAL_METHODS == ('legacy', 'intersection')
     assert case_method({'method': 'local'}) == 'local'
     assert case_method({'method': 'conditioned'}) == 'conditioned'
+    assert case_method({'method': 'point_feedback'}) == 'point_feedback'
     for method in ['refinement', 'intersection_local', None]:
         with pytest.raises(ValueError):
             case_method({'method': method})
@@ -146,3 +147,46 @@ def test_conditioned_page_retains_explicit_methods_and_labels_for_empty_scope():
     assert payload['methods']['candidate'] == 'conditioned'
     assert payload['method_labels']['candidate'] == '曲线条件调制'
     assert payload['pairs'] == []
+
+
+def test_point_feedback_uses_explicit_conditioned_baseline_without_relabelling(tmp_path):
+    ids, raw, post, fit = tables('point_feedback', 'conditioned')
+    result = partition_population(raw, post, fit, ids, 'point_feedback', 'conditioned')
+    assert result['cohorts'] == {'both_failed': [ids[0]], 'new_failure': [ids[1]],
+                                 'rescued': [ids[2]], 'both_valid': [ids[3]]}
+    assert result['optimization_regression_ids'] == [ids[1]]
+    assert set(result['fit_only_vs_optimized_all_accepted']) == {'conditioned', 'point_feedback'}
+    with pytest.raises(ValueError, match='intended IDs'):
+        partition_population(raw, post, fit, ids, 'point_feedback')
+    for baseline in ['point_feedback', 'legacy', None]:
+        with pytest.raises(ValueError, match='Unsupported paired baseline'):
+            paired_methods('point_feedback', baseline)
+    path = tmp_path / 'rows.csv'
+    path.write_text('model_id,method,status\n00000001,conditioned,ok\n00000001,point_feedback,ok\n')
+    assert set(read_table(path, 'model_id', 'point_feedback', 'conditioned')) == {
+        ('conditioned', '00000001'), ('point_feedback', '00000001')}
+    path.write_text(path.read_text().replace(',conditioned,', ',intersection,'))
+    with pytest.raises(ValueError, match='identity/method'):
+        read_table(path, 'model_id', 'point_feedback', 'conditioned')
+
+
+def test_point_feedback_cohorts_reject_wrong_baseline_identity():
+    new = [case('1', 'point_feedback', False), case('2', 'point_feedback', True)]
+    old = [case('1', 'conditioned', False), case('2', 'conditioned', False)]
+    frozen = {'both_failed': ['1'], 'new_failure': [], 'rescued': ['2']}
+    assert validate_cohorts(new, old, frozen, 'point_feedback', 'conditioned') == {
+        'persistent': ['1'], 'regressed': [], 'rescued': ['2']}
+    with pytest.raises(ValueError, match='wrong method'):
+        validate_cohorts(new, old, frozen, 'point_feedback')
+    with pytest.raises(ValueError, match='exact historical conditioned'):
+        audit_reuse(old[0], case('1', 'intersection', False), None, None, None, 'conditioned')
+
+
+def test_point_feedback_page_keeps_distinct_method_labels():
+    summary = {'population': {}, 'main': {'denominator': 0},
+               'method_labels': {'baseline': '曲线条件调制', 'candidate': '逐点曲线反馈'},
+               'methods': {'baseline': 'conditioned', 'candidate': 'point_feedback'},
+               'highlights': [], 'cohorts': {key: {'count': 0} for key in COHORTS}, 'limitations': []}
+    payload = page_payload([], summary, [], set())
+    assert payload['methods'] == {'baseline': 'conditioned', 'candidate': 'point_feedback'}
+    assert payload['method_labels'] == {'baseline': '曲线条件调制', 'candidate': '逐点曲线反馈'}

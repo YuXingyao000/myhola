@@ -26,8 +26,8 @@ ACCEPTED_COUNT = 2417
 ORIGINAL_COUNT = 2424
 ACCEPTED_SHA256 = "2864849e8240134c6033cc6cd64efa19337f67fea94b89a493690ae84355b7b3"
 METHODS = ("legacy", "joint")
-CANDIDATE_METHODS = ("joint", "intersection", "local", "conditioned")
-BASELINE_METHODS = ("legacy", "intersection")
+CANDIDATE_METHODS = ("joint", "intersection", "local", "conditioned", "point_feedback")
+BASELINE_METHODS = ("legacy", "intersection", "conditioned")
 
 
 def comparison_methods(candidate_method="joint", baseline_method="legacy"):
@@ -318,7 +318,7 @@ def summarize(rows: list[dict], ids: list[str], *, mode: str, original_count: in
         raise ValueError("Intended count cannot exceed the original population")
     summary = {"mode": mode, "baseline_method": baseline_method, "candidate_method": candidate_method, "intended_count": len(ids), "original_count": original_count,
                "contract_unsupported_count": original_count - len(ids), "methods": {}, "paired": {},
-               "diagnostic_convention": "legacy_* columns describe the directed-half-edge representation used by legacy, intersection, local and conditioned; joint_* columns apply only to shared-boundary queries.",
+               "diagnostic_convention": "legacy_* columns describe the directed-half-edge representation used by legacy, intersection, local, conditioned and point_feedback; joint_* columns apply only to shared-boundary queries.",
                "limitations": LIMITATIONS,
                "empty_pair_convention": "both empty: P=R=F1=1; prediction-only empty: P=1,R=0,F1=0; GT-only empty: P=0,R=1,F1=0"}
     lookup = {(row["method"], row["model_id"]): row for row in rows}

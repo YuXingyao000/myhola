@@ -239,10 +239,12 @@ def test_cli_rejects_nonfrozen_split_instead_of_claiming_2417_coverage(tmp_path)
         read_frozen_ids(path)
 
 
-@pytest.mark.parametrize("candidate_method", ["local", "conditioned"])
-def test_local_comparison_preserves_intersection_identity_and_pair_direction(tmp_path, candidate_method):
+@pytest.mark.parametrize("baseline_method,candidate_method", [
+    ("intersection", "local"), ("intersection", "conditioned"), ("conditioned", "point_feedback"),
+])
+def test_local_comparison_preserves_intersection_identity_and_pair_direction(tmp_path, baseline_method, candidate_method):
     write_gt(tmp_path / "gt" / "example")
-    for method in ("intersection", candidate_method):
+    for method in (baseline_method, candidate_method):
         folder = tmp_path / "pred" / method / "example"
         folder.mkdir(parents=True)
         value = prediction("legacy")
@@ -250,12 +252,12 @@ def test_local_comparison_preserves_intersection_identity_and_pair_direction(tmp
             value["pred_face"] += 0.1
         np.savez(folder / "data.npz", **value)
     rows = evaluate_sample("example", data_root=tmp_path / "gt", prediction_root=tmp_path / "pred",
-                           mode="posterior_mean", baseline_method="intersection", candidate_method=candidate_method)
+                           mode="posterior_mean", baseline_method=baseline_method, candidate_method=candidate_method)
     result = summarize(rows, ["example"], mode="posterior_mean", original_count=2,
-                       baseline_method="intersection", candidate_method=candidate_method)
-    assert set(result["methods"]) == {"intersection", candidate_method}
-    assert result["baseline_method"] == "intersection"
-    assert result["paired"]["face_mae"][f"{candidate_method}_minus_intersection"]["mean"] == pytest.approx(.1)
+                       baseline_method=baseline_method, candidate_method=candidate_method)
+    assert set(result["methods"]) == {baseline_method, candidate_method}
+    assert result["baseline_method"] == baseline_method
+    assert result["paired"]["face_mae"][f"{candidate_method}_minus_{baseline_method}"]["mean"] == pytest.approx(.1)
     assert result["paired"]["face_mae"][f"{candidate_method}_win_fraction"] == 0
     assert all(row["legacy_reciprocal_pair_count"] == 1 for row in rows)
     assert "legacy" not in result["methods"]

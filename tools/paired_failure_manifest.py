@@ -18,20 +18,23 @@ from tools.vae_compare_post import REFERENCE_CONTRACT_FIELDS, TERMINAL, fingerpr
 
 VERSION = "paired_failure_manifest_v1"
 METHODS = ("intersection", "local")
-CANDIDATE_METHODS = ("local", "conditioned")
+CANDIDATE_METHODS = ("local", "conditioned", "point_feedback")
+BASELINE_METHODS = ("intersection", "conditioned")
 COHORTS = ("both_failed", "new_failure", "rescued", "both_valid")
 LABELS = {"intersection": "上一版 Intersection refinement", "local": "本版局部注意力",
-          "conditioned": "曲线条件调制"}
+          "conditioned": "曲线条件调制", "point_feedback": "逐点曲线反馈"}
 
 
-def paired_methods(candidate_method="local"):
+def paired_methods(candidate_method="local", baseline_method="intersection"):
     if candidate_method not in CANDIDATE_METHODS:
         raise ValueError(f"Unsupported paired candidate {candidate_method!r}")
-    return "intersection", candidate_method
+    if baseline_method not in BASELINE_METHODS or baseline_method == candidate_method:
+        raise ValueError(f"Unsupported paired baseline {baseline_method!r}/{candidate_method!r}")
+    return baseline_method, candidate_method
 
 
-def read_table(path: Path, id_key: str, candidate_method="local") -> dict:
-    methods = paired_methods(candidate_method)
+def read_table(path: Path, id_key: str, candidate_method="local", baseline_method="intersection") -> dict:
+    methods = paired_methods(candidate_method, baseline_method)
     rows = {}
     with path.open(newline="") as handle:
         reader = csv.DictReader(handle)
@@ -50,8 +53,8 @@ def read_table(path: Path, id_key: str, candidate_method="local") -> dict:
     return rows
 
 
-def partition_population(raw: dict, post: dict, fit: dict, ids: list[str], candidate_method="local") -> dict:
-    methods = paired_methods(candidate_method)
+def partition_population(raw: dict, post: dict, fit: dict, ids: list[str], candidate_method="local", baseline_method="intersection") -> dict:
+    methods = paired_methods(candidate_method, baseline_method)
     expected = {(method, sid) for method in methods for sid in ids}
     if not ids or len(set(ids)) != len(ids):
         raise ValueError("Intended IDs must be nonempty and unique")
@@ -87,8 +90,8 @@ def partition_population(raw: dict, post: dict, fit: dict, ids: list[str], candi
             "fit_only_vs_optimized_all_accepted": {m: dict(v) for m, v in transitions.items()}}
 
 
-def validate_protocols(comparison, reference, data_root, split, audit, candidate_method="local"):
-    paired_methods(candidate_method)
+def validate_protocols(comparison, reference, data_root, split, audit, candidate_method="local", baseline_method="intersection"):
+    paired_methods(candidate_method, baseline_method)
     protocols = {}
     for mode in ("fit_only", "optimized"):
         current_path = comparison / "metadata/post" / mode / "protocol.json"
@@ -102,12 +105,12 @@ def validate_protocols(comparison, reference, data_root, split, audit, candidate
                     "original_test_count": 2424, "timeout_seconds": 180,
                     "max_optimize_iter": 200, "adaptive_max_optimize_iter": 600 if mode == "optimized" else 0,
                     "drop_num": 0, "use_cuda": False, "threads_per_process": 1,
-                    "baseline_method": "intersection", "candidate_method": candidate_method}
+                    "baseline_method": baseline_method, "candidate_method": candidate_method}
         for key, value in required.items():
             if current.get(key) != value:
                 raise ValueError(f"Frozen post protocol differs: {mode}/{key}")
         source = current.get("reference_baseline", {})
-        if (source.get("method") != "intersection" or source.get("source_protocol") != old
+        if (source.get("method") != baseline_method or source.get("source_protocol") != old
                 or source.get("source_protocol_fingerprint") != fingerprint(old)
                 or source.get("source_protocol_sha256") != sha256_file(old_path)
                 or Path(source.get("reference_root", "")).resolve() != reference):
@@ -124,8 +127,8 @@ def validate_protocols(comparison, reference, data_root, split, audit, candidate
     return protocols
 
 
-def make_case(sid, method, cohort, raw, post, fit, comparison, reference, data_root, protocols, audit):
-    source_root = reference if method == "intersection" else comparison
+def make_case(sid, method, cohort, raw, post, fit, comparison, reference, data_root, protocols, audit, baseline_method="intersection"):
+    source_root = reference if method == baseline_method else comparison
     paths = {"raw_npz": comparison / "raw_predictions/posterior_mean" / method / sid / "data.npz",
              "post_step": source_root / "post/optimized" / method / sid / "recon_brep.step",
              "fit_step": source_root / "post/fit_only" / method / sid / "recon_brep.step",
@@ -136,7 +139,7 @@ def make_case(sid, method, cohort, raw, post, fit, comparison, reference, data_r
     raw_hash = None
     for mode, stage in (("optimized", "post"), ("fit_only", "fit")):
         row = case_record(case, stage)
-        is_baseline = method == "intersection"
+        is_baseline = method == baseline_method
         expected = protocols[mode]["baseline_fingerprint" if is_baseline else "current_fingerprint"]
         if row.get("protocol_fingerprint") != expected or row.get("result_origin") != ("reference_reused" if is_baseline else "current_run"):
             raise ValueError(f"Wrong post provenance: {method}/{sid}/{mode}")
@@ -164,37 +167,37 @@ def make_case(sid, method, cohort, raw, post, fit, comparison, reference, data_r
     return case
 
 
-def audit_reuse(case, historical_case, baseline_root, protocols, audit):
+def audit_reuse(case, historical_case, baseline_root, protocols, audit, baseline_method="intersection"):
     """Audit exact historical method; no renamed diagnostic records or fingerprints."""
-    if case_method(case) != "intersection" or case_method(historical_case) != "intersection":
-        raise ValueError("Only exact historical intersection diagnostics may be reused")
+    if case_method(case) != baseline_method or case_method(historical_case) != baseline_method:
+        raise ValueError(f"Only exact historical {baseline_method} diagnostics may be reused")
     result = verify_reuse(case, historical_case, baseline_root, protocols, audit)
     # The historical verifier predates configurable methods; its measurements
     # are identical, while identity is explicitly checked here.
-    result["method"] = "intersection"
+    result["method"] = baseline_method
     for name in ("trace", "upstream", "saved_step"):
         source = result["sources"][name]
-        if source["exists"] and read_json(Path(source["path"])).get("method") != "intersection":
+        if source["exists"] and read_json(Path(source["path"])).get("method") != baseline_method:
             result["reasons"].append(f"historical {name} method differs")
     result["eligible"] = not result["reasons"]
     return result
 
 
-def build_manifests(comparison, reference, baseline, data_root, split, candidate_method="local"):
-    methods = paired_methods(candidate_method)
+def build_manifests(comparison, reference, baseline, data_root, split, candidate_method="local", baseline_method="intersection"):
+    methods = paired_methods(candidate_method, baseline_method)
     audit = AssetAudit()
     ids = split.read_text().split()
     if len(ids) != 2417 or sha256_file(split) != SPLIT_SHA256:
         raise ValueError("Expected the frozen 2417-ID accepted split")
     paths = {"raw_metrics": comparison / "raw_metrics/posterior_mean/per_object.csv",
              "optimized": comparison / "post/optimized/samples.csv", "fit_only": comparison / "post/fit_only/samples.csv"}
-    raw, post, fit = [read_table(paths[key], id_key, candidate_method) for key, id_key in
+    raw, post, fit = [read_table(paths[key], id_key, candidate_method, baseline_method) for key, id_key in
                       (("raw_metrics", "model_id"), ("optimized", "sample_id"), ("fit_only", "sample_id"))]
-    partition = partition_population(raw, post, fit, ids, candidate_method)
-    protocols = validate_protocols(comparison, reference, data_root, split, audit, candidate_method)
+    partition = partition_population(raw, post, fit, ids, candidate_method, baseline_method)
+    protocols = validate_protocols(comparison, reference, data_root, split, audit, candidate_method, baseline_method)
     raw_summary_path = comparison / "raw_metrics/posterior_mean/summary.json"
     raw_summary = read_json(raw_summary_path)
-    if (raw_summary.get("split_sha256") != SPLIT_SHA256 or raw_summary.get("baseline_method") != "intersection"
+    if (raw_summary.get("split_sha256") != SPLIT_SHA256 or raw_summary.get("baseline_method") != baseline_method
             or raw_summary.get("candidate_method") != candidate_method or raw_summary.get("protocol_valid") is not True
             or raw_summary.get("shared_input_status_counts") != {"verified": 2417}):
         raise ValueError("Raw summary input protocol differs")
@@ -205,25 +208,25 @@ def build_manifests(comparison, reference, baseline, data_root, split, candidate
     selected = sorted(failed + groups["rescued"])
     cohort_of = {sid: key for key, values in groups.items() for sid in values}
     cases = {method: [make_case(sid, method, cohort_of[sid], raw, post, fit, comparison, reference,
-                               data_root, protocols, audit) for sid in selected] for method in methods}
+                               data_root, protocols, audit, baseline_method) for sid in selected] for method in methods}
     historical_path = baseline / "manifest.json"
     historical = read_json(historical_path)
-    if historical.get("method") != "intersection":
+    if historical.get("method") != baseline_method:
         raise ValueError("Baseline census has wrong method")
     by_id = {case["id"]: case for case in historical["cases"]}
     if len(by_id) != len(historical["cases"]):
         raise ValueError("Duplicate historical cases")
     old_protocols, protocol_audit = baseline_protocol_audit(baseline, historical, protocols["optimized"]["current"], audit)
     reuse_entries = []
-    for case in cases["intersection"]:
+    for case in cases[baseline_method]:
         sid = case["id"]
         if sid in by_id:
-            reuse_entries.append(audit_reuse(case, by_id[sid], baseline, old_protocols, audit))
+            reuse_entries.append(audit_reuse(case, by_id[sid], baseline, old_protocols, audit, baseline_method))
         else:
-            reuse_entries.append({"id": sid, "method": "intersection", "cohort": case["cohort"],
+            reuse_entries.append({"id": sid, "method": baseline_method, "cohort": case["cohort"],
                                   "eligible": False, "reasons": ["not in historical diagnostic census"], "sources": {}})
     eligible = {entry["id"] for entry in reuse_entries if entry["eligible"]}
-    controls = [case for case in cases["intersection"] if case["id"] not in eligible]
+    controls = [case for case in cases[baseline_method] if case["id"] not in eligible]
     valid = len(ids) - len(failed)
     population = {"original_test": 2424, "contract_unsupported": 7, "accepted_test": len(ids),
                   "native_valid": valid, "native_failed": len(failed), "main_failure_denominator": len(failed),
@@ -232,7 +235,7 @@ def build_manifests(comparison, reference, baseline, data_root, split, candidate
                   "new_diagnostic_cases": len(selected), "baseline_additional_controls": len(controls)}
     common = {"schema": VERSION, "created_at_utc": datetime.now(timezone.utc).isoformat(),
               "comparison_root": str(comparison), "reference_root": str(reference), "baseline_census_root": str(baseline),
-              "baseline_method": "intersection", "candidate_method": candidate_method,
+              "baseline_method": baseline_method, "candidate_method": candidate_method,
               "method_labels": {method: LABELS[method] for method in methods},
               "data_root": str(data_root), "sources": sources, "post_protocols": protocols, "population": population,
               **partition, "failed_ids": failed,
@@ -243,8 +246,8 @@ def build_manifests(comparison, reference, baseline, data_root, split, candidate
                     "control_scope": "Outcome-selected rescued/failed cohorts, not representative of all successes"}}
     manifest = dict(common, method=candidate_method, cases=cases[candidate_method],
                     scope=f"All {candidate_method} failures plus all rescued controls")
-    baseline_controls = dict(common, method="intersection", cases=controls, scope="All selected baseline IDs lacking verified reusable diagnosis")
-    baseline_cases = dict(common, method="intersection", cases=cases["intersection"], scope="Identical paired baseline IDs; includes historical reuse")
+    baseline_controls = dict(common, method=baseline_method, cases=controls, scope="All selected baseline IDs lacking verified reusable diagnosis")
+    baseline_cases = dict(common, method=baseline_method, cases=cases[baseline_method], scope="Identical paired baseline IDs; includes historical reuse")
     reuse = {"schema": "paired_failure_baseline_reuse_v1", "baseline_manifest": audit.add(historical_path),
              "protocol_audit": protocol_audit, "intended_count": len(selected), "eligible_count": len(eligible),
              "note": "Historical diagnostics remain at their original paths with original method/protocol fingerprints.", "cases": reuse_entries}
@@ -260,6 +263,7 @@ def main(argv=None):
     for name in ("comparison-root", "reference-root", "baseline-census-root", "data-root", "split-list", "output-root"):
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--candidate-method", choices=CANDIDATE_METHODS, default="local")
+    parser.add_argument("--baseline-method", choices=BASELINE_METHODS, default="intersection")
     args = parser.parse_args(argv)
     comparison, reference, baseline, data_root, split, root = [p.resolve() for p in
         (args.comparison_root, args.reference_root, args.baseline_census_root, args.data_root, args.split_list, args.output_root)]
@@ -269,7 +273,7 @@ def main(argv=None):
              "failed_ids.txt", "new_failure_ids.txt", "both_failed_ids.txt", "rescued_ids.txt", "optimization_regression_ids.txt"]
     if any((root / name).exists() for name in names):
         raise FileExistsError("Frozen census files already exist; select a new root")
-    documents = build_manifests(comparison, reference, baseline, data_root, split, args.candidate_method)
+    documents = build_manifests(comparison, reference, baseline, data_root, split, args.candidate_method, args.baseline_method)
     root.mkdir(parents=True, exist_ok=True)
     for name, value in documents.items():
         (root / name).write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + "\n")

@@ -143,34 +143,40 @@ class VaeComparePostTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "SHA256"):
             load_reference_rows(reference, current, "fit_only", ["a"], protocol)
 
-    def test_refinement_baseline_reuse_retains_historical_method_and_step_hash(self):
+    def assert_baseline_reuse_retains_identity(self, baseline, candidates):
         reference, current, source, protocol, old_path = self.reference_fixture()
         for root in (reference, current):
-            (root / "raw_predictions/posterior_mean/legacy").rename(root / "raw_predictions/posterior_mean/intersection")
+            (root / "raw_predictions/posterior_mean/legacy").rename(root / f"raw_predictions/posterior_mean/{baseline}")
         # The fixture symlink's target moved too; point at the same source bytes.
-        current_raw = current / "raw_predictions/posterior_mean/intersection"
+        current_raw = current / f"raw_predictions/posterior_mean/{baseline}"
         current_raw.unlink()
-        current_raw.symlink_to(reference / "raw_predictions/posterior_mean/intersection", target_is_directory=True)
+        current_raw.symlink_to(reference / f"raw_predictions/posterior_mean/{baseline}", target_is_directory=True)
         row = read_json(old_path)
-        row.update(method="intersection", step_exists=True)
-        path = reference / "metadata/post/fit_only/samples/intersection/a.json"
+        row.update(method=baseline, step_exists=True)
+        path = reference / f"metadata/post/fit_only/samples/{baseline}/a.json"
         atomic_json(path, row)
-        step = reference / "post/fit_only/intersection/a/recon_brep.step"
+        step = reference / f"post/fit_only/{baseline}/a/recon_brep.step"
         step.parent.mkdir(parents=True)
         step.write_text("STEP source")
         before = path.read_bytes()
         rows, provenance = load_reference_rows(reference, current, "fit_only", ["a"], protocol,
-                                               baseline_method="intersection")
-        self.assertEqual(rows[0]["method"], "intersection")
-        self.assertEqual(rows[0]["source_method"], "intersection")
+                                               baseline_method=baseline)
+        self.assertEqual(rows[0]["method"], baseline)
+        self.assertEqual(rows[0]["source_method"], baseline)
         self.assertEqual(rows[0]["source_step_sha256"], sha256_file(step))
-        self.assertEqual(provenance["method"], "intersection")
-        for candidate in ("local", "conditioned"):
+        self.assertEqual(provenance["method"], baseline)
+        for candidate in candidates:
             summary = summarize([*rows, {"sample_id": "a", "method": candidate, "status": "timeout"}],
-                                1, 2, candidate_method=candidate, baseline_method="intersection")
-            self.assertEqual(set(summary["methods"]), {"intersection", candidate})
-            self.assertEqual(summary["native_validity_transitions"]["counts"][f"intersection_valid_to_{candidate}_failed"], 1)
+                                1, 2, candidate_method=candidate, baseline_method=baseline)
+            self.assertEqual(set(summary["methods"]), {baseline, candidate})
+            self.assertEqual(summary["native_validity_transitions"]["counts"][f"{baseline}_valid_to_{candidate}_failed"], 1)
         self.assertEqual(path.read_bytes(), before)
+
+    def test_refinement_baseline_reuse_retains_historical_method_and_step_hash(self):
+        self.assert_baseline_reuse_retains_identity("intersection", ("local", "conditioned"))
+
+    def test_conditioned_baseline_reuse_retains_historical_method_and_step_hash(self):
+        self.assert_baseline_reuse_retains_identity("conditioned", ("point_feedback",))
 
     def test_native_geometry_is_deterministic_and_gt_cache_is_atomic(self):
         from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox

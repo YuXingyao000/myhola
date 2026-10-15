@@ -1,0 +1,13 @@
+{
+  "methods": [
+    "conditioned",
+    "point_feedback"
+  ],
+  "root": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/evaluation_20261015",
+  "sources_sha256": {
+    "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/evaluation_20261015/diagnostics/raw_distribution_analysis.py": "8008ae36d72f460cefe77440c955a4a6d226fc5557c3adeb80fe0b7ac73ce6d9",
+    "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/curve_conditioning/evaluation_20261014/diagnostics/raw_distribution_analysis.py": "47f1bea831fc7ebac8af2033d9a813be5bf2185aa67e2ab15f339f62f7e5a064",
+    "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/curve_conditioning/evaluation_20261014/diagnostics/reciprocal_distribution_analysis.py": "c65c3d869074078eca28c1616fb086a230471bb6bd6eb7c80c2cf599ec3e77c0"
+  },
+  "changes": "Explicit output root, method identities and Chinese labels only; statistical functions reused unchanged."
+}

@@ -122,6 +122,7 @@ def load_intersection(checkpoint_path: Path, legacy_path: Path, device: torch.de
         }
     runtime_config = {**config, "checkpoint": None, "init_legacy_checkpoint": None,
                       "init_refinement_checkpoint": None,
+                      "init_curve_feedback_checkpoint": None,
                       "restoring_checkpoint": True, "mode": "frozen_inference"}
     with torch.device("meta"):
         model = AutoEncoder_intersection(runtime_config)
@@ -274,7 +275,7 @@ def build_parser() -> argparse.ArgumentParser:
     for name in ("legacy-checkpoint", "reference-root", "data-root", "split-list", "output-root"):
         parser.add_argument(f"--{name}", type=Path, required=True)
     parser.add_argument("--mode", choices=("posterior_mean", "archived_latents"), required=True)
-    parser.add_argument("--method", choices=("intersection", "local", "conditioned"), default="intersection")
+    parser.add_argument("--method", choices=("intersection", "local", "conditioned", "point_feedback"), default="intersection")
     parser.add_argument("--num-shards", type=int, default=1)
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--device", default="cuda:0")
@@ -286,13 +287,14 @@ def validate_method(model: torch.nn.Module, method: str) -> None:
     """Keep experimental identity explicit while using the same strict loader."""
     kind = model.decoder.intersection_kind
     conditioned = model.decoder.curve_conditioning_enabled
-    expected = {"intersection": ("legacy", False), "local": ("local_attention", False),
-                "conditioned": ("legacy", True)}
-    if method not in expected or (kind, conditioned) != expected[method]:
+    feedback = model.decoder.curve_point_feedback_enabled
+    expected = {"intersection": ("legacy", False, False), "local": ("local_attention", False, False),
+                "conditioned": ("legacy", True, False), "point_feedback": ("legacy", True, True)}
+    if method not in expected or (kind, conditioned, feedback) != expected[method]:
         raise ValueError(f"Method {method} does not match checkpoint intersection={kind}, "
-                         f"curve_conditioning={conditioned}")
-    if method == "conditioned" and not model.decoder.refinement_enabled:
-        raise ValueError("Method conditioned requires enabled refinement")
+                         f"curve_conditioning={conditioned}, curve_point_feedback={feedback}")
+    if method in {"conditioned", "point_feedback"} and not model.decoder.refinement_enabled:
+        raise ValueError(f"Method {method} requires enabled refinement")
 
 
 def main(argv: list[str] | None = None) -> int:

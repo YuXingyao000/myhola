@@ -201,7 +201,7 @@ def test_mean_audit_records_numerical_error_and_resume_rejects_changed_inputs(tm
     assert not audit["passed"] and audit["max_abs_error"] > 0
 
 
-@pytest.mark.parametrize("method", ["intersection", "local", "conditioned"])
+@pytest.mark.parametrize("method", ["intersection", "local", "conditioned", "point_feedback"])
 def test_cpu_entrypoint_replay_resume_and_preserved_reference(tmp_path, method):
     _, model, legacy_path, checkpoint, _, config = make_models(tmp_path)
     if method == "local":
@@ -214,7 +214,7 @@ def test_cpu_entrypoint_replay_resume_and_preserved_reference(tmp_path, method):
         checkpoint = tmp_path / "local.ckpt"
         torch.save({"state_dict": {f"model.{key}": value for key, value in model.state_dict().items()},
                     "hyper_parameters": {"model": local_config}, "epoch": 3, "global_step": 30}, checkpoint)
-    elif method == "conditioned":
+    elif method in {"conditioned", "point_feedback"}:
         conditional_config = {**deepcopy(config), "init_legacy_checkpoint": None,
                               "init_refinement_checkpoint": str(checkpoint),
                               "curve_conditioning": {"enabled": True, "hidden_dim": 8}}
@@ -222,6 +222,16 @@ def test_cpu_entrypoint_replay_resume_and_preserved_reference(tmp_path, method):
         checkpoint = tmp_path / "conditioned.ckpt"
         torch.save({"state_dict": {f"model.{key}": value for key, value in model.state_dict().items()},
                     "hyper_parameters": {"model": conditional_config}, "epoch": 3, "global_step": 30}, checkpoint)
+        if method == "point_feedback":
+            feedback_config = {
+                **conditional_config, "init_refinement_checkpoint": None,
+                "init_curve_feedback_checkpoint": str(checkpoint),
+                "curve_point_feedback": {"enabled": True, "hidden_dim": 16, "feature_dim": 8},
+            }
+            model = AutoEncoder_intersection(feedback_config).eval()
+            checkpoint = tmp_path / "point_feedback.ckpt"
+            torch.save({"state_dict": {f"model.{key}": value for key, value in model.state_dict().items()},
+                        "hyper_parameters": {"model": feedback_config}, "epoch": 4, "global_step": 40}, checkpoint)
     reference, data, split, _, arrays = make_reference(tmp_path, model, legacy_path)
     output = tmp_path / "evaluation"
     source = reference / "raw_predictions/posterior_mean/legacy/example/data.npz"
@@ -233,11 +243,15 @@ def test_cpu_entrypoint_replay_resume_and_preserved_reference(tmp_path, method):
     result_path = output / "raw_predictions/posterior_mean" / method / "example/data.npz"
     protocol = json.loads((output / "metadata/inference/posterior_mean/protocol.json").read_text())
     assert protocol["method"] == method
-    if method == "conditioned":
+    if method in {"conditioned", "point_feedback"}:
         assert protocol["model_audit"]["checkpoint_model_config"]["curve_conditioning"]["enabled"] is True
-        for wrong_method in ("intersection", "local"):
+        for wrong_method in set(("intersection", "local", "conditioned", "point_feedback")) - {method}:
             with pytest.raises(ValueError, match="does not match"):
                 validate_method(model, wrong_method)
+    if method == "point_feedback":
+        recorded = protocol["model_audit"]["checkpoint_model_config"]
+        assert recorded["curve_point_feedback"]["enabled"] is True
+        assert recorded["init_curve_feedback_checkpoint"] is not None
     if method == "local":
         assert "src/brepnet/models/blocks.py" in protocol["source_sha256"]
     with np.load(result_path, allow_pickle=False) as actual:

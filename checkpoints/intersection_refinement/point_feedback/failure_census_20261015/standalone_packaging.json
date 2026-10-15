@@ -1,0 +1,82 @@
+{
+  "schema": "paired_census_standalone_v1",
+  "scope": "Presentation packaging only; scientific measurements remain unchanged.",
+  "experiment_identity": "2026-10-15 · 逐点曲线反馈 · 验证最佳epoch34 / step12705",
+  "sources": [
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/failure_census_20261015/page/index.html",
+      "sha256": "5c6c1a00a61ec40752a2c882b2a258a91f8ac9ba79c81ed8ca663b59ef7f664b"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/failure_census_20261015/page/app.js",
+      "sha256": "60c3cfb0db8eb02da900de1a6abba55751e019636ab6f1d53523f70a465cab67"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/failure_census_20261015/page/data.js",
+      "sha256": "f4a9ac4f5db04f264faefbd4c5d626d13a7b33b45183dd57532cb3bf450e1b43"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/failure_census_20261015/visualizations/main_failure_observations.png",
+      "sha256": "44c2740e6bb029c97a4170e41650089849414ebd121f7a51355adf54a2571a3a"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/failure_census_20261015/visualizations/main_failure_observations.svg",
+      "sha256": "1e6a1f33db4bb9bfdf5ce343b0970a3bc3a139429006197852a7d9ad9311d13c"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/failure_census_20261015/visualizations/paired_observation_changes.png",
+      "sha256": "cf84208057721c80a6276e28e03d9ae8aad02a5fbef8972f174c4cca7973edc8"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/failure_census_20261015/visualizations/paired_observation_changes.svg",
+      "sha256": "0b95a3d85859b66beb2a77ae7ccf84d0f5b4c56eb70073b38915318114b03c63"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/failure_census_20261015/visualizations/owner_residual_before_after.png",
+      "sha256": "056b44580a7c025f23fe708db52209e057f98a4bc7c60139064c141cd87f5494"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/failure_census_20261015/visualizations/owner_residual_before_after.svg",
+      "sha256": "5baf5fae0958cfc7fe850cdb62479be90fb98017b97ba2861f23e7bc9ec41d91"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/failure_census_20261015/visualizations/persistent_face_context_errors.png",
+      "sha256": "16cccbb8339926ac9c45b16a9b74856956a006c46cc2e58f394d18f3c55864c2"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/failure_census_20261015/visualizations/persistent_face_context_errors.svg",
+      "sha256": "703b44da2fb22114b8e7cc652b852fb62ba8eb03ac7e1be0bfad365f943c7bc7"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/failure_census_20261015/NOTE.md",
+      "sha256": "07e3fcb5c97f71a077baa02aa03e7ecbd2d49dbc3e8457a81a43b04a73283932"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/failure_census_20261015/REPORT.md",
+      "sha256": "f7bd9c420ee2c925ec4d5289e726a125972d522c8ad1888d384cb7ba004346f6"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/failure_census_20261015/compact_summary.json",
+      "sha256": "97e8f0b5328f29f0fdc5df8167eead1eca3dc83f62c2faedf2c16a95afd3f5d2"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/failure_census_20261015/cases.csv",
+      "sha256": "afb42f1de0be6ae6717f18665acf4192664532fa9ddafea21be227caafd2f8ec"
+    }
+  ],
+  "output": {
+    "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/failure_census_20261015/page/standalone.html",
+    "sha256": "962ceb3fa7663f9956e86c59224290ee18d921a3acf8bbc2919ca3c7576820b8",
+    "bytes": 14398486
+  },
+  "pair_count": 363,
+  "main_denominator": 313,
+  "embedded_charts": 4,
+  "embedded_downloads": [
+    "NOTE.md",
+    "REPORT.md",
+    "compact_summary.json",
+    "cases.csv"
+  ],
+  "historical_3d_atlas": "Not embedded; clearly labelled independent historical resource."
+}

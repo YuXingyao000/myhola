@@ -57,9 +57,14 @@ async function main() {
     }
     const identity = await evaluate('({methods: window.PAIRED_CENSUS_DATA.methods, labels: window.PAIRED_CENSUS_DATA.method_labels})');
     if (identity.methods) {
-      assert.equal(identity.methods.baseline, 'intersection');
-      assert(['local', 'conditioned'].includes(identity.methods.candidate));
+      assert(['intersection/local', 'intersection/conditioned', 'conditioned/point_feedback']
+        .includes(`${identity.methods.baseline}/${identity.methods.candidate}`));
       if (identity.methods.candidate === 'conditioned') assert.equal(identity.labels.candidate, '曲线条件调制');
+      if (identity.methods.candidate === 'point_feedback') {
+        assert.equal(identity.labels.baseline, '曲线条件调制');
+        assert.equal(identity.labels.candidate, '逐点曲线反馈');
+      }
+      assert.equal(await evaluate('window.PAIRED_CENSUS_DATA.pairs.filter(p => ["baseline", "candidate"].some(role => p[role].method !== window.PAIRED_CENSUS_DATA.methods[role])).length'), 0);
     }
     const cohortCounts = await evaluate('({main: window.PAIRED_CENSUS_DATA.main.denominator, ...window.PAIRED_CENSUS_DATA.cohort_counts})');
     assert.equal(await evaluate('window.PAIRED_CENSUS_VIEW?.denominator'), cohortCounts.main);
