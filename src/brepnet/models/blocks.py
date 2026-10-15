@@ -18,6 +18,8 @@ from torch import nn, Tensor
 from torch.nn import ModuleList
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.checkpoint import checkpoint
+from torch_geometric.nn import GATv2Conv
+from torch_geometric.utils import add_self_loops, remove_self_loops
 
 from einops.layers.torch import Rearrange
 
@@ -277,6 +279,117 @@ class ResBlockXD(nn.Module):
         out += identity
         out = self.relu(out)
 
+        return out
+
+
+# ---------------------------------------------------------------------------
+# Encoder graph message values
+# ---------------------------------------------------------------------------
+
+
+class EdgeValueGATv2Conv(GATv2Conv):
+    """Keep GATv2 attention and add an edge-conditioned message value.
+
+    This experiment supports the encoder's dense, homogeneous, single-head
+    graph. The original GATv2 output and parameter names are preserved. A new
+    ``value_net`` reads ``[target_face, source_face, edge]`` and contributes an
+    attention-weighted residual. Its final layer starts at zero, so importing
+    the old GAT weights preserves the initial function exactly.
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        heads: int = 1,
+        *,
+        edge_dim: int,
+        value_hidden_dim: int = 64,
+        **kwargs,
+    ) -> None:
+        if not isinstance(in_channels, int) or in_channels <= 0:
+            raise ValueError("EdgeValueGATv2Conv requires a positive homogeneous in_channels")
+        if not isinstance(out_channels, int) or out_channels <= 0:
+            raise ValueError("out_channels must be a positive integer")
+        if heads != 1:
+            raise ValueError("EdgeValueGATv2Conv supports heads=1 only")
+        if not isinstance(edge_dim, int) or edge_dim <= 0:
+            raise ValueError("edge_dim must be a positive integer")
+        if not isinstance(value_hidden_dim, int) or value_hidden_dim <= 0:
+            raise ValueError("value_hidden_dim must be a positive integer")
+        if kwargs.get("flow", "source_to_target") != "source_to_target":
+            raise ValueError("EdgeValueGATv2Conv requires source_to_target flow")
+        if kwargs.get("aggr", "add") not in ("add", "sum"):
+            raise ValueError("EdgeValueGATv2Conv requires sum aggregation")
+        if kwargs.get("decomposed_layers", 1) != 1:
+            raise ValueError("EdgeValueGATv2Conv requires decomposed_layers=1")
+        super().__init__(
+            in_channels, out_channels, heads=heads, edge_dim=edge_dim, **kwargs
+        )
+        self.value_hidden_dim = value_hidden_dim
+        # Initializing the optional branch must not advance the old model's RNG.
+        devices = [self.att.device.index] if self.att.is_cuda else []
+        with torch.random.fork_rng(devices=devices):
+            factory_kwargs = {"device": self.att.device, "dtype": self.att.dtype}
+            self.value_net = nn.Sequential(
+                nn.Linear(2 * in_channels + edge_dim, value_hidden_dim, **factory_kwargs),
+                nn.SiLU(),
+                nn.Linear(value_hidden_dim, out_channels, **factory_kwargs),
+            )
+            nn.init.zeros_(self.value_net[-1].weight)
+            nn.init.zeros_(self.value_net[-1].bias)
+
+    def reset_parameters(self) -> None:
+        super().reset_parameters()
+        # GATv2's constructor calls this before value_net exists.
+        if hasattr(self, "value_net"):
+            devices = [self.att.device.index] if self.att.is_cuda else []
+            with torch.random.fork_rng(devices=devices):
+                self.value_net[0].reset_parameters()
+                self.value_net[-1].reset_parameters()
+                nn.init.zeros_(self.value_net[-1].weight)
+                nn.init.zeros_(self.value_net[-1].bias)
+
+    def forward(
+        self,
+        x: Tensor,
+        edge_index: Tensor,
+        edge_attr: Tensor | None = None,
+        return_attention_weights: bool | None = None,
+    ) -> Tensor | tuple[Tensor, tuple[Tensor, Tensor]]:
+        if not isinstance(x, Tensor) or x.layout != torch.strided:
+            raise ValueError("x must be a dense homogeneous node tensor, not a bipartite pair")
+        if x.ndim != 2 or x.shape[1] != self.in_channels or not x.is_floating_point():
+            raise ValueError(f"x must have floating shape [N, {self.in_channels}]")
+        if not isinstance(edge_index, Tensor) or edge_index.layout != torch.strided:
+            raise ValueError("edge_index must be a dense [2, E] index tensor; sparse graphs are unsupported")
+        if edge_index.ndim != 2 or edge_index.shape[0] != 2 or edge_index.dtype != torch.long:
+            raise ValueError("edge_index must have shape [2, E] and dtype torch.long")
+        if not isinstance(edge_attr, Tensor) or edge_attr.layout != torch.strided:
+            raise ValueError("edge_attr is required as a dense [E, edge_dim] tensor")
+        if edge_attr.shape != (edge_index.shape[1], self.edge_dim) or not edge_attr.is_floating_point():
+            raise ValueError(f"edge_attr must have floating shape [E, {self.edge_dim}]")
+        if x.device != edge_index.device or x.device != edge_attr.device:
+            raise ValueError("x, edge_index and edge_attr must be on the same device")
+
+        out, (attention_edges, alpha) = super().forward(
+            x, edge_index, edge_attr, return_attention_weights=True
+        )
+        # Match PyG's self-loop removal, ordering and mean-filled attributes.
+        # Keep these tensors local so checkpoint recomputation is reentrant.
+        if self.add_self_loops:
+            loop_edges, edge_attr = remove_self_loops(edge_index, edge_attr)
+            _, edge_attr = add_self_loops(
+                loop_edges, edge_attr, fill_value=self.fill_value, num_nodes=x.shape[0]
+            )
+        source, target = attention_edges
+        values = self.value_net(torch.cat([x[target], x[source], edge_attr], dim=-1))
+        weighted_values = (values * alpha).to(dtype=out.dtype)
+        residual = out.new_zeros(out.shape).index_add(0, target, weighted_values)
+        out = out + residual
+        # PyG returns attention for either boolean value (including False).
+        if isinstance(return_attention_weights, bool):
+            return out, (attention_edges, alpha)
         return out
 
 

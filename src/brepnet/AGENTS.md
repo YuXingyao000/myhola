@@ -36,6 +36,8 @@
 
 `train_vae_intersection_point_feedback` 在已训练 conditioning 上新增最终曲线逐点反馈，见 [协议](../../checkpoints/intersection_refinement/point_feedback/PLAN.md)。`blocks.py:CurvePointFeedback` 用每点17维预测几何观察加E/两个owner F，145→128→64→3末层零初始化，新增27139参数。所有几何读取与新增MLP/坐标加法使用FP32，原主干仍遵循既有AMP。无点序号/空间池化/GT筛选；方向分量、bbox、face输出不直接修改；local XYZ和global XYZ同时修正。`init_curve_feedback_checkpoint` 仅允许从完整已conditioned、无feedback的legacy/refinement来源新增这6个tensor，full/resume保持严格加载；通用trainer的resume清除此初始化来源。`trainer.max_time` 默认null，本轮配置8小时；Timer时间计入checkpoint，续训须设置足够的累计预算。
 
+2026-10-15 新增可选 [Encoder边内容消息实验](../../checkpoints/encoder_edge_value/PLAN.md)。`blocks.py:EdgeValueGATv2Conv` 保留原GATv2 attention/value/self-loop/bias，增加原始 `[target F,source F,E]` 的 `128→64→32` 消息增量，末层零初始化。`vae.py:HolisticEncoder` 按 `model.encoder_edge_value.enabled` 替换五层GAT，旧key不变，仅新增51,680参数，默认关闭。`init_encoder_edge_value_checkpoint` 只从完整conditioned、无point-feedback/value分支的模型迁移；完整加载/resume仍严格匹配。`train_vae_encoder_edge_value` 两组均解冻encoder/posterior/decoder，恢复既有KL项；原GAT解冻对照与候选使用相同预算。此实验改变latent语义，旧cache/diffusion不可直接认定兼容。
+
 ## Diffusion：实际数据流
 
 1. `dataset.py:Diffusion_dataset` 读取 cache 并完成 padding；`diffusion_latents.py:LatentProvider` 取 mean，或用 std 采样。非 cache 分支调用冻结 VAE 再由 padder 打包。

@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "devices": 8,
+  "batch_size_per_device": 16,
+  "global_step": 2,
+  "epoch": 0,
+  "scope": "two steps and one limited validation batch; not a quality result",
+  "checkpoint": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/validation/candidate_ddp/20261015T072225.706491Z/weights/last.ckpt",
+  "new_message_tensors": 20,
+  "all_finite": true,
+  "all_five_zero_heads_updated": true,
+  "exit_code": 0
+}

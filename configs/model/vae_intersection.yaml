@@ -12,9 +12,17 @@ freeze_encoder: true
 init_legacy_checkpoint: null
 init_refinement_checkpoint: null
 init_curve_feedback_checkpoint: null
+init_encoder_edge_value_checkpoint: null
 checkpoint: null
 trainable_scope: all
 edge_threshold: 0.5
+
+# Added 2026-10-15: direct edge content in each of the five GAT messages.
+# 128 -> 64 -> 32 residual MLP; final layer zero-initialized, +51,680 params.
+# Default off preserves every existing checkpoint and frozen-encoder run.
+encoder_edge_value:
+  enabled: false
+  hidden_dim: 64
 
 # Legacy remains the default so existing refinement checkpoints load strictly.
 intersection:

@@ -1,0 +1,7 @@
+{
+  "command": "python -m pytest -q src/brepnet/test/test_encoder_edge_value.py src/brepnet/test/test_intersection_vae.py src/brepnet/test/test_intersection_decoder.py src/brepnet/test/test_intersection_losses.py src/brepnet/test/test_local_intersection_migration.py",
+  "passed": 112,
+  "failed": 0,
+  "seconds": 18.51,
+  "scope": "implementation and backward compatibility only"
+}

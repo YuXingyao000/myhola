@@ -56,6 +56,7 @@ from src.brepnet.dataset import denormalize_coord1112
 from src.brepnet.models.blocks import (
     ResBlockXD,
     AttnIntersection,
+    EdgeValueGATv2Conv,
     DecoderStage,
     IntersectionDecoder,
     JointBoundaryDecoder,
@@ -780,7 +781,7 @@ class AutoEncoder_light_exp(AutoEncoder_light):
 
 
 class HolisticEncoder(nn.Module):
-    def __init__(self, legacy: nn.Module):
+    def __init__(self, legacy: nn.Module, edge_value_cfg: Mapping | None = None):
         super().__init__()
         self.in_channels = legacy.in_channels
         self.face_coords = legacy.face_coords
@@ -791,6 +792,30 @@ class HolisticEncoder(nn.Module):
         self.graph_face_edge = legacy.graph_face_edge
         self.global_feature1 = legacy.global_feature1
         self.global_feature2 = legacy.global_feature2
+        # Added 2026-10-15: retain every GAT score/value parameter; only the
+        # direct edge-content message is new. No change when disabled.
+        if (edge_value_cfg or {}).get("enabled", False):
+            hidden_dim = int(edge_value_cfg.get("hidden_dim", 64))
+            if hidden_dim <= 0:
+                raise ValueError("encoder_edge_value.hidden_dim must be positive")
+            # Model construction must not shift subsequent dropout/sampling RNG.
+            with torch.random.fork_rng(devices=[]):
+                for index, layer in enumerate(self.graph_face_edge):
+                    if not isinstance(layer, GATv2Conv):
+                        continue
+                    replacement = EdgeValueGATv2Conv(
+                        layer.in_channels, layer.out_channels, heads=layer.heads,
+                        edge_dim=layer.edge_dim, value_hidden_dim=hidden_dim,
+                        concat=layer.concat, negative_slope=layer.negative_slope,
+                        dropout=layer.dropout, add_self_loops=layer.add_self_loops,
+                        fill_value=layer.fill_value, bias=layer.bias is not None,
+                        share_weights=layer.share_weights,
+                        residual=layer.res is not None,
+                    )
+                    fresh = {key: value for key, value in replacement.state_dict().items()
+                             if key.startswith("value_net.")}
+                    replacement.load_state_dict({**layer.state_dict(), **fresh}, strict=True)
+                    self.graph_face_edge[index] = replacement
 
     def fuse_graph(self, faces: Tensor, edges: Tensor, connectivity: Tensor) -> Tensor:
         edge_index = connectivity[:, 1:].T
@@ -1218,19 +1243,23 @@ class AutoEncoder_intersection(nn.Module):
         legacy_path, full_path = cfg["init_legacy_checkpoint"], cfg["checkpoint"]
         refinement_path = cfg.get("init_refinement_checkpoint")
         curve_feedback_path = cfg.get("init_curve_feedback_checkpoint")
+        edge_value_path = cfg.get("init_encoder_edge_value_checkpoint")
+        edge_value_cfg = cfg.get("encoder_edge_value") or {}
+        edge_value_enabled = bool(edge_value_cfg.get("enabled", False))
         restoring = bool(cfg.get("restoring_checkpoint", False))
-        sources = (legacy_path, refinement_path, curve_feedback_path, full_path)
+        sources = (legacy_path, refinement_path, curve_feedback_path, edge_value_path, full_path)
         if sum(bool(path) for path in sources) > 1:
             raise ValueError(
                 "Choose only one of init_legacy_checkpoint, init_refinement_checkpoint, "
-                "init_curve_feedback_checkpoint or checkpoint"
+                "init_curve_feedback_checkpoint, init_encoder_edge_value_checkpoint or checkpoint"
             )
         if restoring and any(sources):
             raise ValueError("Resume must restore the new checkpoint without a second initialization")
         if (self.freeze_encoder or self.runtime_mode == "frozen_inference") and not (any(sources) or restoring):
             raise ValueError(
                 "Refusing to freeze random weights: provide init_legacy_checkpoint, "
-                "init_refinement_checkpoint, init_curve_feedback_checkpoint or checkpoint"
+                "init_refinement_checkpoint, init_curve_feedback_checkpoint, "
+                "init_encoder_edge_value_checkpoint or checkpoint"
             )
         intersection_cfg = cfg.get("intersection")
         curve_conditioning_cfg = cfg.get("curve_conditioning")
@@ -1238,6 +1267,21 @@ class AutoEncoder_intersection(nn.Module):
         conditioning_enabled = bool((curve_conditioning_cfg or {}).get("enabled", False))
         curve_feedback_enabled = bool((curve_point_feedback_cfg or {}).get("enabled", False))
         intersection_kind = (intersection_cfg or {}).get("kind", "legacy")
+        if edge_value_path and not edge_value_enabled:
+            raise ValueError("init_encoder_edge_value_checkpoint requires encoder_edge_value.enabled")
+        if edge_value_enabled and (legacy_path or refinement_path or curve_feedback_path):
+            raise ValueError(
+                "Encoder edge values require init_encoder_edge_value_checkpoint, checkpoint or resume"
+            )
+        if edge_value_enabled and (
+            intersection_kind != "legacy" or not cfg["refinement"]["enabled"]
+            or not conditioning_enabled or curve_feedback_enabled
+        ):
+            raise ValueError(
+                "Encoder edge-value experiment retains conditioned legacy refinement without point feedback"
+            )
+        if edge_value_enabled and self.freeze_encoder and self.runtime_mode == "train":
+            raise ValueError("Encoder edge-value training requires freeze_encoder=false")
         if curve_feedback_enabled and (
             intersection_kind != "legacy" or not cfg["refinement"]["enabled"] or not conditioning_enabled
         ):
@@ -1265,7 +1309,7 @@ class AutoEncoder_intersection(nn.Module):
         legacy_cfg = {**cfg, "checkpoint": legacy_path, "mode": "train"}
         legacy = AutoEncoder_light(legacy_cfg)
         self.face_feature_dim = legacy.face_feature_dim
-        self.encoder = HolisticEncoder(legacy)
+        self.encoder = HolisticEncoder(legacy, edge_value_cfg)
         self.posterior = FacePosterior(legacy)
         self.decoder = IntersectionDecoder(
             legacy, cfg["refinement"], intersection_cfg,
@@ -1281,6 +1325,8 @@ class AutoEncoder_intersection(nn.Module):
                 self._init_from_refinement(refinement_path, legacy.inter.state_dict())
         if curve_feedback_path:
             self._init_curve_feedback(curve_feedback_path)
+        if edge_value_path:
+            self._init_encoder_edge_value(edge_value_path)
         if full_path:
             checkpoint = torch.load(str(full_path), map_location="cpu", weights_only=False)
             state = checkpoint.get("state_dict", checkpoint)
@@ -1435,6 +1481,59 @@ class AutoEncoder_intersection(nn.Module):
             "initialized_curve_point_feedback_parameters": sum(value.numel() for value in fresh.values()),
         }
         logger.info("Curve point feedback initialization: %s", self.initialization_report)
+
+    def _init_encoder_edge_value(self, path: str) -> None:
+        """Initialize only new GAT messages; preserve the full conditioned model.
+
+        This starts a new optimizer/run. Existing edge-value checkpoints must
+        use strict full checkpoint loading or trainer resume instead.
+        """
+        checkpoint = torch.load(str(path), map_location="cpu", weights_only=False)
+        if not isinstance(checkpoint, Mapping):
+            raise ValueError("Encoder edge-value checkpoint must be a mapping")
+        raw_state = checkpoint.get("state_dict", checkpoint)
+        if not isinstance(raw_state, Mapping):
+            raise ValueError("Encoder edge-value state_dict must be a mapping")
+        source = {}
+        for key, value in raw_state.items():
+            if not isinstance(key, str):
+                raise ValueError("Encoder edge-value state keys must be strings")
+            normalized = key.removeprefix("model.")
+            if normalized in source:
+                raise ValueError(f"Ambiguous checkpoint key after removing model prefix: {normalized}")
+            source[normalized] = value
+        current = self.state_dict()
+        fresh = {
+            f"encoder.graph_face_edge.{index}.{key}": value
+            for index, layer in enumerate(self.encoder.graph_face_edge)
+            if isinstance(layer, EdgeValueGATv2Conv)
+            for key, value in layer.state_dict().items()
+            if key.startswith("value_net.")
+        }
+        if not fresh:
+            raise ValueError("Encoder edge-value migration requires enabled value_net parameters")
+        expected = current.keys() - fresh.keys()
+        missing = sorted(expected - source.keys())
+        unexpected = sorted(source.keys() - expected)
+        mismatched = sorted(
+            key for key in expected & source.keys()
+            if not isinstance(source[key], Tensor) or source[key].shape != current[key].shape
+        )
+        if missing or unexpected or mismatched:
+            raise ValueError(
+                "Encoder edge-value migration requires the complete conditioned model without value_net; "
+                f"missing={missing}, unexpected={unexpected}, shape_mismatch={mismatched}"
+            )
+        self.load_state_dict({**source, **fresh}, strict=True)
+        self.initialization_report = {
+            "source": str(path),
+            "source_epoch": checkpoint.get("epoch"),
+            "source_global_step": checkpoint.get("global_step"),
+            "retained_state_keys": len(source),
+            "initialized_encoder_edge_value_keys": sorted(fresh),
+            "initialized_encoder_edge_value_parameters": sum(value.numel() for value in fresh.values()),
+        }
+        logger.info("Encoder edge-value initialization: %s", self.initialization_report)
 
     def train(self, mode: bool = True):
         super().train(mode and self.runtime_mode != "frozen_inference")
