@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import signal
 import subprocess
 import sys
@@ -164,6 +165,219 @@ def checkpoint_progress(run_dir: Path) -> dict:
         capture_output=True, text=True, check=True, timeout=60,
     )
     return {"checkpoint": str(checkpoint), **json.loads(result.stdout)}
+
+
+def resume_checkpoint_record(path: Path) -> dict:
+    """Read full-state provenance without starting a trainer or printing tensors."""
+    code = (
+        "import json,sys,torch; from omegaconf import OmegaConf; "
+        "c=torch.load(sys.argv[1],map_location='cpu',weights_only=False,mmap=True); "
+        "print(json.dumps({'global_step':int(c['global_step']),'epoch':int(c['epoch']),"
+        "'optimizer_count':len(c.get('optimizer_states',[])),"
+        "'optimizer_state_count':sum(len(x.get('state',{})) for x in c.get('optimizer_states',[])),"
+        "'fit_loop_present':'fit_loop' in c.get('loops',{}),"
+        "'hyper_parameters':OmegaConf.to_container(OmegaConf.create(c['hyper_parameters']),resolve=True)}))"
+    )
+    result = subprocess.run([sys.executable, "-c", code, str(path)], cwd=REPO,
+                            capture_output=True, text=True, check=True, timeout=60)
+    return json.loads(result.stdout)
+
+
+def prepare_resume(arm: str, max_steps: int, max_epochs: int, audit_path: Path) -> dict:
+    """Read-only preflight, pinned to an explicitly recorded evaluation endpoint."""
+    from omegaconf import OmegaConf
+
+    audit_path = audit_path.resolve()
+    audited = json.loads(audit_path.read_text())["arms"][arm]
+    run_dir = Path(audited["run_dir"]).resolve()
+    if run_dir.parent != (EXPERIMENT / arm).resolve():
+        raise ValueError("Evaluation arm/run directory mismatch")
+    run_record = json.loads((run_dir / "metadata/run.json").read_text())
+    if run_record["run_dir"] != str(run_dir) or run_record["experiment"] != f"encoder_edge_value/{arm}":
+        raise ValueError("Saved run identity does not match requested arm")
+    config_path = run_dir / "metadata/invocations" / run_record["initial_invocation_id"] / "config.yaml"
+    config = OmegaConf.to_container(OmegaConf.load(config_path), resolve=True)
+    trainer, model = config["trainer"], config["model"]
+    if trainer["run_dir"] != str(run_dir) or trainer["exp_name"] != run_record["experiment"]:
+        raise ValueError("Original resolved configuration belongs to another run")
+    if trainer["devices"] != 8 or trainer["batch_size"] != 16 or model["freeze_encoder"]:
+        raise ValueError("Resume must preserve the recorded eight-GPU full-model training contract")
+    if bool(model["encoder_edge_value"]["enabled"]) != (arm == "candidate"):
+        raise ValueError("Saved encoder architecture does not match requested arm")
+    if trainer["evaluate"] or config["eval"]["enabled"] or not trainer["wandb"]["enabled"]:
+        raise ValueError("Resume requires the original training/W&B configuration")
+    checkpoints = []
+    for role in ("selected", "last_saved"):
+        item = audited[role]
+        path = Path(item["path"]).resolve()
+        if path.parent != run_dir / "weights" or sha256(path) != item["sha256"]:
+            raise ValueError(f"Audited {role} checkpoint path or SHA-256 changed")
+        checkpoints.append({"role": role, "source_path": str(path), "sha256": item["sha256"]})
+    last = checkpoints[-1]
+    state = resume_checkpoint_record(Path(last["source_path"]))
+    if state["global_step"] != audited["last_saved"]["global_step"] or state["epoch"] != audited["last_saved"]["epoch"]:
+        raise ValueError("Last checkpoint progress differs from the evaluation audit")
+    if max_steps <= state["global_step"] or max_epochs <= state["epoch"] + 1:
+        raise ValueError("Cumulative step and epoch limits must both extend the saved endpoint")
+    if state["optimizer_count"] != 1 or state["optimizer_state_count"] == 0 or not state["fit_loop_present"]:
+        raise ValueError("Resume requires the saved optimizer and fit-loop state")
+    # Every optimization/data/model field comes from the original invocation;
+    # no current config default or migration checkpoint may silently replace it.
+    for section in ("model", "dataset", "condition"):
+        if state["hyper_parameters"][section] != config[section]:
+            raise ValueError(f"Checkpoint {section} differs from the original resolved configuration")
+    for key in ("devices", "batch_size", "learning_rate", "precision", "seed", "gradient_clip_val"):
+        if state["hyper_parameters"]["trainer"][key] != trainer[key]:
+            raise ValueError(f"Checkpoint trainer.{key} differs from the saved configuration")
+    for name, digest in audited["source_file_hashes"].items():
+        if sha256(REPO / name) != digest:
+            raise ValueError(f"Training implementation changed since evaluation: {name}")
+    provenance = input_record()
+    original_launch_path = METADATA / f"{run_dir.name}.json"
+    original_launch = json.loads(original_launch_path.read_text())
+    if original_launch["splits"] != provenance["splits"]:
+        raise ValueError("Dataset split contents changed since the original launch")
+    for name, record in provenance["splits"].items():
+        if Path(config["dataset"][f"{name}_dataset"]).resolve() != Path(record["path"]).resolve():
+            raise ValueError(f"Saved {name} split path differs from the experiment contract")
+    if Path(config["dataset"]["raw_data_root"]).resolve() != DATA.resolve():
+        raise ValueError("Saved data root differs from the experiment contract")
+    return {"arm": arm, "run_dir": str(run_dir), "wandb_id": run_record["wandb_id"],
+            "config_path": str(config_path), "config_sha256": sha256(config_path),
+            "evaluation_audit": str(audit_path), "evaluation_audit_sha256": sha256(audit_path),
+            "original_launch_metadata": str(original_launch_path),
+            "checkpoints_to_preserve": checkpoints, "saved_global_step": state["global_step"],
+            "saved_epoch": state["epoch"], "max_steps": max_steps, "max_epochs": max_epochs,
+            "additional_steps": max_steps - state["global_step"], "optimizer_state_count": state["optimizer_state_count"],
+            "provenance": provenance}
+
+
+def preserve_resume_sources(plan: dict) -> list[dict]:
+    """Copy rather than hardlink: later last/top-k updates cannot alter snapshots."""
+    directory = Path(plan["run_dir"]) / "weights/evaluated_snapshots"
+    directory.mkdir(parents=True, exist_ok=True)
+    mappings = []
+    for record in plan["checkpoints_to_preserve"]:
+        source = Path(record["source_path"])
+        if sha256(source) != record["sha256"]:
+            raise ValueError("Evaluated checkpoint changed after resume preflight")
+        target = directory / (record["sha256"] + ".ckpt")
+        if target.exists():
+            if sha256(target) != record["sha256"]:
+                raise ValueError("Existing evaluated checkpoint snapshot has the wrong SHA-256")
+        else:
+            temporary = directory / f".{record['sha256']}.{os.getpid()}.tmp"
+            try:
+                shutil.copy2(source, temporary)
+                if sha256(temporary) != record["sha256"]:
+                    raise ValueError("Evaluated checkpoint snapshot copy failed verification")
+                temporary.replace(target)
+            finally:
+                temporary.unlink(missing_ok=True)
+        mappings.append({**record, "archive_path": str(target), "archive_sha256": sha256(target)})
+    return mappings
+
+
+def build_resume_command(plan: dict, mappings: list[dict], launch_id: str) -> list[str]:
+    original = Path(plan["config_path"])
+    checkpoint = next(item["archive_path"] for item in mappings if item["role"] == "last_saved")
+    return [sys.executable, "-m", "src.brepnet.train", "--config-path", str(original.parent),
+            "--config-name", original.stem,
+            hydra_string("trainer.resume_from_checkpoint", checkpoint),
+            hydra_string("trainer.run_dir", plan["run_dir"]),
+            f"trainer.max_steps={plan['max_steps']}", f"trainer.max_epochs={plan['max_epochs']}",
+            "trainer.init_from_checkpoint=null", "model.checkpoint=null", "model.init_legacy_checkpoint=null",
+            "model.init_refinement_checkpoint=null", "model.init_curve_feedback_checkpoint=null",
+            "model.init_encoder_edge_value_checkpoint=null",
+            hydra_string("hydra.run.dir", plan["run_dir"]),
+            hydra_string("hydra.output_subdir", f"metadata/hydra_resume/{launch_id}"), "hydra.job.chdir=false"]
+
+
+def resume(arm: str, max_steps: int, max_epochs: int, audit_path: Path) -> int:
+    """Resume exactly one audited arm, keeping the existing stop/status interface."""
+    METADATA.mkdir(parents=True, exist_ok=True)
+    with (METADATA / "pair.lock").open("a") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise RuntimeError("A pair/resume launcher is already running") from None
+        previous = read_active()
+        if previous and (is_alive(previous.get("runner")) or is_alive(previous.get("child"))):
+            raise RuntimeError("A recorded training process is still alive; refusing resume")
+        plan = prepare_resume(arm, max_steps, max_epochs, audit_path)
+        mappings = preserve_resume_sources(plan)
+        launch_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
+        command = build_resume_command(plan, mappings, launch_id)
+        run_dir = Path(plan["run_dir"])
+        info = {"state": "starting", "run_dir": str(run_dir), "command": command,
+                "console_log": str(run_dir / "logs" / f"console_resume_{launch_id}.log"), "exit_code": None}
+        record = {"launch_id": launch_id, "launch_type": "single_arm_resume", "created_at_utc": utc_now(),
+                  "state": "starting", "runner": process_identity(os.getpid()), "child": None,
+                  "current_arm": arm, "arms": {arm: info}, "resume_plan": plan,
+                  "evaluated_checkpoint_archives": mappings, "cwd": str(REPO), "python": sys.executable,
+                  "stop_marker": str(METADATA / f"{launch_id}.stop.json")}
+        archive = METADATA / f"{launch_id}.json"
+        stop_marker = Path(record["stop_marker"])
+        stopped, child, interrupt_sent = False, None, False
+
+        def request_stop(signum, frame):
+            nonlocal stopped
+            stopped = True
+
+        def save():
+            record["updated_at_utc"] = utc_now()
+            atomic_json(archive, record)
+            atomic_json(ACTIVE, record)
+
+        old_handlers = {sig: signal.signal(sig, request_stop) for sig in (signal.SIGINT, signal.SIGTERM)}
+        save()
+        try:
+            if sha256(Path(plan["config_path"])) != plan["config_sha256"] or input_record() != plan["provenance"]:
+                raise RuntimeError("Training sources changed after resume preflight")
+            if stopped or stop_marker.exists():
+                record["state"] = info["state"] = "interrupted"
+                return 130
+            environment = os.environ.copy()
+            for key in ("BREPNET_INVOCATION_ID", "BREPNET_ACTIVE_RUN_DIR", "WANDB_RUN_ID"):
+                environment.pop(key, None)
+            with Path(info["console_log"]).open("x") as output:
+                child = subprocess.Popen(command, cwd=REPO, env=environment, stdout=output,
+                                         stderr=subprocess.STDOUT, start_new_session=True)
+                record.update(state="running", child=process_identity(child.pid))
+                info.update(state="running", child=record["child"], started_at_utc=utc_now())
+                save()
+                while True:
+                    if (stopped or stop_marker.exists()) and not interrupt_sent:
+                        stopped, interrupt_sent = True, True
+                        signal_child(record["child"])
+                        record["state"] = "stopping"
+                        save()
+                    try:
+                        exit_code = child.wait(timeout=1)
+                        break
+                    except subprocess.TimeoutExpired:
+                        pass
+            progress = checkpoint_progress(run_dir) if exit_code == 0 and not stopped else None
+            completed = bool(progress and progress["global_step"] == max_steps)
+            state = "interrupted" if stopped else "completed" if completed else "incomplete" if exit_code == 0 else "failed"
+            info.update(state=state, exit_code=exit_code, checkpoint_progress=progress, finished_at_utc=utc_now())
+            record.update(state=state, child=None)
+            child = None
+        except BaseException as error:
+            record.update(state="failed", error=f"{type(error).__name__}: {error}")
+            info["state"] = "failed"
+            if child is not None:
+                signal_child(record["child"])
+                info["exit_code"] = child.wait()
+                record["child"] = None
+            raise
+        finally:
+            record["finished_at_utc"] = utc_now()
+            save()
+            for sig, handler in old_handlers.items():
+                signal.signal(sig, handler)
+        print(f"{arm} resume: {record['state']}; same run/W&B {plan['wandb_id']}", flush=True)
+        return 0 if record["state"] == "completed" else 130 if record["state"] == "interrupted" else 1
 
 
 def start() -> int:
@@ -333,9 +547,19 @@ def stop() -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("start", "status", "stop"))
+    parser.add_argument("action", choices=("start", "status", "stop", "resume"))
+    parser.add_argument("--arm", choices=("candidate", "control"))
+    parser.add_argument("--max-steps", type=int)
+    parser.add_argument("--max-epochs", type=int)
+    parser.add_argument("--audit", type=Path, default=EXPERIMENT / "evaluation_20261015/training_audit.json")
     args = parser.parse_args()
+    if args.action == "resume" and any(value is None for value in (args.arm, args.max_steps, args.max_epochs)):
+        parser.error("resume requires explicit --arm, --max-steps and --max-epochs")
+    if args.action != "resume" and any(value is not None for value in (args.arm, args.max_steps, args.max_epochs)):
+        parser.error("resume options cannot be used with start/status/stop")
     try:
+        if args.action == "resume":
+            return resume(args.arm, args.max_steps, args.max_epochs, args.audit)
         return {"start": start, "status": status, "stop": stop}[args.action]()
     except (OSError, RuntimeError, ValueError) as error:
         print(f"Error: {error}", file=sys.stderr)

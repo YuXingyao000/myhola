@@ -37,6 +37,19 @@ checkpoints/encoder_edge_value/{candidate,control}/<UTC>/
 
 ## 恢复单组训练
 
+新增的 `resume` 管理单组续训，继续使用上述 `status` / `stop`，不会排队启动另一组。必须显式填写组名与**累计**步数、epoch 上限；默认读取本次 `evaluation_20261015/training_audit.json`，也可用 `--audit` 指定后来完成的审计。
+
+```bash
+/mnt/d/anaconda3/envs/torch/bin/python checkpoints/encoder_edge_value/run_pair.py resume \
+  --arm candidate --max-steps 29040 --max-epochs 80
+```
+
+这条命令从审计中已固定的 `last_saved` 续训；当前为step14,520/epoch39，目标29,040步表示追加14,520步。它读取该run第一次调用保存的完整resolved config，保留八卡、batch、学习率、loss、架构与W&B run ID，并通过Lightning完整恢复optimizer和训练计数。它不根据test结果改选checkpoint，也不提供从best自动回退。
+
+启动前会核对审计权重SHA、模型/数据配置、optimizer/fit-loop状态以及训练源码，并将本轮已评估的best和last独立复制到同run的`weights/evaluated_snapshots/<SHA>.ckpt`。随后从固定last副本恢复；新记录保存原路径→归档路径→SHA的映射，旧评估协议不改写。这样后续覆盖`last.ckpt`或更新top-k不会丢失已评估权重。新调用单独保存启动元数据、stop marker、`console_resume_<UTC>.log`和Hydra配置，不覆盖旧启动记录。
+
+如果审计里的权重、配置或源码已经变化，启动器会拒绝继续。预算不足或未明确指定组名也会报错；不会静默开始一个新run。
+
 从该组的 `metadata/invocations/<UTC>/config.yaml` 恢复完整原配置；将下方路径替换为实际组目录。候选／对照的开关由各自保存的配置保留，不要互换权重。统一 trainer 在 resume 时清理初始化字段，恢复同一 run 与 optimizer，不再从源权重初始化。
 
 ```bash
