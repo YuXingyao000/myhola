@@ -142,10 +142,16 @@ class UnifiedTrainer(pl.LightningModule):
                 raise ValueError(
                     "AutoEncoder_intersection rejects trainer.init_from_checkpoint. "
                     "Use model.init_legacy_checkpoint for strict original VAE migration, "
+                    "model.init_refinement_checkpoint for validated refinement migration, "
+                    "model.init_curve_feedback_checkpoint to add final point feedback, "
+                    "model.init_encoder_edge_value_checkpoint to add GAT edge messages, "
                     "model.checkpoint for new-model initialization, or trainer.resume_from_checkpoint."
                 )
             if has_resume:
                 model_cfg.init_legacy_checkpoint = None
+                OmegaConf.update(model_cfg, "init_refinement_checkpoint", None, force_add=True)
+                OmegaConf.update(model_cfg, "init_curve_feedback_checkpoint", None, force_add=True)
+                OmegaConf.update(model_cfg, "init_encoder_edge_value_checkpoint", None, force_add=True)
                 model_cfg.checkpoint = None
                 OmegaConf.update(model_cfg, "restoring_checkpoint", True, force_add=True)
         self.model = build_model(model_cfg, cfg.condition)
@@ -537,6 +543,7 @@ def main(cfg: DictConfig):
         callbacks=callbacks,
         max_epochs=cfg.trainer.max_epochs,
         max_steps=cfg.trainer.max_steps,
+        max_time=cfg.trainer.get("max_time"),
         precision=cfg.trainer.precision,
         check_val_every_n_epoch=cfg.trainer.check_val_every_n_epoch,
         num_sanity_val_steps=cfg.trainer.num_sanity_val_steps,

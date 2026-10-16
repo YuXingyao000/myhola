@@ -1,0 +1,167 @@
+{
+  "status": "passed",
+  "verified_utc": "2026-10-16T07:04:09.050967+00:00",
+  "audit_seconds": 6.71626952700899,
+  "audit_script_sha256": "c2d40b8227ced403faefc5cb67a7fdc2fb2d891a95810f482e3906e7974bd40e",
+  "scope": "Independent provenance, exact coverage, immutable input and selection budget audit; no post reruns or parameter changes",
+  "input": {
+    "raw_manifest_sha256": "6b6fd15bab6d702efc8fa3cadec2f76e2087d57bfcd0913cf0c7504dc155c597",
+    "raw_files_rehashed": 3495,
+    "source_cad_files_rehashed": 3495,
+    "checkpoint_files_rehashed": 2,
+    "checkpoint_sha256": "9b18509de2a21f50d8fad41b8c37695842fe2e92745dc779713b0ecac06e2107",
+    "encoder_equal_tensor_count": 243,
+    "source_hash_count": 18
+  },
+  "split": {
+    "dataset": "DeepCAD v7 validation",
+    "original_count": 3505,
+    "accepted_count": 3495,
+    "rejected_count": 10,
+    "accepted_sha256": "ae607bfe5499e919d1e68a5110c0c211daf1158aedbe57a4756eda99f6f3f0ed",
+    "original_sha256": "b6403d9b235db7ebeaac76ba3a9d076440f149863ac692ae938129e20404ee32",
+    "deepcad_test_id_overlap_count": 0,
+    "deepcad_training_id_overlap_count": 0,
+    "abc_data_used": false,
+    "abc_check_basis": "All invocation/data provenance points to DeepCAD v7 validation; no ABC asset read by this audit",
+    "field_name_note": "The inherited runner field original_test_count means original validation count 3505 in this run",
+    "development_note": "This verifies the present validation run only. Historical DeepCAD test failure analysis contributed to development; this does not establish a test-unseen method."
+  },
+  "shared_budget": {
+    "mode": "optimized",
+    "max_optimize_iter": 200,
+    "adaptive_max_optimize_iter": 600,
+    "timeout_seconds": 180,
+    "use_cuda": false,
+    "threads_per_process": 1,
+    "recover_v1_max_paths": 4,
+    "deadline_note": "180 s is the configured hard worker deadline; observed wall time includes scheduler polling/termination overhead"
+  },
+  "policies": {
+    "legacy": {
+      "terminal_count": 3495,
+      "protocol_sha256": "bf229010104ceaec812bc184a571d06dfb034d02a05cc859ce47f519babd70cf",
+      "protocol_fingerprint": "6f53962a7b3616aa986ced821d3e33cdbe25e776947a8b52658df29aa20b5d8a",
+      "row_manifest_sha256": "3d1c74e63c0d90927b5948345e7f1799fe272d72fa6f44ac0a075a93817d3338",
+      "status_counts": {
+        "ok": 3353,
+        "geometry_error": 142
+      },
+      "counts": {
+        "step_exists": 3495,
+        "step_readable": 3495,
+        "success_marker": 3078,
+        "native_valid_solid": 3076,
+        "compat_valid_solid": 3078,
+        "geometry_computable": 3353,
+        "terminal_records": 3495
+      },
+      "diagnostic_count": 0,
+      "recorded_diagnostic_hash_count": 0,
+      "selection_counts": {},
+      "attempt_path_count_distribution": {},
+      "maximum_observed_wall_seconds": 64.77828812398366,
+      "summary_sha256": "53dc49150a8afd32b36ef148be5e61b0f70d5aa1230f069c07dafae6b94d20a2"
+    },
+    "roundtrip_retry": {
+      "terminal_count": 3495,
+      "protocol_sha256": "06a7a5ac8a0390262833940eee4c886a64a0428c73fe07d83c0f3441abb0e505",
+      "protocol_fingerprint": "a255bc8f0e9ee494a0a1144c5cc05463f7a56cee68799d7a767d8def8ed1cd31",
+      "row_manifest_sha256": "fd1cf4bb395c9b8e229ce296a44c9ce60c0ee369b6e98b3aa86283ccce6d0d65",
+      "status_counts": {
+        "ok": 3011,
+        "no_step": 423,
+        "geometry_error": 61
+      },
+      "counts": {
+        "step_exists": 3072,
+        "step_readable": 3072,
+        "success_marker": 3072,
+        "native_valid_solid": 3072,
+        "compat_valid_solid": 3069,
+        "geometry_computable": 3011,
+        "terminal_records": 3495
+      },
+      "diagnostic_count": 3495,
+      "recorded_diagnostic_hash_count": 3495,
+      "selection_counts": {
+        "roundtrip_retry": 3072,
+        "None": 423
+      },
+      "attempt_path_count_distribution": {
+        "1": 3495
+      },
+      "maximum_observed_wall_seconds": 65.93626605501049,
+      "summary_sha256": "f7a63533f579471c9232c7ef4921f20fe8e6785ee986656d58033bf47dd9de10"
+    },
+    "fit_score_v2": {
+      "terminal_count": 3495,
+      "protocol_sha256": "9e3b734bffa1b10397f80c41a753ffd9be5d9fcab8d08b88bfdb187395a8f21a",
+      "protocol_fingerprint": "d692eff9d6426b10b6fbc395c1cc691dc48b720453c6294ca346521883242e6c",
+      "row_manifest_sha256": "e79eee81dfca8951d9aa8909802d20fdfbd1cb532691339ab295a780c9750416",
+      "status_counts": {
+        "ok": 3348,
+        "geometry_error": 147
+      },
+      "counts": {
+        "step_exists": 3495,
+        "step_readable": 3495,
+        "success_marker": 3075,
+        "native_valid_solid": 3073,
+        "compat_valid_solid": 3075,
+        "geometry_computable": 3348,
+        "terminal_records": 3495
+      },
+      "diagnostic_count": 3495,
+      "recorded_diagnostic_hash_count": 3495,
+      "selection_counts": {
+        "fit_score_v2": 3073,
+        "None": 422
+      },
+      "attempt_path_count_distribution": {
+        "1": 3495
+      },
+      "maximum_observed_wall_seconds": 64.80343544000061,
+      "summary_sha256": "45f434830de0161d127a7b1aefda216499279f03f7c7bb9ffa0f87431902eece"
+    },
+    "recover_v1": {
+      "terminal_count": 3495,
+      "protocol_sha256": "7d4f97bdc08014878a2f8a49652f7f1f265dbf2cdff854420abd53634b336923",
+      "protocol_fingerprint": "7f9bf15b247cb4c73a7a9294d997808c06d91efdaf8503e23ed2b03a40b8c05d",
+      "row_manifest_sha256": "5dbd0619a30f7df2cb5035bd8e2be306a0142b61b59b8fdc6048e063326785d0",
+      "status_counts": {
+        "ok": 3358,
+        "geometry_error": 137
+      },
+      "counts": {
+        "step_exists": 3495,
+        "step_readable": 3495,
+        "success_marker": 3147,
+        "native_valid_solid": 3147,
+        "compat_valid_solid": 3142,
+        "geometry_computable": 3358,
+        "terminal_records": 3495
+      },
+      "diagnostic_count": 3495,
+      "recorded_diagnostic_hash_count": 3495,
+      "selection_counts": {
+        "legacy": 3076,
+        "roundtrip_fit_only": 44,
+        "None": 348,
+        "roundtrip_optimized": 26,
+        "fit_score_v2_roundtrip_optimized": 1
+      },
+      "attempt_path_count_distribution": {
+        "1": 3076,
+        "3": 44,
+        "4": 349,
+        "2": 26
+      },
+      "maximum_observed_wall_seconds": 86.37876171601238,
+      "summary_sha256": "52718135d08d49b7f88bf8f9ec32f9f46373fb1d1057c3ec1a370094657f1a92"
+    }
+  },
+  "total_terminal_records": 13980,
+  "summary_note": "Each policy root used only method intersection. The generic runner also emits unused legacy-method not_run placeholders; these are not the legacy post-policy results and must not be aggregated as a second evaluation.",
+  "findings": []
+}

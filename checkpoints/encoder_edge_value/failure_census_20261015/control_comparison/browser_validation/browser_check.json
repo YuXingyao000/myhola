@@ -1,0 +1,124 @@
+{
+  "url": "http://127.0.0.1:8769/checkpoints/encoder_edge_value/failure_census_20261015/control_comparison/page/",
+  "checked_at_utc": "2026-10-15T13:33:11.536Z",
+  "method_identity": {
+    "methods": {
+      "baseline": "conditioned",
+      "candidate": "encoder_gat_control"
+    },
+    "labels": {
+      "baseline": "曲线条件调制",
+      "candidate": "原 GAT 全量解冻对照"
+    }
+  },
+  "cohort_threshold_checks": [
+    {
+      "cohort": "main",
+      "threshold": "0.002",
+      "count": 307,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "main",
+      "threshold": "0.006",
+      "count": 307,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "main",
+      "threshold": "0.01",
+      "count": 307,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "main",
+      "threshold": "0.08",
+      "count": 307,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "persistent",
+      "threshold": "0.002",
+      "count": 255,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "persistent",
+      "threshold": "0.006",
+      "count": 255,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "persistent",
+      "threshold": "0.01",
+      "count": 255,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "persistent",
+      "threshold": "0.08",
+      "count": 255,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "regressed",
+      "threshold": "0.002",
+      "count": 52,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "regressed",
+      "threshold": "0.006",
+      "count": 52,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "regressed",
+      "threshold": "0.01",
+      "count": 52,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "regressed",
+      "threshold": "0.08",
+      "count": 52,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "rescued",
+      "threshold": "0.002",
+      "count": 51,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "rescued",
+      "threshold": "0.006",
+      "count": 51,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "rescued",
+      "threshold": "0.01",
+      "count": 51,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "rescued",
+      "threshold": "0.08",
+      "count": 51,
+      "observation_rows": 28
+    }
+  ],
+  "interactions": {
+    "caseRendered": true,
+    "expectedIds": 1,
+    "displayedIds": 1
+  },
+  "assets_checked": 15,
+  "failed_assets": [],
+  "mobile": {
+    "viewport": 390,
+    "document": 390
+  },
+  "javascript_errors": []
+}

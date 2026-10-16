@@ -1,0 +1,29 @@
+{
+  "status": "passed",
+  "checked_utc": "2026-10-12T14:06:46.248493+00:00",
+  "checkpoint": "/mnt/d/python/checkpoints/intersection_local/validation_full_capacity/ddp/20261012T140435.575735Z/weights/last.ckpt",
+  "checkpoint_sha256_at_validation": "22b891ac5fc93483a4157b7b51de794b964a55f56eb383952df10062b8c60e44",
+  "epoch": 0,
+  "global_step": 1,
+  "optimizer_steps": [
+    1
+  ],
+  "optimizer_state_count": 495,
+  "intersection": {
+    "kind": "local_attention",
+    "block_type": "transformer_decoder",
+    "hidden_dim": 512,
+    "num_heads": 8,
+    "num_layers": 8,
+    "ffn_dim": 2048,
+    "dropout": 0.1,
+    "activation": "relu",
+    "candidate_chunk_size": 64,
+    "checkpoint_candidates": true
+  },
+  "intersection_state_keys": 157,
+  "intersection_parameters": 34015296,
+  "frozen_encoder_posterior_tensors_equal_to_source": 243,
+  "saved_initialization_source": "/mnt/d/python/checkpoints/intersection_refinement/frozen/20261011T123836.485257Z/weights/epoch=0010-step=00003993-val_loss=0.039476.ckpt",
+  "saved_resume_checkpoint": null
+}

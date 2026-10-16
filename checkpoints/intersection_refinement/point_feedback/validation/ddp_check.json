@@ -1,0 +1,33 @@
+{
+  "checked_at_utc": "2026-10-14T15:35:47.108618+00:00",
+  "status": "passed",
+  "scope": "8 GPU actual unified trainer, one-step timer smoke only, not reconstruction quality",
+  "devices": 8,
+  "batch_per_device": 16,
+  "global_batch": 128,
+  "is_aug": 1,
+  "precision": "bf16-mixed",
+  "global_step": 1,
+  "epoch": 0,
+  "old_frozen_tensors_unchanged": 243,
+  "old_trainable_state_tensors_changed": 493,
+  "optimizer_parameter_states": 499,
+  "new_delta_nonzero": {
+    "model.decoder.curve_point_feedback.delta.weight": true,
+    "model.decoder.curve_point_feedback.delta.bias": true
+  },
+  "timer_state": {
+    "Timer": {
+      "time_elapsed": {
+        "train": 11.448781466002401,
+        "sanity_check": 0,
+        "validate": 0.9089780659996904,
+        "test": 0,
+        "predict": 0
+      }
+    }
+  },
+  "last_checkpoint_saved": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/validation/ddp/weights/last.ckpt",
+  "val_checkpoint_saved": 1,
+  "test_exit_code": 0
+}

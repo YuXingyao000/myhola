@@ -1,0 +1,171 @@
+{
+  "status": "passed",
+  "source_csv_sha256": "8fcf4bb2fe361e703b20710a3b224f4e00a7246e77330b5b785fbd9750085871",
+  "independent_statistics": "Python statistics.mean/median and NumPy quantile; no production summary functions imported",
+  "full_intended_count": 2417,
+  "metrics": {
+    "face_mae": {
+      "count": 2417,
+      "mean": 0.001607117263822255,
+      "median": 0.001491214655591951,
+      "p90": 0.0022202553811188582
+    },
+    "face_cd_sq": {
+      "count": 2417,
+      "mean": 3.10480319018934e-05,
+      "median": 2.2592550392187254e-05,
+      "p90": 4.9176005284001445e-05
+    },
+    "face_pred_to_gt_sq": {
+      "count": 2417,
+      "mean": 1.6504121944671503e-05,
+      "median": 1.1828347144361733e-05,
+      "p90": 2.5448140090551448e-05
+    },
+    "face_gt_to_pred_sq": {
+      "count": 2417,
+      "mean": 1.4543909957221892e-05,
+      "median": 1.0821072070546666e-05,
+      "p90": 2.34330782791661e-05
+    },
+    "edge_cd_sq": {
+      "count": 2417,
+      "mean": 7.078720179019673e-05,
+      "median": 3.140689732710568e-05,
+      "p90": 8.346530863165027e-05
+    },
+    "edge_pred_to_gt_sq": {
+      "count": 2417,
+      "mean": 4.5713719033532036e-05,
+      "median": 1.8996426879767512e-05,
+      "p90": 5.162826789768251e-05
+    },
+    "edge_gt_to_pred_sq": {
+      "count": 2417,
+      "mean": 2.5073482756664697e-05,
+      "median": 1.2016214941707028e-05,
+      "p90": 3.11788156575952e-05
+    },
+    "topology_precision": {
+      "count": 2417,
+      "mean": 0.998375387852842,
+      "median": 1.0,
+      "p90": 1.0
+    },
+    "topology_recall": {
+      "count": 2417,
+      "mean": 0.9991308646840781,
+      "median": 1.0,
+      "p90": 1.0
+    },
+    "topology_f1": {
+      "count": 2417,
+      "mean": 0.9987095857262208,
+      "median": 1.0,
+      "p90": 1.0
+    },
+    "pred_face_count": {
+      "count": 2417,
+      "mean": 12.704592470004137,
+      "median": 11.0,
+      "p90": 20.0
+    },
+    "gt_face_count": {
+      "count": 2417,
+      "mean": 12.704592470004137,
+      "median": 11.0,
+      "p90": 20.0
+    },
+    "raw_edge_count": {
+      "count": 2417,
+      "mean": 58.541166735622674,
+      "median": 48.0,
+      "p90": 96.0
+    },
+    "gt_boundary_count": {
+      "count": 2417,
+      "mean": 29.234588332643774,
+      "median": 24.0,
+      "p90": 48.0
+    },
+    "unique_pair_count": {
+      "count": 2417,
+      "mean": 29.270583367811337,
+      "median": 24.0,
+      "p90": 48.0
+    },
+    "unique_pair_count_error": {
+      "count": 2417,
+      "mean": 0.07985105502689284,
+      "median": 0.0,
+      "p90": 0.0
+    },
+    "same_face_count": {
+      "count": 2417,
+      "mean": 0.0,
+      "median": 0.0,
+      "p90": 0.0
+    },
+    "invalid_face_index_count": {
+      "count": 2417,
+      "mean": 0.0,
+      "median": 0.0,
+      "p90": 0.0
+    },
+    "invalid_edge_index_count": {
+      "count": 2417,
+      "mean": 0.0,
+      "median": 0.0,
+      "p90": 0.0
+    },
+    "repeated_edge_reference_count": {
+      "count": 2417,
+      "mean": 0.0,
+      "median": 0.0,
+      "p90": 0.0
+    },
+    "joint_duplicate_pair_count": {
+      "count": 0,
+      "mean": null,
+      "median": null,
+      "p90": null
+    },
+    "joint_query_count_error": {
+      "count": 0,
+      "mean": null,
+      "median": null,
+      "p90": null
+    },
+    "legacy_directed_duplicate_count": {
+      "count": 2417,
+      "mean": 0.0,
+      "median": 0.0,
+      "p90": 0.0
+    },
+    "legacy_unilateral_pair_count": {
+      "count": 2417,
+      "mean": 0.0,
+      "median": 0.0,
+      "p90": 0.0
+    },
+    "legacy_reciprocal_pair_count": {
+      "count": 2417,
+      "mean": 29.270583367811337,
+      "median": 24.0,
+      "p90": 48.0
+    },
+    "legacy_reciprocal_cd_sq_mean": {
+      "count": 2417,
+      "mean": 5.609081823941584e-05,
+      "median": 1.793127651809345e-05,
+      "p90": 5.452155255984154e-05
+    },
+    "legacy_reciprocal_cd_sq_max": {
+      "count": 2417,
+      "mean": 0.0009424624407009443,
+      "median": 7.395111526375953e-05,
+      "p90": 0.00038285340404722146
+    }
+  },
+  "exact_adjacency": 2320
+}

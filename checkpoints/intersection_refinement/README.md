@@ -1,20 +1,34 @@
 # Intersection refinement
 
+后续局部注意力 inter 微调使用独立的 [intersection_local 配置与说明](../intersection_local/README.md)。本页保留原 refinement 协议。
+
 这一版保留原 HoLa light 的 encoder、posterior、face Transformer、面/边几何头、`inter` 和线性 `classifier`，新增一轮几何读取、候选边消息聚合和面/边残差回写。新增模块零初始化输出 ΔF/ΔE，完整旧模型权重用于初始化；默认冻结 encoder/posterior，微调 decoder。实现协议见 [PLAN.md](PLAN.md)，验证结果见 [NOTE.md](NOTE.md)。已完成首次微调测试：2417 件上，优化后合法 solid 由 2048 增至 2113，但固定 diffusion latent 的几何误差未改善。完整结果和局限见 [测试报告](evaluation_20261011/REPORT.md)，复现命令见 [评估说明](evaluation_20261011/README.md)。全部304失败件的溯源、107救回与42退步的成对比较见[失败统计](failure_census_20261011/README.md)，研究判断见[通俗解释](failure_census_20261011/NOTE.md)。
 
 ## 从哪里读代码
 
-| 文件 | 职责 |
+| 文件／类 | 职责 |
 |---|---|
-| `src/brepnet/models/intersection_vae.py` | 顶层装配、权重迁移、冻结控制、训练/推理与逐对象导出 |
-| `src/brepnet/models/holistic_encoder.py` | 显式 encoder 与 posterior；保留原计算与权重 |
-| `src/brepnet/models/intersection_decoder.py` | 全候选枚举、原几何头封装、初稿→校对→复用几何头、logits 对称化 |
-| `src/brepnet/models/intersection_refiner.py` | 几何读取、两侧消息聚合、ΔF/ΔE；没有新增 classifier |
-| `src/brepnet/models/intersection_geometry.py` | 点到连续三角网格/折线的近点和梯度 |
-| `src/brepnet/models/intersection_losses.py` | GT 对应、各项损失、权重与诊断；不混进 decoder |
-| `src/brepnet/models/intersection_state.py` | 初稿/最终状态和候选索引的显式 tensor 合同 |
+| `src/brepnet/models/vae.py:AutoEncoder_intersection` | 顶层装配、权重迁移、冻结控制、训练/推理与逐对象导出 |
+| `src/brepnet/models/vae.py:HolisticEncoder/FacePosterior` | 显式 encoder 与 posterior；保留原计算与权重 |
+| `src/brepnet/models/blocks.py:IntersectionDecoder/PrimitiveDecoder` | 全候选枚举、原几何头封装、初稿→校对→复用几何头、logits 对称化 |
+| `src/brepnet/models/blocks.py:GeometryRead/IntersectionRefiner` | 几何读取、两侧消息聚合、ΔF/ΔE；没有新增 classifier |
+| `src/brepnet/models/blocks.py:closest_surface_points/closest_polyline_points` | 点到连续三角网格/折线的近点和梯度 |
+| `src/brepnet/models/vae.py:IntersectionLoss` | GT 对应、各项损失、权重与诊断；不混进 decoder |
+| `src/brepnet/models/blocks.py:CandidatePairs/PrimitiveGeometry/DecoderStage/RefinementOutput` | 初稿/最终状态和候选索引的显式 tensor 合同 |
+| `src/brepnet/models/blocks.py:LocalPairIntersection/FacePairConditioning` | 可选 local inter 与可选最终边几何头调制；分别由配置选择 |
 
-`AutoEncoder_light` 和 `AutoEncoder_joint` 保留原入口；新模型名为 `AutoEncoder_intersection`。原 `vae.py` 只新增工厂分派。
+2026-10-13 按原文件组织归并代码，移除原六个 `intersection_*` 文件、三个 `joint_*` 文件及 `holistic_encoder.py`、`local_intersection.py`。网络 block、几何工具和状态结构集中到 `blocks.py`，encoder/posterior、模型装配、损失和导出集中到 `vae.py`。模型注册名 `AutoEncoder_light`、`AutoEncoder_joint`、`AutoEncoder_intersection` 及已有 checkpoint 的模块属性层级/state key 不变；统一 trainer 继续按 config 构造模型。历史 PLAN／NOTE 中的文件路径代表当时实现，本表是当前源码入口。
+
+## 可选最终 curve 条件调制
+
+新增配置与训练入口见 [curve_conditioning README](curve_conditioning/README.md)。基础配置为 `model.curve_conditioning.enabled=false`、`hidden_dim=128`，旧配置没有此字段时也按关闭处理。开启需要原 `intersection.kind=legacy` 与 refinement；`FacePairConditioning` 读取 `[E1,F1_i,F1_j]`，在 refined edge CNN 和 center/scale MLP 的最终输出层前分别施加缩放／偏移，产生调制量的末层零初始化。coarse 和 encoder-edge teacher 保持原路径，原 inter 容量、refinement 运算及损失权重不变。后文原 refinement 协议对应条件调制关闭的设置；新增分支的研究效果尚需独立训练和评估。
+
+`model.init_refinement_checkpoint` 有两种明确区分的组件初始化：
+
+- `intersection.kind=local_attention`：用新 local inter 替换 `decoder.inter.*`，其余旧参数严格保留；旧 local 配置与迁移语义不变。
+- 原 legacy inter 加 `curve_conditioning.enabled=true`：保留原 refinement 的所有旧参数，只初始化新增 `decoder.edge_geometry.conditioning.*`。任何缺少的旧 key、额外 key 或形状不符均拒绝；不能用已 conditioned 或 local checkpoint 冒充原 refinement 来源。
+
+两者均创建新 run／optimizer。完整 conditioned/local 模型分别使用匹配配置的 `model.checkpoint` 或 `trainer.resume_from_checkpoint` 严格加载，不通过组件迁移做续训。
 
 ## 一轮校对的具体运算
 

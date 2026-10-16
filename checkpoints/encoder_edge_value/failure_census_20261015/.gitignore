@@ -1,0 +1,27 @@
+# Applies recursively to main, control, and fixed-endpoint comparisons.
+# Preserve reports, compact audits, explicit ID lists, and reproducing scripts.
+manifest.json
+baseline_manifest.json
+baseline_control_manifest.json
+baseline_reuse.json
+source_asset_audit.json
+source_preservation.json
+traces/
+replay/
+upstream/
+saved_step/
+baseline_controls/
+fit_only_counterfactual/
+cases.json
+cases.csv
+summary.json
+optimization_regressions.json
+runner.lock
+
+# Full per-object presentation payloads and browser runtime stay local.
+**/page/data.js
+**/page/standalone.html
+**/browser_validation/*.png
+**/browser_validation/browser_profile/
+**/standalone_validation/*.png
+**/standalone_validation/browser_profile/

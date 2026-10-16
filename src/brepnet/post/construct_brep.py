@@ -3,22 +3,25 @@ import itertools
 import json
 import math
 import os, sys, shutil, traceback
+import random
 from pathlib import Path
 
 import numpy as np
 import torch
 from OCC.Core import Message
+from OCC.Core.BRep import BRep_Tool
+from OCC.Core.BRepCheck import BRepCheck_Analyzer
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeFace
 from OCC.Core.Geom import Geom_BSplineSurface
-from OCC.Core.IFSelect import IFSelect_ReturnStatus
+from OCC.Core.IFSelect import IFSelect_ReturnStatus, IFSelect_RetDone
 from OCC.Core.IGESControl import IGESControl_Writer
 from OCC.Core.Interface import Interface_Static
 from OCC.Core.Message import Message_PrinterOStream, Message_Alarm
 from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_AsIs, STEPControl_ManifoldSolidBrep, \
     STEPControl_FacetedBrep, STEPControl_ShellBasedSurfaceModel
 from OCC.Core.ShapeFix import ShapeFix_ShapeTolerance
-from OCC.Core.TopAbs import TopAbs_SHAPE
-from OCC.Core.TopoDS import TopoDS_Face
+from OCC.Core.TopAbs import TopAbs_SHAPE, TopAbs_SOLID, TopAbs_FACE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_WIRE
+from OCC.Core.TopoDS import TopoDS_Face, topods
 from OCC.Extend.DataExchange import read_step_file, write_stl_file
 
 from shared.common_utils import safe_check_dir, check_dir
@@ -36,6 +39,8 @@ from src.brepnet.post.occ_topology import (
     create_wire_from_unordered_edges,
     get_compound,
     get_solid,
+    get_tolerance,
+    copy_occ_shapes,
 )
 from src.brepnet.post.shape import Shape
 from src.brepnet.data.shared_boundaries import SHARED_BOUNDARY_REPRESENTATION, shared_prediction_diagnostics
@@ -217,11 +222,15 @@ def _optimize_shape_geometry(shape, is_ray, isdebug, use_cuda, v_max_optimize_it
         _save_optimized_debug_data(shape, debug_face_save_path)
 
 
-def _fit_occ_geometry(shape):
-    recon_geom_faces = [create_surface(points) for points in shape.recon_face_points]
+def _fit_occ_geometry(shape, fitting_policy="legacy"):
+    recon_geom_faces = [create_surface(points) if fitting_policy == "legacy" else
+                        create_surface(points, fitting_policy=fitting_policy)
+                        for points in shape.recon_face_points]
     recon_topo_faces = [
         BRepBuilderAPI_MakeFace(geom_face, TRANSFER_PRECISION).Face() for geom_face in recon_geom_faces]
-    recon_geom_curves = [create_edge(points) for points in shape.recon_edge_points]
+    recon_geom_curves = [create_edge(points) if fitting_policy == "legacy" else
+                         create_edge(points, fitting_policy=fitting_policy)
+                         for points in shape.recon_edge_points]
     recon_topo_curves = [BRepBuilderAPI_MakeEdge(curve).Edge() for curve in recon_geom_curves]
 
     shape.recon_geom_faces = [item for item in recon_geom_faces]
@@ -324,11 +333,350 @@ def _write_compound_fallback(out_sample_dir, folder_name, recon_geom_faces, reco
         print(f"Failed to construct solid in {folder_name}")
 
 
+POST_POLICIES = ("legacy", "roundtrip_retry", "fit_score_v2", "recover_v1")
+
+
+class PostBudgetExceeded(TimeoutError):
+    """Cooperative deadline; the isolated runner also enforces a hard timeout."""
+
+
+def _check_post_deadline(deadline):
+    if deadline is not None and time.monotonic() >= deadline:
+        raise PostBudgetExceeded("Shared post-processing deadline reached")
+
+
+def _write_post_diagnostics(path, diagnostics):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + ".tmp")
+    temporary.write_text(json.dumps(diagnostics, indent=2, allow_nan=False) + "\n")
+    os.replace(temporary, path)
+
+
+def _read_native_post_step(step_path):
+    """Read and inspect without the compatibility check's tolerance mutation."""
+    old_mode = Interface_Static.IVal("read.precision.mode")
+    old_precision = Interface_Static.RVal("read.precision.val")
+    try:
+        Interface_Static.SetIVal("read.precision.mode", 0)
+        shape = read_step_file(str(step_path), as_compound=False, verbosity=False)
+        if shape is None or shape.IsNull():
+            raise ValueError("STEP reader returned an empty shape")
+        faces = get_primitives(shape, TopAbs_FACE, v_remove_half=True)
+        tolerances = []
+        for kind, cast in ((TopAbs_FACE, topods.Face), (TopAbs_EDGE, topods.Edge),
+                           (TopAbs_VERTEX, topods.Vertex)):
+            tolerances.extend(float(BRep_Tool.Tolerance(cast(item)))
+                              for item in get_primitives(shape, kind, v_remove_half=True))
+        summary = {
+            "native_valid_solid": bool(shape.ShapeType() == TopAbs_SOLID and
+                                       BRepCheck_Analyzer(shape).IsValid()),
+            "shape_type": int(shape.ShapeType()),
+            "num_faces": len(faces),
+            "num_wires": sum(len(get_primitives(face, TopAbs_WIRE)) for face in faces),
+            "maximum_stored_tolerance": max(tolerances, default=0.0),
+            "read_precision_mode": 0,
+        }
+        return shape, summary
+    finally:
+        Interface_Static.SetIVal("read.precision.mode", old_mode)
+        Interface_Static.SetRVal("read.precision.val", old_precision)
+
+
+def _save_step_checked(step_path, shape):
+    writer = STEPControl_Writer()
+    tolerance = get_tolerance(shape, TopAbs_SOLID)
+    writer.SetTolerance(tolerance)
+    writer.Model(True)
+    transfer = writer.Transfer(shape, STEPControl_AsIs)
+    if transfer != IFSelect_RetDone:
+        raise RuntimeError(f"STEP transfer failed: {transfer}")
+    status = writer.Write(str(step_path))
+    if status != IFSelect_RetDone:
+        raise RuntimeError(f"STEP write failed: {status}")
+    return float(tolerance)
+
+
+def _build_complete_trimmed_faces(faces, curves, connectivity, report, flush, deadline):
+    """Keep the legacy tolerance order, but isolate every face trial."""
+    adjacency = _build_face_edge_adjacency(len(faces), connectivity)
+    result = []
+    report["faces"] = []
+    for face_index, edge_ids in enumerate(adjacency):
+        face_report = {"face_index": face_index, "input_edge_ids": list(map(int, edge_ids)),
+                       "attempts": [], "accepted_attempt": None}
+        report["faces"].append(face_report)
+        accepted = None
+        for tolerance in CONNECT_TOLERANCE if edge_ids else ():
+            _check_post_deadline(deadline)
+            attempt = {"tolerance": tolerance, "status": "running"}
+            face_report["attempts"].append(attempt)
+            flush()
+            try:
+                natural_face = BRepBuilderAPI_MakeFace(faces[face_index], TRANSFER_PRECISION).Face()
+                copied = copy_occ_shapes([natural_face] + [curves[i] for i in edge_ids])
+                surface = BRep_Tool.Surface(topods.Face(copied[0]))
+                edges = [topods.Edge(item) for item in copied[1:]]
+                wires = create_wire_from_unordered_edges(edges, tolerance)
+                if wires is None:
+                    attempt["status"] = "no_wires"
+                    continue
+                attempt["assembled_edge_occurrences"] = sum(
+                    len(get_primitives(wire, TopAbs_EDGE)) for wire in wires)
+                accepted = create_trimmed_face_from_wire(
+                    surface, edges, wires, tolerance, require_all_wires=True, diagnostics=attempt)
+                if (accepted is not None and not attempt["natural_wire_replacement"] and
+                        attempt["assembled_edge_occurrences"] < len(edge_ids)):
+                    attempt["rejection"] = "edge_omitted_during_wire_assembly"
+                    attempt["boundary_complete"] = False
+                    accepted = None
+                attempt["status"] = "accepted" if accepted is not None else "trim_rejected"
+                if accepted is not None:
+                    face_report["accepted_attempt"] = len(face_report["attempts"]) - 1
+                    break
+            except Exception as exc:
+                attempt.update(status="error", error=f"{type(exc).__name__}: {exc}")
+            finally:
+                flush()
+        result.append(accepted)
+    report["used_face_count"] = sum(face is not None for face in result)
+    report["complete_faces"] = report["used_face_count"] == len(faces)
+    report["natural_wire_replacement_count"] = sum(
+        item["attempts"][item["accepted_attempt"]].get("natural_wire_replacement", False)
+        for item in report["faces"] if item["accepted_attempt"] is not None)
+    flush()
+    return result
+
+
+def _try_save_complete_solid(trimmed_faces, output, report, flush, deadline):
+    """The candidate is successful only after native STEP round-trip acceptance."""
+    report["solid_attempts"] = []
+    expected_faces = len(trimmed_faces)
+    expected_wires = sum(len(get_primitives(face, TopAbs_WIRE)) for face in trimmed_faces)
+    for tolerance in CONNECT_TOLERANCE:
+        _check_post_deadline(deadline)
+        attempt = {"tolerance": tolerance, "status": "running"}
+        report["solid_attempts"].append(attempt)
+        flush()
+        temporary = output / f"candidate_{len(report['solid_attempts']):02d}.step"
+        try:
+            candidate_faces = [topods.Face(item) for item in copy_occ_shapes(trimmed_faces)]
+            solid = get_solid(candidate_faces, tolerance)
+            if solid is None:
+                attempt["status"] = "no_solid"
+                continue
+            _check_post_deadline(deadline)
+            attempt["write_tolerance"] = _save_step_checked(temporary, solid)
+            _, summary = _read_native_post_step(temporary)
+            attempt.update(summary)
+            complete = (summary["num_faces"] == expected_faces and
+                        summary["num_wires"] >= expected_wires)
+            attempt["complete_boundary_counts"] = complete
+            if not summary["native_valid_solid"] or not complete:
+                attempt["status"] = "native_rejected" if not summary["native_valid_solid"] else "boundary_rejected"
+                continue
+            os.replace(temporary, output / "recon_brep.step")
+            (output / "success.txt").touch()
+            attempt["status"] = "accepted"
+            report.update(native_valid_solid=True, boundary_complete=True,
+                          selected_solid_attempt=len(report["solid_attempts"]) - 1)
+            flush()
+            return True
+        except PostBudgetExceeded:
+            raise
+        except Exception as exc:
+            attempt.update(status="error", error=f"{type(exc).__name__}: {exc}")
+        finally:
+            if temporary.exists():
+                temporary.unlink()
+            flush()
+    return False
+
+
+def _run_complete_post_path(data_root, output, folder_name, *, optimized, fitting_policy,
+                            max_iterations, use_cuda, report, flush, deadline):
+    _check_post_deadline(deadline)
+    output.mkdir(parents=True, exist_ok=True)
+    shape = load_prediction_shape(Path(data_root) / folder_name / "data.npz")
+    report["input_face_count"] = len(shape.recon_face_points)
+    _prepare_shape_topology(shape, output / "debug_face_loop", False, False)
+    report["selected_edge_count"] = len(shape.recon_edge_points)
+    report["stage"] = "optimization" if optimized else "fitting"
+    flush()
+    if optimized:
+        _optimize_shape_geometry(shape, False, False, use_cuda, max_iterations, False, output / "debug_face_loop")
+    _check_post_deadline(deadline)
+    report["stage"] = "fitting"
+    flush()
+    faces, _, _, curves = _fit_occ_geometry(shape, fitting_policy=fitting_policy)
+    report["periodic_edge_replacements"] = list(map(int, shape.replace_edge_idx))
+    report["stage"] = "trimming"
+    flush()
+    trimmed = _build_complete_trimmed_faces(
+        faces, curves, shape.edge_face_connectivity, report, flush, deadline)
+    if not report["complete_faces"]:
+        report["status"] = "incomplete_faces"
+        return False
+    report["stage"] = "solid_candidates"
+    flush()
+    accepted = _try_save_complete_solid(trimmed, output, report, flush, deadline)
+    report["status"] = "accepted" if accepted else "no_accepted_solid"
+    return accepted
+
+
+def _promote_post_output(source, destination):
+    if source.resolve() == destination.resolve():
+        return
+    for filename in ("recon_brep.step", "recon_brep.stl", "separate_faces.ply", "success.txt"):
+        source_path, target = source / filename, destination / filename
+        if source_path.is_file():
+            temporary = target.with_name(target.name + ".tmp")
+            shutil.copyfile(source_path, temporary)
+            os.replace(temporary, target)
+        elif target.exists():
+            target.unlink()
+
+
+def _construct_with_policy(data_root, out_root, folder_name, *, v_drop_num, is_ray, is_log,
+                           is_optimize_geom, v_max_optimize_iter, isdebug, use_cuda,
+                           from_scratch, is_save_data, post_policy, time_budget_seconds,
+                           deadline_monotonic):
+    if post_policy not in POST_POLICIES:
+        raise ValueError(f"Unknown post_policy: {post_policy}")
+    if v_drop_num != 0:
+        raise ValueError("Explicit post policies require drop_num=0 and full face coverage")
+    if post_policy == "recover_v1" and not is_optimize_geom:
+        raise ValueError("recover_v1 is an optimized policy; fit-only is its explicit third path")
+    started = time.monotonic()
+    if time_budget_seconds is not None:
+        if not np.isfinite(time_budget_seconds) or time_budget_seconds <= 0:
+            raise ValueError("time_budget_seconds must be finite and positive")
+        budget_deadline = started + float(time_budget_seconds)
+        deadline_monotonic = min(deadline_monotonic, budget_deadline) if deadline_monotonic is not None else budget_deadline
+    if deadline_monotonic is None and post_policy == "recover_v1":
+        deadline_monotonic = started + 180.0
+    output = Path(out_root) / folder_name
+    output.mkdir(parents=True, exist_ok=True)
+    diagnostics_path = output / "post_diagnostics.json"
+    if diagnostics_path.exists() or (output / "recon_brep.step").exists():
+        raise FileExistsError(f"Refusing to overwrite existing policy output: {output}")
+    diagnostics = {"version": "post_policy_v1", "post_policy": post_policy,
+                   "status": "running", "chosen_path": None, "native_valid_solid": False,
+                   "boundary_complete": None, "paths": [],
+                   "shared_budget_seconds_at_entry": None if deadline_monotonic is None else
+                   max(0.0, deadline_monotonic - started)}
+
+    def flush():
+        diagnostics["elapsed_seconds"] = time.monotonic() - started
+        _write_post_diagnostics(diagnostics_path, diagnostics)
+
+    flush()
+    if post_policy == "recover_v1":
+        paths = [("legacy", "legacy", True, "legacy"),
+                 ("roundtrip_optimized", "complete", True, "legacy"),
+                 ("roundtrip_fit_only", "complete", False, "legacy"),
+                 ("fit_score_v2_roundtrip_optimized", "complete", True, "fit_score_v2")]
+    elif post_policy == "fit_score_v2":
+        paths = [("fit_score_v2", "legacy", is_optimize_geom, "fit_score_v2")]
+    else:
+        paths = [("roundtrip_retry", "complete", is_optimize_geom, "legacy")]
+    random_state = random.getstate()
+    numpy_state = np.random.get_state()
+    try:
+        for label, implementation, optimized, fitting_policy in paths:
+            _check_post_deadline(deadline_monotonic)
+            # Fixed paths each start from identical raw arrays and RNG state.
+            random.setstate(random_state)
+            np.random.set_state(numpy_state)
+            path_started = time.monotonic()
+            attempt_root = output / "policy_attempts" / label
+            attempt_output = attempt_root / folder_name
+            if implementation == "legacy":
+                # Keep a completed legacy STEP visible at the final location
+                # even if its later STL export or this process times out.
+                attempt_root = Path(out_root)
+                attempt_output = output
+            report = {"label": label, "implementation": implementation,
+                      "optimized": optimized, "fitting_policy": fitting_policy,
+                      "output_dir": str(attempt_output), "status": "running",
+                      "native_valid_solid": False, "boundary_complete": None}
+            diagnostics["paths"].append(report)
+            flush()
+            try:
+                if implementation == "legacy":
+                    construct_brep_for_sample(
+                        data_root, attempt_root, folder_name, v_drop_num=0,
+                        is_ray=is_ray, is_log=is_log, is_optimize_geom=optimized,
+                        v_max_optimize_iter=v_max_optimize_iter, isdebug=isdebug,
+                        use_cuda=use_cuda, from_scratch=from_scratch,
+                        is_save_data=is_save_data, _fitting_policy=fitting_policy)
+                    step = attempt_output / "recon_brep.step"
+                    if step.is_file():
+                        _, native = _read_native_post_step(step)
+                        report.update(native)
+                    accepted = report["native_valid_solid"]
+                    report["status"] = "accepted" if accepted else "native_rejected"
+                    # Preserve the original failed STEP for diagnostics/metrics
+                    # until a strictly accepted recovery replaces it.
+                    _promote_post_output(attempt_output, output)
+                else:
+                    accepted = _run_complete_post_path(
+                        data_root, attempt_output, folder_name, optimized=optimized,
+                        fitting_policy=fitting_policy, max_iterations=v_max_optimize_iter,
+                        use_cuda=use_cuda, report=report, flush=flush, deadline=deadline_monotonic)
+                if accepted:
+                    _promote_post_output(attempt_output, output)
+                    diagnostics.update(status="accepted", chosen_path=label, native_valid_solid=True,
+                                       boundary_complete=report.get("boundary_complete"))
+                    flush()
+                    break
+            except PostBudgetExceeded:
+                report["status"] = "budget_exhausted"
+                raise
+            except Exception as exc:
+                report.update(status="error", error=f"{type(exc).__name__}: {exc}")
+                # Legacy may have saved a valid STEP before an STL/debug error.
+                # Preserve that completed result instead of attempting recovery.
+                if implementation == "legacy" and (attempt_output / "recon_brep.step").is_file():
+                    try:
+                        _, native = _read_native_post_step(attempt_output / "recon_brep.step")
+                        report.update(native)
+                        if native["native_valid_solid"]:
+                            report["status"] = "accepted_with_auxiliary_error"
+                            _promote_post_output(attempt_output, output)
+                            diagnostics.update(status="accepted", chosen_path=label,
+                                               native_valid_solid=True, boundary_complete=None)
+                            flush()
+                            break
+                    except Exception as read_error:
+                        report["native_read_error"] = f"{type(read_error).__name__}: {read_error}"
+            finally:
+                report["elapsed_seconds"] = time.monotonic() - path_started
+                flush()
+        else:
+            diagnostics["status"] = "no_accepted_solid"
+    except PostBudgetExceeded:
+        diagnostics["status"] = "budget_exhausted"
+    finally:
+        flush()
+    return [0, 0, 0, 0, 0, 0]
+
+
 def construct_brep_for_sample(data_root, out_root, folder_name, v_drop_num=0,
                               is_ray=False, is_log=True,
                               is_optimize_geom=True, v_max_optimize_iter=200,
                               isdebug=False, use_cuda=False, from_scratch=True,
-                              is_save_data=False):
+                              is_save_data=False, *, post_policy="legacy",
+                              time_budget_seconds=None, deadline_monotonic=None,
+                              _fitting_policy="legacy"):
+    if post_policy != "legacy":
+        return _construct_with_policy(
+            data_root, out_root, folder_name, v_drop_num=v_drop_num,
+            is_ray=is_ray, is_log=is_log, is_optimize_geom=is_optimize_geom,
+            v_max_optimize_iter=v_max_optimize_iter, isdebug=isdebug,
+            use_cuda=use_cuda, from_scratch=from_scratch, is_save_data=is_save_data,
+            post_policy=post_policy, time_budget_seconds=time_budget_seconds,
+            deadline_monotonic=deadline_monotonic)
     disable_occ_log()
     # is_log = False
     # isdebug = False
@@ -364,7 +712,11 @@ def construct_brep_for_sample(data_root, out_root, folder_name, v_drop_num=0,
 
     ori_shape = copy.deepcopy(shape)
 
-    recon_geom_faces, recon_topo_faces, recon_geom_curves, recon_topo_curves = _fit_occ_geometry(shape)
+    if _fitting_policy == "legacy":
+        recon_geom_faces, recon_topo_faces, recon_geom_curves, recon_topo_curves = _fit_occ_geometry(shape)
+    else:
+        recon_geom_faces, recon_topo_faces, recon_geom_curves, recon_topo_curves = _fit_occ_geometry(
+            shape, fitting_policy=_fitting_policy)
 
     # Write separate faces
     v, f = get_separated_surface(shape.recon_topo_faces, v_precision1=0.1, v_precision2=0.2)
@@ -410,13 +762,15 @@ def construct_brep_from_datanpz(data_root, out_root, folder_name, v_drop_num=0,
                                 is_ray=False, is_log=True,
                                 is_optimize_geom=True, v_max_optimize_iter=200,
                                 isdebug=False, use_cuda=False, from_scratch=True,
-                                is_save_data=False):
+                                is_save_data=False, *, post_policy="legacy",
+                                time_budget_seconds=None, deadline_monotonic=None):
     return construct_brep_for_sample(
             data_root, out_root, folder_name, v_drop_num=v_drop_num,
             is_ray=is_ray, is_log=is_log,
             is_optimize_geom=is_optimize_geom, v_max_optimize_iter=v_max_optimize_iter,
             isdebug=isdebug, use_cuda=use_cuda, from_scratch=from_scratch,
-            is_save_data=is_save_data)
+            is_save_data=is_save_data, post_policy=post_policy,
+            time_budget_seconds=time_budget_seconds, deadline_monotonic=deadline_monotonic)
 
 
 def parse_args():

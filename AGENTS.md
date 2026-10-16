@@ -34,9 +34,8 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 |---|---|
 | `src/brepnet/train.py` | Hydra + Lightning 统一 VAE / diffusion 入口 |
 | `src/brepnet/dataset.py` | 当前 `Diffusion_dataset`，以及仍有旧字段的 VAE / legacy 数据路径 |
-| `src/brepnet/models/vae.py` | 面／半边编码、拓扑特征融合、每面 latent、neural intersection、几何解码 |
-| `src/brepnet/models/joint_vae.py`、`joint_decoder.py`、`joint_losses.py` | 新 shared-boundary VAE 与面／边双向解码；保持旧 encoder 合同，具体实现见 `checkpoints/joint_boundary/PLAN.md` |
-| `src/brepnet/models/intersection_vae.py`、`intersection_decoder.py`、`intersection_refiner.py`、`intersection_losses.py` | 保留旧 HoLa 内核与线性 classifier 的单轮几何反馈实验；显式模块与协议见 `checkpoints/intersection_refinement/README.md` |
+| `src/brepnet/models/vae.py` | 原 AutoEncoder／Light，HolisticEncoder／FacePosterior，AutoEncoder_intersection／AutoEncoder_joint 的装配、权重迁移、损失与导出 |
+| `src/brepnet/models/blocks.py` | 原网络 block，IntersectionDecoder／IntersectionRefiner／LocalPairIntersection、几何投影与状态结构、JointBoundaryDecoder；新增 FacePairConditioning 仅用于可选的最终边几何头调制 |
 | `src/brepnet/run_management.py`、`prediction_export.py` | 独立 run 目录、配置／Git 溯源、逐对象原始预测导出 |
 | `src/brepnet/diffusion/model.py`、`sampling.py`、`losses.py` | diffusion 装配、训练损失、DDPM 采样与 VAE 接口 |
 | `src/brepnet/diffusion/latents.py`、`padding.py` | cached mean/std 或 VAE 编码，face token 打包、筛选与去重 |
@@ -52,6 +51,12 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 Diffusion 新代码从 `src/brepnet/diffusion/` 导入；保留的旧路径导出不保证旧架构配置兼容。旧模块化 baseline 位于 `codex/diffusion-modular-baseline`（`b67c5d8e`）；当前 `codex/diffusion-layerwise-conditioning` 显式拒绝 `condition_fuser` 配置，旧 diffusion checkpoint 不可直接 resume 或宽松加载。当前结构、加载协议及历史验证边界见 [说明](checkpoints/diffusion/README.md)。本主题讨论神经网络架构时优先可视化每层、数据流、张量形状及输入输出，不使用 Mermaid 画神经网络。
 
 细节见 [源码指南](src/brepnet/AGENTS.md)、[数据指南](src/brepnet/data/AGENTS.md)、[评估指南](src/brepnet/eval/AGENTS.md)。
+
+2026-10-13 按原文件组织归并 VAE 实验代码：移除 `models/` 下原 `intersection_*` 六个文件、`joint_*` 三个文件及 `holistic_encoder.py`、`local_intersection.py`，实现集中到 `vae.py`／`blocks.py`。已有模型名称、模块属性层级和旧 checkpoint state key 保留，trainer 继续共用 config 装配。历史 PLAN／NOTE 的旧路径保留为当时记录，当前入口以本地图及主题 README 为准。
+
+可选最终 curve 条件调制见 [配置与迁移说明](checkpoints/intersection_refinement/curve_conditioning/README.md)：`model.curve_conditioning.enabled` 默认 `false`、`hidden_dim=128`；启用后仅在 refined edge CNN 与 center/scale MLP 的最终输出层前调制。`init_refinement_checkpoint` 对 local 分支只替换旧 inter，对此条件分支保留所有旧参数、仅初始化新增 conditioning；两者均为新 run 初始化，完整模型加载／resume 仍严格匹配。
+
+2026-10-14 新增可选 [最终曲线逐点反馈](checkpoints/intersection_refinement/point_feedback/README.md)，仍写在 `blocks.py`／`vae.py`。`model.curve_point_feedback` 默认关闭；启用时在 final 曲线点读取 final 预测 owner 曲面，不池化，以零初始化 XYZ 增量同时更新 local/global 几何。新 run 使用 `init_curve_feedback_checkpoint` 严格保留已训练 conditioned refinement；原 inter、loss 和 encoder 合同不变。通用 `trainer.max_time` 可设运行时间预算，resume 会恢复 Timer 累计时间。
 
 ## 架构讨论必须处理的问题
 
@@ -97,6 +102,10 @@ Diffusion 新代码从 `src/brepnet/diffusion/` 导入；保留的旧路径导�
 运行权重、原始几何及临时日志由 `.gitignore` 排除；研究文档与紧凑的验证报告保留版本管理。记录数据／split、checkpoint、seed、预算及输出路径。先建立可判断方向的研究问题，不机械延续旧实验编号。
 
 比较固定输入信息、样本列表、采样／重试预算、checkpoint、后处理版本及指标协议。分别报告生成覆盖率、有效 STEP／solid 比例、几何与可见区域一致性，以及成本／耗时。失败、缺失、超时留在预定分母里；仅成功子集的几何分数单列。
+
+2026-10-16 用户进一步明确后处理研究的数据分工：**规则设计、失败原因分析与方案调整使用 validation；test用于方案冻结后的数据评估，不依据test个例调规则、容差或挑版本。** 当前DeepCAD仍是开发与探索基准，允许按这一分工继续研究。固定比较清单、checkpoint、输入信息、修复预算与验收口径，完整报告救回、退步和几何保真。历史DeepCAD test曾参与开发，需如实记录，不能追溯声称完全未见。用于实际推理的修复与候选选择不能读取 GT。
+
+**后续 ABC 的最终评估子集采用更严格的隔离。** 在查看其结果或失败样本前冻结方案、代码／配置、checkpoint 和评估协议，不根据该子集调规则、阈值或挑版本。具体子集与数据使用方式在开展 ABC 工作时明确，并核对其与开发数据的 CAD／几何重叠；不因数据集名称不同就认定完全独立。保留原始 split 和历史结果，不通过改名或删样本制造独立性。
 
 GT best-of-K 是 oracle 指标，不能当作可用的单次输出质量；同时说明实际选择策略。原始解码质量与修复后的质量分开。比较 agent 与神经模型时，记录各自可用的工具和修复预算。
 

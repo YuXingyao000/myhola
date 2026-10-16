@@ -1,0 +1,34 @@
+{
+  "implementation_tests": {
+    "core_local_migration_training": 74,
+    "inference_loading": 7,
+    "total_passed": 81
+  },
+  "gpu_smoke": "gpu_smoke.json",
+  "ddp": {
+    "run_dir": "/mnt/d/python/checkpoints/intersection_local/validation/ddp/20261012T073250.503340Z",
+    "checkpoint": "/mnt/d/python/checkpoints/intersection_local/validation/ddp/20261012T073250.503340Z/weights/last.ckpt",
+    "devices": 8,
+    "batch_per_gpu": 16,
+    "precision": "bf16-mixed",
+    "train_split": "ddp_train.txt",
+    "val_split": "ddp_val.txt",
+    "initial_max_steps": 1,
+    "resumed_global_step": 2,
+    "resumed_epoch": 1,
+    "optimizer_steps": [
+      2
+    ],
+    "frozen_encoder_posterior_tensors_equal_to_source": 243,
+    "resume_ignored_nonexistent_migration_source": true,
+    "initialization_source": "/mnt/d/python/checkpoints/intersection_refinement/frozen/20261011T123836.485257Z/weights/epoch=0010-step=00003993-val_loss=0.039476.ckpt",
+    "initialization_source_sha256": "9b18509de2a21f50d8fad41b8c37695842fe2e92745dc779713b0ecac06e2107",
+    "invocation_metadata": [
+      "ddp/20261012T073250.503340Z/metadata/invocations/20261012T073250.503340Z/command.json",
+      "ddp/20261012T073250.503340Z/metadata/invocations/20261012T073410.927600Z/command.json"
+    ]
+  },
+  "git_commit": "cf9db616da214d6eb35fcfd087ec7f57a8f27747",
+  "production_training_started": false,
+  "scope": "Architecture, strict migration, real GPU forward/backward and eight-GPU save/resume validation only; not research quality results."
+}

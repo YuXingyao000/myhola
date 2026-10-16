@@ -1,0 +1,31 @@
+defaults:
+  - train_vae_intersection
+  - _self_
+
+# New run initialized from the evaluated refinement checkpoint; not a resume.
+# Paths are explicit CLI inputs. Encoder/posterior remain frozen.
+trainer:
+  exp_name: intersection_local/full_capacity
+  batch_size: 16
+  max_epochs: 10000
+  max_steps: 1000000
+
+model:
+  intersection:
+    kind: local_attention
+    block_type: transformer_decoder
+    # Follow the retained inter's dimensions instead of shadowing them.
+    hidden_dim: ${model.intersection_dim}
+    num_heads: 8
+    num_layers: ${model.intersection_layers}
+    ffn_dim: 2048
+    dropout: 0.1
+    activation: relu
+    candidate_chunk_size: 64
+    checkpoint_candidates: true
+  refinement:
+    candidate_chunk_size: 256
+    geometry_chunk_size: 128
+    checkpoint_candidates: false
+  loss_weights:
+    geometry_chunk_size: 128

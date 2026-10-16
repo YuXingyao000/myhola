@@ -1,0 +1,8 @@
+{
+  "method": "encoder_gat_control",
+  "intended": 358,
+  "status_counts": {
+    "ok": 358
+  },
+  "protocol_fingerprint": "eeadc0b25b10b5df363a298ac180e4ec06ac8733a37b2d5e7c16dfeec43fbdff"
+}

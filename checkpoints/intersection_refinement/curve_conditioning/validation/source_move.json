@@ -1,0 +1,68 @@
+{
+  "blocks": {
+    "unchanged_definitions": [
+      "blocks.inv_sigmoid",
+      "blocks.sincos_embedding",
+      "blocks.ResLinear",
+      "blocks.ResBlock1D",
+      "blocks.ResBlock2D",
+      "blocks.ResBlockXD",
+      "blocks.AttnIntersection",
+      "blocks.AttnIntersection3",
+      "intersection_state.CandidatePairs",
+      "intersection_state.PrimitiveGeometry",
+      "intersection_state.DecoderStage",
+      "intersection_state.RefinementOutput",
+      "intersection_geometry._validate_geometry_pair",
+      "intersection_geometry._project_to_segments",
+      "intersection_geometry._project_to_triangles",
+      "intersection_geometry._surface_triangle_indices",
+      "intersection_geometry.closest_surface_points",
+      "intersection_geometry.closest_polyline_points",
+      "local_intersection.LocalIntersectionBlock",
+      "local_intersection.LocalPairIntersection",
+      "intersection_refiner.weighted_incident_mean",
+      "intersection_refiner.GeometryRead",
+      "intersection_refiner.IntersectionRefiner",
+      "intersection_decoder.enumerate_candidate_pairs",
+      "intersection_decoder.symmetric_pair_logits",
+      "intersection_decoder.FaceFeatureDecoder",
+      "joint_decoder.BoundaryInteraction",
+      "joint_decoder.JointBoundaryDecoder"
+    ],
+    "changed_definitions": [
+      "intersection_decoder.PrimitiveDecoder",
+      "intersection_decoder.IntersectionDecoder"
+    ]
+  },
+  "vae": {
+    "unchanged_definitions": [
+      "vae.add_timer",
+      "vae.profile_time",
+      "vae.AutoEncoder",
+      "vae.AutoEncoder_light",
+      "vae.AutoEncoder_light_exp",
+      "holistic_encoder.HolisticEncoder",
+      "holistic_encoder.FacePosterior",
+      "intersection_losses.DirectedTargets",
+      "intersection_losses._require_integer",
+      "intersection_losses._require_shape",
+      "intersection_losses._mean_l1",
+      "intersection_losses.balanced_binary_cross_entropy",
+      "intersection_losses._map_directed_targets",
+      "intersection_losses.IntersectionLoss",
+      "intersection_vae.validate_encoder_batch",
+      "joint_losses.boundary_costs",
+      "joint_losses.validate_boundary_target",
+      "joint_losses._match_costs",
+      "joint_losses.match_boundaries",
+      "joint_losses.surface_boundary_consistency",
+      "joint_losses.joint_boundary_loss",
+      "joint_vae.AutoEncoder_joint"
+    ],
+    "changed_definitions": [
+      "vae.build_autoencoder",
+      "intersection_vae.AutoEncoder_intersection"
+    ]
+  }
+}

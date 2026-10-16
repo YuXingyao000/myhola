@@ -23,7 +23,36 @@ from src.brepnet.post.constants import (
 )
 
 
-def create_surface(points, use_variational_smoothing=USE_VARIATIONAL_SMOOTHING):
+def _fitting_sample_indices(size, stride):
+    """Keep the existing stride, including the previously unchecked last index."""
+    return np.unique(np.r_[np.arange(0, size, stride), size - 1])
+
+
+def _fitting_metrics_v2(topo_shape, key_points):
+    """Return RMS and maximum point-to-shape distances in input XYZ units."""
+    errors = []
+    for point in key_points:
+        vertex = BRepBuilderAPI_MakeVertex(gp_Pnt(float(point[0]), float(point[1]), float(point[2]))).Vertex()
+        distance = BRepExtrema_DistShapeShape(vertex, topo_shape)
+        if not distance.IsDone():
+            raise RuntimeError("Fitting distance calculation did not finish")
+        errors.append(distance.Value())
+    errors = np.asarray(errors, dtype=np.float64)
+    if errors.size == 0 or not np.isfinite(errors).all():
+        raise ValueError("Fitting distances must be nonempty and finite")
+    return float(np.sqrt(np.mean(errors ** 2))), float(np.max(errors))
+
+
+def create_surface(points, use_variational_smoothing=USE_VARIATIONAL_SMOOTHING, *, fitting_policy="legacy"):
+    """Fit a surface; opt-in v2 checks a boundary-inclusive grid in XYZ units.
+
+    V2 ranks candidates by RMS + maximum distance, keeping the original
+    tolerance order for ties. Its 1e-3 early stop applies only to checked points,
+    before the unchanged periodic conversion; it is not a continuous bound.
+    """
+    if fitting_policy not in ("legacy", "fit_score_v2"):
+        raise ValueError(f"Unknown fitting_policy: {fitting_policy}")
+
     def fit_face(uv_points_array, precision, use_variational_smoothing=USE_VARIATIONAL_SMOOTHING):
         if use_variational_smoothing:
             return GeomAPI_PointsToBSplineSurface(uv_points_array, weight_CurveLength, weight_Curvature, weight_Torsion,
@@ -70,13 +99,24 @@ def create_surface(points, use_variational_smoothing=USE_VARIATIONAL_SMOOTHING):
 
     approx_face_list = []
     error_list = []
+    if fitting_policy == "fit_score_v2":
+        u_indices = _fitting_sample_indices(num_u_points, 4)
+        v_indices = _fitting_sample_indices(num_v_points, 4)
+        key_points = points[np.ix_(u_indices, v_indices)].reshape(-1, 3)
     for precision in FACE_FITTING_TOLERANCE:
         try:
             approx_face = fit_face(uv_points_array, precision, use_variational_smoothing)
-            error = eval_fitting_face(approx_face, points)
+            if fitting_policy == "legacy":
+                error = eval_fitting_face(approx_face, points)
+                acceptable = error < 1e-2
+            else:
+                topo_face = BRepBuilderAPI_MakeFace(approx_face, TRANSFER_PRECISION).Face()
+                rmse, max_error = _fitting_metrics_v2(topo_face, key_points)
+                error = rmse + max_error
+                acceptable = max_error <= 1e-3
             approx_face_list.append(approx_face)
             error_list.append(error)
-            if error < 1e-2:
+            if acceptable:
                 break
         except Exception as e:
             continue
@@ -90,7 +130,11 @@ def create_surface(points, use_variational_smoothing=USE_VARIATIONAL_SMOOTHING):
     return approx_face
 
 
-def create_edge(points, use_variational_smoothing=USE_VARIATIONAL_SMOOTHING):
+def create_edge(points, use_variational_smoothing=USE_VARIATIONAL_SMOOTHING, *, fitting_policy="legacy"):
+    """Fit a curve, optionally checking the final sample with true RMS + max."""
+    if fitting_policy not in ("legacy", "fit_score_v2"):
+        raise ValueError(f"Unknown fitting_policy: {fitting_policy}")
+
     def fit_edge(u_points_array, precision, use_variational_smoothing=USE_VARIATIONAL_SMOOTHING):
         if use_variational_smoothing:
             return GeomAPI_PointsToBSpline(u_points_array, weight_CurveLength, weight_Curvature, weight_Torsion,
@@ -119,13 +163,22 @@ def create_edge(points, use_variational_smoothing=USE_VARIATIONAL_SMOOTHING):
 
     approx_edge_list = []
     error_list = []
+    if fitting_policy == "fit_score_v2":
+        key_points = points[_fitting_sample_indices(num_u_points, 2)].reshape(-1, 3)
     for precision in EDGE_FITTING_TOLERANCE:
         try:
             approx_edge = fit_edge(u_points_array, precision, use_variational_smoothing)
-            error = eval_fitting_edge(approx_edge, points)
+            if fitting_policy == "legacy":
+                error = eval_fitting_edge(approx_edge, points)
+                acceptable = error < 1e-2
+            else:
+                topo_edge = BRepBuilderAPI_MakeEdge(approx_edge).Edge()
+                rmse, max_error = _fitting_metrics_v2(topo_edge, key_points)
+                error = rmse + max_error
+                acceptable = max_error <= 1e-3
             approx_edge_list.append(approx_edge)
             error_list.append(error)
-            if error < 1e-2:
+            if acceptable:
                 break
         except Exception as e:
             continue

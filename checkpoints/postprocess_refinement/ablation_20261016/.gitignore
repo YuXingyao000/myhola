@@ -1,0 +1,7 @@
+**/raw_predictions/
+**/post_variants/
+**/metadata/
+**/smoke/
+# Reproducible per-object exports stay local; commit compact aggregate reports.
+**/raw_metrics/**/per_object.csv
+report/samples.csv

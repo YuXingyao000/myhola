@@ -6,6 +6,8 @@ batch_size: 32
 learning_rate: 1.0e-4
 max_epochs: 1000000
 max_steps: -1
+# Optional Lightning training-time budget, DD:HH:MM:SS; null is unrestricted.
+max_time: null
 check_val_every_n_epoch: 1
 num_sanity_val_steps: 2
 vae_validation_inference: false

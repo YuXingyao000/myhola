@@ -2,6 +2,14 @@
 
 本目录对应 [实现合同](PLAN.md)。冻结 encoder 的正式运行已完成 100,000 steps；2026-10-11 使用验证集最佳 step 97,559，与原 VAE 在相同 2,417 个 test 对象及共享 latent 下比较。**当前新 Decoder 的原始几何与自主拓扑均退步，尚不适合替换原 Decoder。** 完整协议、实体结果、固定选例与复现命令见 [比较报告](comparison_20261011/REPORT.md)和[比较 README](comparison_20261011/README.md)。[验证记录](NOTE.md)保留最初实现与短运行的历史状态，不能将其中“尚未训练”误读为当前状态。
 
+## 当前源码入口
+
+2026-10-13 将实验代码归并回原 `vae.py`／`blocks.py` 文件组织：`src/brepnet/models/vae.py:AutoEncoder_joint` 负责模型、encoder、初始化与导出，`vae.py:joint_boundary_loss` 及匹配函数负责监督；`src/brepnet/models/blocks.py:JointBoundaryDecoder/BoundaryInteraction` 负责共享边界解码和双向更新。原 `joint_vae.py`、`joint_decoder.py`、`joint_losses.py` 与同批六个 `intersection_*`、`holistic_encoder.py`、`local_intersection.py` 共 11 个文件已移除。历史 PLAN／NOTE 中的旧路径不重写。
+
+本次文件归并保留 `AutoEncoder_joint` 注册名、配置、模块属性层级及已有 checkpoint state key；旧 encoder 的组件迁移、完整模型严格加载和 resume 语义不变，不增加 trainer 分支，也不改变 joint 网络计算。
+
+原 refinement 的可选最终边几何头增量见 [curve_conditioning 说明](../intersection_refinement/curve_conditioning/README.md)。该配置属于 `AutoEncoder_intersection`，默认 `model.curve_conditioning.enabled=false`、`hidden_dim=128`，只调制 refined edge CNN／bbox 最终输出层前的特征，不施加于本页的 joint 模型。
+
 ## 表示与配置
 
 保留旧 HoLa light encoder 的面、半边输入及归一化，将 decoder 改为面特征与共享边界 queries 的双向更新。当前数据表示是“每对不同面之间至多一条合并边界”，不是完整 native physical-edge / seam / UV-loop 表示。GT 边界只用于匹配与损失，导出时不以 GT edge count 或 GT query selection 筛选预测。

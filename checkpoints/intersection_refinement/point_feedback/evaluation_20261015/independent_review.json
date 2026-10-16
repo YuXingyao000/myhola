@@ -1,0 +1,2268 @@
+{
+  "created_utc": "2026-10-15T06:18:45.561029+00:00",
+  "reviewer": "test_point_feedback",
+  "created_display_time": "2026-10-15T14:18:45.561242+08:00",
+  "display_timezone": "Asia/Shanghai",
+  "checkpoint_sha256": "1a61c40de044f59131aac8e22faca3a434855c60d7e0e974566209b0ad8129aa",
+  "review_builder_sha256": "52f7fc13b60abb4ab60c78b0c1e714cfff29d769511d90d5bdcc2b0f652d75f0",
+  "independent_method": "No pipeline helpers imported. Statistics reconstructed from CSV; identity, latent arrays and all record hashes checked; all 28 census predicates independently reconstructed from trace/upstream/saved-step measurement primitives, including unknown and provenance gating. Geometry measurements themselves are not rerun.",
+  "code": {
+    "base_commit": "04406ac11b1d094e37fc5e250da8ac7705d93e7e",
+    "files": {
+      "tools/intersection_evaluate_inference.py": {
+        "sha256": "2278c4f882b0f8dc4d2dbe4a9959d90885cac0e2768c53dd115cb631c3f0b560",
+        "changed_functions_vs_base": [
+          "build_parser",
+          "load_intersection",
+          "validate_method"
+        ],
+        "unchanged_function_count": 9
+      },
+      "tools/vae_compare_metrics.py": {
+        "sha256": "bae4e901e8f18ad86d151c4dc9cf8e59b6427213be01ba975dd578d30e632a01",
+        "changed_functions_vs_base": [
+          "summarize"
+        ],
+        "unchanged_function_count": 14
+      },
+      "tools/vae_compare_post.py": {
+        "sha256": "633adc72f6b878136784acffd050e9209dfea4c24b51168376e8ae5577fee114",
+        "changed_functions_vs_base": [],
+        "unchanged_function_count": 25
+      }
+    },
+    "production_post_and_shared_unchanged_vs_base": true,
+    "manual_review": "Full-module AST checked: method enums extend explicitly; inference additionally clears init_curve_feedback_checkpoint for strict full-load and verifies feedback identity. All numeric inference, raw metric, post worker, validity, sampling and timeout computations are unchanged."
+  },
+  "inputs": {
+    "posterior_mean": {
+      "intended": 2417,
+      "point_feedback_prediction_count": 2417,
+      "status_counts": {
+        "ok": 2417
+      },
+      "validation_selected_checkpoint_verified": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/20261014T153723.959456Z/weights/epoch=0034-step=00012705-val_loss=0.037230.ckpt",
+      "exact_input_array_comparisons": 2417,
+      "input_hash_manifest_sha256": "4ac6050cabf1c124891043772a3cbc74aea2942faa3321e3c16979da054aa89c",
+      "source_hashes_unchanged": true,
+      "all_candidate_threshold_exports_verified": true,
+      "mean_audit_shards": 8,
+      "max_reencoding_mean_abs_error": 3.3080577850341797e-06
+    },
+    "archived_latents": {
+      "intended": 2417,
+      "point_feedback_prediction_count": 2417,
+      "status_counts": {
+        "ok": 2417
+      },
+      "validation_selected_checkpoint_verified": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/20261014T153723.959456Z/weights/epoch=0034-step=00012705-val_loss=0.037230.ckpt",
+      "exact_input_array_comparisons": 2417,
+      "input_hash_manifest_sha256": "4abb644ae1efecd4ae6bc5a428cd126f10a75e4e5d3be5d0cd2adf81f2499124",
+      "source_hashes_unchanged": true,
+      "all_candidate_threshold_exports_verified": true,
+      "mean_audit_shards": 8,
+      "max_reencoding_mean_abs_error": 2.86102294921875e-06
+    }
+  },
+  "raw": {
+    "posterior_mean": {
+      "row_count": 4834,
+      "stats_blocks_independently_recalculated": 54,
+      "objects_with_exact_adjacency": {
+        "conditioned": 2321,
+        "point_feedback": 2315
+      },
+      "baseline_metrics_exactly_equal_previous": true,
+      "baseline_csv_exact_except_prediction_path": true,
+      "paired_differences_verified": true,
+      "summary_sha256": "9368cb04c180ba6014dd4a8d25faf4aa209fac200f4fe36c7d11a813bbc1927c",
+      "csv_sha256": "296730563c51372db0190b139426f332b9fb531d4054c9a1b5a400098dd5bbc7"
+    },
+    "archived_latents": {
+      "row_count": 4834,
+      "stats_blocks_independently_recalculated": 54,
+      "objects_with_exact_adjacency": {
+        "conditioned": null,
+        "point_feedback": null
+      },
+      "baseline_metrics_exactly_equal_previous": true,
+      "baseline_csv_exact_except_prediction_path": true,
+      "paired_differences_verified": true,
+      "summary_sha256": "7de00fcec498d1318512b603dded311404418820165c130cbb320e1fc7abeda6",
+      "csv_sha256": "db06c08ca199dcf87b1f09f7dbc0061d072704a2724b6eb39880ae60546305bf"
+    }
+  },
+  "post": {
+    "fit_only": {
+      "terminal_records_per_method": {
+        "conditioned": 2417,
+        "point_feedback": 2417
+      },
+      "transition_counts": {
+        "both_valid": 942,
+        "conditioned_failed_to_point_feedback_valid": 106,
+        "conditioned_valid_to_point_feedback_failed": 105,
+        "both_failed": 1264,
+        "unknown": 0
+      },
+      "counts_and_fixed_denominator_rates_verified": true,
+      "common_geometry_count": 1837,
+      "baseline_summary_exactly_equal_previous": true,
+      "baseline_record_hashes_unchanged_since_reuse": 2417,
+      "baseline_step_hashes_unchanged_since_reuse": 2417,
+      "post_algorithms_unchanged": true,
+      "source_step_hash_limitation": "Checks protect assets since this evaluation's reuse snapshot, not against unrecorded historical mutations.",
+      "summary_sha256": "49cdcd868ebd28046e73fdd71da143006ca180d83deaef67504c44854f13437a",
+      "csv_sha256": "118552277d15c277a7a2a59d333259990280d6baa95fb9ab8ffaa0452936f24c"
+    },
+    "optimized": {
+      "terminal_records_per_method": {
+        "conditioned": 2417,
+        "point_feedback": 2417
+      },
+      "transition_counts": {
+        "both_valid": 2054,
+        "conditioned_failed_to_point_feedback_valid": 50,
+        "conditioned_valid_to_point_feedback_failed": 57,
+        "both_failed": 256,
+        "unknown": 0
+      },
+      "counts_and_fixed_denominator_rates_verified": true,
+      "common_geometry_count": 2211,
+      "baseline_summary_exactly_equal_previous": true,
+      "baseline_record_hashes_unchanged_since_reuse": 2417,
+      "baseline_step_hashes_unchanged_since_reuse": 2417,
+      "post_algorithms_unchanged": true,
+      "source_step_hash_limitation": "Checks protect assets since this evaluation's reuse snapshot, not against unrecorded historical mutations.",
+      "summary_sha256": "a7d994c7f55c2afff8482dde1dafadc40b3474b33e3a0143ac65ccaebda39603",
+      "csv_sha256": "95238db0c6e508abbc2887a44960d1beb609523e0bd2b96d8cd6b07bb9d17d8c"
+    }
+  },
+  "pending": [],
+  "distributions": {
+    "method_identity_verified": true,
+    "source_hashes_checked": 27,
+    "distribution_stats_blocks_recalculated": 72,
+    "both_exact_adjacency_count": 2306,
+    "extreme_ids_independently_selected_from_csv": [
+      "00335203",
+      "00326127"
+    ],
+    "specification_revision_numerical_evidence_unchanged": true,
+    "artifact_sha256": {
+      "raw_distribution.json": "c1711d37e06edc83220d1c4a46bc24eead6318bc188f5d9e3fe641cbe5acafd4",
+      "adjacency_subset.json": "99b3803d877c8c574fd5dbe5047bf5a70b72ed370183c7057221e1c135ca2df3",
+      "reciprocal_distribution.json": "f4d9dd9c2f8262a270ac110ed7d1d273051ea07a23472c40f38a84e936816908",
+      "outlier_pair_probe.json": "c36db9bd17deb822f373199e5af64118735890d0cc796292302c1a4290b9391c",
+      "reuse_provenance.json": "89a4f9456c628b69a0459809bd809ffce87d38d3163f3297ad7ed194a346a45f"
+    }
+  },
+  "historical_reference": {
+    "sources_rehashed": 14,
+    "shared_input_hashes_verified_per_mode": 2417,
+    "three_method_numeric_blocks_recalculated": 15,
+    "post_counts": {
+      "fit_only": {
+        "intersection": 1062,
+        "conditioned": 1047,
+        "point_feedback": 1048
+      },
+      "optimized": {
+        "intersection": 2113,
+        "conditioned": 2111,
+        "point_feedback": 2104
+      }
+    },
+    "original_to_point_feedback_transition_ids_verified": true,
+    "report_sha256": "03accef4982fba3e3c6cc661e2b6c24c67db54472179c2086694cfe7ae2e5eb6"
+  },
+  "census": {
+    "frozen_identities": {
+      "accepted": 2417,
+      "original": 2424,
+      "contract_excluded_ids": [
+        "00005083",
+        "00005807",
+        "00250107",
+        "00273866",
+        "00413192",
+        "00714815",
+        "00734376"
+      ],
+      "contract_exclusion_source": "/mnt/d/python_curve_eval/checkpoints/joint_boundary/validation/test_contract_audit/rejected.csv",
+      "contract_exclusion_sha256": "9b7c339cc67a22c2252017d5b9c1e5fc390bf936657237f973307cb0e9a4e8ba",
+      "cohorts": {
+        "both_failed": 256,
+        "new_failure": 57,
+        "rescued": 50,
+        "both_valid": 2054
+      },
+      "candidate_failure_denominator": 313,
+      "selected_paired_ids": 363,
+      "excluded_both_valid_ids": 2054,
+      "baseline_reuse": 321,
+      "baseline_new_controls": 42,
+      "historical_reuse_files_checked": 1284,
+      "reuse_partition_verified": true,
+      "optimization_regression_ids": [
+        "00007551",
+        "00021937",
+        "00043034",
+        "00144730",
+        "00187336",
+        "00289780",
+        "00297204",
+        "00308263",
+        "00339603",
+        "00381705",
+        "00388341",
+        "00503527",
+        "00505953",
+        "00533990",
+        "00617241",
+        "00798773",
+        "00827871",
+        "00869029",
+        "00928617"
+      ],
+      "raw_topology_profile": {
+        "all_candidate_failures": {
+          "denominator": 313,
+          "candidate_exact": 229,
+          "baseline_exact": 235,
+          "candidate_extra": 66,
+          "candidate_missing": 38,
+          "candidate_extra_and_missing": 20
+        },
+        "regressed": {
+          "denominator": 57,
+          "candidate_exact": 49,
+          "baseline_exact": 54,
+          "candidate_extra": 7,
+          "candidate_missing": 2,
+          "candidate_extra_and_missing": 1
+        },
+        "persistent": {
+          "denominator": 256,
+          "candidate_exact": 180,
+          "baseline_exact": 181,
+          "candidate_extra": 59,
+          "candidate_missing": 36,
+          "candidate_extra_and_missing": 19
+        },
+        "rescued": {
+          "denominator": 50,
+          "candidate_exact": 42,
+          "baseline_exact": 42,
+          "candidate_extra": 7,
+          "candidate_missing": 1,
+          "candidate_extra_and_missing": 0
+        }
+      }
+    },
+    "source_preservation": {
+      "count": 5665,
+      "changed": 0,
+      "source_audit_sha256": "577c46e758edf82afd3636a84b0977b8d165a04f6eb8820dd51ac50d9478fd96",
+      "report_sha256": "137496a0164010f06cd3bc781601da7bef3396720b6f6d95d9ebff032dd04b03",
+      "independent_rehash_matches_report": true
+    },
+    "diagnostics": {
+      "paired_cases": 363,
+      "direct_trace_records_checked": 726,
+      "primary_display_tally_grid": {
+        "groups": 4,
+        "thresholds": 4,
+        "observations": 28,
+        "combinations_verified": 448
+      },
+      "direct_primary_trace_predicate_comparisons": 81312,
+      "all_group_threshold_tallies_and_pair_transitions_verified": true,
+      "compact_report_tallies_match_independent_counts": true,
+      "failed_face_context_count_aggregation_verified": true,
+      "groups": {
+        "main": {
+          "denominator": 313,
+          "verified_traces": 313,
+          "terminal": {
+            "native_valid": 0,
+            "trim_gate": 50,
+            "solid_construction": 255,
+            "saved_step_rejected": 7,
+            "native_readback_invalid": 1,
+            "unresolved": 0,
+            "unknown": 0
+          },
+          "raw_topology_counts": {
+            "exact": 229,
+            "inexact": 84
+          },
+          "key_observations_at_0.006": {
+            "face_without_boundary": {
+              "positive": 1,
+              "negative": 312,
+              "unknown": 0
+            },
+            "never_wire": {
+              "positive": 0,
+              "negative": 312,
+              "unknown": 1
+            },
+            "never_closed_admitted": {
+              "positive": 71,
+              "negative": 241,
+              "unknown": 1
+            },
+            "closed_admitted_still_failed": {
+              "positive": 184,
+              "negative": 129,
+              "unknown": 0
+            },
+            "strict_closed_candidate_failed": {
+              "positive": 174,
+              "negative": 139,
+              "unknown": 0
+            },
+            "final_success_discarded_wire": {
+              "positive": 111,
+              "negative": 202,
+              "unknown": 0
+            },
+            "raw_extra_gt_pair": {
+              "positive": 66,
+              "negative": 247,
+              "unknown": 0
+            },
+            "raw_missing_gt_pair": {
+              "positive": 38,
+              "negative": 275,
+              "unknown": 0
+            },
+            "raw_duplicate_directed_pair": {
+              "positive": 0,
+              "negative": 313,
+              "unknown": 0
+            },
+            "raw_same_face_pair": {
+              "positive": 0,
+              "negative": 313,
+              "unknown": 0
+            },
+            "face_count_mismatch": {
+              "positive": 0,
+              "negative": 313,
+              "unknown": 0
+            },
+            "selection_removed_gt_pair": {
+              "positive": 2,
+              "negative": 311,
+              "unknown": 0
+            },
+            "reciprocal_excess_disagreement": {
+              "positive": 273,
+              "negative": 30,
+              "unknown": 10
+            },
+            "raw_new_cross_pair_curve_nearness": {
+              "positive": 19,
+              "negative": 268,
+              "unknown": 26
+            },
+            "raw_new_face_grid_nearness": {
+              "positive": 2,
+              "negative": 311,
+              "unknown": 0
+            },
+            "selected_endpoint_gap": {
+              "positive": 276,
+              "negative": 33,
+              "unknown": 4
+            },
+            "optimized_endpoint_gap": {
+              "positive": 108,
+              "negative": 184,
+              "unknown": 21
+            },
+            "selected_new_open_edge_endpoint_collapse": {
+              "positive": 8,
+              "negative": 243,
+              "unknown": 62
+            },
+            "optimized_new_open_edge_endpoint_collapse": {
+              "positive": 12,
+              "negative": 242,
+              "unknown": 59
+            },
+            "fit_face_residual": {
+              "positive": 13,
+              "negative": 300,
+              "unknown": 0
+            },
+            "fit_curve_residual": {
+              "positive": 0,
+              "negative": 313,
+              "unknown": 0
+            },
+            "owner_independent": {
+              "positive": 305,
+              "negative": 8,
+              "unknown": 0
+            },
+            "owner_after": {
+              "positive": 300,
+              "negative": 13,
+              "unknown": 0
+            },
+            "closed_failed_owner_gap": {
+              "positive": 129,
+              "negative": 184,
+              "unknown": 0
+            },
+            "optimization_face_away": {
+              "positive": 310,
+              "negative": 3,
+              "unknown": 0
+            },
+            "optimization_edge_away": {
+              "positive": 301,
+              "negative": 12,
+              "unknown": 0
+            },
+            "sewing_free_edges": {
+              "positive": 251,
+              "negative": 62,
+              "unknown": 0
+            },
+            "saved_near_free_edges": {
+              "positive": 114,
+              "negative": 199,
+              "unknown": 0
+            }
+          }
+        },
+        "baseline_failures": {
+          "denominator": 306,
+          "verified_traces": 306,
+          "terminal": {
+            "native_valid": 0,
+            "trim_gate": 51,
+            "solid_construction": 246,
+            "saved_step_rejected": 8,
+            "native_readback_invalid": 1,
+            "unresolved": 0,
+            "unknown": 0
+          },
+          "raw_topology_counts": {
+            "exact": 223,
+            "inexact": 83
+          },
+          "key_observations_at_0.006": {
+            "face_without_boundary": {
+              "positive": 1,
+              "negative": 305,
+              "unknown": 0
+            },
+            "never_wire": {
+              "positive": 0,
+              "negative": 305,
+              "unknown": 1
+            },
+            "never_closed_admitted": {
+              "positive": 62,
+              "negative": 244,
+              "unknown": 0
+            },
+            "closed_admitted_still_failed": {
+              "positive": 173,
+              "negative": 133,
+              "unknown": 0
+            },
+            "strict_closed_candidate_failed": {
+              "positive": 167,
+              "negative": 139,
+              "unknown": 0
+            },
+            "final_success_discarded_wire": {
+              "positive": 121,
+              "negative": 185,
+              "unknown": 0
+            },
+            "raw_extra_gt_pair": {
+              "positive": 69,
+              "negative": 237,
+              "unknown": 0
+            },
+            "raw_missing_gt_pair": {
+              "positive": 32,
+              "negative": 274,
+              "unknown": 0
+            },
+            "raw_duplicate_directed_pair": {
+              "positive": 0,
+              "negative": 306,
+              "unknown": 0
+            },
+            "raw_same_face_pair": {
+              "positive": 0,
+              "negative": 306,
+              "unknown": 0
+            },
+            "face_count_mismatch": {
+              "positive": 0,
+              "negative": 306,
+              "unknown": 0
+            },
+            "selection_removed_gt_pair": {
+              "positive": 2,
+              "negative": 304,
+              "unknown": 0
+            },
+            "reciprocal_excess_disagreement": {
+              "positive": 279,
+              "negative": 20,
+              "unknown": 7
+            },
+            "raw_new_cross_pair_curve_nearness": {
+              "positive": 17,
+              "negative": 264,
+              "unknown": 25
+            },
+            "raw_new_face_grid_nearness": {
+              "positive": 1,
+              "negative": 305,
+              "unknown": 0
+            },
+            "selected_endpoint_gap": {
+              "positive": 279,
+              "negative": 24,
+              "unknown": 3
+            },
+            "optimized_endpoint_gap": {
+              "positive": 116,
+              "negative": 167,
+              "unknown": 23
+            },
+            "selected_new_open_edge_endpoint_collapse": {
+              "positive": 11,
+              "negative": 230,
+              "unknown": 65
+            },
+            "optimized_new_open_edge_endpoint_collapse": {
+              "positive": 13,
+              "negative": 231,
+              "unknown": 62
+            },
+            "fit_face_residual": {
+              "positive": 10,
+              "negative": 296,
+              "unknown": 0
+            },
+            "fit_curve_residual": {
+              "positive": 0,
+              "negative": 306,
+              "unknown": 0
+            },
+            "owner_independent": {
+              "positive": 299,
+              "negative": 7,
+              "unknown": 0
+            },
+            "owner_after": {
+              "positive": 296,
+              "negative": 10,
+              "unknown": 0
+            },
+            "closed_failed_owner_gap": {
+              "positive": 134,
+              "negative": 172,
+              "unknown": 0
+            },
+            "optimization_face_away": {
+              "positive": 300,
+              "negative": 6,
+              "unknown": 0
+            },
+            "optimization_edge_away": {
+              "positive": 289,
+              "negative": 17,
+              "unknown": 0
+            },
+            "sewing_free_edges": {
+              "positive": 239,
+              "negative": 67,
+              "unknown": 0
+            },
+            "saved_near_free_edges": {
+              "positive": 115,
+              "negative": 191,
+              "unknown": 0
+            }
+          }
+        },
+        "persistent:candidate": {
+          "denominator": 256,
+          "verified_traces": 256,
+          "terminal": {
+            "native_valid": 0,
+            "trim_gate": 47,
+            "solid_construction": 205,
+            "saved_step_rejected": 4,
+            "native_readback_invalid": 0,
+            "unresolved": 0,
+            "unknown": 0
+          },
+          "raw_topology_counts": {
+            "exact": 180,
+            "inexact": 76
+          },
+          "key_observations_at_0.006": {
+            "face_without_boundary": {
+              "positive": 1,
+              "negative": 255,
+              "unknown": 0
+            },
+            "never_wire": {
+              "positive": 0,
+              "negative": 255,
+              "unknown": 1
+            },
+            "never_closed_admitted": {
+              "positive": 63,
+              "negative": 192,
+              "unknown": 1
+            },
+            "closed_admitted_still_failed": {
+              "positive": 153,
+              "negative": 103,
+              "unknown": 0
+            },
+            "strict_closed_candidate_failed": {
+              "positive": 144,
+              "negative": 112,
+              "unknown": 0
+            },
+            "final_success_discarded_wire": {
+              "positive": 90,
+              "negative": 166,
+              "unknown": 0
+            },
+            "raw_extra_gt_pair": {
+              "positive": 59,
+              "negative": 197,
+              "unknown": 0
+            },
+            "raw_missing_gt_pair": {
+              "positive": 36,
+              "negative": 220,
+              "unknown": 0
+            },
+            "raw_duplicate_directed_pair": {
+              "positive": 0,
+              "negative": 256,
+              "unknown": 0
+            },
+            "raw_same_face_pair": {
+              "positive": 0,
+              "negative": 256,
+              "unknown": 0
+            },
+            "face_count_mismatch": {
+              "positive": 0,
+              "negative": 256,
+              "unknown": 0
+            },
+            "selection_removed_gt_pair": {
+              "positive": 1,
+              "negative": 255,
+              "unknown": 0
+            },
+            "reciprocal_excess_disagreement": {
+              "positive": 230,
+              "negative": 17,
+              "unknown": 9
+            },
+            "raw_new_cross_pair_curve_nearness": {
+              "positive": 13,
+              "negative": 219,
+              "unknown": 24
+            },
+            "raw_new_face_grid_nearness": {
+              "positive": 2,
+              "negative": 254,
+              "unknown": 0
+            },
+            "selected_endpoint_gap": {
+              "positive": 232,
+              "negative": 20,
+              "unknown": 4
+            },
+            "optimized_endpoint_gap": {
+              "positive": 96,
+              "negative": 143,
+              "unknown": 17
+            },
+            "selected_new_open_edge_endpoint_collapse": {
+              "positive": 5,
+              "negative": 194,
+              "unknown": 57
+            },
+            "optimized_new_open_edge_endpoint_collapse": {
+              "positive": 7,
+              "negative": 194,
+              "unknown": 55
+            },
+            "fit_face_residual": {
+              "positive": 13,
+              "negative": 243,
+              "unknown": 0
+            },
+            "fit_curve_residual": {
+              "positive": 0,
+              "negative": 256,
+              "unknown": 0
+            },
+            "owner_independent": {
+              "positive": 249,
+              "negative": 7,
+              "unknown": 0
+            },
+            "owner_after": {
+              "positive": 246,
+              "negative": 10,
+              "unknown": 0
+            },
+            "closed_failed_owner_gap": {
+              "positive": 123,
+              "negative": 133,
+              "unknown": 0
+            },
+            "optimization_face_away": {
+              "positive": 254,
+              "negative": 2,
+              "unknown": 0
+            },
+            "optimization_edge_away": {
+              "positive": 246,
+              "negative": 10,
+              "unknown": 0
+            },
+            "sewing_free_edges": {
+              "positive": 201,
+              "negative": 55,
+              "unknown": 0
+            },
+            "saved_near_free_edges": {
+              "positive": 100,
+              "negative": 156,
+              "unknown": 0
+            }
+          }
+        },
+        "persistent:baseline": {
+          "denominator": 256,
+          "verified_traces": 256,
+          "terminal": {
+            "native_valid": 0,
+            "trim_gate": 51,
+            "solid_construction": 202,
+            "saved_step_rejected": 3,
+            "native_readback_invalid": 0,
+            "unresolved": 0,
+            "unknown": 0
+          },
+          "raw_topology_counts": {
+            "exact": 181,
+            "inexact": 75
+          },
+          "key_observations_at_0.006": {
+            "face_without_boundary": {
+              "positive": 1,
+              "negative": 255,
+              "unknown": 0
+            },
+            "never_wire": {
+              "positive": 0,
+              "negative": 255,
+              "unknown": 1
+            },
+            "never_closed_admitted": {
+              "positive": 60,
+              "negative": 196,
+              "unknown": 0
+            },
+            "closed_admitted_still_failed": {
+              "positive": 154,
+              "negative": 102,
+              "unknown": 0
+            },
+            "strict_closed_candidate_failed": {
+              "positive": 149,
+              "negative": 107,
+              "unknown": 0
+            },
+            "final_success_discarded_wire": {
+              "positive": 103,
+              "negative": 153,
+              "unknown": 0
+            },
+            "raw_extra_gt_pair": {
+              "positive": 61,
+              "negative": 195,
+              "unknown": 0
+            },
+            "raw_missing_gt_pair": {
+              "positive": 32,
+              "negative": 224,
+              "unknown": 0
+            },
+            "raw_duplicate_directed_pair": {
+              "positive": 0,
+              "negative": 256,
+              "unknown": 0
+            },
+            "raw_same_face_pair": {
+              "positive": 0,
+              "negative": 256,
+              "unknown": 0
+            },
+            "face_count_mismatch": {
+              "positive": 0,
+              "negative": 256,
+              "unknown": 0
+            },
+            "selection_removed_gt_pair": {
+              "positive": 2,
+              "negative": 254,
+              "unknown": 0
+            },
+            "reciprocal_excess_disagreement": {
+              "positive": 240,
+              "negative": 12,
+              "unknown": 4
+            },
+            "raw_new_cross_pair_curve_nearness": {
+              "positive": 13,
+              "negative": 221,
+              "unknown": 22
+            },
+            "raw_new_face_grid_nearness": {
+              "positive": 0,
+              "negative": 256,
+              "unknown": 0
+            },
+            "selected_endpoint_gap": {
+              "positive": 232,
+              "negative": 21,
+              "unknown": 3
+            },
+            "optimized_endpoint_gap": {
+              "positive": 105,
+              "negative": 132,
+              "unknown": 19
+            },
+            "selected_new_open_edge_endpoint_collapse": {
+              "positive": 8,
+              "negative": 190,
+              "unknown": 58
+            },
+            "optimized_new_open_edge_endpoint_collapse": {
+              "positive": 10,
+              "negative": 191,
+              "unknown": 55
+            },
+            "fit_face_residual": {
+              "positive": 6,
+              "negative": 250,
+              "unknown": 0
+            },
+            "fit_curve_residual": {
+              "positive": 0,
+              "negative": 256,
+              "unknown": 0
+            },
+            "owner_independent": {
+              "positive": 252,
+              "negative": 4,
+              "unknown": 0
+            },
+            "owner_after": {
+              "positive": 251,
+              "negative": 5,
+              "unknown": 0
+            },
+            "closed_failed_owner_gap": {
+              "positive": 126,
+              "negative": 130,
+              "unknown": 0
+            },
+            "optimization_face_away": {
+              "positive": 251,
+              "negative": 5,
+              "unknown": 0
+            },
+            "optimization_edge_away": {
+              "positive": 245,
+              "negative": 11,
+              "unknown": 0
+            },
+            "sewing_free_edges": {
+              "positive": 198,
+              "negative": 58,
+              "unknown": 0
+            },
+            "saved_near_free_edges": {
+              "positive": 104,
+              "negative": 152,
+              "unknown": 0
+            }
+          }
+        },
+        "regressed:candidate": {
+          "denominator": 57,
+          "verified_traces": 57,
+          "terminal": {
+            "native_valid": 0,
+            "trim_gate": 3,
+            "solid_construction": 50,
+            "saved_step_rejected": 3,
+            "native_readback_invalid": 1,
+            "unresolved": 0,
+            "unknown": 0
+          },
+          "raw_topology_counts": {
+            "inexact": 8,
+            "exact": 49
+          },
+          "key_observations_at_0.006": {
+            "face_without_boundary": {
+              "positive": 0,
+              "negative": 57,
+              "unknown": 0
+            },
+            "never_wire": {
+              "positive": 0,
+              "negative": 57,
+              "unknown": 0
+            },
+            "never_closed_admitted": {
+              "positive": 8,
+              "negative": 49,
+              "unknown": 0
+            },
+            "closed_admitted_still_failed": {
+              "positive": 31,
+              "negative": 26,
+              "unknown": 0
+            },
+            "strict_closed_candidate_failed": {
+              "positive": 30,
+              "negative": 27,
+              "unknown": 0
+            },
+            "final_success_discarded_wire": {
+              "positive": 21,
+              "negative": 36,
+              "unknown": 0
+            },
+            "raw_extra_gt_pair": {
+              "positive": 7,
+              "negative": 50,
+              "unknown": 0
+            },
+            "raw_missing_gt_pair": {
+              "positive": 2,
+              "negative": 55,
+              "unknown": 0
+            },
+            "raw_duplicate_directed_pair": {
+              "positive": 0,
+              "negative": 57,
+              "unknown": 0
+            },
+            "raw_same_face_pair": {
+              "positive": 0,
+              "negative": 57,
+              "unknown": 0
+            },
+            "face_count_mismatch": {
+              "positive": 0,
+              "negative": 57,
+              "unknown": 0
+            },
+            "selection_removed_gt_pair": {
+              "positive": 1,
+              "negative": 56,
+              "unknown": 0
+            },
+            "reciprocal_excess_disagreement": {
+              "positive": 43,
+              "negative": 13,
+              "unknown": 1
+            },
+            "raw_new_cross_pair_curve_nearness": {
+              "positive": 6,
+              "negative": 49,
+              "unknown": 2
+            },
+            "raw_new_face_grid_nearness": {
+              "positive": 0,
+              "negative": 57,
+              "unknown": 0
+            },
+            "selected_endpoint_gap": {
+              "positive": 44,
+              "negative": 13,
+              "unknown": 0
+            },
+            "optimized_endpoint_gap": {
+              "positive": 12,
+              "negative": 41,
+              "unknown": 4
+            },
+            "selected_new_open_edge_endpoint_collapse": {
+              "positive": 3,
+              "negative": 49,
+              "unknown": 5
+            },
+            "optimized_new_open_edge_endpoint_collapse": {
+              "positive": 5,
+              "negative": 48,
+              "unknown": 4
+            },
+            "fit_face_residual": {
+              "positive": 0,
+              "negative": 57,
+              "unknown": 0
+            },
+            "fit_curve_residual": {
+              "positive": 0,
+              "negative": 57,
+              "unknown": 0
+            },
+            "owner_independent": {
+              "positive": 56,
+              "negative": 1,
+              "unknown": 0
+            },
+            "owner_after": {
+              "positive": 54,
+              "negative": 3,
+              "unknown": 0
+            },
+            "closed_failed_owner_gap": {
+              "positive": 6,
+              "negative": 51,
+              "unknown": 0
+            },
+            "optimization_face_away": {
+              "positive": 56,
+              "negative": 1,
+              "unknown": 0
+            },
+            "optimization_edge_away": {
+              "positive": 55,
+              "negative": 2,
+              "unknown": 0
+            },
+            "sewing_free_edges": {
+              "positive": 50,
+              "negative": 7,
+              "unknown": 0
+            },
+            "saved_near_free_edges": {
+              "positive": 14,
+              "negative": 43,
+              "unknown": 0
+            }
+          }
+        },
+        "regressed:baseline": {
+          "denominator": 57,
+          "verified_traces": 57,
+          "terminal": {
+            "native_valid": 57,
+            "trim_gate": 0,
+            "solid_construction": 0,
+            "saved_step_rejected": 0,
+            "native_readback_invalid": 0,
+            "unresolved": 0,
+            "unknown": 0
+          },
+          "raw_topology_counts": {
+            "inexact": 3,
+            "exact": 54
+          },
+          "key_observations_at_0.006": {
+            "face_without_boundary": {
+              "positive": 0,
+              "negative": 57,
+              "unknown": 0
+            },
+            "never_wire": {
+              "positive": 0,
+              "negative": 57,
+              "unknown": 0
+            },
+            "never_closed_admitted": {
+              "positive": 0,
+              "negative": 57,
+              "unknown": 0
+            },
+            "closed_admitted_still_failed": {
+              "positive": 4,
+              "negative": 53,
+              "unknown": 0
+            },
+            "strict_closed_candidate_failed": {
+              "positive": 3,
+              "negative": 54,
+              "unknown": 0
+            },
+            "final_success_discarded_wire": {
+              "positive": 2,
+              "negative": 55,
+              "unknown": 0
+            },
+            "raw_extra_gt_pair": {
+              "positive": 3,
+              "negative": 54,
+              "unknown": 0
+            },
+            "raw_missing_gt_pair": {
+              "positive": 0,
+              "negative": 57,
+              "unknown": 0
+            },
+            "raw_duplicate_directed_pair": {
+              "positive": 0,
+              "negative": 57,
+              "unknown": 0
+            },
+            "raw_same_face_pair": {
+              "positive": 0,
+              "negative": 57,
+              "unknown": 0
+            },
+            "face_count_mismatch": {
+              "positive": 0,
+              "negative": 57,
+              "unknown": 0
+            },
+            "selection_removed_gt_pair": {
+              "positive": 1,
+              "negative": 56,
+              "unknown": 0
+            },
+            "reciprocal_excess_disagreement": {
+              "positive": 49,
+              "negative": 8,
+              "unknown": 0
+            },
+            "raw_new_cross_pair_curve_nearness": {
+              "positive": 7,
+              "negative": 49,
+              "unknown": 1
+            },
+            "raw_new_face_grid_nearness": {
+              "positive": 1,
+              "negative": 56,
+              "unknown": 0
+            },
+            "selected_endpoint_gap": {
+              "positive": 45,
+              "negative": 12,
+              "unknown": 0
+            },
+            "optimized_endpoint_gap": {
+              "positive": 4,
+              "negative": 51,
+              "unknown": 2
+            },
+            "selected_new_open_edge_endpoint_collapse": {
+              "positive": 5,
+              "negative": 51,
+              "unknown": 1
+            },
+            "optimized_new_open_edge_endpoint_collapse": {
+              "positive": 6,
+              "negative": 50,
+              "unknown": 1
+            },
+            "fit_face_residual": {
+              "positive": 0,
+              "negative": 57,
+              "unknown": 0
+            },
+            "fit_curve_residual": {
+              "positive": 0,
+              "negative": 57,
+              "unknown": 0
+            },
+            "owner_independent": {
+              "positive": 55,
+              "negative": 2,
+              "unknown": 0
+            },
+            "owner_after": {
+              "positive": 54,
+              "negative": 3,
+              "unknown": 0
+            },
+            "closed_failed_owner_gap": {
+              "positive": 3,
+              "negative": 54,
+              "unknown": 0
+            },
+            "optimization_face_away": {
+              "positive": 55,
+              "negative": 2,
+              "unknown": 0
+            },
+            "optimization_edge_away": {
+              "positive": 57,
+              "negative": 0,
+              "unknown": 0
+            },
+            "sewing_free_edges": {
+              "positive": 6,
+              "negative": 51,
+              "unknown": 0
+            },
+            "saved_near_free_edges": {
+              "positive": 0,
+              "negative": 57,
+              "unknown": 0
+            }
+          }
+        },
+        "rescued:candidate": {
+          "denominator": 50,
+          "verified_traces": 50,
+          "terminal": {
+            "native_valid": 50,
+            "trim_gate": 0,
+            "solid_construction": 0,
+            "saved_step_rejected": 0,
+            "native_readback_invalid": 0,
+            "unresolved": 0,
+            "unknown": 0
+          },
+          "raw_topology_counts": {
+            "exact": 42,
+            "inexact": 8
+          },
+          "key_observations_at_0.006": {
+            "face_without_boundary": {
+              "positive": 0,
+              "negative": 50,
+              "unknown": 0
+            },
+            "never_wire": {
+              "positive": 0,
+              "negative": 50,
+              "unknown": 0
+            },
+            "never_closed_admitted": {
+              "positive": 0,
+              "negative": 50,
+              "unknown": 0
+            },
+            "closed_admitted_still_failed": {
+              "positive": 3,
+              "negative": 47,
+              "unknown": 0
+            },
+            "strict_closed_candidate_failed": {
+              "positive": 3,
+              "negative": 47,
+              "unknown": 0
+            },
+            "final_success_discarded_wire": {
+              "positive": 4,
+              "negative": 46,
+              "unknown": 0
+            },
+            "raw_extra_gt_pair": {
+              "positive": 7,
+              "negative": 43,
+              "unknown": 0
+            },
+            "raw_missing_gt_pair": {
+              "positive": 1,
+              "negative": 49,
+              "unknown": 0
+            },
+            "raw_duplicate_directed_pair": {
+              "positive": 0,
+              "negative": 50,
+              "unknown": 0
+            },
+            "raw_same_face_pair": {
+              "positive": 0,
+              "negative": 50,
+              "unknown": 0
+            },
+            "face_count_mismatch": {
+              "positive": 0,
+              "negative": 50,
+              "unknown": 0
+            },
+            "selection_removed_gt_pair": {
+              "positive": 0,
+              "negative": 50,
+              "unknown": 0
+            },
+            "reciprocal_excess_disagreement": {
+              "positive": 34,
+              "negative": 14,
+              "unknown": 2
+            },
+            "raw_new_cross_pair_curve_nearness": {
+              "positive": 3,
+              "negative": 45,
+              "unknown": 2
+            },
+            "raw_new_face_grid_nearness": {
+              "positive": 0,
+              "negative": 50,
+              "unknown": 0
+            },
+            "selected_endpoint_gap": {
+              "positive": 47,
+              "negative": 3,
+              "unknown": 0
+            },
+            "optimized_endpoint_gap": {
+              "positive": 5,
+              "negative": 40,
+              "unknown": 5
+            },
+            "selected_new_open_edge_endpoint_collapse": {
+              "positive": 1,
+              "negative": 42,
+              "unknown": 7
+            },
+            "optimized_new_open_edge_endpoint_collapse": {
+              "positive": 0,
+              "negative": 43,
+              "unknown": 7
+            },
+            "fit_face_residual": {
+              "positive": 4,
+              "negative": 46,
+              "unknown": 0
+            },
+            "fit_curve_residual": {
+              "positive": 0,
+              "negative": 50,
+              "unknown": 0
+            },
+            "owner_independent": {
+              "positive": 47,
+              "negative": 3,
+              "unknown": 0
+            },
+            "owner_after": {
+              "positive": 44,
+              "negative": 6,
+              "unknown": 0
+            },
+            "closed_failed_owner_gap": {
+              "positive": 1,
+              "negative": 49,
+              "unknown": 0
+            },
+            "optimization_face_away": {
+              "positive": 49,
+              "negative": 1,
+              "unknown": 0
+            },
+            "optimization_edge_away": {
+              "positive": 43,
+              "negative": 7,
+              "unknown": 0
+            },
+            "sewing_free_edges": {
+              "positive": 3,
+              "negative": 47,
+              "unknown": 0
+            },
+            "saved_near_free_edges": {
+              "positive": 0,
+              "negative": 50,
+              "unknown": 0
+            }
+          }
+        },
+        "rescued:baseline": {
+          "denominator": 50,
+          "verified_traces": 50,
+          "terminal": {
+            "native_valid": 0,
+            "trim_gate": 0,
+            "solid_construction": 44,
+            "saved_step_rejected": 5,
+            "native_readback_invalid": 1,
+            "unresolved": 0,
+            "unknown": 0
+          },
+          "raw_topology_counts": {
+            "exact": 42,
+            "inexact": 8
+          },
+          "key_observations_at_0.006": {
+            "face_without_boundary": {
+              "positive": 0,
+              "negative": 50,
+              "unknown": 0
+            },
+            "never_wire": {
+              "positive": 0,
+              "negative": 50,
+              "unknown": 0
+            },
+            "never_closed_admitted": {
+              "positive": 2,
+              "negative": 48,
+              "unknown": 0
+            },
+            "closed_admitted_still_failed": {
+              "positive": 19,
+              "negative": 31,
+              "unknown": 0
+            },
+            "strict_closed_candidate_failed": {
+              "positive": 18,
+              "negative": 32,
+              "unknown": 0
+            },
+            "final_success_discarded_wire": {
+              "positive": 18,
+              "negative": 32,
+              "unknown": 0
+            },
+            "raw_extra_gt_pair": {
+              "positive": 8,
+              "negative": 42,
+              "unknown": 0
+            },
+            "raw_missing_gt_pair": {
+              "positive": 0,
+              "negative": 50,
+              "unknown": 0
+            },
+            "raw_duplicate_directed_pair": {
+              "positive": 0,
+              "negative": 50,
+              "unknown": 0
+            },
+            "raw_same_face_pair": {
+              "positive": 0,
+              "negative": 50,
+              "unknown": 0
+            },
+            "face_count_mismatch": {
+              "positive": 0,
+              "negative": 50,
+              "unknown": 0
+            },
+            "selection_removed_gt_pair": {
+              "positive": 0,
+              "negative": 50,
+              "unknown": 0
+            },
+            "reciprocal_excess_disagreement": {
+              "positive": 39,
+              "negative": 8,
+              "unknown": 3
+            },
+            "raw_new_cross_pair_curve_nearness": {
+              "positive": 4,
+              "negative": 43,
+              "unknown": 3
+            },
+            "raw_new_face_grid_nearness": {
+              "positive": 1,
+              "negative": 49,
+              "unknown": 0
+            },
+            "selected_endpoint_gap": {
+              "positive": 47,
+              "negative": 3,
+              "unknown": 0
+            },
+            "optimized_endpoint_gap": {
+              "positive": 11,
+              "negative": 35,
+              "unknown": 4
+            },
+            "selected_new_open_edge_endpoint_collapse": {
+              "positive": 3,
+              "negative": 40,
+              "unknown": 7
+            },
+            "optimized_new_open_edge_endpoint_collapse": {
+              "positive": 3,
+              "negative": 40,
+              "unknown": 7
+            },
+            "fit_face_residual": {
+              "positive": 4,
+              "negative": 46,
+              "unknown": 0
+            },
+            "fit_curve_residual": {
+              "positive": 0,
+              "negative": 50,
+              "unknown": 0
+            },
+            "owner_independent": {
+              "positive": 47,
+              "negative": 3,
+              "unknown": 0
+            },
+            "owner_after": {
+              "positive": 45,
+              "negative": 5,
+              "unknown": 0
+            },
+            "closed_failed_owner_gap": {
+              "positive": 8,
+              "negative": 42,
+              "unknown": 0
+            },
+            "optimization_face_away": {
+              "positive": 49,
+              "negative": 1,
+              "unknown": 0
+            },
+            "optimization_edge_away": {
+              "positive": 44,
+              "negative": 6,
+              "unknown": 0
+            },
+            "sewing_free_edges": {
+              "positive": 41,
+              "negative": 9,
+              "unknown": 0
+            },
+            "saved_near_free_edges": {
+              "positive": 11,
+              "negative": 39,
+              "unknown": 0
+            }
+          }
+        }
+      },
+      "stratified_failure_mechanisms": {
+        "interpretation": "Post-hoc descriptive stratification, not a preregistered causal test; full evaluation metrics and the dynamically derived main failure denominator are unchanged. Exact adjacency checks only face-pair adjacency, not complete B-Rep topology or boundary geometry.",
+        "main_failure_denominator": 313,
+        "threshold": 0.006,
+        "strata": {
+          "all_failed_adjacency_exact": {
+            "denominator": 229,
+            "ids": [
+              "00001926",
+              "00005247",
+              "00016984",
+              "00021937",
+              "00021948",
+              "00025814",
+              "00027421",
+              "00031302",
+              "00042408",
+              "00044176",
+              "00055503",
+              "00055963",
+              "00060075",
+              "00068246",
+              "00071931",
+              "00072791",
+              "00076215",
+              "00081261",
+              "00092425",
+              "00109387",
+              "00113091",
+              "00114804",
+              "00135497",
+              "00137527",
+              "00139443",
+              "00141434",
+              "00144225",
+              "00144730",
+              "00157099",
+              "00160940",
+              "00165264",
+              "00166136",
+              "00168843",
+              "00177495",
+              "00181041",
+              "00187336",
+              "00205239",
+              "00206205",
+              "00207354",
+              "00210133",
+              "00214920",
+              "00215870",
+              "00217105",
+              "00218122",
+              "00218412",
+              "00218731",
+              "00219891",
+              "00219937",
+              "00221011",
+              "00223640",
+              "00223857",
+              "00229197",
+              "00230879",
+              "00238109",
+              "00240380",
+              "00242463",
+              "00243943",
+              "00248013",
+              "00249913",
+              "00256640",
+              "00280969",
+              "00282194",
+              "00284915",
+              "00285070",
+              "00287841",
+              "00289780",
+              "00292992",
+              "00295220",
+              "00296830",
+              "00296928",
+              "00296942",
+              "00297204",
+              "00300613",
+              "00306206",
+              "00306552",
+              "00306910",
+              "00308173",
+              "00308263",
+              "00309458",
+              "00314630",
+              "00317683",
+              "00318785",
+              "00319953",
+              "00332418",
+              "00339603",
+              "00349126",
+              "00354124",
+              "00359129",
+              "00360141",
+              "00360415",
+              "00369976",
+              "00372804",
+              "00375802",
+              "00379362",
+              "00381705",
+              "00388964",
+              "00406716",
+              "00410883",
+              "00417177",
+              "00418756",
+              "00420544",
+              "00439331",
+              "00442761",
+              "00443977",
+              "00446595",
+              "00453108",
+              "00457738",
+              "00464754",
+              "00465451",
+              "00466732",
+              "00474374",
+              "00480145",
+              "00486789",
+              "00488382",
+              "00492810",
+              "00501130",
+              "00503527",
+              "00505953",
+              "00506139",
+              "00509563",
+              "00510611",
+              "00518528",
+              "00520189",
+              "00523885",
+              "00531450",
+              "00533990",
+              "00540858",
+              "00541894",
+              "00546841",
+              "00551214",
+              "00578255",
+              "00579385",
+              "00588478",
+              "00590625",
+              "00598784",
+              "00604040",
+              "00606036",
+              "00607573",
+              "00613076",
+              "00613112",
+              "00616846",
+              "00617241",
+              "00619236",
+              "00624661",
+              "00629874",
+              "00640423",
+              "00642249",
+              "00642721",
+              "00646926",
+              "00655174",
+              "00655499",
+              "00658428",
+              "00659133",
+              "00659675",
+              "00660215",
+              "00662950",
+              "00664484",
+              "00669451",
+              "00673869",
+              "00682248",
+              "00683308",
+              "00684934",
+              "00685693",
+              "00685969",
+              "00696927",
+              "00698985",
+              "00699311",
+              "00705130",
+              "00707343",
+              "00707665",
+              "00728822",
+              "00741878",
+              "00748963",
+              "00774679",
+              "00776846",
+              "00776857",
+              "00779330",
+              "00783444",
+              "00783533",
+              "00784713",
+              "00791533",
+              "00797376",
+              "00797686",
+              "00798773",
+              "00800467",
+              "00809525",
+              "00814792",
+              "00817888",
+              "00827871",
+              "00828031",
+              "00828903",
+              "00829167",
+              "00832036",
+              "00833602",
+              "00836263",
+              "00837823",
+              "00847353",
+              "00854050",
+              "00861651",
+              "00863328",
+              "00869029",
+              "00874887",
+              "00891411",
+              "00894542",
+              "00896572",
+              "00896733",
+              "00896935",
+              "00904465",
+              "00919405",
+              "00919727",
+              "00921370",
+              "00924953",
+              "00928617",
+              "00929577",
+              "00932166",
+              "00940597",
+              "00943295",
+              "00947632",
+              "00950637",
+              "00954340",
+              "00954859",
+              "00960070",
+              "00962959",
+              "00969037",
+              "00980946",
+              "00987922",
+              "00990978",
+              "00993199",
+              "00997577"
+            ],
+            "terminal_counts": {
+              "native_readback_invalid": 1,
+              "saved_step_rejected": 7,
+              "solid_construction": 196,
+              "trim_gate": 25
+            },
+            "observations": {
+              "owner_after": {
+                "positive": 217,
+                "negative": 12,
+                "unknown": 0
+              },
+              "strict_closed_candidate_failed": {
+                "positive": 142,
+                "negative": 87,
+                "unknown": 0
+              },
+              "never_closed_admitted": {
+                "positive": 16,
+                "negative": 213,
+                "unknown": 0
+              },
+              "final_success_discarded_wire": {
+                "positive": 54,
+                "negative": 175,
+                "unknown": 0
+              }
+            }
+          },
+          "all_failed_adjacency_inexact": {
+            "denominator": 84,
+            "ids": [
+              "00007551",
+              "00016936",
+              "00026379",
+              "00032221",
+              "00042493",
+              "00043034",
+              "00052336",
+              "00086425",
+              "00101718",
+              "00110206",
+              "00126894",
+              "00130510",
+              "00161733",
+              "00168790",
+              "00170653",
+              "00180090",
+              "00191179",
+              "00222985",
+              "00234423",
+              "00236865",
+              "00239870",
+              "00256514",
+              "00272362",
+              "00272459",
+              "00283762",
+              "00293398",
+              "00295085",
+              "00299978",
+              "00315386",
+              "00321198",
+              "00329909",
+              "00335203",
+              "00359391",
+              "00374892",
+              "00388341",
+              "00419857",
+              "00433597",
+              "00474378",
+              "00482997",
+              "00509723",
+              "00518910",
+              "00520669",
+              "00541592",
+              "00550748",
+              "00576154",
+              "00596090",
+              "00610102",
+              "00634251",
+              "00636638",
+              "00639023",
+              "00653311",
+              "00656820",
+              "00673720",
+              "00682566",
+              "00703073",
+              "00711822",
+              "00723343",
+              "00730444",
+              "00739178",
+              "00744749",
+              "00745875",
+              "00751422",
+              "00758212",
+              "00763123",
+              "00771844",
+              "00772578",
+              "00785225",
+              "00785757",
+              "00800825",
+              "00801107",
+              "00809229",
+              "00814033",
+              "00826132",
+              "00834544",
+              "00839921",
+              "00875306",
+              "00893660",
+              "00907431",
+              "00925104",
+              "00930976",
+              "00936203",
+              "00981839",
+              "00985779",
+              "00993185"
+            ],
+            "terminal_counts": {
+              "solid_construction": 59,
+              "trim_gate": 25
+            },
+            "observations": {
+              "owner_after": {
+                "positive": 83,
+                "negative": 1,
+                "unknown": 0
+              },
+              "strict_closed_candidate_failed": {
+                "positive": 32,
+                "negative": 52,
+                "unknown": 0
+              },
+              "never_closed_admitted": {
+                "positive": 55,
+                "negative": 28,
+                "unknown": 1
+              },
+              "final_success_discarded_wire": {
+                "positive": 57,
+                "negative": 27,
+                "unknown": 0
+              }
+            }
+          },
+          "regressed_adjacency_exact": {
+            "denominator": 49,
+            "ids": [
+              "00055963",
+              "00060075",
+              "00072791",
+              "00076215",
+              "00109387",
+              "00114804",
+              "00144730",
+              "00160940",
+              "00207354",
+              "00214920",
+              "00230879",
+              "00238109",
+              "00248013",
+              "00296942",
+              "00297204",
+              "00308263",
+              "00388964",
+              "00417177",
+              "00420544",
+              "00480145",
+              "00503527",
+              "00505953",
+              "00506139",
+              "00604040",
+              "00606036",
+              "00613112",
+              "00617241",
+              "00624661",
+              "00642721",
+              "00655499",
+              "00660215",
+              "00673869",
+              "00683308",
+              "00685969",
+              "00698985",
+              "00774679",
+              "00797376",
+              "00809525",
+              "00827871",
+              "00828903",
+              "00847353",
+              "00894542",
+              "00896733",
+              "00919727",
+              "00928617",
+              "00947632",
+              "00962959",
+              "00980946",
+              "00990978"
+            ],
+            "terminal_counts": {
+              "native_readback_invalid": 1,
+              "saved_step_rejected": 3,
+              "solid_construction": 42,
+              "trim_gate": 3
+            },
+            "observations": {
+              "owner_after": {
+                "positive": 46,
+                "negative": 3,
+                "unknown": 0
+              },
+              "strict_closed_candidate_failed": {
+                "positive": 28,
+                "negative": 21,
+                "unknown": 0
+              },
+              "never_closed_admitted": {
+                "positive": 3,
+                "negative": 46,
+                "unknown": 0
+              },
+              "final_success_discarded_wire": {
+                "positive": 15,
+                "negative": 34,
+                "unknown": 0
+              }
+            }
+          }
+        }
+      },
+      "optimization_counterfactual": {
+        "denominator": 19,
+        "ids": [
+          "00007551",
+          "00021937",
+          "00043034",
+          "00144730",
+          "00187336",
+          "00289780",
+          "00297204",
+          "00308263",
+          "00339603",
+          "00381705",
+          "00388341",
+          "00503527",
+          "00505953",
+          "00533990",
+          "00617241",
+          "00798773",
+          "00827871",
+          "00869029",
+          "00928617"
+        ],
+        "all_records_verified_against_source": true,
+        "fit_verified_trace_count": 19,
+        "all_observation_predicate_comparisons": 2128,
+        "cases": [
+          {
+            "id": "00007551",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          },
+          {
+            "id": "00021937",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          },
+          {
+            "id": "00043034",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          },
+          {
+            "id": "00144730",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          },
+          {
+            "id": "00187336",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          },
+          {
+            "id": "00289780",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          },
+          {
+            "id": "00297204",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          },
+          {
+            "id": "00308263",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          },
+          {
+            "id": "00339603",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          },
+          {
+            "id": "00381705",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          },
+          {
+            "id": "00388341",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          },
+          {
+            "id": "00503527",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          },
+          {
+            "id": "00505953",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          },
+          {
+            "id": "00533990",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          },
+          {
+            "id": "00617241",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          },
+          {
+            "id": "00798773",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          },
+          {
+            "id": "00827871",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          },
+          {
+            "id": "00869029",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          },
+          {
+            "id": "00928617",
+            "fit_trace_verified": true,
+            "optimized_trace_verified": true,
+            "same_raw_input_sha256": true,
+            "same_selected_arrays": {
+              "selected_faces": true,
+              "selected_edges": true,
+              "selected_connectivity": true
+            }
+          }
+        ],
+        "report_sha256": "21692988f398c536da5b0d140155dfb50d0b9964cbf9d81f5e57cd3df33b8397"
+      },
+      "cases_sha256": "f097d8aeac535b509a15985d7f11a487838cec37661492cffb52484a85408a98",
+      "summary_sha256": "a3dfa0ed4d9dbf8d78cfe3d682139e16cf9ef02e82e8e6b8b4e6a7a9d86b978f",
+      "compact_summary_sha256": "97e8f0b5328f29f0fdc5df8167eead1eca3dc83f62c2faedf2c16a95afd3f5d2"
+    }
+  },
+  "status": "passed"
+}

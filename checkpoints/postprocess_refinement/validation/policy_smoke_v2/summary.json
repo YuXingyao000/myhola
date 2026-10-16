@@ -1,0 +1,92 @@
+[
+  {
+    "id": "00000178",
+    "policy": "roundtrip_retry",
+    "elapsed": 2.6377315809950233,
+    "status": "accepted",
+    "chosen_path": "roundtrip_retry",
+    "native": {
+      "native_valid_solid": true,
+      "shape_type": 2,
+      "num_faces": 7,
+      "num_wires": 15,
+      "maximum_stored_tolerance": 0.008594234290218853,
+      "read_precision_mode": 0
+    }
+  },
+  {
+    "id": "00000178",
+    "policy": "fit_score_v2",
+    "elapsed": 1.9937237270059995,
+    "status": "accepted",
+    "chosen_path": "fit_score_v2",
+    "native": {
+      "native_valid_solid": true,
+      "shape_type": 2,
+      "num_faces": 7,
+      "num_wires": 15,
+      "maximum_stored_tolerance": 0.012683694859721062,
+      "read_precision_mode": 0
+    }
+  },
+  {
+    "id": "00000178",
+    "policy": "recover_v1",
+    "elapsed": 1.9901939640112687,
+    "status": "accepted",
+    "chosen_path": "legacy",
+    "native": {
+      "native_valid_solid": true,
+      "shape_type": 2,
+      "num_faces": 7,
+      "num_wires": 15,
+      "maximum_stored_tolerance": 0.012683694859721062,
+      "read_precision_mode": 0
+    }
+  },
+  {
+    "id": "00000894",
+    "policy": "roundtrip_retry",
+    "elapsed": 4.021952659997623,
+    "status": "accepted",
+    "chosen_path": "roundtrip_retry",
+    "native": {
+      "native_valid_solid": true,
+      "shape_type": 2,
+      "num_faces": 20,
+      "num_wires": 24,
+      "maximum_stored_tolerance": 0.006186827695612328,
+      "read_precision_mode": 0
+    }
+  },
+  {
+    "id": "00000894",
+    "policy": "fit_score_v2",
+    "elapsed": 3.8609440719883423,
+    "status": "accepted",
+    "chosen_path": "fit_score_v2",
+    "native": {
+      "native_valid_solid": true,
+      "shape_type": 2,
+      "num_faces": 20,
+      "num_wires": 24,
+      "maximum_stored_tolerance": 0.006186827695612328,
+      "read_precision_mode": 0
+    }
+  },
+  {
+    "id": "00000894",
+    "policy": "recover_v1",
+    "elapsed": 4.00529453199124,
+    "status": "accepted",
+    "chosen_path": "legacy",
+    "native": {
+      "native_valid_solid": true,
+      "shape_type": 2,
+      "num_faces": 20,
+      "num_wires": 24,
+      "maximum_stored_tolerance": 0.006186827695612328,
+      "read_precision_mode": 0
+    }
+  }
+]

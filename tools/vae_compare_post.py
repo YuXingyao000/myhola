@@ -1,7 +1,7 @@
 """Isolated, fixed-denominator OCC comparison for posterior-mean VAE exports.
 
 Run from the repository root with ``python -m tools.vae_compare_post``. This
-runner does not change the existing post algorithms. A hard timeout covers the
+runner selects an explicit post policy (legacy by default). A hard timeout covers the
 entire per-object subprocess, including geometry evaluation. Completed stages
 remain recorded if a later stage times out. Reinvocation resumes matching
 terminal records; algorithm failures/timeouts are not automatically retried.
@@ -29,13 +29,18 @@ from typing import Any
 
 
 METHODS = ("legacy", "joint")
-CANDIDATE_METHODS = ("joint", "intersection")
+CANDIDATE_METHODS = ("joint", "intersection", "local", "conditioned", "point_feedback",
+                     "encoder_edge_value", "encoder_gat_control")
+BASELINE_METHODS = ("legacy", "intersection", "conditioned", "encoder_gat_control")
+POST_POLICIES = ("legacy", "roundtrip_retry", "fit_score_v2", "recover_v1")
 
 
-def comparison_methods(candidate_method="joint"):
+def comparison_methods(candidate_method="joint", baseline_method="legacy"):
     if candidate_method not in CANDIDATE_METHODS:
         raise ValueError(f"Unsupported candidate method: {candidate_method}")
-    return ("legacy", candidate_method)
+    if baseline_method not in BASELINE_METHODS or baseline_method == candidate_method:
+        raise ValueError(f"Unsupported baseline/candidate pair: {baseline_method}/{candidate_method}")
+    return (baseline_method, candidate_method)
 
 PROTOCOL_VERSION = "vae_compare_post_v1"
 SAMPLING = {
@@ -149,19 +154,32 @@ def read_step_at_precision(path: Path, mode: int = 0, precision: float = 0.1):
 def native_validity(shape) -> dict[str, Any]:
     """Analyze the as-read shape before any ShapeFix mutation or triangulation."""
     from OCC.Core.BRepCheck import BRepCheck_Analyzer
-    from OCC.Core.TopAbs import TopAbs_SOLID, TopAbs_FACE, TopAbs_EDGE, TopAbs_VERTEX
+    from OCC.Core.TopAbs import TopAbs_SOLID, TopAbs_FACE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_WIRE
+    from OCC.Core.BRep import BRep_Tool
+    from OCC.Core.TopoDS import topods
     from shared.occ_utils import get_primitives
     solid_type = shape.ShapeType() == TopAbs_SOLID
     checked = bool(BRepCheck_Analyzer(shape).IsValid())
+    primitives = {"face": get_primitives(shape, TopAbs_FACE, v_remove_half=True),
+                  "edge": get_primitives(shape, TopAbs_EDGE, v_remove_half=True),
+                  "vertex": get_primitives(shape, TopAbs_VERTEX, v_remove_half=True)}
+    tolerances = {}
+    for name, cast in (("face", topods.Face), ("edge", topods.Edge), ("vertex", topods.Vertex)):
+        values = [float(BRep_Tool.Tolerance(cast(item))) for item in primitives[name]]
+        tolerances[f"native_{name}_tolerance_max"] = max(values) if values else None
+    wire_counts = [len(get_primitives(face, TopAbs_WIRE, v_remove_half=True)) for face in primitives["face"]]
     return {
         "step_readable": True,
         "shape_type": int(shape.ShapeType()),
         "native_is_solid_type": solid_type,
         "native_brepcheck_valid": checked,
         "native_valid_solid": bool(solid_type and checked),
-        "num_faces": len(get_primitives(shape, TopAbs_FACE, v_remove_half=True)),
-        "num_edges": len(get_primitives(shape, TopAbs_EDGE, v_remove_half=True)),
-        "num_vertices": len(get_primitives(shape, TopAbs_VERTEX, v_remove_half=True)),
+        "num_faces": len(primitives["face"]),
+        "num_edges": len(primitives["edge"]),
+        "num_vertices": len(primitives["vertex"]),
+        "num_face_wire_occurrences": sum(wire_counts),
+        "num_faces_with_multiple_wires": sum(n > 1 for n in wire_counts),
+        **tolerances,
     }
 
 
@@ -282,6 +300,7 @@ def execute_job(job: dict, status_path: Path) -> dict:
     import numpy as np
     started = time.monotonic()
     row = {"sample_id": job["sample_id"], "method": job["method"], "mode": job["mode"],
+           "post_policy": job.get("post_policy", "legacy"),
            "protocol_fingerprint": job["protocol_fingerprint"], "raw_sha256": job["raw_sha256"],
            "status": "running", "stage": "validate_raw", "process_pid": os.getpid(),
            "seed": stable_seed(job["sample_id"], "post"), "post_status": "not_run",
@@ -311,14 +330,25 @@ def execute_job(job: dict, status_path: Path) -> dict:
         from src.brepnet.post.construct_brep import construct_brep_for_sample
         record(stage="post", post_status="running")
         post_started = time.monotonic()
+        policy_arguments = {}
+        if job.get("post_policy", "legacy") != "legacy":
+            policy_arguments = {
+                "post_policy": job["post_policy"],
+                "deadline_monotonic": started + job["timeout_seconds"],
+            }
         construct_brep_for_sample(
             job["raw_root"], job["post_root"], job["sample_id"], v_drop_num=0,
             is_ray=False, is_log=False, is_optimize_geom=job["mode"] == "optimized",
             v_max_optimize_iter=job["max_optimize_iter"], isdebug=False,
             use_cuda=False, from_scratch=True, is_save_data=False,
+            **policy_arguments,
         )
         record(post_status="returned", post_elapsed_seconds=time.monotonic() - post_started,
                step_exists=(output / "recon_brep.step").is_file(), success_marker=(output / "success.txt").is_file())
+        diagnostics = output / "post_diagnostics.json"
+        if diagnostics.is_file():
+            record(post_diagnostics_path=str(diagnostics),
+                   post_diagnostics_sha256=sha256_file(diagnostics))
     except Exception as exc:
         traceback.print_exc()
         record(status="post_error", post_status="error", error=f"{type(exc).__name__}: {exc}")
@@ -419,6 +449,7 @@ def run_isolated_jobs(jobs: list[dict], metadata: Path, workers: int, timeout: f
                     row.setdefault("sample_id", job["sample_id"])
                     row.setdefault("method", job["method"])
                     row.setdefault("mode", job["mode"])
+                    row.setdefault("post_policy", job.get("post_policy", "legacy"))
                     row.setdefault("protocol_fingerprint", job["protocol_fingerprint"])
                     row.setdefault("raw_sha256", job["raw_sha256"])
                     if expired:
@@ -447,9 +478,9 @@ def statistics(values: list[float]) -> dict[str, Any]:
             "p90": float(np.quantile(values, 0.9)) if values else None}
 
 
-def summarize(rows: list[dict], intended: int, original_total: int, candidate_method: str = "joint") -> dict[str, Any]:
-    methods = comparison_methods(candidate_method)
-    summary = {"candidate_method": candidate_method, "intended_count_per_method": intended, "original_test_count": original_total,
+def summarize(rows: list[dict], intended: int, original_total: int, candidate_method: str = "joint", baseline_method: str = "legacy") -> dict[str, Any]:
+    methods = comparison_methods(candidate_method, baseline_method)
+    summary = {"baseline_method": baseline_method, "candidate_method": candidate_method, "intended_count_per_method": intended, "original_test_count": original_total,
                "accepted_coverage_of_original": intended / original_total, "methods": {}}
     metric_names = ("face_cd", "face_accuracy", "face_completeness", "edge_cd", "edge_accuracy", "edge_completeness")
     maps = {}
@@ -469,26 +500,26 @@ def summarize(rows: list[dict], intended: int, original_total: int, candidate_me
             "latency_seconds": {name: statistics([row.get(name) for row in selected]) for name in
                                 ("wall_seconds", "post_elapsed_seconds", "geometry_elapsed_seconds")},
         }
-    common = sorted(set(maps["legacy"]) & set(maps[candidate_method]))
+    common = sorted(set(maps[baseline_method]) & set(maps[candidate_method]))
     common = [sample_id for sample_id in common if all(maps[method][sample_id].get("geometry_status") == "ok" for method in methods)]
     summary["paired_common_geometry"] = {
         "count": len(common), "coverage_over_intended": len(common) / intended,
         "coverage_over_original_test": len(common) / original_total,
         "metrics": {name: {
             **{method: statistics([maps[method][sample_id][name] for sample_id in common]) for method in methods},
-            f"{candidate_method}_minus_legacy": statistics([maps[candidate_method][sample_id][name] - maps["legacy"][sample_id][name] for sample_id in common]),
+            f"{candidate_method}_minus_{baseline_method}": statistics([maps[candidate_method][sample_id][name] - maps[baseline_method][sample_id][name] for sample_id in common]),
         } for name in metric_names},
     }
-    transitions = {"both_valid": [], f"legacy_failed_to_{candidate_method}_valid": [],
-                   f"legacy_valid_to_{candidate_method}_failed": [], "both_failed": [], "unknown": []}
-    for sample_id in sorted(set(maps["legacy"]) | set(maps[candidate_method])):
-        old, new = maps["legacy"].get(sample_id, {}), maps[candidate_method].get(sample_id, {})
+    transitions = {"both_valid": [], f"{baseline_method}_failed_to_{candidate_method}_valid": [],
+                   f"{baseline_method}_valid_to_{candidate_method}_failed": [], "both_failed": [], "unknown": []}
+    for sample_id in sorted(set(maps[baseline_method]) | set(maps[candidate_method])):
+        old, new = maps[baseline_method].get(sample_id, {}), maps[candidate_method].get(sample_id, {})
         if old.get("status") not in TERMINAL or new.get("status") not in TERMINAL:
             category = "unknown"
         elif bool(old.get("native_valid_solid")):
-            category = "both_valid" if bool(new.get("native_valid_solid")) else f"legacy_valid_to_{candidate_method}_failed"
+            category = "both_valid" if bool(new.get("native_valid_solid")) else f"{baseline_method}_valid_to_{candidate_method}_failed"
         else:
-            category = f"legacy_failed_to_{candidate_method}_valid" if bool(new.get("native_valid_solid")) else "both_failed"
+            category = f"{baseline_method}_failed_to_{candidate_method}_valid" if bool(new.get("native_valid_solid")) else "both_failed"
         transitions[category].append(sample_id)
     summary["native_validity_transitions"] = {
         "definition": "Failed means no native valid solid in a terminal record, including missing/error/timeout; pending is unknown.",
@@ -498,12 +529,13 @@ def summarize(rows: list[dict], intended: int, original_total: int, candidate_me
 
 
 def write_summary(comparison_root: Path, mode: str, metadata: Path, ids: list[str], protocol: dict,
-                  candidate_method: str = "joint", reference_rows: list[dict] | None = None) -> dict:
+                  candidate_method: str = "joint", reference_rows: list[dict] | None = None,
+                  baseline_method: str = "legacy") -> dict:
     rows = []
     references = {row["sample_id"]: row for row in reference_rows or []}
-    for method in comparison_methods(candidate_method):
+    for method in comparison_methods(candidate_method, baseline_method):
         for sample_id in ids:
-            row = references[sample_id] if method == "legacy" and reference_rows is not None else read_json(metadata / "samples" / method / (sample_id + ".json"))
+            row = references[sample_id] if method == baseline_method and reference_rows is not None else read_json(metadata / "samples" / method / (sample_id + ".json"))
             row = dict(row)
             row.setdefault("result_origin", "current_run" if row else "not_run")
             rows.append(row if "sample_id" in row else {"sample_id": sample_id, "method": method, "mode": mode, "status": "not_run"})
@@ -516,10 +548,10 @@ def write_summary(comparison_root: Path, mode: str, metadata: Path, ids: list[st
         writer.writeheader()
         writer.writerows(rows)
     os.replace(temp, output / "samples.csv")
-    summary = summarize(rows, len(ids), protocol["original_test_count"], candidate_method=candidate_method)
+    summary = summarize(rows, len(ids), protocol["original_test_count"], candidate_method=candidate_method, baseline_method=baseline_method)
     summary.update(protocol=protocol, csv_path=str(output / "samples.csv"),
-                   reference_provenance=protocol.get("reference_legacy"),
-                   latency_note="Reference legacy latency is from its historical run; reference rows were not executed in this invocation." if reference_rows is not None else "All recorded jobs belong to this comparison root.")
+                   reference_provenance=protocol.get("reference_baseline", protocol.get("reference_legacy")),
+                   latency_note="Reference baseline latency is from its historical run; reference rows were not executed in this invocation." if reference_rows is not None else "All recorded jobs belong to this comparison root.")
     atomic_json(output / "summary.json", summary)
     return summary
 
@@ -533,8 +565,8 @@ REFERENCE_CONTRACT_FIELDS = (
 
 
 def load_reference_rows(reference_root: Path, comparison_root: Path, mode: str,
-                        ids: list[str], protocol: dict) -> tuple[list[dict], dict]:
-    """Validate and read historical legacy outcomes without rewriting any asset.
+                        ids: list[str], protocol: dict, baseline_method: str = "legacy") -> tuple[list[dict], dict]:
+    """Validate and read historical baseline outcomes without rewriting any asset.
 
     Scheduler/runner hashes may differ. Every recorded post algorithm, geometry
     sampling setting and per-ID raw hash must match. Historical fingerprints and
@@ -547,6 +579,8 @@ def load_reference_rows(reference_root: Path, comparison_root: Path, mode: str,
     source = read_json(source_path)
     if not source:
         raise ValueError(f"Missing reference protocol: {source_path}")
+    if source.get("post_policy", "legacy") != protocol.get("post_policy", "legacy"):
+        raise ValueError("Reference post_policy differs; compare post variants in separate roots")
     differences = [name for name in REFERENCE_CONTRACT_FIELDS
                    if name not in source or name not in protocol or source[name] != protocol[name]]
     if differences:
@@ -554,34 +588,41 @@ def load_reference_rows(reference_root: Path, comparison_root: Path, mode: str,
     if not source["post_algorithm_files"]:
         raise ValueError("Reference protocol has no post algorithm hashes")
     source_key = fingerprint(source)
-    source_metadata = reference_root / "metadata" / "post" / mode / "samples" / "legacy"
+    source_metadata = reference_root / "metadata" / "post" / mode / "samples" / baseline_method
     if {path.stem for path in source_metadata.glob("*.json")} != set(ids):
-        raise ValueError("Reference legacy record IDs differ from the intended split")
-    rows, record_hashes = [], {}
+        raise ValueError("Reference baseline record IDs differ from the intended split")
+    rows, record_hashes, step_hashes = [], {}, {}
     for sample_id in ids:
         path = source_metadata / (sample_id + ".json")
         row = read_json(path)
-        if row.get("sample_id") != sample_id or row.get("method") != "legacy" or row.get("mode") != mode:
+        if row.get("sample_id") != sample_id or row.get("method") != baseline_method or row.get("mode") != mode:
             raise ValueError(f"Reference record identity differs: {sample_id}")
         if row.get("status") not in TERMINAL or row.get("protocol_fingerprint") != source_key:
             raise ValueError(f"Reference record is not a matching terminal result: {sample_id}")
-        current_raw = comparison_root / "raw_predictions" / "posterior_mean" / "legacy" / sample_id / "data.npz"
-        source_raw = reference_root / "raw_predictions" / "posterior_mean" / "legacy" / sample_id / "data.npz"
+        current_raw = comparison_root / "raw_predictions" / "posterior_mean" / baseline_method / sample_id / "data.npz"
+        source_raw = reference_root / "raw_predictions" / "posterior_mean" / baseline_method / sample_id / "data.npz"
         if not current_raw.is_file() or not source_raw.is_file():
             raise ValueError(f"Cannot verify reference raw input: {sample_id}")
         current_hash = sha256_file(current_raw)
         if current_hash != row.get("raw_sha256") or sha256_file(source_raw) != current_hash:
             raise ValueError(f"Reference raw SHA256 differs: {sample_id}")
-        if row.get("step_exists") and not (reference_root / "post" / mode / "legacy" / sample_id / "recon_brep.step").is_file():
+        step_path = reference_root / "post" / mode / baseline_method / sample_id / "recon_brep.step"
+        if row.get("step_exists") and not step_path.is_file():
             raise ValueError(f"Reference record's saved STEP is missing: {sample_id}")
+        if step_path.is_file():
+            step_hashes[sample_id] = sha256_file(step_path)
         record_hashes[sample_id] = sha256_file(path)
         rows.append({**row, "result_origin": "reference_reused", "source_record_path": str(path),
-                     "source_record_sha256": record_hashes[sample_id]})
+                     "source_record_sha256": record_hashes[sample_id], "source_method": baseline_method,
+                     "source_step_path": str(step_path) if step_path.is_file() else None,
+                     "source_step_sha256": step_hashes.get(sample_id)})
     provenance = {
-        "method": "legacy", "result_origin": "reference_reused", "reference_root": str(reference_root),
+        "method": baseline_method, "result_origin": "reference_reused", "reference_root": str(reference_root),
         "source_protocol_path": str(source_path), "source_protocol_sha256": sha256_file(source_path),
         "source_protocol_fingerprint": source_key, "source_protocol": source,
         "record_count": len(rows), "record_hash_manifest_sha256": fingerprint(record_hashes),
+        "step_hash_manifest_sha256": fingerprint(step_hashes), "step_hash_count": len(step_hashes),
+        "step_hash_note": "STEP hashes are recorded at reuse time; no historical STEP hash was available for retrospective comparison.",
         "verified_contract_fields": list(REFERENCE_CONTRACT_FIELDS),
         "note": "Read-only historical terminal records; original fingerprints and historical latency preserved. Runner hash may differ; all post algorithm hashes must match.",
     }
@@ -594,8 +635,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--data-root", type=Path, required=True)
     parser.add_argument("--split-list", type=Path, required=True)
     parser.add_argument("--mode", choices=("fit_only", "optimized"), required=True)
+    parser.add_argument("--post-policy", choices=POST_POLICIES, default="legacy",
+                        help="Explicit post algorithm; model identity remains unchanged")
+    parser.add_argument("--baseline-method", choices=BASELINE_METHODS, default="legacy")
     parser.add_argument("--candidate-method", choices=CANDIDATE_METHODS, default="joint")
-    parser.add_argument("--reference-root", type=Path, help="Read-only compatible historical legacy results; never schedule legacy jobs")
+    parser.add_argument("--reference-root", type=Path, help="Read-only compatible historical baseline results; never schedule baseline jobs")
     parser.add_argument("--methods", "--method", nargs="+", choices=("legacy", *CANDIDATE_METHODS))
     parser.add_argument("--workers", type=int, default=32)
     parser.add_argument("--timeout", type=float, default=180)
@@ -607,13 +651,13 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     args = build_parser().parse_args()
-    methods = comparison_methods(args.candidate_method)
+    methods = comparison_methods(args.candidate_method, args.baseline_method)
     if args.methods is None:
         args.methods = [args.candidate_method] if args.reference_root is not None else list(methods)
     if len(args.methods) != len(set(args.methods)) or set(args.methods) - set(methods):
-        raise ValueError("--methods must be unique members of legacy and --candidate-method")
-    if args.reference_root is not None and "legacy" in args.methods:
-        raise ValueError("--reference-root is read-only reuse; do not also schedule legacy")
+        raise ValueError("--methods must be unique members of --baseline-method and --candidate-method")
+    if args.reference_root is not None and args.baseline_method in args.methods:
+        raise ValueError("--reference-root is read-only reuse; do not also schedule baseline")
     if args.workers < 1 or not math.isfinite(args.timeout) or args.timeout <= 0 or args.max_optimize_iter < 1:
         raise ValueError("workers, timeout and max-optimize-iter must be positive")
     ids = [line.strip() for line in args.split_list.read_text().splitlines() if line.strip()]
@@ -640,10 +684,15 @@ def main() -> int:
         "runner_sha256": sha256_file(Path(__file__)),
     }
     protocol["candidate_method"] = args.candidate_method
+    protocol["baseline_method"] = args.baseline_method
+    # Omission means legacy in historical protocols. Preserve reference reuse
+    # for that path while making any new policy part of the resume fingerprint.
+    if args.post_policy != "legacy":
+        protocol["post_policy"] = args.post_policy
     reference_rows = None
     if args.reference_root is not None:
-        reference_rows, provenance = load_reference_rows(args.reference_root, args.comparison_root, args.mode, ids, protocol)
-        protocol["reference_legacy"] = provenance
+        reference_rows, provenance = load_reference_rows(args.reference_root, args.comparison_root, args.mode, ids, protocol, baseline_method=args.baseline_method)
+        protocol["reference_legacy" if args.baseline_method == "legacy" else "reference_baseline"] = provenance
     digest = fingerprint(protocol)
     with (metadata / "protocol.lock").open("a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
@@ -659,7 +708,7 @@ def main() -> int:
             locks.append(lock)
         if args.summary_only:
             write_summary(args.comparison_root, args.mode, metadata, ids, protocol,
-                          candidate_method=args.candidate_method, reference_rows=reference_rows)
+                          candidate_method=args.candidate_method, reference_rows=reference_rows, baseline_method=args.baseline_method)
             return 0
         jobs = []
         for sample_id in ids:
@@ -681,6 +730,7 @@ def main() -> int:
                         atomic_json(status_path, old)
                         continue
                 jobs.append({"sample_id": sample_id, "method": method, "mode": args.mode,
+                             "post_policy": args.post_policy, "timeout_seconds": args.timeout,
                              "raw_root": str(raw_root), "raw_sha256": raw_sha,
                              "post_root": str(args.comparison_root / "post" / args.mode / method),
                              "data_root": str(args.data_root), "cache_root": str(args.comparison_root / "metadata" / "gt_step_samples"),
@@ -692,7 +742,7 @@ def main() -> int:
             preload_cpu_dependencies()
             run_isolated_jobs(jobs, metadata, args.workers, args.timeout)
         summary = write_summary(args.comparison_root, args.mode, metadata, ids, protocol,
-                          candidate_method=args.candidate_method, reference_rows=reference_rows)
+                          candidate_method=args.candidate_method, reference_rows=reference_rows, baseline_method=args.baseline_method)
         print(json.dumps({method: value["counts"] for method, value in summary["methods"].items()}, indent=2), flush=True)
         return 0
     finally:

@@ -1,0 +1,24 @@
+# Full geometry diagnostics stay local; version notes, ID lists and compact audits.
+manifest.json
+baseline_manifest.json
+baseline_control_manifest.json
+baseline_reuse.json
+source_asset_audit.json
+traces/
+replay/
+upstream/
+saved_step/
+baseline_controls/
+fit_only_counterfactual/
+cases.json
+cases.csv
+summary.json
+optimization_regressions.json
+page/data.js
+browser_validation/*.png
+browser_validation/browser_profile/
+
+# Self-contained dataset artifact and validation browser cache.
+page/standalone.html
+standalone_validation/*.png
+standalone_validation/browser_profile/

@@ -1,0 +1,124 @@
+{
+  "url": "http://127.0.0.1:8767/checkpoints/intersection_refinement/curve_conditioning/failure_census_20261014/page/",
+  "checked_at_utc": "2026-10-14T04:59:40.494Z",
+  "method_identity": {
+    "methods": {
+      "baseline": "intersection",
+      "candidate": "conditioned"
+    },
+    "labels": {
+      "baseline": "上一版 Intersection refinement",
+      "candidate": "曲线条件调制"
+    }
+  },
+  "cohort_threshold_checks": [
+    {
+      "cohort": "main",
+      "threshold": "0.002",
+      "count": 306,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "main",
+      "threshold": "0.006",
+      "count": 306,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "main",
+      "threshold": "0.01",
+      "count": 306,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "main",
+      "threshold": "0.08",
+      "count": 306,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "persistent",
+      "threshold": "0.002",
+      "count": 261,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "persistent",
+      "threshold": "0.006",
+      "count": 261,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "persistent",
+      "threshold": "0.01",
+      "count": 261,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "persistent",
+      "threshold": "0.08",
+      "count": 261,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "regressed",
+      "threshold": "0.002",
+      "count": 45,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "regressed",
+      "threshold": "0.006",
+      "count": 45,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "regressed",
+      "threshold": "0.01",
+      "count": 45,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "regressed",
+      "threshold": "0.08",
+      "count": 45,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "rescued",
+      "threshold": "0.002",
+      "count": 43,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "rescued",
+      "threshold": "0.006",
+      "count": 43,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "rescued",
+      "threshold": "0.01",
+      "count": 43,
+      "observation_rows": 28
+    },
+    {
+      "cohort": "rescued",
+      "threshold": "0.08",
+      "count": 43,
+      "observation_rows": 28
+    }
+  ],
+  "interactions": {
+    "caseRendered": true,
+    "expectedIds": 1,
+    "displayedIds": 1
+  },
+  "assets_checked": 15,
+  "failed_assets": [],
+  "mobile": {
+    "viewport": 390,
+    "document": 390
+  },
+  "javascript_errors": []
+}

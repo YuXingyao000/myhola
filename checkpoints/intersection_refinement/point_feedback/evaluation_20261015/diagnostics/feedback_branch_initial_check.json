@@ -1,0 +1,15 @@
+{
+  "status": "stopped_on_exact_invariant_check",
+  "protocol": "Initial two-complete-CUDA-decode enabled-versus-bypassed comparison",
+  "object_id": "00335203",
+  "checkpoint_global_step": 12705,
+  "deterministic_algorithms": false,
+  "mismatched_elements": 7,
+  "compared_elements": 288,
+  "max_absolute_difference": 2.384185791015625e-7,
+  "max_relative_difference": 9.97820137627059e-8,
+  "field_name": null,
+  "limitation": "The initial assertion did not record the failing field name. No final probe result or array was saved.",
+  "feedback_edge_input_not_mutated_check": "passed_exact",
+  "revision": "Compare before/after final feedback using one shared upstream execution; retain formal numeric settings and exact invariant checks. Never attribute repeat-CUDA-decode differences to this module."
+}

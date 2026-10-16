@@ -1,0 +1,101 @@
+{
+  "source_checkpoint": "/mnt/d/python/checkpoints/intersection_refinement/frozen/20261011T123836.485257Z/weights/epoch=0010-step=00003993-val_loss=0.039476.ckpt",
+  "source_sha256": "9b18509de2a21f50d8fad41b8c37695842fe2e92745dc779713b0ecac06e2107",
+  "seed": 42,
+  "torch": "2.4.1+cu124",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "initialization": {
+    "source": "/mnt/d/python/checkpoints/intersection_refinement/frozen/20261011T123836.485257Z/weights/epoch=0010-step=00003993-val_loss=0.039476.ckpt",
+    "source_epoch": 10,
+    "source_global_step": 3993,
+    "retained_state_keys": 581,
+    "discarded_legacy_inter_keys": 149,
+    "initialized_local_inter_keys": 37
+  },
+  "scope": "implementation validation only; no quality claim; temporary model discarded",
+  "all_retained_weights_equal": true,
+  "batches": [
+    {
+      "batch_size": 2,
+      "ids": [
+        "00001000",
+        "00002505"
+      ],
+      "face_counts": [
+        30,
+        28
+      ],
+      "candidates": 1626,
+      "loss": 3.7482802867889404,
+      "step_seconds": 1.178398442978505,
+      "peak_allocated_mib": 1995.58154296875,
+      "peak_reserved_mib": 2372.0,
+      "gradient_l1": {
+        "inter": 2452.43310546875,
+        "face_cnn": 302.6783752441406,
+        "face_bbox": 30.488996505737305,
+        "edge_cnn": 885.1716918945312,
+        "classifier": 1.3222198486328125,
+        "refiner": 54.305145263671875
+      }
+    },
+    {
+      "batch_size": 16,
+      "ids": [
+        "00001000",
+        "00002505",
+        "00001000",
+        "00002505",
+        "00001000",
+        "00002505",
+        "00001000",
+        "00002505",
+        "00001000",
+        "00002505",
+        "00001000",
+        "00002505",
+        "00001000",
+        "00002505",
+        "00001000",
+        "00002505"
+      ],
+      "face_counts": [
+        30,
+        28,
+        30,
+        28,
+        30,
+        28,
+        30,
+        28,
+        30,
+        28,
+        30,
+        28,
+        30,
+        28,
+        30,
+        28
+      ],
+      "candidates": 13008,
+      "loss": 3.670825481414795,
+      "step_seconds": 4.4495779190037865,
+      "peak_allocated_mib": 10196.171875,
+      "peak_reserved_mib": 10972.0,
+      "gradient_l1": {
+        "inter": 2391.08984375,
+        "face_cnn": 300.6419982910156,
+        "face_bbox": 36.95002746582031,
+        "edge_cnn": 870.8193969726562,
+        "classifier": 1.2687149047851562,
+        "refiner": 54.76937484741211
+      }
+    }
+  ],
+  "exported_items": 2,
+  "parameters": {
+    "total": 148355165,
+    "local_inter": 311616,
+    "trainable": 74606293
+  }
+}

@@ -7,16 +7,16 @@ import numpy as np
 import pytest
 import torch
 
-from src.brepnet.models.intersection_vae import AutoEncoder_intersection
+from src.brepnet.models.vae import AutoEncoder_intersection
 from src.brepnet.models.vae import AutoEncoder_light
 from src.brepnet.test.test_intersection_vae import tiny_config
 from src.brepnet.test.test_shared_boundaries import make_boundary_arrays
 from tools.intersection_evaluate_inference import (
     audit_encoder_state, audit_identity_means, completed_prediction, legacy_configuration,
-    load_intersection, main, read_reference_input, read_reference_protocol,
+    load_intersection, main, read_reference_input, read_reference_protocol, validate_method,
 )
 from tools.vae_compare_inference import (
-    atomic_npz, file_sha256, json_digest, latent_sha256, load_identity_geometry,
+    atomic_npz, configure_fp32, file_sha256, json_digest, latent_sha256, load_identity_geometry,
 )
 
 
@@ -105,6 +105,40 @@ def test_strict_meta_loading_and_renamed_encoder_audit(tmp_path):
         load_intersection(new_path, legacy_path, torch.device("cpu"), [])
 
 
+def test_local_checkpoint_replay_does_not_require_old_migration_source(tmp_path):
+    _, _, legacy_path, refinement_path, _, config = make_models(tmp_path)
+    local_config = {
+        **deepcopy(config), "init_legacy_checkpoint": None,
+        "init_refinement_checkpoint": str(refinement_path),
+        "intersection": {
+            "kind": "local_attention", "hidden_dim": 16, "num_heads": 2,
+            "num_layers": 2, "ffn_dim": 32, "dropout": 0.,
+            "candidate_chunk_size": 3, "checkpoint_candidates": True,
+        },
+    }
+    expected = AutoEncoder_intersection(local_config).eval()
+    local_path = tmp_path / "local.ckpt"
+    torch.save({
+        "state_dict": {f"model.{key}": value for key, value in expected.state_dict().items()},
+        "hyper_parameters": {"model": local_config}, "epoch": 3, "global_step": 30,
+    }, local_path)
+    refinement_path.unlink()
+    assert legacy_path.is_file()  # The independent encoder audit still needs its baseline.
+    actual, audit = load_intersection(local_path, legacy_path, torch.device("cpu"), ["example"])
+    assert audit["strict_load"] and audit["encoder_equal"]
+    assert audit["checkpoint_model_config"]["init_refinement_checkpoint"] == str(refinement_path)
+    assert actual.decoder.intersection_kind == "local_attention"
+    assert not actual.training and not any(param.requires_grad for param in actual.parameters())
+    for name, value in actual.state_dict().items():
+        torch.testing.assert_close(value, expected.state_dict()[name], atol=0, rtol=0)
+    latent = torch.randn(3, expected.face_feature_dim)
+    with torch.inference_mode():
+        first, second = expected.decode_latents(latent), actual.decode_latents(latent)
+    assert first.keys() == second.keys()
+    for key in first:
+        np.testing.assert_array_equal(first[key], second[key])
+
+
 def test_reference_hashes_and_actual_source_are_checked(tmp_path):
     _, model, legacy_path, _, _, _ = make_models(tmp_path)
     reference, data, split, protocol, arrays = make_reference(tmp_path, model, legacy_path)
@@ -167,17 +201,59 @@ def test_mean_audit_records_numerical_error_and_resume_rejects_changed_inputs(tm
     assert not audit["passed"] and audit["max_abs_error"] > 0
 
 
-def test_cpu_entrypoint_replay_resume_and_preserved_reference(tmp_path):
-    _, model, legacy_path, checkpoint, _, _ = make_models(tmp_path)
+@pytest.mark.parametrize("method", ["intersection", "local", "conditioned", "point_feedback"])
+def test_cpu_entrypoint_replay_resume_and_preserved_reference(tmp_path, method):
+    _, model, legacy_path, checkpoint, _, config = make_models(tmp_path)
+    if method == "local":
+        local_config = {**deepcopy(config), "init_legacy_checkpoint": None,
+                        "init_refinement_checkpoint": str(checkpoint),
+                        "intersection": {"kind": "local_attention", "hidden_dim": 16,
+                                         "num_heads": 2, "num_layers": 1, "ffn_dim": 32,
+                                         "dropout": 0., "candidate_chunk_size": 3}}
+        model = AutoEncoder_intersection(local_config).eval()
+        checkpoint = tmp_path / "local.ckpt"
+        torch.save({"state_dict": {f"model.{key}": value for key, value in model.state_dict().items()},
+                    "hyper_parameters": {"model": local_config}, "epoch": 3, "global_step": 30}, checkpoint)
+    elif method in {"conditioned", "point_feedback"}:
+        conditional_config = {**deepcopy(config), "init_legacy_checkpoint": None,
+                              "init_refinement_checkpoint": str(checkpoint),
+                              "curve_conditioning": {"enabled": True, "hidden_dim": 8}}
+        model = AutoEncoder_intersection(conditional_config).eval()
+        checkpoint = tmp_path / "conditioned.ckpt"
+        torch.save({"state_dict": {f"model.{key}": value for key, value in model.state_dict().items()},
+                    "hyper_parameters": {"model": conditional_config}, "epoch": 3, "global_step": 30}, checkpoint)
+        if method == "point_feedback":
+            feedback_config = {
+                **conditional_config, "init_refinement_checkpoint": None,
+                "init_curve_feedback_checkpoint": str(checkpoint),
+                "curve_point_feedback": {"enabled": True, "hidden_dim": 16, "feature_dim": 8},
+            }
+            model = AutoEncoder_intersection(feedback_config).eval()
+            checkpoint = tmp_path / "point_feedback.ckpt"
+            torch.save({"state_dict": {f"model.{key}": value for key, value in model.state_dict().items()},
+                        "hyper_parameters": {"model": feedback_config}, "epoch": 4, "global_step": 40}, checkpoint)
     reference, data, split, _, arrays = make_reference(tmp_path, model, legacy_path)
     output = tmp_path / "evaluation"
     source = reference / "raw_predictions/posterior_mean/legacy/example/data.npz"
     reference_sha = file_sha256(source)
     args = ["--checkpoint", str(checkpoint), "--legacy-checkpoint", str(legacy_path),
             "--reference-root", str(reference), "--data-root", str(data), "--split-list", str(split),
-            "--output-root", str(output), "--mode", "posterior_mean", "--device", "cpu"]
+            "--output-root", str(output), "--mode", "posterior_mean", "--device", "cpu", "--method", method]
     assert main(args) == 0
-    result_path = output / "raw_predictions/posterior_mean/intersection/example/data.npz"
+    result_path = output / "raw_predictions/posterior_mean" / method / "example/data.npz"
+    protocol = json.loads((output / "metadata/inference/posterior_mean/protocol.json").read_text())
+    assert protocol["method"] == method
+    if method in {"conditioned", "point_feedback"}:
+        assert protocol["model_audit"]["checkpoint_model_config"]["curve_conditioning"]["enabled"] is True
+        for wrong_method in set(("intersection", "local", "conditioned", "point_feedback")) - {method}:
+            with pytest.raises(ValueError, match="does not match"):
+                validate_method(model, wrong_method)
+    if method == "point_feedback":
+        recorded = protocol["model_audit"]["checkpoint_model_config"]
+        assert recorded["curve_point_feedback"]["enabled"] is True
+        assert recorded["init_curve_feedback_checkpoint"] is not None
+    if method == "local":
+        assert "src/brepnet/models/blocks.py" in protocol["source_sha256"]
     with np.load(result_path, allow_pickle=False) as actual:
         np.testing.assert_array_equal(actual["face_latents"], arrays["face_latents"])
         assert str(actual["reference_protocol_sha256"]) == str(arrays["protocol_sha256"])
@@ -220,3 +296,123 @@ def test_mean_audit_tolerates_cuda_roundoff_but_rejects_real_drift(tmp_path):
         )
         assert audit["passed"] is should_pass
         assert audit["max_abs_error"] == pytest.approx(perturbation)
+
+
+@pytest.mark.parametrize("method", ["encoder_edge_value", "encoder_gat_control"])
+def test_changed_encoder_uses_own_mean_and_strict_resume(tmp_path, method):
+    configure_fp32()  # Match CLI CPU reduction threads for the independent mean.
+    _, reference_model, legacy_path, _, _, config = make_models(tmp_path)
+    reference, data, split, _, arrays = make_reference(tmp_path, reference_model, legacy_path)
+    config = {**deepcopy(config), "freeze_encoder": False, "init_legacy_checkpoint": None,
+              "restoring_checkpoint": True, "curve_conditioning": {"enabled": True, "hidden_dim": 8},
+              "encoder_edge_value": {"enabled": method == "encoder_edge_value", "hidden_dim": 8}}
+    model = AutoEncoder_intersection(config).eval().requires_grad_(False)
+    checkpoint = tmp_path / "changed_encoder.ckpt"
+    torch.save({"state_dict": {f"model.{key}": value for key, value in model.state_dict().items()},
+                "hyper_parameters": {"model": config}, "global_step": 1089}, checkpoint)
+    batch, _ = load_identity_geometry(data / "example/data.npz", "example", torch.device("cpu"))
+    with torch.inference_mode():
+        expected = model.sample(model.encode(batch, v_test=True)["face_features"], v_is_test=True)[0].numpy()
+    assert not np.array_equal(expected, arrays["face_latents"])
+    output = tmp_path / "new_evaluation"
+    args = ["--checkpoint", str(checkpoint), "--legacy-checkpoint", str(legacy_path),
+            "--reference-root", str(reference), "--data-root", str(data), "--split-list", str(split),
+            "--output-root", str(output), "--mode", "posterior_mean", "--device", "cpu",
+            "--method", method, "--input-source", "checkpoint_posterior"]
+    assert main(args) == 0
+    raw = output / "raw_predictions/posterior_mean" / method / "example/data.npz"
+    with np.load(raw, allow_pickle=False) as values:
+        saved = {name: values[name] for name in values.files}
+    np.testing.assert_array_equal(saved["face_latents"], expected)
+    assert str(saved["encoder_checkpoint_sha256"]) == file_sha256(checkpoint)
+    assert str(saved["input_source_sha256"]) == file_sha256(data / "example/data.npz")
+    assert str(saved["input_latent_sha256"]) == latent_sha256(expected)
+    assert main([*args, "--resume"]) == 0
+    saved["face_latents"][0, 0] += 1
+    atomic_npz(raw, saved)
+    assert main([*args, "--resume"]) == 1
+    with pytest.raises(ValueError, match="requires|require"):
+        main(args[:-2])
+    wrong_method = "encoder_gat_control" if method == "encoder_edge_value" else "encoder_edge_value"
+    with pytest.raises(ValueError, match="does not match"):
+        validate_method(model, wrong_method)
+
+
+def test_checkpoint_posterior_rejects_archived_latents_before_loading(tmp_path):
+    args = ["--checkpoint", "unused", "--legacy-checkpoint", "unused", "--reference-root", "unused",
+            "--data-root", "unused", "--split-list", "unused", "--output-root", str(tmp_path),
+            "--mode", "archived_latents", "--input-source", "checkpoint_posterior"]
+    with pytest.raises(ValueError, match="never archived"):
+        main(args)
+
+
+def test_standalone_posterior_needs_no_reference_and_binds_resume_to_source(tmp_path, monkeypatch):
+    configure_fp32()
+    _, model, legacy_path, checkpoint, _, _ = make_models(tmp_path)
+    data = tmp_path / "data"
+    source = data / "example/data.npz"
+    source.parent.mkdir(parents=True)
+    faces, edges, conn = make_boundary_arrays()
+    np.savez(source, sample_points_faces=faces, sample_points_lines=edges, edge_face_connectivity=conn)
+    split = tmp_path / "ids.txt"
+    split.write_text("example\n")
+    output = tmp_path / "output"
+
+    def no_reference(*args, **kwargs):
+        raise AssertionError("Standalone inference must not read reference exports or protocols")
+
+    monkeypatch.setattr("tools.intersection_evaluate_inference.read_reference_protocol", no_reference)
+    monkeypatch.setattr("tools.intersection_evaluate_inference.read_reference_input", no_reference)
+    args = ["--checkpoint", str(checkpoint), "--legacy-checkpoint", str(legacy_path),
+            "--data-root", str(data), "--split-list", str(split), "--output-root", str(output),
+            "--mode", "posterior_mean", "--device", "cpu", "--standalone",
+            "--input-source", "checkpoint_posterior"]
+    assert main(args) == 0
+    protocol = json.loads((output / "metadata/inference/posterior_mean/protocol.json").read_text())
+    assert protocol["standalone"] and protocol["frozen_legacy_encoder_required"]
+    assert protocol["model_audit"]["encoder_equal"] is True
+    assert not any(key.startswith("reference") for key in protocol)
+    raw = output / "raw_predictions/posterior_mean/intersection/example/data.npz"
+    batch, _ = load_identity_geometry(source, "example", torch.device("cpu"))
+    with torch.inference_mode():
+        expected = model.sample(model.encode(batch, v_test=True)["face_features"], v_is_test=True)[0].numpy()
+    with np.load(raw, allow_pickle=False) as saved:
+        np.testing.assert_array_equal(saved["face_latents"], expected)
+        assert str(saved["input_source_sha256"]) == file_sha256(source)
+        assert str(saved["encoder_checkpoint_sha256"]) == file_sha256(checkpoint)
+        assert not any(key.startswith("reference") for key in saved.files)
+    original_raw_digest = file_sha256(raw)
+    assert main([*args, "--resume"]) == 0
+    assert file_sha256(raw) == original_raw_digest
+    with source.open("ab") as stream:
+        stream.write(b"source changed")
+    assert main([*args, "--resume"]) == 1
+    assert file_sha256(raw) == original_raw_digest
+    status = output / "metadata/inference/posterior_mean/shard-000.jsonl"
+    rows = [json.loads(line) for line in status.read_text().splitlines()]
+    assert [row["status"] for row in rows] == ["ok", "resumed_skip", "failed"]
+    assert "provenance mismatch: input_source_sha256" in rows[-1]["error"]
+
+
+def test_standalone_encoder_audit_rejects_changed_weights(tmp_path):
+    _, _, legacy_path, checkpoint, _, _ = make_models(tmp_path)
+    damaged = torch.load(checkpoint, weights_only=True)
+    key = next(key for key in damaged["state_dict"] if key.startswith("model.encoder."))
+    damaged["state_dict"][key] = damaged["state_dict"][key] + 1
+    torch.save(damaged, checkpoint)
+    with pytest.raises(ValueError, match="weights differ"):
+        load_intersection(checkpoint, legacy_path, torch.device("cpu"), ["example"],
+                          input_source="checkpoint_posterior", require_legacy_encoder=True)
+
+
+@pytest.mark.parametrize("extra, message", [
+    (["--standalone"], "requires --input-source"),
+    (["--standalone", "--input-source", "checkpoint_posterior", "--reference-root", "unused"],
+     "must not provide"),
+    ([], "requires --reference-root"),
+])
+def test_standalone_contract_requires_explicit_unambiguous_input(extra, message):
+    args = ["--checkpoint", "unused", "--legacy-checkpoint", "unused", "--data-root", "unused",
+            "--split-list", "unused", "--output-root", "unused", "--mode", "posterior_mean"]
+    with pytest.raises(ValueError, match=message):
+        main([*args, *extra])

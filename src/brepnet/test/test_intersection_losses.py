@@ -6,8 +6,8 @@ import pytest
 import torch
 import torch.nn.functional as F
 
-from src.brepnet.models.intersection_losses import IntersectionLoss, balanced_binary_cross_entropy
-from src.brepnet.models.intersection_state import (
+from src.brepnet.models.vae import IntersectionLoss, balanced_binary_cross_entropy
+from src.brepnet.models.blocks import (
     CandidatePairs,
     DecoderStage,
     PrimitiveGeometry,

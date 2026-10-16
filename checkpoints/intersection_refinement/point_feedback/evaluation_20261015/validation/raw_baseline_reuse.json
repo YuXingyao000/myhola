@@ -1,0 +1,173 @@
+{
+  "posterior_mean": {
+    "current_csv_sha256": "296730563c51372db0190b139426f332b9fb531d4054c9a1b5a400098dd5bbc7",
+    "reference_csv_sha256": "cfa2f5049db46f401260034dd3ced7fde416c3567bb1ffdcea9df31818abecc7",
+    "baseline_rows": 2417,
+    "baseline_fields_compared": [
+      "edge_cd_sq",
+      "edge_gt_to_pred_sq",
+      "edge_pred_to_gt_sq",
+      "edge_status",
+      "error",
+      "face_cd_sq",
+      "face_gt_to_pred_sq",
+      "face_mae",
+      "face_mae_status",
+      "face_pred_to_gt_sq",
+      "face_status",
+      "gt_boundary_count",
+      "gt_face_count",
+      "gt_status",
+      "input_latent_sha256",
+      "internal_topology_status",
+      "invalid_edge_index_count",
+      "invalid_face_index_count",
+      "joint_duplicate_pair_count",
+      "joint_query_count_error",
+      "legacy_directed_duplicate_count",
+      "legacy_reciprocal_cd_sq_max",
+      "legacy_reciprocal_cd_sq_mean",
+      "legacy_reciprocal_pair_count",
+      "legacy_unilateral_pair_count",
+      "method",
+      "mode",
+      "model_id",
+      "pred_face_count",
+      "prediction_file_exists",
+      "prediction_status",
+      "raw_edge_count",
+      "repeated_edge_reference_count",
+      "same_face_count",
+      "shared_input_status",
+      "status",
+      "topology_f1",
+      "topology_fn",
+      "topology_fp",
+      "topology_precision",
+      "topology_recall",
+      "topology_status",
+      "topology_tp",
+      "unique_pair_count",
+      "unique_pair_count_error"
+    ],
+    "baseline_fields_identical": true,
+    "excluded_fields": {
+      "prediction_file": "current symlink path differs; source NPZ is the same resolved historical file"
+    },
+    "independent_means": [
+      {
+        "method": "conditioned",
+        "metric": "face_cd_sq",
+        "count": 2417,
+        "independent_fsum_mean": 4.061139589770808e-05,
+        "reported_mean": 4.061139589770808e-05
+      },
+      {
+        "method": "conditioned",
+        "metric": "edge_cd_sq",
+        "count": 2417,
+        "independent_fsum_mean": 7.768578014787154e-05,
+        "reported_mean": 7.768578014787154e-05
+      },
+      {
+        "method": "point_feedback",
+        "metric": "face_cd_sq",
+        "count": 2417,
+        "independent_fsum_mean": 3.650228332028962e-05,
+        "reported_mean": 3.650228332028962e-05
+      },
+      {
+        "method": "point_feedback",
+        "metric": "edge_cd_sq",
+        "count": 2417,
+        "independent_fsum_mean": 8.776153264767488e-05,
+        "reported_mean": 8.776153264767487e-05
+      }
+    ],
+    "shared_inputs_verified": 2417
+  },
+  "archived_latents": {
+    "current_csv_sha256": "db06c08ca199dcf87b1f09f7dbc0061d072704a2724b6eb39880ae60546305bf",
+    "reference_csv_sha256": "2154786c376e7bf3527e37e46a015f900bfe628a1a1a4fdab98006b633b0e9a9",
+    "baseline_rows": 2417,
+    "baseline_fields_compared": [
+      "edge_cd_sq",
+      "edge_gt_to_pred_sq",
+      "edge_pred_to_gt_sq",
+      "edge_status",
+      "error",
+      "face_cd_sq",
+      "face_gt_to_pred_sq",
+      "face_mae",
+      "face_mae_status",
+      "face_pred_to_gt_sq",
+      "face_status",
+      "gt_boundary_count",
+      "gt_face_count",
+      "gt_status",
+      "input_latent_sha256",
+      "internal_topology_status",
+      "invalid_edge_index_count",
+      "invalid_face_index_count",
+      "joint_duplicate_pair_count",
+      "joint_query_count_error",
+      "legacy_directed_duplicate_count",
+      "legacy_reciprocal_cd_sq_max",
+      "legacy_reciprocal_cd_sq_mean",
+      "legacy_reciprocal_pair_count",
+      "legacy_unilateral_pair_count",
+      "method",
+      "mode",
+      "model_id",
+      "pred_face_count",
+      "prediction_file_exists",
+      "prediction_status",
+      "raw_edge_count",
+      "repeated_edge_reference_count",
+      "same_face_count",
+      "shared_input_status",
+      "status",
+      "topology_f1",
+      "topology_precision",
+      "topology_recall",
+      "topology_status",
+      "unique_pair_count",
+      "unique_pair_count_error"
+    ],
+    "baseline_fields_identical": true,
+    "excluded_fields": {
+      "prediction_file": "current symlink path differs; source NPZ is the same resolved historical file"
+    },
+    "independent_means": [
+      {
+        "method": "conditioned",
+        "metric": "face_cd_sq",
+        "count": 2417,
+        "independent_fsum_mean": 0.005107539057750998,
+        "reported_mean": 0.005107539057750998
+      },
+      {
+        "method": "conditioned",
+        "metric": "edge_cd_sq",
+        "count": 2417,
+        "independent_fsum_mean": 0.013145725804862302,
+        "reported_mean": 0.013145725804862302
+      },
+      {
+        "method": "point_feedback",
+        "metric": "face_cd_sq",
+        "count": 2417,
+        "independent_fsum_mean": 0.005099400150975518,
+        "reported_mean": 0.005099400150975518
+      },
+      {
+        "method": "point_feedback",
+        "metric": "edge_cd_sq",
+        "count": 2417,
+        "independent_fsum_mean": 0.013175293610413441,
+        "reported_mean": 0.013175293610413441
+      }
+    ],
+    "shared_inputs_verified": 2417
+  }
+}

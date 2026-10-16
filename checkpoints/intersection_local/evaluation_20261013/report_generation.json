@@ -1,0 +1,26 @@
+{
+  "artifacts": {
+    "report": "/mnt/d/python/checkpoints/intersection_local/evaluation_20261013/REPORT.md",
+    "transitions": "/mnt/d/python/checkpoints/intersection_local/evaluation_20261013/solid_transitions.json",
+    "png": "/mnt/d/python/checkpoints/intersection_local/evaluation_20261013/visualizations/local_comparison.png",
+    "svg": "/mnt/d/python/checkpoints/intersection_local/evaluation_20261013/visualizations/local_comparison.svg"
+  },
+  "artifact_sha256": {
+    "report": "7715fb8705351bcedfaebcad99bbd7accbb65bdc157982950071e1edc451bf04",
+    "transitions": "fea1ffe28b267260adad31183aecea2d273fbd56b53e2dc9a54be0348f731470",
+    "png": "9e85a5f6f6cb0d3e85f904e6a4ddfee68f447b980e48d5a7a28be2295cf75a85",
+    "svg": "1c5ebaafe5ee251099225fba3908f1261b4908105c6ba118666e57b5489ffa77"
+  },
+  "source_sha256": {
+    "/mnt/d/python/checkpoints/intersection_local/evaluation_20261013/build_report.py": "44f2076e78aee8bc479637467e396679c602ddc911b489ee6b176d4b3b75c21e",
+    "/mnt/d/python/tools/local_evaluate_report.py": "2d763321d5b3ffb3dceed991259a5da01731cbf876f26d8c86c5fb6a2b59369b",
+    "/mnt/d/python/tools/intersection_evaluate_report.py": "01d043aa544de58c5c687e221b1ff17567509eb920b2f7788fc4cae48b7935c2"
+  },
+  "adaptations": [
+    "Presentation only: full-capacity candidate label",
+    "Failure report link points to 20261013",
+    "Count full correct face adjacency from validated per-object CSV"
+  ],
+  "validation": "Shared generator enforces all 2417 unique paired IDs, matching metrics, terminal statuses and cohort conservation.",
+  "presentation_amendment": "Added frozen-protocol whole-object adjacency count from existing CSV; no metric or model rerun and no chart changes."
+}

@@ -34,10 +34,10 @@ def _lazy_import(module_path: str, class_name: str):
 
 _MODEL_LOADERS: Dict[str, Any] = {
     "AutoEncoder_intersection": _lazy_import(
-        "src.brepnet.models.intersection_vae", "AutoEncoder_intersection"
+        "src.brepnet.models.vae", "AutoEncoder_intersection"
     ),
     "AutoEncoder_joint": _lazy_import(
-        "src.brepnet.models.joint_vae", "AutoEncoder_joint"
+        "src.brepnet.models.vae", "AutoEncoder_joint"
     ),
     "AutoEncoder": _lazy_import(
         "src.brepnet.models.vae", "AutoEncoder"

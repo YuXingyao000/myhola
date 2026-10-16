@@ -1,0 +1,38 @@
+{
+  "status": "passed",
+  "encoder_exact_tensor_count": 243,
+  "cases": [
+    {
+      "mode": "posterior_mean",
+      "model_id": "00000093",
+      "same_conditioned_input_latent": true,
+      "finite_xyz": true,
+      "faces": 18,
+      "halfedges": 88
+    },
+    {
+      "mode": "posterior_mean",
+      "model_id": "00480145",
+      "same_conditioned_input_latent": true,
+      "finite_xyz": true,
+      "faces": 12,
+      "halfedges": 54
+    },
+    {
+      "mode": "archived_latents",
+      "model_id": "00000093",
+      "same_conditioned_input_latent": true,
+      "finite_xyz": true,
+      "faces": 13,
+      "halfedges": 58
+    },
+    {
+      "mode": "archived_latents",
+      "model_id": "00480145",
+      "same_conditioned_input_latent": true,
+      "finite_xyz": true,
+      "faces": 13,
+      "halfedges": 52
+    }
+  ]
+}

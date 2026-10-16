@@ -1,0 +1,356 @@
+{
+  "status": "passed",
+  "intended_count": 2417,
+  "original_count": 2424,
+  "source_files_unchanged": 19,
+  "production_post_unchanged": 11,
+  "plan_sha256": "192c49686d274d1a093888b2a9ec9b5e9eef451e458db24b02836d93cac6b3b4",
+  "selections": {
+    "last": {
+      "checkpoint_sha256": "040c05a45dd7edae825f2e6dd8e2cb3489a418146f9a7b2122cc54d38070618c",
+      "inference_status_counts": {
+        "ok": 2417
+      },
+      "inference_total_object_seconds": 124.12088315637084,
+      "raw_protocol_valid": true,
+      "numeric_settings": {
+        "autocast": false,
+        "cuda_version": "12.4",
+        "cudnn_allow_tf32": false,
+        "cudnn_benchmark": false,
+        "cudnn_deterministic": true,
+        "deterministic_algorithms": false,
+        "dtype": "float32",
+        "matmul_allow_tf32": false,
+        "matmul_precision": "highest",
+        "numpy_version": "2.0.1",
+        "seed": 42,
+        "torch_version": "2.4.1+cu124"
+      },
+      "post": {
+        "fit_only": {
+          "counts": {
+            "step_exists": 2417,
+            "step_readable": 2410,
+            "success_marker": 1051,
+            "native_valid_solid": 1050,
+            "compat_valid_solid": 1051,
+            "geometry_computable": 2124,
+            "terminal_records": 2417
+          },
+          "status_counts": {
+            "ok": 2124,
+            "geometry_error": 284,
+            "step_read_error": 7,
+            "timeout": 2
+          },
+          "timeouts": [
+            {
+              "sample_id": "00556193",
+              "stage": "geometry",
+              "native_valid_solid": false,
+              "geometry_status": "running",
+              "wall_seconds": 180.0153657370247
+            },
+            {
+              "sample_id": "00825507",
+              "stage": "geometry",
+              "native_valid_solid": false,
+              "geometry_status": "running",
+              "wall_seconds": 180.02212165200035
+            }
+          ],
+          "total_worker_wall_seconds": 5587.662857029645,
+          "resources": {
+            "workers": 32,
+            "threads_per_worker": 1,
+            "wall_seconds": 323.854866,
+            "timing_definition": "Saved dispatch invocation time to final summary write time; no rerun or summary-only invocation.",
+            "started_utc": "2026-10-16T04:24:40.534315+00:00",
+            "summary_written_utc": "2026-10-16T04:30:04.389181+00:00"
+          }
+        },
+        "optimized": {
+          "counts": {
+            "step_exists": 2417,
+            "step_readable": 2417,
+            "success_marker": 2115,
+            "native_valid_solid": 2115,
+            "compat_valid_solid": 2114,
+            "geometry_computable": 2302,
+            "terminal_records": 2417
+          },
+          "status_counts": {
+            "ok": 2302,
+            "geometry_error": 114,
+            "timeout": 1
+          },
+          "timeouts": [
+            {
+              "sample_id": "00821433",
+              "stage": "geometry",
+              "native_valid_solid": true,
+              "geometry_status": "running",
+              "wall_seconds": 180.02035730698844
+            }
+          ],
+          "total_worker_wall_seconds": 12092.220466465544,
+          "resources": {
+            "workers": 32,
+            "threads_per_worker": 1,
+            "wall_seconds": 502.213227,
+            "timing_definition": "Saved dispatch invocation time to final summary write time; no rerun or summary-only invocation.",
+            "started_utc": "2026-10-16T04:24:40.519965+00:00",
+            "summary_written_utc": "2026-10-16T04:33:02.733192+00:00"
+          }
+        }
+      },
+      "inference_resources": {
+        "gpu_count": 8,
+        "shards": 8,
+        "supervisor_wall_seconds": 60.062413,
+        "note": "Supervisor completion includes up to 30 seconds of polling delay."
+      }
+    },
+    "resume_best": {
+      "checkpoint_sha256": "e1e579e7bc6bdf64b3c078d6b5414e33630222de989b180ca8f3eb22b59c6ccf",
+      "inference_status_counts": {
+        "ok": 2417
+      },
+      "inference_total_object_seconds": 124.83152028496261,
+      "raw_protocol_valid": true,
+      "numeric_settings": {
+        "autocast": false,
+        "cuda_version": "12.4",
+        "cudnn_allow_tf32": false,
+        "cudnn_benchmark": false,
+        "cudnn_deterministic": true,
+        "deterministic_algorithms": false,
+        "dtype": "float32",
+        "matmul_allow_tf32": false,
+        "matmul_precision": "highest",
+        "numpy_version": "2.0.1",
+        "seed": 42,
+        "torch_version": "2.4.1+cu124"
+      },
+      "post": {
+        "fit_only": {
+          "counts": {
+            "step_exists": 2417,
+            "step_readable": 2414,
+            "success_marker": 1083,
+            "native_valid_solid": 1082,
+            "compat_valid_solid": 1081,
+            "geometry_computable": 2102,
+            "terminal_records": 2417
+          },
+          "status_counts": {
+            "ok": 2102,
+            "geometry_error": 312,
+            "step_read_error": 3
+          },
+          "timeouts": [],
+          "total_worker_wall_seconds": 5265.676124331687,
+          "resources": {
+            "workers": 32,
+            "threads_per_worker": 1,
+            "wall_seconds": 231.331967,
+            "timing_definition": "Saved dispatch invocation time to final summary write time; no rerun or summary-only invocation.",
+            "started_utc": "2026-10-16T04:26:12.717214+00:00",
+            "summary_written_utc": "2026-10-16T04:30:04.049181+00:00"
+          }
+        },
+        "optimized": {
+          "counts": {
+            "step_exists": 2417,
+            "step_readable": 2417,
+            "success_marker": 2117,
+            "native_valid_solid": 2115,
+            "compat_valid_solid": 2116,
+            "geometry_computable": 2307,
+            "terminal_records": 2417
+          },
+          "status_counts": {
+            "ok": 2307,
+            "geometry_error": 110
+          },
+          "timeouts": [],
+          "total_worker_wall_seconds": 12142.983965181716,
+          "resources": {
+            "workers": 32,
+            "threads_per_worker": 1,
+            "wall_seconds": 400.948497,
+            "timing_definition": "Saved dispatch invocation time to final summary write time; no rerun or summary-only invocation.",
+            "started_utc": "2026-10-16T04:30:24.940709+00:00",
+            "summary_written_utc": "2026-10-16T04:37:05.889206+00:00"
+          }
+        }
+      },
+      "inference_resources": {
+        "gpu_count": 8,
+        "shards": 8,
+        "supervisor_wall_seconds": 60.065768,
+        "note": "Supervisor completion includes up to 30 seconds of polling delay."
+      }
+    }
+  },
+  "jobs": [
+    {
+      "name": "inference-last-0",
+      "exit_code": 0,
+      "wall_seconds": 60.06229,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/inference-last_jobs.json"
+    },
+    {
+      "name": "inference-last-1",
+      "exit_code": 0,
+      "wall_seconds": 60.061833,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/inference-last_jobs.json"
+    },
+    {
+      "name": "inference-last-2",
+      "exit_code": 0,
+      "wall_seconds": 60.061372,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/inference-last_jobs.json"
+    },
+    {
+      "name": "inference-last-3",
+      "exit_code": 0,
+      "wall_seconds": 60.060925,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/inference-last_jobs.json"
+    },
+    {
+      "name": "inference-last-4",
+      "exit_code": 0,
+      "wall_seconds": 60.060476,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/inference-last_jobs.json"
+    },
+    {
+      "name": "inference-last-5",
+      "exit_code": 0,
+      "wall_seconds": 60.060038,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/inference-last_jobs.json"
+    },
+    {
+      "name": "inference-last-6",
+      "exit_code": 0,
+      "wall_seconds": 60.059578,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/inference-last_jobs.json"
+    },
+    {
+      "name": "inference-last-7",
+      "exit_code": 0,
+      "wall_seconds": 60.05913,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/inference-last_jobs.json"
+    },
+    {
+      "name": "inference-resume_best-0",
+      "exit_code": 0,
+      "wall_seconds": 60.065584,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/inference-resume_best_jobs.json"
+    },
+    {
+      "name": "inference-resume_best-1",
+      "exit_code": 0,
+      "wall_seconds": 60.065226,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/inference-resume_best_jobs.json"
+    },
+    {
+      "name": "inference-resume_best-2",
+      "exit_code": 0,
+      "wall_seconds": 60.064768,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/inference-resume_best_jobs.json"
+    },
+    {
+      "name": "inference-resume_best-3",
+      "exit_code": 0,
+      "wall_seconds": 60.064328,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/inference-resume_best_jobs.json"
+    },
+    {
+      "name": "inference-resume_best-4",
+      "exit_code": 0,
+      "wall_seconds": 60.063846,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/inference-resume_best_jobs.json"
+    },
+    {
+      "name": "inference-resume_best-5",
+      "exit_code": 0,
+      "wall_seconds": 60.063396,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/inference-resume_best_jobs.json"
+    },
+    {
+      "name": "inference-resume_best-6",
+      "exit_code": 0,
+      "wall_seconds": 60.062945,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/inference-resume_best_jobs.json"
+    },
+    {
+      "name": "inference-resume_best-7",
+      "exit_code": 0,
+      "wall_seconds": 60.062492,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/inference-resume_best_jobs.json"
+    },
+    {
+      "name": "metrics-last",
+      "exit_code": 0,
+      "wall_seconds": 90.090823,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/metrics-last_jobs.json"
+    },
+    {
+      "name": "metrics-resume_best",
+      "exit_code": 0,
+      "wall_seconds": 90.089689,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/metrics-resume_best_jobs.json"
+    },
+    {
+      "name": "post-last-fit_only",
+      "exit_code": 0,
+      "wall_seconds": 510.479308,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/post-last-both_jobs.json"
+    },
+    {
+      "name": "post-last-optimized",
+      "exit_code": 0,
+      "wall_seconds": 510.47881,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/post-last-both_jobs.json"
+    },
+    {
+      "name": "post-resume_best-fit_only",
+      "exit_code": 0,
+      "wall_seconds": 240.227579,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/post-resume_best-fit_only_jobs.json"
+    },
+    {
+      "name": "post-resume_best-optimized",
+      "exit_code": 0,
+      "wall_seconds": 420.418161,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/post-resume_best-optimized_jobs.json"
+    },
+    {
+      "name": "smoke-last-0",
+      "exit_code": 0,
+      "wall_seconds": 30.030551,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/smoke-last_jobs.json"
+    },
+    {
+      "name": "smoke-resume_best-0",
+      "exit_code": 0,
+      "wall_seconds": 30.030517,
+      "manifest": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/metadata/orchestration/smoke-resume_best_jobs.json"
+    }
+  ],
+  "full_provenance_audit": {
+    "input_files": 14536,
+    "diagnostics_sha256": "6f38c6612c65b5dc67d44ae68f42160076ac8c46e6d5b8d80aefc78dd74d74e8",
+    "owner_table_sha256": "2b0116e57238b1b294e6c2f8a49af71dbd97ba037ee0a97293ac82d98708e4eb",
+    "checks": {
+      "numeric_self_checks": "passed",
+      "baseline_consistency": true,
+      "upstream_summary_statistics_recomputed": true,
+      "all_post_rows_terminal": true,
+      "cad_latent_checkpoint_protocol_and_post_source_digests_verified": true,
+      "source_files_checked_before_after_read": true
+    }
+  }
+}

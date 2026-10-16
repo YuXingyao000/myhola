@@ -1,0 +1,26 @@
+{
+  "schema": "encoder_census_independent_review_v1",
+  "status": "passed",
+  "created_at_utc": "2026-10-15T13:30:39.249946+00:00",
+  "methods": {
+    "baseline": "conditioned",
+    "candidate": "encoder_gat_control"
+  },
+  "scope": "Independent old audit predicates reused; no reporting-pipeline helpers imported. Measured geometry itself is not rerun.",
+  "reviewer_sha256": "0660c61920381862dcf841bcaca337775678a1e2fa4f64560b429668bf7cd12c",
+  "predicate_source": {
+    "path": "/mnt/d/python_curve_eval/checkpoints/intersection_refinement/point_feedback/evaluation_20261015/build_independent_review.py",
+    "sha256": "52f7fc13b60abb4ab60c78b0c1e714cfff29d769511d90d5bdcc2b0f652d75f0"
+  },
+  "paired_cases": 358,
+  "trace_records": 716,
+  "unknown_traces": [],
+  "main_predicate_comparisons": 80192,
+  "fit_predicate_comparisons": 1680,
+  "fit_path_controls": 15,
+  "source_assets_unchanged": 5585,
+  "group_threshold_tallies_and_paired_transitions": "passed",
+  "failed_face_count_aggregation": "passed",
+  "summary_sha256": "5450dabe12e31671f2cd9742a5ed134d1f1ca43ee378d18c2ffd524878e18a0a",
+  "cases_sha256": "9e85e2db20ca75c2c82e6827ea83655a07bc078867270def8eb81870a61dca9f"
+}

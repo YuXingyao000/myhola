@@ -10,9 +10,38 @@ edge_bbox_decoder_blocks: 7
 kl_reduction: sum
 freeze_encoder: true
 init_legacy_checkpoint: null
+init_refinement_checkpoint: null
+init_curve_feedback_checkpoint: null
+init_encoder_edge_value_checkpoint: null
 checkpoint: null
 trainable_scope: all
 edge_threshold: 0.5
+
+# Added 2026-10-15: direct edge content in each of the five GAT messages.
+# 128 -> 64 -> 32 residual MLP; final layer zero-initialized, +51,680 params.
+# Default off preserves every existing checkpoint and frozen-encoder run.
+encoder_edge_value:
+  enabled: false
+  hidden_dim: 64
+
+# Legacy remains the default so existing refinement checkpoints load strictly.
+intersection:
+  kind: legacy
+
+# Added 2026-10-13: only the final refined curve/bbox heads read [E, F_i, F_j].
+# Disabled preserves the original state_dict; enabled adds 239,424 parameters
+# at the baseline dimensions. Final affine projections start at zero.
+curve_conditioning:
+  enabled: false
+  hidden_dim: 128
+
+# Added 2026-10-14: final curve points read final predicted owner surfaces.
+# No pooling or point-index embeddings; 27,139 new parameters at baseline dims.
+# The XYZ delta head is zero-initialized; all original heads/losses are retained.
+curve_point_feedback:
+  enabled: false
+  hidden_dim: 128
+  feature_dim: 64
 
 # One pass: the original face Transformer is called only before refinement.
 refinement:

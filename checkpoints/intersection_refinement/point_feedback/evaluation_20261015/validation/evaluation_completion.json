@@ -1,0 +1,133 @@
+{
+  "frozen_sources_unchanged": true,
+  "intended_count": 2417,
+  "modes": {
+    "fit_only": {
+      "all_4834_rows_terminal": true,
+      "historical_conditioned_rows_unchanged": true,
+      "csv_sha256": "118552277d15c277a7a2a59d333259990280d6baa95fb9ab8ffaa0452936f24c",
+      "paired_native_validity_counts": {
+        "both_valid": 942,
+        "conditioned_failed_to_point_feedback_valid": 106,
+        "conditioned_valid_to_point_feedback_failed": 105,
+        "both_failed": 1264,
+        "unknown": 0
+      },
+      "counts": {
+        "conditioned": {
+          "step_exists": 2417,
+          "step_readable": 2413,
+          "success_marker": 1047,
+          "native_valid_solid": 1047,
+          "compat_valid_solid": 1046,
+          "geometry_computable": 2064,
+          "terminal_records": 2417
+        },
+        "point_feedback": {
+          "step_exists": 2417,
+          "step_readable": 2412,
+          "success_marker": 1050,
+          "native_valid_solid": 1048,
+          "compat_valid_solid": 1050,
+          "geometry_computable": 2075,
+          "terminal_records": 2417
+        }
+      },
+      "candidate_status_counts": {
+        "geometry_error": 337,
+        "ok": 2075,
+        "step_read_error": 5
+      },
+      "candidate_timeout_details": []
+    },
+    "optimized": {
+      "all_4834_rows_terminal": true,
+      "historical_conditioned_rows_unchanged": true,
+      "csv_sha256": "95238db0c6e508abbc2887a44960d1beb609523e0bd2b96d8cd6b07bb9d17d8c",
+      "paired_native_validity_counts": {
+        "both_valid": 2054,
+        "conditioned_failed_to_point_feedback_valid": 50,
+        "conditioned_valid_to_point_feedback_failed": 57,
+        "both_failed": 256,
+        "unknown": 0
+      },
+      "counts": {
+        "conditioned": {
+          "step_exists": 2417,
+          "step_readable": 2417,
+          "success_marker": 2112,
+          "native_valid_solid": 2111,
+          "compat_valid_solid": 2109,
+          "geometry_computable": 2294,
+          "terminal_records": 2417
+        },
+        "point_feedback": {
+          "step_exists": 2417,
+          "step_readable": 2417,
+          "success_marker": 2105,
+          "native_valid_solid": 2104,
+          "compat_valid_solid": 2104,
+          "geometry_computable": 2281,
+          "terminal_records": 2417
+        }
+      },
+      "candidate_status_counts": {
+        "ok": 2281,
+        "geometry_error": 134,
+        "timeout": 2
+      },
+      "candidate_timeout_details": [
+        {
+          "sample_id": "00301329",
+          "native_valid_solid": true,
+          "stage": "geometry",
+          "geometry_status": "running"
+        },
+        {
+          "sample_id": "00433597",
+          "native_valid_solid": false,
+          "stage": "geometry",
+          "geometry_status": "running"
+        }
+      ]
+    }
+  },
+  "orchestration": {
+    "smoke": {
+      "jobs": 2,
+      "all_exit_codes_zero": true,
+      "started_utc": "2026-10-15T05:58:42.154545+00:00",
+      "completed_utc": "2026-10-15T05:59:12.173109+00:00"
+    },
+    "inference_posterior_mean": {
+      "jobs": 8,
+      "all_exit_codes_zero": true,
+      "started_utc": "2026-10-15T05:59:16.409976+00:00",
+      "completed_utc": "2026-10-15T06:00:16.472917+00:00"
+    },
+    "inference_archived_latents": {
+      "jobs": 8,
+      "all_exit_codes_zero": true,
+      "started_utc": "2026-10-15T06:00:25.597756+00:00",
+      "completed_utc": "2026-10-15T06:00:55.629608+00:00"
+    },
+    "metrics_posterior_mean": {
+      "jobs": 1,
+      "all_exit_codes_zero": true,
+      "started_utc": "2026-10-15T06:00:25.596620+00:00",
+      "completed_utc": "2026-10-15T06:01:55.680630+00:00"
+    },
+    "metrics_archived_latents": {
+      "jobs": 1,
+      "all_exit_codes_zero": true,
+      "started_utc": "2026-10-15T06:01:27.330636+00:00",
+      "completed_utc": "2026-10-15T06:02:57.416650+00:00"
+    },
+    "post": {
+      "jobs": 2,
+      "all_exit_codes_zero": true,
+      "started_utc": "2026-10-15T06:00:25.586537+00:00",
+      "completed_utc": "2026-10-15T06:08:26.044455+00:00"
+    }
+  }
+}

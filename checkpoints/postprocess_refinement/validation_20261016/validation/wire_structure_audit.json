@@ -1,0 +1,335 @@
+{
+  "created_utc": "2026-10-16T07:12:17.926963+00:00",
+  "scope": "Post-hoc inspection of two B2 rescued objects with different native wire counts from GT; no repair rerun, no strategy changes.",
+  "definitions": {
+    "face_correspondence": "The listed spatial correspondence is supported by planar orientation, signed Z position, area, centers and matching input/GT sampled-face positions; native STEP order is not assumed identical.",
+    "conclusion_limit": "A wire-count difference does not by itself prove a physical hole has been filled. These cases show nonperiodic planar boundary-structure differences already present when wire assembly returns; they are not explained by the known periodic natural-loop replacement."
+  },
+  "source_evidence": [
+    {
+      "path": "/mnt/d/python_curve_eval/src/brepnet/post/occ_topology.py",
+      "sha256": "9765a2329754b2b49aba4c3b4e28bf0f5b1a04a91a5ea2400cdd9372bcde089f",
+      "lines": [
+        136,
+        143,
+        159,
+        160
+      ],
+      "observation": "Assembly uses ConnectEdgesToWires with the current connection tolerance and, among retries, retains the candidate with fewer wires."
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/src/brepnet/post/construct_brep.py",
+      "sha256": "718947c5bd3be8e435411f7a81a74936f8df7dea11c77a64af785e930c459d5c",
+      "lines": [
+        420,
+        426,
+        427
+      ],
+      "observation": "Assembly precedes the complete-wire trimming check; input_wire_count records the already assembled wire list."
+    }
+  ],
+  "cases": [
+    {
+      "sample_id": "00325996",
+      "chosen_path": "roundtrip_fit_only",
+      "diagnostics_path": "/mnt/d/python_curve_eval/checkpoints/postprocess_refinement/validation_20261016/post_variants/recover_v1/post/optimized/intersection/00325996/post_diagnostics.json",
+      "diagnostics_sha256": "5e3e961deb7c6d0398682454e3deefc7e63bac3d8b1b4215663e7e1f2c0739e4",
+      "ground_truth_step_sha256": "d9a8b9eb08d74decfa85210516806811a3d7581a1c47193f9fa764aca885ebc3",
+      "recovered_step_sha256": "a1f98a01275ed992258fe7e1ba734f02611343690bc17c6c6d7aaf01ff64eebc",
+      "natural_loop_replacement_face_indices": [],
+      "nonperiodic_planar_differences": [
+        {
+          "input_face_index": 1,
+          "input_predicted_grid_mean": [
+            -0.00015664775855839252,
+            1.9806611817330122e-05,
+            0.027809830382466316
+          ],
+          "gt_sampled_grid_mean_same_index": [
+            4.656612873077393e-10,
+            3.6088749766349792e-09,
+            0.02777770534157753
+          ],
+          "ground_truth": {
+            "native_face_index": 1,
+            "surface_type_code": 0,
+            "surface_type": "plane",
+            "u_periodic": false,
+            "v_periodic": false,
+            "area": 0.04553159694597993,
+            "center_of_mass": [
+              3.8047536929809023e-07,
+              -2.8337784764115287e-05,
+              0.027777777750770002
+            ],
+            "normal_at_parameter_midpoint": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "wire_count": 2
+          },
+          "recovered": {
+            "native_face_index": 0,
+            "surface_type_code": 6,
+            "surface_type": "b_spline",
+            "u_periodic": false,
+            "v_periodic": false,
+            "area": 0.03297930915234648,
+            "center_of_mass": [
+              0.041231695075915654,
+              -0.03994536733990241,
+              0.027882350693475055
+            ],
+            "normal_at_parameter_midpoint": [
+              0.00042295481678809697,
+              0.01389220465565272,
+              -0.9999034092146243
+            ],
+            "wire_count": 1
+          },
+          "assembly_and_trimming": {
+            "tolerance": 0.02,
+            "input_wire_count": 1,
+            "natural_wire_replacement": false,
+            "effective_wire_count": 1,
+            "accepted_wire_count": 1,
+            "final_wire_count": 1,
+            "assembled_edge_occurrences": 8,
+            "skipped_wires": []
+          },
+          "selected_input_edge_ids": [
+            0,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ]
+        },
+        {
+          "input_face_index": 9,
+          "input_predicted_grid_mean": [
+            -0.00018220231868326664,
+            -0.00019335513934493065,
+            -0.028314258903265
+          ],
+          "gt_sampled_grid_mean_same_index": [
+            4.656612873077393e-10,
+            3.6088749766349792e-09,
+            -0.02777770534157753
+          ],
+          "ground_truth": {
+            "native_face_index": 9,
+            "surface_type_code": 0,
+            "surface_type": "plane",
+            "u_periodic": false,
+            "v_periodic": false,
+            "area": 0.045531596945979816,
+            "center_of_mass": [
+              3.804753693384226e-07,
+              -2.8337784764081047e-05,
+              -0.02777777775077
+            ],
+            "normal_at_parameter_midpoint": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "wire_count": 2
+          },
+          "recovered": {
+            "native_face_index": 6,
+            "surface_type_code": 6,
+            "surface_type": "b_spline",
+            "u_periodic": false,
+            "v_periodic": false,
+            "area": 0.03497846370507179,
+            "center_of_mass": [
+              0.04882105105928852,
+              -0.05891661913391337,
+              -0.02824603928006849
+            ],
+            "normal_at_parameter_midpoint": [
+              0.0003869291349972729,
+              0.014951119829714046,
+              -0.99988815089573
+            ],
+            "wire_count": 1
+          },
+          "assembly_and_trimming": {
+            "tolerance": 0.02,
+            "input_wire_count": 1,
+            "natural_wire_replacement": false,
+            "effective_wire_count": 1,
+            "accepted_wire_count": 1,
+            "final_wire_count": 1,
+            "assembled_edge_occurrences": 8,
+            "skipped_wires": []
+          },
+          "selected_input_edge_ids": [
+            3,
+            13,
+            15,
+            17,
+            19,
+            21,
+            22,
+            23
+          ]
+        }
+      ],
+      "known_periodic_natural_loop_exception": null,
+      "conclusion": "The differing faces are nonperiodic plane / nearly planar B-spline counterparts. At connection tolerance 0.02, assembly has already supplied one wire where the matched GT plane has two. The later no-skipped-wire check therefore passes. The specific physical hole outcome is not asserted."
+    },
+    {
+      "sample_id": "00962845",
+      "chosen_path": "roundtrip_optimized",
+      "diagnostics_path": "/mnt/d/python_curve_eval/checkpoints/postprocess_refinement/validation_20261016/post_variants/recover_v1/post/optimized/intersection/00962845/post_diagnostics.json",
+      "diagnostics_sha256": "ef3817beb1d7fc24a51f7769c5de627846adcb8e274969f7916b3bb3d07bbf7d",
+      "ground_truth_step_sha256": "498427dc1eb554017882cd9f6202e94f70e25c8f02e7507456f1d7af9e410cef",
+      "recovered_step_sha256": "b3c7c81cd371b125eb8974192878579f4589af6f081e9817794a6b9ba39a6201",
+      "natural_loop_replacement_face_indices": [
+        2
+      ],
+      "nonperiodic_planar_differences": [
+        {
+          "input_face_index": 5,
+          "input_predicted_grid_mean": [
+            4.3674954213202e-05,
+            -0.00022899010218679905,
+            0.00013202115951571614
+          ],
+          "gt_sampled_grid_mean_same_index": [
+            0.0,
+            -1.0710209608078003e-08,
+            0.002469128230586648
+          ],
+          "ground_truth": {
+            "native_face_index": 5,
+            "surface_type_code": 0,
+            "surface_type": "plane",
+            "u_periodic": false,
+            "v_periodic": false,
+            "area": 0.1983345518553127,
+            "center_of_mass": [
+              8.307190064302597e-05,
+              -0.19159652294846588,
+              0.002469135795695
+            ],
+            "normal_at_parameter_midpoint": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "wire_count": 2
+          },
+          "recovered": {
+            "native_face_index": 1,
+            "surface_type_code": 6,
+            "surface_type": "b_spline",
+            "u_periodic": false,
+            "v_periodic": false,
+            "area": 0.20596621675656254,
+            "center_of_mass": [
+              -0.004764059608985186,
+              -0.26892964477258174,
+              0.00287799132694162
+            ],
+            "normal_at_parameter_midpoint": [
+              0.003420754223297827,
+              0.0010140061734611775,
+              -0.999993635095756
+            ],
+            "wire_count": 1
+          },
+          "assembly_and_trimming": {
+            "tolerance": 0.02,
+            "input_wire_count": 1,
+            "natural_wire_replacement": false,
+            "effective_wire_count": 1,
+            "accepted_wire_count": 1,
+            "final_wire_count": 1,
+            "assembled_edge_occurrences": 5,
+            "skipped_wires": []
+          },
+          "selected_input_edge_ids": [
+            3,
+            5,
+            10,
+            13,
+            14
+          ]
+        }
+      ],
+      "known_periodic_natural_loop_exception": {
+        "input_face_index": 2,
+        "input_predicted_grid_mean": [
+          0.003934272564947605,
+          -0.7871634364128113,
+          0.00010017457680078223
+        ],
+        "gt_sampled_grid_mean_same_index": [
+          0.004166665952652693,
+          -0.783950686454773,
+          -2.9103830456733704e-11
+        ],
+        "ground_truth": {
+          "native_face_index": 2,
+          "surface_type_code": 1,
+          "surface_type": "cylinder",
+          "u_periodic": true,
+          "v_periodic": false,
+          "area": 0.010342691806920974,
+          "center_of_mass": [
+            6.217248937900877e-15,
+            -0.7839506151330001,
+            -1.4983354503372106e-19
+          ],
+          "normal_at_parameter_midpoint": [
+            -1.0,
+            8.728641449044174e-14,
+            0.0
+          ],
+          "wire_count": 1
+        },
+        "recovered": {
+          "native_face_index": 4,
+          "surface_type_code": 6,
+          "surface_type": "b_spline",
+          "u_periodic": false,
+          "v_periodic": true,
+          "area": 0.009531176720805818,
+          "center_of_mass": [
+            -0.00323710364634374,
+            -0.7843168471749409,
+            -0.0027261177759240855
+          ],
+          "normal_at_parameter_midpoint": [
+            0.9999966530426966,
+            0.0012754889840532106,
+            -0.0022510067206317663
+          ],
+          "wire_count": 1
+        },
+        "assembly_and_trimming": {
+          "tolerance": 0.002,
+          "input_wire_count": 2,
+          "natural_wire_replacement": true,
+          "effective_wire_count": 1,
+          "accepted_wire_count": 1,
+          "final_wire_count": 1,
+          "assembled_edge_occurrences": 2,
+          "skipped_wires": []
+        },
+        "selected_input_edge_ids": [
+          7,
+          8
+        ]
+      },
+      "conclusion": "The differing faces are nonperiodic plane / nearly planar B-spline counterparts. At connection tolerance 0.02, assembly has already supplied one wire where the matched GT plane has two. The later no-skipped-wire check therefore passes. The specific physical hole outcome is not asserted."
+    }
+  ]
+}

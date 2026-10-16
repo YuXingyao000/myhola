@@ -1,0 +1,348 @@
+{
+  "status": "passed_static_semantic_audit",
+  "verified_utc": "2026-10-16T10:21:14.141463+00:00",
+  "reference_commit": "4da53954ff22669ccf7cce68021b27e54cb954b6",
+  "reference_selector": "1fe0ebb8^",
+  "current_commit": "c0d69f8ae898ecffcfdf1c0de7b204d4973f1d40",
+  "scope": "当前 runner 使用默认 legacy 后处理；只读源码与既有 validation 回放摘要，不重新运行 OCC，不读取/分析 test 个例。",
+  "conclusion": "在相同输入、参数、RNG 状态与依赖下，当前默认 legacy 保留参考提交的后处理算法路径；未发现新修复逻辑通过默认共享 helper 渗入。",
+  "method": {
+    "git_diff_scope": "全部受跟踪 src/brepnet/post/*.py（含子目录）、shared/occ_utils.py、shared/common_utils.py、eval/metrics/validity.py；另人工检查 runner 分支。",
+    "exact_unchanged_function_ast_count": 38,
+    "default_specialized_equal_function_count": 6,
+    "specialization": {
+      "post_policy": "legacy",
+      "_fitting_policy": "legacy",
+      "fitting_policy": "legacy",
+      "require_all_wires": false,
+      "diagnostics": null,
+      "time_budget_seconds": null,
+      "deadline_monotonic": null
+    },
+    "normalization": "移除文档字符串；按已知默认值折叠 if/if-expression；去除新 keyword-only 参数与 wrapper 的默认转传；将纯局部 acceptable = error < 1e-2 代回 if acceptable。其余 AST 完全相等；不是对任意 Python/OCC 环境的形式证明。",
+    "source_functions": {
+      "src/brepnet/post/construct_brep.py": {
+        "unchanged_functions": [
+          "load_prediction_shape",
+          "get_data",
+          "enumerate_candidate_shapes",
+          "get_candidate_shapes",
+          "_save_initial_debug_data",
+          "_save_optimized_debug_data",
+          "_prepare_shape_topology",
+          "_optimize_shape_geometry",
+          "_build_face_edge_adjacency",
+          "_build_trimmed_faces",
+          "_try_save_valid_solid",
+          "_write_compound_fallback",
+          "parse_args",
+          "list_input_folders",
+          "run_single_process",
+          "run_ray_process",
+          "main"
+        ],
+        "changed_functions_specialized": [
+          {
+            "function": "_fit_occ_geometry",
+            "old_line": 220,
+            "current_line": 225,
+            "default_specialized_ast_equal": true
+          },
+          {
+            "function": "construct_brep_for_sample",
+            "old_line": 327,
+            "current_line": 665,
+            "default_specialized_ast_equal": true
+          },
+          {
+            "function": "construct_brep_from_datanpz",
+            "old_line": 409,
+            "current_line": 761,
+            "default_specialized_ast_equal": true
+          }
+        ],
+        "added_functions": [
+          "_build_complete_trimmed_faces",
+          "_check_post_deadline",
+          "_construct_with_policy",
+          "_promote_post_output",
+          "_read_native_post_step",
+          "_run_complete_post_path",
+          "_save_step_checked",
+          "_try_save_complete_solid",
+          "_write_post_diagnostics"
+        ]
+      },
+      "src/brepnet/post/occ_topology.py": {
+        "unchanged_functions": [
+          "get_edge_vertexes",
+          "explore_edges",
+          "get_edge_length",
+          "check_edges_similarity",
+          "calculate_wire_bounding_box_length",
+          "check_edges_in_face",
+          "create_wire_from_unordered_edges",
+          "set_tolerance",
+          "get_tolerance",
+          "drop_edges",
+          "create_trimmed_face1",
+          "create_trimmed_face2",
+          "try_create_trimmed_face",
+          "get_solid",
+          "get_compound",
+          "construct_brep",
+          "solid_valid_check",
+          "can_be_triangularized",
+          "my_write_stp_file",
+          "solid_to_faceadj_graph",
+          "solid_to_vertadj_graph"
+        ],
+        "changed_functions_specialized": [
+          {
+            "function": "create_trimmed_face_from_wire",
+            "old_line": 184,
+            "current_line": 205,
+            "default_specialized_ast_equal": true
+          }
+        ],
+        "added_functions": [
+          "copy_occ_shapes"
+        ]
+      },
+      "src/brepnet/post/occ_fit.py": {
+        "unchanged_functions": [],
+        "changed_functions_specialized": [
+          {
+            "function": "create_surface",
+            "old_line": 26,
+            "current_line": 46,
+            "default_specialized_ast_equal": true
+          },
+          {
+            "function": "create_edge",
+            "old_line": 93,
+            "current_line": 133,
+            "default_specialized_ast_equal": true
+          }
+        ],
+        "added_functions": [
+          "_fitting_metrics_v2",
+          "_fitting_sample_indices"
+        ]
+      }
+    }
+  },
+  "findings": [
+    {
+      "name": "dispatch_and_runner",
+      "confirmed": true,
+      "current": [
+        "src/brepnet/post/construct_brep.py:665",
+        "src/brepnet/post/construct_brep.py:672",
+        "tools/vae_compare_post.py:333"
+      ],
+      "before": [
+        "src/brepnet/post/construct_brep.py:327"
+      ],
+      "detail": "post_policy=legacy 不进入 _construct_with_policy；本轮 runner 对 legacy 传空 policy_arguments，未传私有 _fitting_policy，沿用原参数/drop=0/optimized200。"
+    },
+    {
+      "name": "solid_candidate_and_save_read",
+      "confirmed": true,
+      "current": [
+        "src/brepnet/post/construct_brep.py:287",
+        "src/brepnet/post/construct_brep.py:299"
+      ],
+      "before": [
+        "src/brepnet/post/construct_brep.py:278",
+        "src/brepnet/post/construct_brep.py:290"
+      ],
+      "detail": "_try_save_valid_solid AST 完全未变：CONNECT_TOLERANCE 中首次 get_solid 非空即 break；旧 save_step_file + check_step_valid_soild 只查该候选，失败不在此循环继续；保留 STL/success 与 compound fallback。新的保存原生读回候选循环仅显式策略调用。"
+    },
+    {
+      "name": "candidate_isolation_and_full_boundary",
+      "confirmed": true,
+      "current": [
+        "src/brepnet/post/construct_brep.py:259",
+        "src/brepnet/post/construct_brep.py:279",
+        "src/brepnet/post/construct_brep.py:740",
+        "src/brepnet/post/occ_topology.py:205"
+      ],
+      "before": [
+        "src/brepnet/post/construct_brep.py:250",
+        "src/brepnet/post/construct_brep.py:270",
+        "src/brepnet/post/occ_topology.py:184"
+      ],
+      "detail": "legacy 不调用 copy_occ_shapes/_build_complete_trimmed_faces/_try_save_complete_solid；trim helper 默认 require_all_wires=False、diagnostics=None，旧跳环行为与 >0.8 面覆盖门槛仍保留；圆柱 natural-wire 特殊处理未改。"
+    },
+    {
+      "name": "fitting_score_and_periodic_conversion",
+      "confirmed": true,
+      "current": [
+        "src/brepnet/post/construct_brep.py:225",
+        "src/brepnet/post/construct_brep.py:715",
+        "src/brepnet/post/occ_fit.py:46",
+        "src/brepnet/post/occ_fit.py:109",
+        "src/brepnet/post/occ_fit.py:133",
+        "src/brepnet/post/occ_fit.py:171"
+      ],
+      "before": [
+        "src/brepnet/post/construct_brep.py:220",
+        "src/brepnet/post/occ_fit.py:26",
+        "src/brepnet/post/occ_fit.py:93"
+      ],
+      "detail": "legacy 继续调用无 fitting_policy keyword 的 create_surface/create_edge，保留旧 stride4/2 抽样、sqrt(mean(distance))+max 与 error<1e-2 停止；新增 acceptable 只是该条件的局部别名。新末端覆盖/RMS/max<=1e-3 仅 fit_score_v2。SetUPeriodic/SetVPeriodic 与 Shape periodic-edge 替换保持原实现。"
+    },
+    {
+      "name": "shared_helpers_and_backup",
+      "confirmed": true,
+      "current": [
+        "src/brepnet/post/occ_topology.py:410",
+        "src/brepnet/post/shape.py:386",
+        "src/brepnet/post/utils.py:73",
+        "src/brepnet/post/construct_brep.py:713"
+      ],
+      "detail": "get_solid/get_compound/create_wire_from_unordered_edges/set_tolerance/get_tolerance 等函数 AST 完全未变；shape、constants、geometry_optimization、mesh、distance、utils、旧 validity 保存检查与共享 OCC/目录 helper 均逐字节未变。ori_shape 仍在几何优化后 deepcopy，未获得 fresh raw fallback。新增模块导入/函数定义不在 legacy 调用链中执行新修复逻辑。"
+    }
+  ],
+  "boundaries": [
+    "仅承诺本轮默认 legacy；调用者若显式传 _fitting_policy=fit_score_v2，即使 post_policy=legacy 也会改变拟合。本轮 runner 未如此调用。",
+    "legacy 仅后处理算法名；model=legacy 与 model=conditioned 的 raw 预测本来不同，不能因此要求两个模型几何输出相同。",
+    "runner 自参考提交后增加只读 native 存储容差/wire 计数与策略记录；原生 TopAbs_SOLID && BRepCheck 判据未改，但额外导入/检查/日志开销及罕见测量异常可影响耗时或预算边界。不宣称完整评估 runner 字节相同或所有运行时间相同。",
+    "AST 静态等价是给定默认值的源码证据，不代替全输入动态证明；库版本、并发和 RNG 初态变化仍可能影响运行。"
+  ],
+  "existing_dynamic_support": {
+    "path": "checkpoints/postprocess_refinement/validation_20261016/validation/legacy_replay_summary.json",
+    "sha256": "e04884e85e208b425e0ed754590a2f57371481851fcce5ae7d7ccc4a4f1c1c5f",
+    "reference_commit": "4da53954ff22669ccf7cce68021b27e54cb954b6",
+    "count": 8,
+    "all_replayed_current_post_sources_still_match": true,
+    "native_and_topology_equal": true,
+    "step_data_equal_count": 8,
+    "face_edge_samples_bitwise_equal": true,
+    "limitation": "仅既有8件 validation回放；本任务未新增运行，不能推广成全部样本的动态恒等证明。"
+  },
+  "file_comparison": {
+    "src/brepnet/post/chamferdist_torch.py": {
+      "before_sha256": "fbc787a1530525b7eeeb18142ec2c53094193bbb2cc97069e70caa392bc3afa7",
+      "current_sha256": "fbc787a1530525b7eeeb18142ec2c53094193bbb2cc97069e70caa392bc3afa7",
+      "byte_identical": true
+    },
+    "src/brepnet/post/constants.py": {
+      "before_sha256": "76312fc450b073ef6ef475bb154fb9eba982146e14f0ba1c4919d939c227399b",
+      "current_sha256": "76312fc450b073ef6ef475bb154fb9eba982146e14f0ba1c4919d939c227399b",
+      "byte_identical": true
+    },
+    "src/brepnet/post/construct_brep.py": {
+      "before_sha256": "3d66dfeb05afbfa288797f9b1bd488efc333d6e66776acb354934f9a4a6b65f4",
+      "current_sha256": "718947c5bd3be8e435411f7a81a74936f8df7dea11c77a64af785e930c459d5c",
+      "byte_identical": false
+    },
+    "src/brepnet/post/debug.py": {
+      "before_sha256": "65ecf432f00b8dd5ab01e305d1eba18b508a06cdaf72abf98ebc59e2b157f4fe",
+      "current_sha256": "65ecf432f00b8dd5ab01e305d1eba18b508a06cdaf72abf98ebc59e2b157f4fe",
+      "byte_identical": true
+    },
+    "src/brepnet/post/distance.py": {
+      "before_sha256": "2156ebd91b647da54d505b4f2a1f4c0ce6fd50c551a9ec2e2ea2e8d96e6cbafc",
+      "current_sha256": "2156ebd91b647da54d505b4f2a1f4c0ce6fd50c551a9ec2e2ea2e8d96e6cbafc",
+      "byte_identical": true
+    },
+    "src/brepnet/post/geometry_optimization.py": {
+      "before_sha256": "46e660a3fd4997794ed10eacbeaee3d96bf1306178001473c2f54dddd0d46850",
+      "current_sha256": "46e660a3fd4997794ed10eacbeaee3d96bf1306178001473c2f54dddd0d46850",
+      "byte_identical": true
+    },
+    "src/brepnet/post/legacy/__init__.py": {
+      "before_sha256": "e95bdf6595112c101ad1e84d77d1cf93cdf660a4f5b32cd4b4f04467a2dadd04",
+      "current_sha256": "e95bdf6595112c101ad1e84d77d1cf93cdf660a4f5b32cd4b4f04467a2dadd04",
+      "byte_identical": true
+    },
+    "src/brepnet/post/legacy/brepgen_with_our_post.py": {
+      "before_sha256": "d4e040ac5d34edb9cd5886f571f888410005f6c60320a3ea52de59fc43189cec",
+      "current_sha256": "d4e040ac5d34edb9cd5886f571f888410005f6c60320a3ea52de59fc43189cec",
+      "byte_identical": true
+    },
+    "src/brepnet/post/legacy/check_brep.py": {
+      "before_sha256": "4e0eb0be7d46508cea9096ed79af00c3cb31a7bd122dc3112b12fc125e081b37",
+      "current_sha256": "4e0eb0be7d46508cea9096ed79af00c3cb31a7bd122dc3112b12fc125e081b37",
+      "byte_identical": true
+    },
+    "src/brepnet/post/legacy/eval_brep.py": {
+      "before_sha256": "d008f25fbfe25ddd20aedc6d8cfb4f2a342ba706d8639344f8f6a4ecff4233f5",
+      "current_sha256": "d008f25fbfe25ddd20aedc6d8cfb4f2a342ba706d8639344f8f6a4ecff4233f5",
+      "byte_identical": true
+    },
+    "src/brepnet/post/legacy/geom_optimization.py": {
+      "before_sha256": "e22dff0ab5be4bca80031f6feda3a81b72dd875e39fc3667f52edeb80bbf76db",
+      "current_sha256": "e22dff0ab5be4bca80031f6feda3a81b72dd875e39fc3667f52edeb80bbf76db",
+      "byte_identical": true
+    },
+    "src/brepnet/post/legacy/move_test.py": {
+      "before_sha256": "ea00148be2f0bae978cdff84951f1f9f939135ccf1bb6f9ac1c740f3b440d5d5",
+      "current_sha256": "ea00148be2f0bae978cdff84951f1f9f939135ccf1bb6f9ac1c740f3b440d5d5",
+      "byte_identical": true
+    },
+    "src/brepnet/post/legacy/optimization.py": {
+      "before_sha256": "1336327b0e4b3397d54e0d9998d592706e7c6418c1225fc24903a41ce1346c46",
+      "current_sha256": "1336327b0e4b3397d54e0d9998d592706e7c6418c1225fc24903a41ce1346c46",
+      "byte_identical": true
+    },
+    "src/brepnet/post/mesh.py": {
+      "before_sha256": "a66d843b06a460aefa2aae5ad2afc485b7e4d5573465a5eb3828e37a1de676ff",
+      "current_sha256": "a66d843b06a460aefa2aae5ad2afc485b7e4d5573465a5eb3828e37a1de676ff",
+      "byte_identical": true
+    },
+    "src/brepnet/post/occ_fit.py": {
+      "before_sha256": "aca77a713e40d863ab125f144108e40bf162be7f85b77b0da5f7375d631ae8e6",
+      "current_sha256": "a8db8365a31ac0c5378a7f62a7c4459cac189ae9c40f3fd86c173224c05f8be4",
+      "byte_identical": false
+    },
+    "src/brepnet/post/occ_topology.py": {
+      "before_sha256": "2652cd061ab814cc8d3d73fa34224aa1b94efcde2c72406d7e76357d77774ab6",
+      "current_sha256": "9765a2329754b2b49aba4c3b4e28bf0f5b1a04a91a5ea2400cdd9372bcde089f",
+      "byte_identical": false
+    },
+    "src/brepnet/post/shape.py": {
+      "before_sha256": "4594df3cbb46b96251c3b6d6e160be70214abe07cfedaced9a0d26bce2aa3f59",
+      "current_sha256": "4594df3cbb46b96251c3b6d6e160be70214abe07cfedaced9a0d26bce2aa3f59",
+      "byte_identical": true
+    },
+    "src/brepnet/post/tools/__init__.py": {
+      "before_sha256": "604b9cccd1ea14e5a4a7465918015b02890c3ff34e228b1c57540c419849ac42",
+      "current_sha256": "604b9cccd1ea14e5a4a7465918015b02890c3ff34e228b1c57540c419849ac42",
+      "byte_identical": true
+    },
+    "src/brepnet/post/tools/construct_face.py": {
+      "before_sha256": "2e979092bab92b1ed13ec53aee25f4100b6d72e68d6e418dd70b9d593266a0e9",
+      "current_sha256": "2e979092bab92b1ed13ec53aee25f4100b6d72e68d6e418dd70b9d593266a0e9",
+      "byte_identical": true
+    },
+    "src/brepnet/post/tools/move.py": {
+      "before_sha256": "310b62f35e61e2b5387deca9a2f7777152d4bbc522e27e68a5678c79d7017838",
+      "current_sha256": "310b62f35e61e2b5387deca9a2f7777152d4bbc522e27e68a5678c79d7017838",
+      "byte_identical": true
+    },
+    "src/brepnet/post/utils.py": {
+      "before_sha256": "7a9656d1c942d2035867026600a601be34ec95420631e1c8cfe03cecd742edb2",
+      "current_sha256": "7a9656d1c942d2035867026600a601be34ec95420631e1c8cfe03cecd742edb2",
+      "byte_identical": true
+    },
+    "shared/occ_utils.py": {
+      "before_sha256": "045cd8a21448d4f5be75f58b1e993b8be450daa33d2c94acce2f617a0f3c78aa",
+      "current_sha256": "045cd8a21448d4f5be75f58b1e993b8be450daa33d2c94acce2f617a0f3c78aa",
+      "byte_identical": true
+    },
+    "shared/common_utils.py": {
+      "before_sha256": "6c05e69cc782f1ec99b4e29a460f0256b5ddb728a02f50a2e16c82905647dc63",
+      "current_sha256": "6c05e69cc782f1ec99b4e29a460f0256b5ddb728a02f50a2e16c82905647dc63",
+      "byte_identical": true
+    },
+    "src/brepnet/eval/metrics/validity.py": {
+      "before_sha256": "8d8fb3ddde7a1281675b8341921fcdde1a2931c8034ce8c8b05ef68caabad92f",
+      "current_sha256": "8d8fb3ddde7a1281675b8341921fcdde1a2931c8034ce8c8b05ef68caabad92f",
+      "byte_identical": true
+    }
+  },
+  "frozen_production_code_modified": false
+}

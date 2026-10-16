@@ -1,0 +1,29 @@
+defaults:
+  - train_vae_intersection
+  - _self_
+
+# Added 2026-10-15. Both arms unfreeze the whole encoder/posterior/decoder.
+# Control overrides encoder_edge_value.enabled=false and uses model.checkpoint.
+trainer:
+  exp_name: encoder_edge_value/candidate
+  devices: 8
+  batch_size: 16
+  max_epochs: 40
+  max_steps: 14520
+  max_time: null
+
+model:
+  freeze_encoder: false
+  encoder_edge_value:
+    enabled: true
+    hidden_dim: 64
+  curve_conditioning:
+    enabled: true
+  curve_point_feedback:
+    enabled: false
+  refinement:
+    candidate_chunk_size: 256
+    geometry_chunk_size: 128
+    checkpoint_candidates: false
+  loss_weights:
+    geometry_chunk_size: 128

@@ -1,0 +1,813 @@
+{
+  "created_utc": "2026-10-16T09:10:19.662468+00:00",
+  "split": "test",
+  "intended_count": 2417,
+  "original_count": 2424,
+  "accepted_split_sha256": "2864849e8240134c6033cc6cd64efa19337f67fea94b89a493690ae84355b7b3",
+  "audit_script_sha256": "b2e8f45670a2d1a34642117c32514c7e3802209f4c01b998a1ef497d947f5061",
+  "protocol_fingerprints": {
+    "legacy": "534ae435e97fc0c60df9297a1e1c681ff1ef119a3992d35437b17f566e8c35e4",
+    "recover_v1": "5ec46f203adb77afce63175892bb8719f7b2d19ae1e310eb72ba8cae1565be07"
+  },
+  "scope": "Aggregate frozen terminal records only. No STEP, CAD, images or per-case failure diagnostics were opened; no repair or metric resampling was run.",
+  "definitions": {
+    "geometry": "Same validation definition: per native STEP face 1024 samples and per edge 128, bidirectional squared nearest-distance means summed, no alignment/scaling.",
+    "common_computable": "Both records have geometry_status=ok; paired means use the identical finite-in-both subset for each metric. Missing/NaN/Inf and finite counts are reported separately.",
+    "common_valid": "Both native_valid_solid flags are true, followed by the same geometry availability requirement.",
+    "improved_or_worsened": "Strict sign of candidate minus baseline for finite pairs with both geometry statuses ok. Missing or nonfinite values are never treated as improvements.",
+    "tolerance": "Stored OCC face/edge/vertex tolerances, not measured geometric error. A valid solid does not certify 1e-3 accuracy or correct topology."
+  },
+  "policies": {
+    "legacy": {
+      "native_valid_count": 2111,
+      "rate_accepted": 0.873396772858916,
+      "rate_original": 0.8708745874587459,
+      "status_counts": {
+        "ok": 2313,
+        "geometry_error": 104
+      },
+      "geometry_status_counts": {
+        "ok": 2313,
+        "error": 104
+      },
+      "step_count": 2417,
+      "geometry_computable_count": 2313,
+      "all_computable_geometry": {
+        "face_cd": {
+          "count": 2313,
+          "mean": 0.0006552633845730611,
+          "median": 0.0004021387318811036,
+          "p90": 0.0010231563634933423,
+          "max": 0.03968102397717853
+        },
+        "edge_cd": {
+          "count": 2313,
+          "mean": 0.0003817949896771298,
+          "median": 0.00010241762086923124,
+          "p90": 0.0003066108017311125,
+          "max": 0.04641484751852442
+        }
+      },
+      "metric_availability_all_records": {
+        "face_cd": {
+          "row_count": 2417,
+          "absent_count": 104,
+          "null_count": 0,
+          "nan_count": 0,
+          "infinite_count": 0,
+          "finite_count": 2313,
+          "negative_finite_count": 0,
+          "invalid_type_count": 0
+        },
+        "edge_cd": {
+          "row_count": 2417,
+          "absent_count": 104,
+          "null_count": 0,
+          "nan_count": 0,
+          "infinite_count": 0,
+          "finite_count": 2313,
+          "negative_finite_count": 0,
+          "invalid_type_count": 0
+        }
+      },
+      "native_valid_tolerances": {
+        "cohort_count": 2111,
+        "maximum_stored_tolerance": {
+          "count": 2111,
+          "mean": 0.007273707148259814,
+          "median": 0.005578711610404503,
+          "p90": 0.013211527349161022,
+          "max": 0.0774026012259585
+        },
+        "incomplete_tolerance_triplet_count": 0,
+        "counts_above": {
+          "0.001": 2111,
+          "0.01": 354,
+          "0.08": 0
+        },
+        "per_entity": {
+          "native_face_tolerance_max": {
+            "statistics": {
+              "count": 2111,
+              "mean": 9.999999999999998e-08,
+              "median": 1e-07,
+              "p90": 1e-07,
+              "max": 1e-07
+            },
+            "availability": {
+              "row_count": 2111,
+              "absent_count": 0,
+              "null_count": 0,
+              "nan_count": 0,
+              "infinite_count": 0,
+              "finite_count": 2111,
+              "negative_finite_count": 0,
+              "invalid_type_count": 0
+            }
+          },
+          "native_edge_tolerance_max": {
+            "statistics": {
+              "count": 2111,
+              "mean": 0.0072315280050114766,
+              "median": 0.005548835484736307,
+              "p90": 0.013210370202633005,
+              "max": 0.0774026012259585
+            },
+            "availability": {
+              "row_count": 2111,
+              "absent_count": 0,
+              "null_count": 0,
+              "nan_count": 0,
+              "infinite_count": 0,
+              "finite_count": 2111,
+              "negative_finite_count": 0,
+              "invalid_type_count": 0
+            }
+          },
+          "native_vertex_tolerance_max": {
+            "statistics": {
+              "count": 2111,
+              "mean": 0.007273707148259814,
+              "median": 0.005578711610404503,
+              "p90": 0.013211527349161022,
+              "max": 0.0774026012259585
+            },
+            "availability": {
+              "row_count": 2111,
+              "absent_count": 0,
+              "null_count": 0,
+              "nan_count": 0,
+              "infinite_count": 0,
+              "finite_count": 2111,
+              "negative_finite_count": 0,
+              "invalid_type_count": 0
+            }
+          }
+        }
+      },
+      "wall_seconds": {
+        "count": 2417,
+        "mean": 4.898651035318851,
+        "median": 4.144116297014989,
+        "p90": 7.3571399916079825,
+        "max": 57.1960995089903
+      }
+    },
+    "recover_v1": {
+      "native_valid_count": 2155,
+      "rate_accepted": 0.8916011584609019,
+      "rate_original": 0.889026402640264,
+      "status_counts": {
+        "ok": 2315,
+        "geometry_error": 102
+      },
+      "geometry_status_counts": {
+        "ok": 2315,
+        "error": 102
+      },
+      "step_count": 2417,
+      "geometry_computable_count": 2315,
+      "all_computable_geometry": {
+        "face_cd": {
+          "count": 2315,
+          "mean": 0.0006304651879823807,
+          "median": 0.0003958585307161219,
+          "p90": 0.0009722604597446979,
+          "max": 0.03968102397717853
+        },
+        "edge_cd": {
+          "count": 2315,
+          "mean": 0.00035846885689880736,
+          "median": 0.00010055553300103895,
+          "p90": 0.0002950038867525769,
+          "max": 0.04641484751852442
+        }
+      },
+      "metric_availability_all_records": {
+        "face_cd": {
+          "row_count": 2417,
+          "absent_count": 102,
+          "null_count": 0,
+          "nan_count": 0,
+          "infinite_count": 0,
+          "finite_count": 2315,
+          "negative_finite_count": 0,
+          "invalid_type_count": 0
+        },
+        "edge_cd": {
+          "row_count": 2417,
+          "absent_count": 102,
+          "null_count": 0,
+          "nan_count": 0,
+          "infinite_count": 0,
+          "finite_count": 2315,
+          "negative_finite_count": 0,
+          "invalid_type_count": 0
+        }
+      },
+      "native_valid_tolerances": {
+        "cohort_count": 2155,
+        "maximum_stored_tolerance": {
+          "count": 2155,
+          "mean": 0.0075024362523805,
+          "median": 0.005616922065558303,
+          "p90": 0.01341013597913745,
+          "max": 0.21640561955688764
+        },
+        "incomplete_tolerance_triplet_count": 0,
+        "counts_above": {
+          "0.001": 2155,
+          "0.01": 381,
+          "0.08": 1
+        },
+        "per_entity": {
+          "native_face_tolerance_max": {
+            "statistics": {
+              "count": 2155,
+              "mean": 9.999999999999998e-08,
+              "median": 1e-07,
+              "p90": 1e-07,
+              "max": 1e-07
+            },
+            "availability": {
+              "row_count": 2155,
+              "absent_count": 0,
+              "null_count": 0,
+              "nan_count": 0,
+              "infinite_count": 0,
+              "finite_count": 2155,
+              "negative_finite_count": 0,
+              "invalid_type_count": 0
+            }
+          },
+          "native_edge_tolerance_max": {
+            "statistics": {
+              "count": 2155,
+              "mean": 0.00744438068342567,
+              "median": 0.005590790673212203,
+              "p90": 0.013378872349953804,
+              "max": 0.20910624972209474
+            },
+            "availability": {
+              "row_count": 2155,
+              "absent_count": 0,
+              "null_count": 0,
+              "nan_count": 0,
+              "infinite_count": 0,
+              "finite_count": 2155,
+              "negative_finite_count": 0,
+              "invalid_type_count": 0
+            }
+          },
+          "native_vertex_tolerance_max": {
+            "statistics": {
+              "count": 2155,
+              "mean": 0.0075024362523805,
+              "median": 0.005616922065558303,
+              "p90": 0.01341013597913745,
+              "max": 0.21640561955688764
+            },
+            "availability": {
+              "row_count": 2155,
+              "absent_count": 0,
+              "null_count": 0,
+              "nan_count": 0,
+              "infinite_count": 0,
+              "finite_count": 2155,
+              "negative_finite_count": 0,
+              "invalid_type_count": 0
+            }
+          }
+        }
+      },
+      "wall_seconds": {
+        "count": 2417,
+        "mean": 6.153529164747862,
+        "median": 4.203860917012207,
+        "p90": 10.898240110598271,
+        "max": 86.87891612798558
+      }
+    }
+  },
+  "transition_counts": {
+    "both_valid": 2111,
+    "rescued": 44,
+    "regressed": 0,
+    "both_failed": 262
+  },
+  "common_computable_geometry": {
+    "cohort_count": 2417,
+    "geometry_status_ok_in_both_count": 2311,
+    "geometry_not_computable_in_both_count": 106,
+    "metrics": {
+      "face_cd": {
+        "baseline": {
+          "count": 2311,
+          "mean": 0.0006544044281588448,
+          "median": 0.0004021387318811036,
+          "p90": 0.0010222575998483918,
+          "max": 0.03968102397717853
+        },
+        "candidate": {
+          "count": 2311,
+          "mean": 0.0006311623199330665,
+          "median": 0.0003959489220045978,
+          "p90": 0.0009725932030115972,
+          "max": 0.03968102397717853
+        },
+        "candidate_minus_baseline": {
+          "count": 2311,
+          "mean": -2.3242108225778432e-05,
+          "median": 0.0,
+          "p90": 0.0,
+          "max": 5.499461933323888e-05
+        },
+        "candidate_over_positive_baseline": {
+          "count": 2311,
+          "mean": 0.991781225369639,
+          "median": 1.0,
+          "p90": 1.0,
+          "max": 1.1985208143677892
+        },
+        "finite_in_both_count": 2311,
+        "not_finitely_comparable_count": 106,
+        "improved_count": 35,
+        "worsened_count": 2,
+        "unchanged_count": 2274,
+        "availability_within_geometry_ok_cohort": {
+          "legacy": {
+            "row_count": 2311,
+            "absent_count": 0,
+            "null_count": 0,
+            "nan_count": 0,
+            "infinite_count": 0,
+            "finite_count": 2311,
+            "negative_finite_count": 0,
+            "invalid_type_count": 0
+          },
+          "recover_v1": {
+            "row_count": 2311,
+            "absent_count": 0,
+            "null_count": 0,
+            "nan_count": 0,
+            "infinite_count": 0,
+            "finite_count": 2311,
+            "negative_finite_count": 0,
+            "invalid_type_count": 0
+          }
+        }
+      },
+      "edge_cd": {
+        "baseline": {
+          "count": 2311,
+          "mean": 0.00038199995050276547,
+          "median": 0.00010241762086923124,
+          "p90": 0.00030661679100402314,
+          "max": 0.04641484751852442
+        },
+        "candidate": {
+          "count": 2311,
+          "mean": 0.0003589089164148329,
+          "median": 0.00010063973795712168,
+          "p90": 0.0002948551462487549,
+          "max": 0.04641484751852442
+        },
+        "candidate_minus_baseline": {
+          "count": 2311,
+          "mean": -2.3091034087932506e-05,
+          "median": 0.0,
+          "p90": 0.0,
+          "max": 7.498863724665511e-05
+        },
+        "candidate_over_positive_baseline": {
+          "count": 2311,
+          "mean": 0.992629441308509,
+          "median": 1.0,
+          "p90": 1.0,
+          "max": 2.5886859520028906
+        },
+        "finite_in_both_count": 2311,
+        "not_finitely_comparable_count": 106,
+        "improved_count": 31,
+        "worsened_count": 6,
+        "unchanged_count": 2274,
+        "availability_within_geometry_ok_cohort": {
+          "legacy": {
+            "row_count": 2311,
+            "absent_count": 0,
+            "null_count": 0,
+            "nan_count": 0,
+            "infinite_count": 0,
+            "finite_count": 2311,
+            "negative_finite_count": 0,
+            "invalid_type_count": 0
+          },
+          "recover_v1": {
+            "row_count": 2311,
+            "absent_count": 0,
+            "null_count": 0,
+            "nan_count": 0,
+            "infinite_count": 0,
+            "finite_count": 2311,
+            "negative_finite_count": 0,
+            "invalid_type_count": 0
+          }
+        }
+      }
+    }
+  },
+  "common_valid_geometry": {
+    "cohort_count": 2111,
+    "geometry_status_ok_in_both_count": 2064,
+    "geometry_not_computable_in_both_count": 47,
+    "metrics": {
+      "face_cd": {
+        "baseline": {
+          "count": 2064,
+          "mean": 0.00045088330016269864,
+          "median": 0.00037593486223806076,
+          "p90": 0.0008524301123806191,
+          "max": 0.002560480077724469
+        },
+        "candidate": {
+          "count": 2064,
+          "mean": 0.00045088330016269864,
+          "median": 0.00037593486223806076,
+          "p90": 0.0008524301123806191,
+          "max": 0.002560480077724469
+        },
+        "candidate_minus_baseline": {
+          "count": 2064,
+          "mean": 0.0,
+          "median": 0.0,
+          "p90": 0.0,
+          "max": 0.0
+        },
+        "candidate_over_positive_baseline": {
+          "count": 2064,
+          "mean": 1.0,
+          "median": 1.0,
+          "p90": 1.0,
+          "max": 1.0
+        },
+        "finite_in_both_count": 2064,
+        "not_finitely_comparable_count": 47,
+        "improved_count": 0,
+        "worsened_count": 0,
+        "unchanged_count": 2064,
+        "availability_within_geometry_ok_cohort": {
+          "legacy": {
+            "row_count": 2064,
+            "absent_count": 0,
+            "null_count": 0,
+            "nan_count": 0,
+            "infinite_count": 0,
+            "finite_count": 2064,
+            "negative_finite_count": 0,
+            "invalid_type_count": 0
+          },
+          "recover_v1": {
+            "row_count": 2064,
+            "absent_count": 0,
+            "null_count": 0,
+            "nan_count": 0,
+            "infinite_count": 0,
+            "finite_count": 2064,
+            "negative_finite_count": 0,
+            "invalid_type_count": 0
+          }
+        }
+      },
+      "edge_cd": {
+        "baseline": {
+          "count": 2064,
+          "mean": 0.00012233508400434856,
+          "median": 9.425644998668415e-05,
+          "p90": 0.00023157573436945604,
+          "max": 0.003674347979780497
+        },
+        "candidate": {
+          "count": 2064,
+          "mean": 0.00012233508400434856,
+          "median": 9.425644998668415e-05,
+          "p90": 0.00023157573436945604,
+          "max": 0.003674347979780497
+        },
+        "candidate_minus_baseline": {
+          "count": 2064,
+          "mean": 0.0,
+          "median": 0.0,
+          "p90": 0.0,
+          "max": 0.0
+        },
+        "candidate_over_positive_baseline": {
+          "count": 2064,
+          "mean": 1.0,
+          "median": 1.0,
+          "p90": 1.0,
+          "max": 1.0
+        },
+        "finite_in_both_count": 2064,
+        "not_finitely_comparable_count": 47,
+        "improved_count": 0,
+        "worsened_count": 0,
+        "unchanged_count": 2064,
+        "availability_within_geometry_ok_cohort": {
+          "legacy": {
+            "row_count": 2064,
+            "absent_count": 0,
+            "null_count": 0,
+            "nan_count": 0,
+            "infinite_count": 0,
+            "finite_count": 2064,
+            "negative_finite_count": 0,
+            "invalid_type_count": 0
+          },
+          "recover_v1": {
+            "row_count": 2064,
+            "absent_count": 0,
+            "null_count": 0,
+            "nan_count": 0,
+            "infinite_count": 0,
+            "finite_count": 2064,
+            "negative_finite_count": 0,
+            "invalid_type_count": 0
+          }
+        }
+      }
+    }
+  },
+  "rescued_geometry": {
+    "cohort_count": 44,
+    "geometry_status_ok_in_both_count": 37,
+    "geometry_not_computable_in_both_count": 7,
+    "metrics": {
+      "face_cd": {
+        "baseline": {
+          "count": 37,
+          "mean": 0.0018584208974466803,
+          "median": 0.000978456894844924,
+          "p90": 0.0032717948891607296,
+          "max": 0.016623956570168456
+        },
+        "candidate": {
+          "count": 37,
+          "mean": 0.0004067313809663035,
+          "median": 0.0002836300935046599,
+          "p90": 0.0007507781617487584,
+          "max": 0.002720727345895629
+        },
+        "candidate_minus_baseline": {
+          "count": 37,
+          "mean": -0.0014516895164803773,
+          "median": -0.0005987319426680681,
+          "p90": -1.531947508005914e-05,
+          "max": 5.499461933323888e-05
+        },
+        "candidate_over_positive_baseline": {
+          "count": 37,
+          "mean": 0.4866597791685392,
+          "median": 0.42649297260410873,
+          "p90": 0.9401582508076108,
+          "max": 1.1985208143677892
+        },
+        "finite_in_both_count": 37,
+        "not_finitely_comparable_count": 7,
+        "improved_count": 35,
+        "worsened_count": 2,
+        "unchanged_count": 0,
+        "availability_within_geometry_ok_cohort": {
+          "legacy": {
+            "row_count": 37,
+            "absent_count": 0,
+            "null_count": 0,
+            "nan_count": 0,
+            "infinite_count": 0,
+            "finite_count": 37,
+            "negative_finite_count": 0,
+            "invalid_type_count": 0
+          },
+          "recover_v1": {
+            "row_count": 37,
+            "absent_count": 0,
+            "null_count": 0,
+            "nan_count": 0,
+            "infinite_count": 0,
+            "finite_count": 37,
+            "negative_finite_count": 0,
+            "invalid_type_count": 0
+          }
+        }
+      },
+      "edge_cd": {
+        "baseline": {
+          "count": 37,
+          "mean": 0.0015347534411621906,
+          "median": 0.000194115742728908,
+          "p90": 0.007276287254490993,
+          "max": 0.012931876774070835
+        },
+        "candidate": {
+          "count": 37,
+          "mean": 9.249993366997374e-05,
+          "median": 5.595267493533502e-05,
+          "p90": 0.0002446237955561991,
+          "max": 0.0004611011864279924
+        },
+        "candidate_minus_baseline": {
+          "count": 37,
+          "mean": -0.0014422535074922168,
+          "median": -6.284006502793965e-05,
+          "p90": 3.0410047928517216e-08,
+          "max": 7.498863724665511e-05
+        },
+        "candidate_over_positive_baseline": {
+          "count": 37,
+          "mean": 0.5396388882152592,
+          "median": 0.4022955942804722,
+          "p90": 1.0004482867827031,
+          "max": 2.5886859520028906
+        },
+        "finite_in_both_count": 37,
+        "not_finitely_comparable_count": 7,
+        "improved_count": 31,
+        "worsened_count": 6,
+        "unchanged_count": 0,
+        "availability_within_geometry_ok_cohort": {
+          "legacy": {
+            "row_count": 37,
+            "absent_count": 0,
+            "null_count": 0,
+            "nan_count": 0,
+            "infinite_count": 0,
+            "finite_count": 37,
+            "negative_finite_count": 0,
+            "invalid_type_count": 0
+          },
+          "recover_v1": {
+            "row_count": 37,
+            "absent_count": 0,
+            "null_count": 0,
+            "nan_count": 0,
+            "infinite_count": 0,
+            "finite_count": 37,
+            "negative_finite_count": 0,
+            "invalid_type_count": 0
+          }
+        }
+      }
+    }
+  },
+  "rescued_tolerances": {
+    "legacy": {
+      "cohort_count": 44,
+      "maximum_stored_tolerance": {
+        "count": 44,
+        "mean": 0.020276632179012186,
+        "median": 0.013343478363921885,
+        "p90": 0.04308870852763694,
+        "max": 0.11587234265744625
+      },
+      "incomplete_tolerance_triplet_count": 0,
+      "counts_above": {
+        "0.001": 44,
+        "0.01": 31,
+        "0.08": 2
+      },
+      "per_entity": {
+        "native_face_tolerance_max": {
+          "statistics": {
+            "count": 44,
+            "mean": 9.999999999999998e-08,
+            "median": 1e-07,
+            "p90": 1e-07,
+            "max": 1e-07
+          },
+          "availability": {
+            "row_count": 44,
+            "absent_count": 0,
+            "null_count": 0,
+            "nan_count": 0,
+            "infinite_count": 0,
+            "finite_count": 44,
+            "negative_finite_count": 0,
+            "invalid_type_count": 0
+          }
+        },
+        "native_edge_tolerance_max": {
+          "statistics": {
+            "count": 44,
+            "mean": 0.017199205163181616,
+            "median": 0.011061411658396074,
+            "p90": 0.04084976880693026,
+            "max": 0.0930838696868636
+          },
+          "availability": {
+            "row_count": 44,
+            "absent_count": 0,
+            "null_count": 0,
+            "nan_count": 0,
+            "infinite_count": 0,
+            "finite_count": 44,
+            "negative_finite_count": 0,
+            "invalid_type_count": 0
+          }
+        },
+        "native_vertex_tolerance_max": {
+          "statistics": {
+            "count": 44,
+            "mean": 0.020276632179012186,
+            "median": 0.013343478363921885,
+            "p90": 0.04308870852763694,
+            "max": 0.11587234265744625
+          },
+          "availability": {
+            "row_count": 44,
+            "absent_count": 0,
+            "null_count": 0,
+            "nan_count": 0,
+            "infinite_count": 0,
+            "finite_count": 44,
+            "negative_finite_count": 0,
+            "invalid_type_count": 0
+          }
+        }
+      }
+    },
+    "recover_v1": {
+      "cohort_count": 44,
+      "maximum_stored_tolerance": {
+        "count": 44,
+        "mean": 0.01847623486144345,
+        "median": 0.011382648347890635,
+        "p90": 0.0264857386739587,
+        "max": 0.21640561955688764
+      },
+      "incomplete_tolerance_triplet_count": 0,
+      "counts_above": {
+        "0.001": 44,
+        "0.01": 27,
+        "0.08": 1
+      },
+      "per_entity": {
+        "native_face_tolerance_max": {
+          "statistics": {
+            "count": 44,
+            "mean": 9.999999999999998e-08,
+            "median": 1e-07,
+            "p90": 1e-07,
+            "max": 1e-07
+          },
+          "availability": {
+            "row_count": 44,
+            "absent_count": 0,
+            "null_count": 0,
+            "nan_count": 0,
+            "infinite_count": 0,
+            "finite_count": 44,
+            "negative_finite_count": 0,
+            "invalid_type_count": 0
+          }
+        },
+        "native_edge_tolerance_max": {
+          "statistics": {
+            "count": 44,
+            "mean": 0.017656471686433892,
+            "median": 0.010501904414137463,
+            "p90": 0.026429878196384857,
+            "max": 0.20910624972209474
+          },
+          "availability": {
+            "row_count": 44,
+            "absent_count": 0,
+            "null_count": 0,
+            "nan_count": 0,
+            "infinite_count": 0,
+            "finite_count": 44,
+            "negative_finite_count": 0,
+            "invalid_type_count": 0
+          }
+        },
+        "native_vertex_tolerance_max": {
+          "statistics": {
+            "count": 44,
+            "mean": 0.01847623486144345,
+            "median": 0.011382648347890635,
+            "p90": 0.0264857386739587,
+            "max": 0.21640561955688764
+          },
+          "availability": {
+            "row_count": 44,
+            "absent_count": 0,
+            "null_count": 0,
+            "nan_count": 0,
+            "infinite_count": 0,
+            "finite_count": 44,
+            "negative_finite_count": 0,
+            "invalid_type_count": 0
+          }
+        }
+      }
+    }
+  }
+}

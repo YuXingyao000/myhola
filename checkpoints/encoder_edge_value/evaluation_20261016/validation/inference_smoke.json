@@ -1,0 +1,38 @@
+{
+  "last": {
+    "status": "passed",
+    "checkpoint_sha256": "040c05a45dd7edae825f2e6dd8e2cb3489a418146f9a7b2122cc54d38070618c",
+    "objects": [
+      {
+        "model_id": "00000093",
+        "faces": 18,
+        "latent_sha256": "ddfeda4746a1aca466fbd64108a2fe4607f5a74b910fc74db6bf4725103bf57c",
+        "prediction_sha256": "c7c75f8b2ed1349f10f8a5ba9559377e755252c86a1ec8be45f885da16755451"
+      },
+      {
+        "model_id": "00480145",
+        "faces": 12,
+        "latent_sha256": "1b5634ce77e6128375009e9b6a4c69b87259a2555fd9cf61d191826f5775b2bd",
+        "prediction_sha256": "43a53fdbf778aa91e28187f452105e070d4de03ae28f2ee6af0deb9305864130"
+      }
+    ]
+  },
+  "resume_best": {
+    "status": "passed",
+    "checkpoint_sha256": "e1e579e7bc6bdf64b3c078d6b5414e33630222de989b180ca8f3eb22b59c6ccf",
+    "objects": [
+      {
+        "model_id": "00000093",
+        "faces": 18,
+        "latent_sha256": "bebf6f5210a02d3cae9b5db007ac01c7e6b64ad7b469f2a337664925fc584ca3",
+        "prediction_sha256": "b6090734577c4c941608b407c68155a36b9821f60a413ebd066c0d081ca0069b"
+      },
+      {
+        "model_id": "00480145",
+        "faces": 12,
+        "latent_sha256": "c252d77d880d0de63bc702ebeb6c7943bf22eeaa416a75dd6ab6f1b2d670fde3",
+        "prediction_sha256": "05e2bb5001c14e12d386c30ef2a6c53ebc4eea464d485931ca57e2c672d87c8a"
+      }
+    ]
+  }
+}

@@ -42,8 +42,8 @@ def read_json(path: Path) -> dict:
         return json.load(handle, parse_constant=reject_constant)
 
 
-def read_rows(path: Path, id_key: str) -> dict[str, dict[str, dict]]:
-    result = {method: {} for method in METHODS}
+def read_rows(path: Path, id_key: str, methods: tuple[str, str] = METHODS) -> dict[str, dict[str, dict]]:
+    result = {method: {} for method in methods}
     with path.open(newline="", encoding="utf-8") as handle:
         for row in csv.DictReader(handle):
             method, sample_id = row.get("method"), row.get(id_key)
@@ -52,10 +52,10 @@ def read_rows(path: Path, id_key: str) -> dict[str, dict[str, dict]]:
             if sample_id in result[method]:
                 raise ValueError(f"Duplicate {method}/{sample_id} in {path}")
             result[method][sample_id] = row
-    for method in METHODS:
+    for method in methods:
         if len(result[method]) != EXPECTED_INTENDED:
             raise ValueError(f"Incomplete {path}: {method} has {len(result[method])}/{EXPECTED_INTENDED} rows")
-    if set(result["legacy"]) != set(result["intersection"]):
+    if set(result[methods[0]]) != set(result[methods[1]]):
         raise ValueError(f"Method ID sets disagree in {path}")
     return result
 
@@ -85,10 +85,10 @@ def stat_mean(statistic: dict) -> float | None:
     return stat_value(statistic, "mean")
 
 
-def validate_statistics(pair: dict, count: int, context: str) -> None:
+def validate_statistics(pair: dict, count: int, context: str, methods: tuple[str, str] = METHODS) -> None:
     if not 0 <= count <= EXPECTED_INTENDED:
         raise ValueError(f"Invalid common metric count for {context}")
-    for method in METHODS:
+    for method in methods:
         if pair[method]["count"] != count:
             raise ValueError(f"Paired metric counts disagree for {context}/{method}")
         stat_mean(pair[method])
@@ -159,36 +159,46 @@ def numerical_audit_paragraphs(record: dict | None) -> list[str]:
     return paragraphs
 
 
-def load_comparison(root: Path) -> dict:
+def load_comparison(root: Path, methods: tuple[str, str] = METHODS, *,
+                    raw_modes: tuple[str, ...] = ("posterior_mean", "archived_latents"),
+                    input_contract: str = "identical_latents") -> dict:
     """Validate completion and fixed denominators before publishing anything."""
     raw = {}
     expected_ids = None
     split_digest = None
-    for mode in ("posterior_mean", "archived_latents"):
+    if not raw_modes or any(mode not in {"posterior_mean", "archived_latents"} for mode in raw_modes):
+        raise ValueError("Report requires explicit supported raw modes")
+    if input_contract not in {"identical_latents", "same_geometry_source"}:
+        raise ValueError("Unknown report input contract")
+    if input_contract == "same_geometry_source" and raw_modes != ("posterior_mean",):
+        raise ValueError("Changed encoder comparison cannot use archived latent replay")
+    for mode in raw_modes:
         directory = root / "raw_metrics" / mode
         summary = read_json(directory / "summary.json")
-        rows = read_rows(directory / "per_object.csv", "model_id")
+        rows = read_rows(directory / "per_object.csv", "model_id", methods)
+        if summary.get("input_contract", "identical_latents") != input_contract:
+            raise ValueError(f"Unexpected raw input contract for {mode}")
         if summary["intended_count"] != EXPECTED_INTENDED or summary["original_count"] != EXPECTED_ORIGINAL:
             raise ValueError(f"Unexpected fixed denominators for raw/{mode}")
-        if summary["mode"] != mode or set(summary["methods"]) != set(METHODS):
+        if summary["mode"] != mode or set(summary["methods"]) != set(methods):
             raise ValueError(f"Wrong mode/methods in raw/{mode}")
-        if summary.get("candidate_method", "intersection") != "intersection" or not summary["protocol_valid"]:
+        if summary.get("candidate_method", "intersection") != methods[1] or summary.get("baseline_method", "legacy") != methods[0] or not summary["protocol_valid"]:
             raise ValueError(f"Unverified comparison protocol for raw/{mode}")
         digest = summary.get("split_sha256")
         if not digest or (split_digest is not None and digest != split_digest):
             raise ValueError("Raw modes must use the same recorded split hash")
         split_digest = digest
-        ids = set(rows["legacy"])
+        ids = set(rows[methods[0]])
         if expected_ids is not None and ids != expected_ids:
             raise ValueError("Raw modes have different object sets")
         expected_ids = ids
-        for method in METHODS:
+        for method in methods:
             actual_status = dict(Counter(row["status"] for row in rows[method].values()))
             if actual_status != summary["methods"][method]["status_counts"]:
                 raise ValueError(f"Raw summary/CSV status counts disagree for {mode}/{method}")
             if any(row["status"] in ("not_run", "running", "pending", "") for row in rows[method].values()):
                 raise ValueError(f"Raw results are not complete for {mode}/{method}")
-        shared = Counter(row.get("shared_input_status") for row in rows["legacy"].values())
+        shared = Counter(row.get("shared_input_status") for row in rows[methods[0]].values())
         if dict(shared) != summary["shared_input_status_counts"] or shared.get("mismatch", 0) or shared.get("missing_digest", 0):
             raise ValueError(f"Raw input digest status disagrees for {mode}")
         metrics = ("face_cd_sq", "edge_cd_sq")
@@ -196,8 +206,8 @@ def load_comparison(root: Path) -> dict:
             metrics += ("face_mae", "topology_precision", "topology_recall", "topology_f1")
         for metric in metrics:
             pair = summary["paired"][metric]
-            validate_statistics(pair, pair["common_count"], f"{mode}/{metric}")
-        for method in METHODS:
+            validate_statistics(pair, pair["common_count"], f"{mode}/{metric}", methods)
+        for method in methods:
             for metric in ("legacy_reciprocal_cd_sq_mean", "legacy_reciprocal_cd_sq_max", "legacy_unilateral_pair_count"):
                 stat_mean(summary["methods"][method]["metrics"][metric])
         raw[mode] = summary
@@ -206,15 +216,15 @@ def load_comparison(root: Path) -> dict:
     for mode in POST_MODES:
         directory = root / "post" / mode
         summary = read_json(directory / "summary.json")
-        rows = read_rows(directory / "samples.csv", "sample_id")
+        rows = read_rows(directory / "samples.csv", "sample_id", methods)
         if summary["intended_count_per_method"] != EXPECTED_INTENDED or summary["original_test_count"] != EXPECTED_ORIGINAL:
             raise ValueError(f"Unexpected fixed denominators for post/{mode}")
-        if set(summary["methods"]) != set(METHODS) or summary["protocol"]["mode"] != mode:
+        if set(summary["methods"]) != set(methods) or summary["protocol"]["mode"] != mode:
             raise ValueError(f"Wrong mode/methods in post/{mode}")
-        if summary["protocol"]["split_sha256"] != split_digest or set(rows["legacy"]) != expected_ids:
+        if summary["protocol"]["split_sha256"] != split_digest or set(rows[methods[0]]) != expected_ids:
             raise ValueError(f"Post/raw object sets or split hashes disagree for {mode}")
         timeout_diagnostics[mode] = {}
-        for method in METHODS:
+        for method in methods:
             method_rows = list(rows[method].values())
             if any(row.get("status") not in TERMINAL for row in method_rows):
                 raise ValueError(f"Unfinished post results for {mode}/{method}")
@@ -240,13 +250,13 @@ def load_comparison(root: Path) -> dict:
             if recorded["counts"]["geometry_computable"] != count:
                 raise ValueError(f"Geometry coverage disagrees for {mode}/{method}")
 
-        common = [item for item in sorted(expected_ids) if all(rows[method][item].get("geometry_status") == "ok" for method in METHODS)]
+        common = [item for item in sorted(expected_ids) if all(rows[method][item].get("geometry_status") == "ok" for method in methods)]
         paired = summary["paired_common_geometry"]
         if paired["count"] != len(common):
             raise ValueError(f"Common geometry coverage disagrees for {mode}")
         for metric in ("face_cd", "edge_cd"):
-            validate_statistics(paired["metrics"][metric], len(common), f"post/{mode}/{metric}")
-            for method in METHODS:
+            validate_statistics(paired["metrics"][metric], len(common), f"post/{mode}/{metric}", methods)
+            for method in methods:
                 values = [float(rows[method][item][metric]) for item in common]
                 if any(not math.isfinite(value) or value < 0 for value in values):
                     raise ValueError(f"Invalid common geometry value in {mode}/{method}/{metric}")
@@ -258,8 +268,8 @@ def load_comparison(root: Path) -> dict:
 
         groups = {name: [] for name in ("old_failure_new_success", "old_success_new_failure", "both_success", "both_failure")}
         for item in sorted(expected_ids):
-            old = csv_bool(rows["legacy"][item].get("native_valid_solid"))
-            new = csv_bool(rows["intersection"][item].get("native_valid_solid"))
+            old = csv_bool(rows[methods[0]][item].get("native_valid_solid"))
+            new = csv_bool(rows[methods[1]][item].get("native_valid_solid"))
             key = ("both_success" if old else "old_failure_new_success") if new else ("old_success_new_failure" if old else "both_failure")
             groups[key].append(item)
         transitions[mode] = {

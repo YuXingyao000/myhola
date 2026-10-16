@@ -1,0 +1,45 @@
+{
+  "scope": "Capacity restoration implementation validation only; formal training is left to the user.",
+  "model_config": "configs/train_vae_intersection_local.yaml",
+  "historical_config": "configs/train_vae_intersection_local_small_legacy.yaml",
+  "unit_tests": {
+    "total_passed": 45,
+    "initial_batch": {
+      "passed": 44,
+      "seconds": 15.93,
+      "command": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 /mnt/d/anaconda3/envs/torch/bin/python -m pytest -q src/brepnet/test/test_local_intersection.py src/brepnet/test/test_local_intersection_migration.py src/brepnet/test/test_intersection_evaluate_inference.py",
+      "note": "Executed before the final dropout RNG regression was added; this command now collects 45."
+    },
+    "additional_dropout_rng": {
+      "passed": 1,
+      "seconds": 5.72,
+      "command": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 /mnt/d/anaconda3/envs/torch/bin/python -m pytest -q src/brepnet/test/test_local_intersection.py::test_transformer_checkpoint_preserves_nonzero_dropout_rng_and_gradients"
+    }
+  },
+  "gpu": {
+    "status": "passed",
+    "details": "gpu_smoke.json",
+    "script": "gpu_smoke.py",
+    "command": "OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 PYTHONPATH=/mnt/d/python /mnt/d/anaconda3/envs/torch/bin/python checkpoints/intersection_local/validation_full_capacity/gpu_smoke.py",
+    "batch16_peak_allocated_mib": 10972.89453125,
+    "batch16_peak_reserved_mib": 12448.0,
+    "roundtrip_note": "All state tensors exact; outputs checked at atol1e-6/rtol1e-5. An initial bitwise output check was overly strict for CUDA floating-point execution (max1.19e-7 on first failed tensor); weights/model were not changed to pass it."
+  },
+  "parameter_counts": {
+    "legacy_inter": 33683008,
+    "historical_small_inter": 311616,
+    "full_inter": 34015296,
+    "legacy_and_full_transformer_stack": 33632256
+  },
+  "ddp": {
+    "status": "passed",
+    "details": "ddp_summary.json",
+    "devices": 8,
+    "batch_per_device": 16,
+    "initial_step": 1,
+    "restored_global_step": 2,
+    "frozen_encoder_posterior_tensors_equal": 243
+  },
+  "formal_training_started": false,
+  "status": "passed"
+}

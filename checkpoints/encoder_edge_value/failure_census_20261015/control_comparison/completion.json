@@ -1,0 +1,59 @@
+{
+  "schema": "encoder_failure_census_completion_v1",
+  "status": "complete",
+  "completed_at_utc": "2026-10-15T13:42:50.136635+00:00",
+  "snapshot_group": "control",
+  "input_contract": "same_geometry_source",
+  "population": {
+    "original_test": 2424,
+    "contract_unsupported": 7,
+    "accepted_test": 2417,
+    "native_valid": 2110,
+    "native_failed": 307,
+    "main_failure_denominator": 307,
+    "baseline_native_valid": 2111,
+    "baseline_native_failed": 306,
+    "new_diagnostic_cases": 358,
+    "baseline_additional_controls": 42
+  },
+  "paired_cases": 358,
+  "trace_records_verified": 716,
+  "replay_unknowns": 0,
+  "main_predicate_checks": 80192,
+  "fit_predicate_checks": 1680,
+  "source_assets_unchanged": 5585,
+  "four_chinese_charts": [
+    "main_failure_observations",
+    "paired_observation_changes",
+    "persistent_face_context_errors",
+    "owner_residual_before_after"
+  ],
+  "checks": {
+    "browser": {
+      "path": "browser_validation/browser_check.json",
+      "sha256": "911ad3c0a668f815303d946db57ad0bae5ed10c402aa0e8635de60b71a276d8d",
+      "cohort_threshold_checks": 16,
+      "assets_checked": 15,
+      "javascript_errors": 0,
+      "failed_assets": 0
+    },
+    "offline_browser": {
+      "path": "standalone_validation/browser_check.json",
+      "sha256": "09943e0db9be5b215a778b25023d9f951072bc817aa817af7454d33b2b00a883",
+      "cohort_threshold_checks": 16,
+      "assets_checked": 4,
+      "javascript_errors": 0,
+      "failed_assets": 0
+    }
+  },
+  "standalone": {
+    "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/failure_census_20261015/control_comparison/page/standalone.html",
+    "sha256": "9833e9c979b6b38076b3932eb9dd6da73e43441d0713d2a002bd9dc65955bb2e",
+    "bytes": 14194905
+  },
+  "limitations": [
+    "Derived observations can remain unknown; they stay in the intended denominator.",
+    "Overlapping stage observations are not unique causes.",
+    "Each snapshot has a different failure cohort; independent failure percentages do not establish within-object changes."
+  ]
+}

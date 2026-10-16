@@ -1,0 +1,59 @@
+{
+  "schema": "encoder_failure_census_completion_v1",
+  "status": "complete",
+  "completed_at_utc": "2026-10-16T04:52:06.744270+00:00",
+  "snapshot_group": "resume_best",
+  "input_contract": "same_geometry_source",
+  "population": {
+    "original_test": 2424,
+    "contract_unsupported": 7,
+    "accepted_test": 2417,
+    "native_valid": 2115,
+    "native_failed": 302,
+    "main_failure_denominator": 302,
+    "baseline_native_valid": 2111,
+    "baseline_native_failed": 306,
+    "new_diagnostic_cases": 353,
+    "baseline_additional_controls": 37
+  },
+  "paired_cases": 353,
+  "trace_records_verified": 706,
+  "replay_unknowns": 0,
+  "main_predicate_checks": 79072,
+  "fit_predicate_checks": 1456,
+  "source_assets_unchanged": 5525,
+  "four_chinese_charts": [
+    "main_failure_observations",
+    "owner_residual_before_after",
+    "paired_observation_changes",
+    "persistent_face_context_errors"
+  ],
+  "checks": {
+    "browser": {
+      "path": "browser_validation/browser_check.json",
+      "sha256": "a0c8b7232444e1ed1a7284978681172250f7bb7e2694a4b94bb7302cd811812c",
+      "cohort_threshold_checks": 16,
+      "assets_checked": 15,
+      "javascript_errors": 0,
+      "failed_assets": 0
+    },
+    "offline_browser": {
+      "path": "standalone_validation/browser_check.json",
+      "sha256": "955e912263318bf62b6d7a4a3956e44a627edf9183519a3538903ab333b150ac",
+      "cohort_threshold_checks": 16,
+      "assets_checked": 4,
+      "javascript_errors": 0,
+      "failed_assets": 0
+    }
+  },
+  "standalone": {
+    "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/failure_census_20261016/resume_best/page/standalone.html",
+    "sha256": "892fae168eb5f862842787164b787ef9cb6e07b30635d4c9efa4ab6c0f9d939c",
+    "bytes": 14141123
+  },
+  "limitations": [
+    "Overlapping stage observations are not unique causes.",
+    "Unmeasured predicates and historical missing traces remain unknown in the intended denominator.",
+    "Failure cohorts differ across checkpoints; use paired same-ID observations to discuss changes."
+  ]
+}

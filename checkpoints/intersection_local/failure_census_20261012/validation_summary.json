@@ -1,0 +1,349 @@
+{
+  "scope": "Tool contract tests, historical rendering fixture (not research results), and completed formal local-versus-previous-refinement census validation",
+  "tests": {
+    "count": 49,
+    "status": "passed",
+    "files": [
+      "test_paired_failure_census.py",
+      "test_failure_census_contract.py",
+      "test_intersection_failure_manifest.py",
+      "test_intersection_failure_report.py"
+    ],
+    "command": "/mnt/d/anaconda3/envs/torch/bin/python -m pytest -q src/brepnet/test/test_paired_failure_census.py src/brepnet/test/test_failure_census_contract.py src/brepnet/test/test_intersection_failure_manifest.py src/brepnet/test/test_intersection_failure_report.py",
+    "working_directory": "/mnt/d/python"
+  },
+  "historical_reuse_smoke": [
+    {
+      "id": "00001926",
+      "native_valid": false,
+      "reuse_eligible": true
+    },
+    {
+      "id": "00000093",
+      "native_valid": true,
+      "reuse_eligible": true
+    }
+  ],
+  "production_changes": false,
+  "model_changes": false,
+  "historical_reuse_smoke_protocol": "tools.intersection_failure_manifest.baseline_protocol_audit + tools.paired_failure_manifest.audit_reuse on original intersection census cases; original method and fingerprints preserved",
+  "historical_reuse_census": "/mnt/d/python/checkpoints/intersection_refinement/failure_census_20261011",
+  "formal_census": {
+    "status": "complete",
+    "real_smoke": "passed",
+    "real_smoke_details": "/mnt/d/python/checkpoints/intersection_local/failure_census_20261012/metadata/orchestration/real_smoke.json",
+    "real_smoke_cases": [
+      {
+        "side": "candidate",
+        "id": "00001926",
+        "status": "ok",
+        "same_outcome": true,
+        "step_data_equal": true,
+        "instrumentation_errors": []
+      },
+      {
+        "side": "candidate",
+        "id": "00000093",
+        "status": "ok",
+        "same_outcome": true,
+        "step_data_equal": true,
+        "instrumentation_errors": []
+      },
+      {
+        "side": "candidate",
+        "id": "00527726",
+        "status": "ok",
+        "same_outcome": true,
+        "step_data_equal": true,
+        "instrumentation_errors": []
+      },
+      {
+        "side": "baseline",
+        "id": "00000797",
+        "status": "ok",
+        "same_outcome": true,
+        "step_data_equal": true,
+        "instrumentation_errors": []
+      },
+      {
+        "side": "baseline",
+        "id": "00001907",
+        "status": "ok",
+        "same_outcome": true,
+        "step_data_equal": true,
+        "instrumentation_errors": []
+      }
+    ],
+    "full_diagnostics": "complete",
+    "final_browser": "passed",
+    "population": {
+      "original_test": 2424,
+      "contract_unsupported": 7,
+      "accepted_test": 2417,
+      "native_valid": 482,
+      "native_failed": 1935,
+      "main_failure_denominator": 1935,
+      "baseline_native_valid": 2113,
+      "baseline_native_failed": 304,
+      "new_diagnostic_cases": 1938,
+      "baseline_additional_controls": 1531
+    },
+    "cohort_counts": {
+      "both_failed": 301,
+      "new_failure": 1634,
+      "rescued": 3,
+      "both_valid": 479
+    },
+    "optimization_counterfactual_count": 5,
+    "commands_and_pids": "/mnt/d/python/checkpoints/intersection_local/failure_census_20261012/metadata/orchestration/events.jsonl",
+    "live_state": "/mnt/d/python/checkpoints/intersection_local/failure_census_20261012/metadata/orchestration/state.json",
+    "completed_at_utc": "2026-10-12T11:52:35.057130+00:00",
+    "baseline_reused_diagnostics": 407,
+    "terminal_diagnostic_exception": {
+      "id": "00748659",
+      "native_failed": true,
+      "trace_status": "post_error",
+      "saved_step_status": "error",
+      "original_error": "AssertionError: Transfer failed",
+      "policy": "Retained in denominator; observations requiring a verified complete replay remain unknown; no retries or repair."
+    },
+    "diagnostic_summaries": {
+      "candidate": {
+        "trace_count": 1938,
+        "trace_status_counts": {
+          "ok": 1937,
+          "post_error": 1
+        },
+        "step_data_equal_count": 1937,
+        "step_data_different_ids": [],
+        "instrumentation_error_cases": [],
+        "upstream_status_counts": {
+          "ok": 1938
+        },
+        "saved_step_status_counts": {
+          "ok": 1937,
+          "error": 1
+        }
+      },
+      "baseline": {
+        "trace_count": 1531,
+        "trace_status_counts": {
+          "ok": 1531
+        },
+        "step_data_equal_count": 1531,
+        "step_data_different_ids": [],
+        "instrumentation_error_cases": [],
+        "upstream_status_counts": {
+          "ok": 1531
+        },
+        "saved_step_status_counts": {
+          "ok": 1531
+        }
+      },
+      "fit": {
+        "trace_count": 5,
+        "trace_status_counts": {
+          "ok": 5
+        },
+        "step_data_equal_count": 5,
+        "step_data_different_ids": [],
+        "instrumentation_error_cases": [],
+        "upstream_status_counts": {
+          "partial": 5
+        }
+      }
+    },
+    "fit_upstream_partial_note": "All five fit-only counterfactuals intentionally lack an optimized stage; partial is expected, not a missing replay. Other available measurements are retained.",
+    "source_preservation": {
+      "asset_count": 24909,
+      "mismatch_count": 0,
+      "changed_paths": [],
+      "details": "/mnt/d/python/checkpoints/intersection_local/failure_census_20261012/source_preservation.json"
+    },
+    "report_artifacts": {
+      "REPORT.md": {
+        "path": "/mnt/d/python/checkpoints/intersection_local/failure_census_20261012/REPORT.md",
+        "sha256": "b9a3c0813177c64a5e0c01515f2a9d18c6335f121f726b0107baa568a3899a0f"
+      },
+      "summary.json": {
+        "path": "/mnt/d/python/checkpoints/intersection_local/failure_census_20261012/summary.json",
+        "sha256": "f06afec3178fe7b1ca36b5a46eecec05ad2fa0b5c49dcb3cf925044a1abdcfde"
+      },
+      "compact_summary.json": {
+        "path": "/mnt/d/python/checkpoints/intersection_local/failure_census_20261012/compact_summary.json",
+        "sha256": "7469f57087f22f7609dfed311d8162a7edf4f51d915c0e1178d8c7e6339ace43"
+      },
+      "cases.json": {
+        "path": "/mnt/d/python/checkpoints/intersection_local/failure_census_20261012/cases.json",
+        "sha256": "6615b5eebb6676294c941ae78ccd3836f795622f809c30a852d1ce4ba2e318d6"
+      },
+      "cases.csv": {
+        "path": "/mnt/d/python/checkpoints/intersection_local/failure_census_20261012/cases.csv",
+        "sha256": "cc4f6cfdabf8cfd0030555266d9d60e50b12116f9e000966fac0fb12d173a381"
+      },
+      "optimization_regressions.json": {
+        "path": "/mnt/d/python/checkpoints/intersection_local/failure_census_20261012/optimization_regressions.json",
+        "sha256": "c817c4a1c41054a80c5d18bb11135f2a906ac07963b20dd4ed98b3a5b350065c"
+      }
+    },
+    "browser": {
+      "url": "http://127.0.0.1:8766/checkpoints/intersection_local/failure_census_20261012/page/",
+      "checked_at_utc": "2026-10-12T11:51:47.715Z",
+      "cohort_threshold_checks": [
+        {
+          "cohort": "main",
+          "threshold": "0.002",
+          "count": 1935,
+          "observation_rows": 28
+        },
+        {
+          "cohort": "main",
+          "threshold": "0.006",
+          "count": 1935,
+          "observation_rows": 28
+        },
+        {
+          "cohort": "main",
+          "threshold": "0.01",
+          "count": 1935,
+          "observation_rows": 28
+        },
+        {
+          "cohort": "main",
+          "threshold": "0.08",
+          "count": 1935,
+          "observation_rows": 28
+        },
+        {
+          "cohort": "persistent",
+          "threshold": "0.002",
+          "count": 301,
+          "observation_rows": 28
+        },
+        {
+          "cohort": "persistent",
+          "threshold": "0.006",
+          "count": 301,
+          "observation_rows": 28
+        },
+        {
+          "cohort": "persistent",
+          "threshold": "0.01",
+          "count": 301,
+          "observation_rows": 28
+        },
+        {
+          "cohort": "persistent",
+          "threshold": "0.08",
+          "count": 301,
+          "observation_rows": 28
+        },
+        {
+          "cohort": "regressed",
+          "threshold": "0.002",
+          "count": 1634,
+          "observation_rows": 28
+        },
+        {
+          "cohort": "regressed",
+          "threshold": "0.006",
+          "count": 1634,
+          "observation_rows": 28
+        },
+        {
+          "cohort": "regressed",
+          "threshold": "0.01",
+          "count": 1634,
+          "observation_rows": 28
+        },
+        {
+          "cohort": "regressed",
+          "threshold": "0.08",
+          "count": 1634,
+          "observation_rows": 28
+        },
+        {
+          "cohort": "rescued",
+          "threshold": "0.002",
+          "count": 3,
+          "observation_rows": 28
+        },
+        {
+          "cohort": "rescued",
+          "threshold": "0.006",
+          "count": 3,
+          "observation_rows": 28
+        },
+        {
+          "cohort": "rescued",
+          "threshold": "0.01",
+          "count": 3,
+          "observation_rows": 28
+        },
+        {
+          "cohort": "rescued",
+          "threshold": "0.08",
+          "count": 3,
+          "observation_rows": 28
+        }
+      ],
+      "interactions": {
+        "caseRendered": true,
+        "expectedIds": 78,
+        "displayedIds": 78
+      },
+      "assets_checked": 16,
+      "failed_assets": [],
+      "mobile": {
+        "viewport": 390,
+        "document": 390
+      },
+      "javascript_errors": [],
+      "command": "FONTCONFIG_FILE=/root/.cache/hola-browser-libs/fonts.conf LD_LIBRARY_PATH=/root/.cache/hola-browser-libs/root/usr/lib/x86_64-linux-gnu node tools/paired_failure_browser_check.cjs http://127.0.0.1:8766/checkpoints/intersection_local/failure_census_20261012/page/ checkpoints/intersection_local/failure_census_20261012/browser_validation /root/.cache/ms-playwright/chromium-1155/chrome-linux/chrome",
+      "details": "/mnt/d/python/checkpoints/intersection_local/failure_census_20261012/browser_validation/browser_check.json"
+    },
+    "visual_inspection": {
+      "status": "passed",
+      "desktop": "/mnt/d/python/checkpoints/intersection_local/failure_census_20261012/browser_validation/desktop.png",
+      "mobile": "/mnt/d/python/checkpoints/intersection_local/failure_census_20261012/browser_validation/mobile.png",
+      "charts": [
+        "/mnt/d/python/checkpoints/intersection_local/failure_census_20261012/visualizations/main_failure_observations.png",
+        "/mnt/d/python/checkpoints/intersection_local/failure_census_20261012/visualizations/paired_observation_changes.png",
+        "/mnt/d/python/checkpoints/intersection_local/failure_census_20261012/visualizations/persistent_face_context_errors.png",
+        "/mnt/d/python/checkpoints/intersection_local/failure_census_20261012/visualizations/owner_residual_before_after.png"
+      ],
+      "checks": [
+        "Chinese labels legible without clipping",
+        "All four plots use current cohort counts",
+        "Count ticks integer for rescued n=3",
+        "Owner-residual markers fully visible",
+        "Desktop and mobile controls readable"
+      ]
+    },
+    "independent_review": "/mnt/d/python/checkpoints/intersection_local/failure_census_20261012/independent_review.json"
+  },
+  "historical_fixture_browser": {
+    "fixture": "paired_census_fixture",
+    "cohort_threshold_checks": 16,
+    "observations_per_view": 28,
+    "assets_checked": 16,
+    "javascript_errors": 0,
+    "mobile": {
+      "viewport": 390,
+      "document": 390
+    },
+    "interactions": {
+      "caseRendered": true,
+      "expectedIds": 107,
+      "displayedIds": 107
+    },
+    "command": "FONTCONFIG_FILE=/root/.cache/hola-browser-libs/fonts.conf LD_LIBRARY_PATH=/root/.cache/hola-browser-libs/root/usr/lib/x86_64-linux-gnu node tools/paired_failure_browser_check.cjs http://127.0.0.1:8766/checkpoints/intersection_local/validation/paired_census_fixture/page/ checkpoints/intersection_local/validation/paired_census_fixture/browser /root/.cache/ms-playwright/chromium-1155/chrome-linux/chrome",
+    "http_server_command": "python -m http.server 8766 --bind 127.0.0.1",
+    "http_server_working_directory": "/mnt/d/python",
+    "details": "/mnt/d/python/checkpoints/intersection_local/validation/paired_census_fixture/browser/browser_check.json",
+    "desktop_screenshot": "/mnt/d/python/checkpoints/intersection_local/validation/paired_census_fixture/browser/desktop.png",
+    "mobile_screenshot": "/mnt/d/python/checkpoints/intersection_local/validation/paired_census_fixture/browser/mobile.png",
+    "fixture_source": "/mnt/d/python/checkpoints/intersection_refinement/failure_census_20261011/cases.json",
+    "fixture_notice": "Historical original-HoLa versus refinement records reused only for rendering/count parity; these are NOT local attention experiment results. Render fixture has a visible warning."
+  }
+}

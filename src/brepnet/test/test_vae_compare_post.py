@@ -129,6 +129,9 @@ class VaeComparePostTests(unittest.TestCase):
 
     def test_reference_rejects_algorithm_budget_sampling_or_raw_mismatch(self):
         reference, current, source, protocol, path = self.reference_fixture()
+        with self.assertRaisesRegex(ValueError, "post_policy"):
+            load_reference_rows(reference, current, "fit_only", ["a"],
+                                {**protocol, "post_policy": "recover_v1"})
         for name in ("post_algorithm_files", "sampling", "timeout_seconds", "split_sha256", "data_root"):
             with self.subTest(field=name), self.assertRaisesRegex(ValueError, name):
                 load_reference_rows(reference, current, "fit_only", ["a"], {**protocol, name: "different"})
@@ -142,6 +145,41 @@ class VaeComparePostTests(unittest.TestCase):
         (reference / "raw_predictions/posterior_mean/legacy/a/data.npz").write_bytes(b"changed raw")
         with self.assertRaisesRegex(ValueError, "SHA256"):
             load_reference_rows(reference, current, "fit_only", ["a"], protocol)
+
+    def assert_baseline_reuse_retains_identity(self, baseline, candidates):
+        reference, current, source, protocol, old_path = self.reference_fixture()
+        for root in (reference, current):
+            (root / "raw_predictions/posterior_mean/legacy").rename(root / f"raw_predictions/posterior_mean/{baseline}")
+        # The fixture symlink's target moved too; point at the same source bytes.
+        current_raw = current / f"raw_predictions/posterior_mean/{baseline}"
+        current_raw.unlink()
+        current_raw.symlink_to(reference / f"raw_predictions/posterior_mean/{baseline}", target_is_directory=True)
+        row = read_json(old_path)
+        row.update(method=baseline, step_exists=True)
+        path = reference / f"metadata/post/fit_only/samples/{baseline}/a.json"
+        atomic_json(path, row)
+        step = reference / f"post/fit_only/{baseline}/a/recon_brep.step"
+        step.parent.mkdir(parents=True)
+        step.write_text("STEP source")
+        before = path.read_bytes()
+        rows, provenance = load_reference_rows(reference, current, "fit_only", ["a"], protocol,
+                                               baseline_method=baseline)
+        self.assertEqual(rows[0]["method"], baseline)
+        self.assertEqual(rows[0]["source_method"], baseline)
+        self.assertEqual(rows[0]["source_step_sha256"], sha256_file(step))
+        self.assertEqual(provenance["method"], baseline)
+        for candidate in candidates:
+            summary = summarize([*rows, {"sample_id": "a", "method": candidate, "status": "timeout"}],
+                                1, 2, candidate_method=candidate, baseline_method=baseline)
+            self.assertEqual(set(summary["methods"]), {baseline, candidate})
+            self.assertEqual(summary["native_validity_transitions"]["counts"][f"{baseline}_valid_to_{candidate}_failed"], 1)
+        self.assertEqual(path.read_bytes(), before)
+
+    def test_refinement_baseline_reuse_retains_historical_method_and_step_hash(self):
+        self.assert_baseline_reuse_retains_identity("intersection", ("local", "conditioned"))
+
+    def test_conditioned_baseline_reuse_retains_historical_method_and_step_hash(self):
+        self.assert_baseline_reuse_retains_identity("conditioned", ("point_feedback",))
 
     def test_native_geometry_is_deterministic_and_gt_cache_is_atomic(self):
         from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
