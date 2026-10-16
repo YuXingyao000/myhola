@@ -1,0 +1,2173 @@
+{
+  "status": "independent_computation_complete_pending_summary_comparison",
+  "selection": "First two frozen split IDs plus worst 25 last_28677 pooled edge CD IDs excluding those two; no downstream checkpoint selection",
+  "sample_ids": [
+    "00000093",
+    "00000797",
+    "00256640",
+    "00772578",
+    "00042493",
+    "00465451",
+    "00044176",
+    "00629874",
+    "00180090",
+    "00081261",
+    "00295085",
+    "00130562",
+    "00086425",
+    "00711822",
+    "00640423",
+    "00296830",
+    "00634251",
+    "00499421",
+    "00896572",
+    "00060075",
+    "00976340",
+    "00001926",
+    "00685289",
+    "00287841",
+    "00624661",
+    "00423247",
+    "00576154"
+  ],
+  "object_count": 27,
+  "method_count": 5,
+  "checks": [
+    {
+      "model_id": "00000093",
+      "method": "conditioned",
+      "gt_directed_pair_count": 88,
+      "predicted_directed_pair_count": 88,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 88,
+      "owner_cd_sq_mean": 5.1576442849357536e-05,
+      "owner_cd_sq_max": 0.0003007303824513058
+    },
+    {
+      "model_id": "00000093",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 88,
+      "predicted_directed_pair_count": 88,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 88,
+      "owner_cd_sq_mean": 6.919620769852542e-05,
+      "owner_cd_sq_max": 0.00035128614102665143
+    },
+    {
+      "model_id": "00000093",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 88,
+      "predicted_directed_pair_count": 88,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 88,
+      "owner_cd_sq_mean": 6.066602515472317e-05,
+      "owner_cd_sq_max": 0.0002746355169480283
+    },
+    {
+      "model_id": "00000093",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 88,
+      "predicted_directed_pair_count": 88,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 88,
+      "owner_cd_sq_mean": 8.098878332222103e-05,
+      "owner_cd_sq_max": 0.0003839966580413551
+    },
+    {
+      "model_id": "00000093",
+      "method": "last_28677",
+      "gt_directed_pair_count": 88,
+      "predicted_directed_pair_count": 88,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 88,
+      "owner_cd_sq_mean": 7.354096527794105e-05,
+      "owner_cd_sq_max": 0.00032363566334301513
+    },
+    {
+      "model_id": "00000797",
+      "method": "conditioned",
+      "gt_directed_pair_count": 60,
+      "predicted_directed_pair_count": 60,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 60,
+      "owner_cd_sq_mean": 3.175806521615222e-05,
+      "owner_cd_sq_max": 8.293714582399171e-05
+    },
+    {
+      "model_id": "00000797",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 60,
+      "predicted_directed_pair_count": 60,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 60,
+      "owner_cd_sq_mean": 2.3616093767497824e-05,
+      "owner_cd_sq_max": 0.00011372342698570681
+    },
+    {
+      "model_id": "00000797",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 60,
+      "predicted_directed_pair_count": 60,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 60,
+      "owner_cd_sq_mean": 2.331802135586484e-05,
+      "owner_cd_sq_max": 0.00012648764957077756
+    },
+    {
+      "model_id": "00000797",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 60,
+      "predicted_directed_pair_count": 60,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 60,
+      "owner_cd_sq_mean": 2.129520957783739e-05,
+      "owner_cd_sq_max": 7.273484912262429e-05
+    },
+    {
+      "model_id": "00000797",
+      "method": "last_28677",
+      "gt_directed_pair_count": 60,
+      "predicted_directed_pair_count": 60,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 60,
+      "owner_cd_sq_mean": 2.2829461502163007e-05,
+      "owner_cd_sq_max": 6.387366002916228e-05
+    },
+    {
+      "model_id": "00256640",
+      "method": "conditioned",
+      "gt_directed_pair_count": 78,
+      "predicted_directed_pair_count": 78,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 78,
+      "owner_cd_sq_mean": 0.011205067653271896,
+      "owner_cd_sq_max": 0.4281472944795517
+    },
+    {
+      "model_id": "00256640",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 78,
+      "predicted_directed_pair_count": 78,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 78,
+      "owner_cd_sq_mean": 0.011146156339187955,
+      "owner_cd_sq_max": 0.42719716712896694
+    },
+    {
+      "model_id": "00256640",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 78,
+      "predicted_directed_pair_count": 78,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 78,
+      "owner_cd_sq_mean": 0.011250955696991373,
+      "owner_cd_sq_max": 0.42864775626038304
+    },
+    {
+      "model_id": "00256640",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 78,
+      "predicted_directed_pair_count": 78,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 78,
+      "owner_cd_sq_mean": 0.011234734621763087,
+      "owner_cd_sq_max": 0.42898149221412457
+    },
+    {
+      "model_id": "00256640",
+      "method": "last_28677",
+      "gt_directed_pair_count": 78,
+      "predicted_directed_pair_count": 78,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 78,
+      "owner_cd_sq_mean": 0.011209060247878112,
+      "owner_cd_sq_max": 0.42949184696644443
+    },
+    {
+      "model_id": "00772578",
+      "method": "conditioned",
+      "gt_directed_pair_count": 46,
+      "predicted_directed_pair_count": 54,
+      "missing_gt_directed_pairs": 2,
+      "extra_directed_pairs": 10,
+      "common_directed_pair_count": 44,
+      "owner_cd_sq_mean": 0.01072124975088949,
+      "owner_cd_sq_max": 0.26252100144826807
+    },
+    {
+      "model_id": "00772578",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 46,
+      "predicted_directed_pair_count": 56,
+      "missing_gt_directed_pairs": 2,
+      "extra_directed_pairs": 12,
+      "common_directed_pair_count": 44,
+      "owner_cd_sq_mean": 0.026508785560972328,
+      "owner_cd_sq_max": 0.8099385277488668
+    },
+    {
+      "model_id": "00772578",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 46,
+      "predicted_directed_pair_count": 52,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 6,
+      "common_directed_pair_count": 44,
+      "owner_cd_sq_mean": 0.015551688008124323,
+      "owner_cd_sq_max": 0.44954893021224457
+    },
+    {
+      "model_id": "00772578",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 46,
+      "predicted_directed_pair_count": 52,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 6,
+      "common_directed_pair_count": 44,
+      "owner_cd_sq_mean": 0.03151618347979756,
+      "owner_cd_sq_max": 0.6437611606846825
+    },
+    {
+      "model_id": "00772578",
+      "method": "last_28677",
+      "gt_directed_pair_count": 46,
+      "predicted_directed_pair_count": 52,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 6,
+      "common_directed_pair_count": 44,
+      "owner_cd_sq_mean": 0.03364076329710705,
+      "owner_cd_sq_max": 0.517662620127671
+    },
+    {
+      "model_id": "00042493",
+      "method": "conditioned",
+      "gt_directed_pair_count": 56,
+      "predicted_directed_pair_count": 52,
+      "missing_gt_directed_pairs": 4,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 48,
+      "owner_cd_sq_mean": 5.132420935706157e-05,
+      "owner_cd_sq_max": 0.0006194191612787827
+    },
+    {
+      "model_id": "00042493",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 56,
+      "predicted_directed_pair_count": 52,
+      "missing_gt_directed_pairs": 4,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 48,
+      "owner_cd_sq_mean": 6.267308570952196e-05,
+      "owner_cd_sq_max": 0.0006852098778566731
+    },
+    {
+      "model_id": "00042493",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 56,
+      "predicted_directed_pair_count": 48,
+      "missing_gt_directed_pairs": 8,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 48,
+      "owner_cd_sq_mean": 7.076201920363481e-05,
+      "owner_cd_sq_max": 0.0006361620180974698
+    },
+    {
+      "model_id": "00042493",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 56,
+      "predicted_directed_pair_count": 48,
+      "missing_gt_directed_pairs": 8,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 48,
+      "owner_cd_sq_mean": 7.188922819643462e-05,
+      "owner_cd_sq_max": 0.0006979343415339801
+    },
+    {
+      "model_id": "00042493",
+      "method": "last_28677",
+      "gt_directed_pair_count": 56,
+      "predicted_directed_pair_count": 50,
+      "missing_gt_directed_pairs": 6,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 48,
+      "owner_cd_sq_mean": 7.010950807860544e-05,
+      "owner_cd_sq_max": 0.0005802952828063481
+    },
+    {
+      "model_id": "00465451",
+      "method": "conditioned",
+      "gt_directed_pair_count": 168,
+      "predicted_directed_pair_count": 168,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 168,
+      "owner_cd_sq_mean": 0.006919817516787844,
+      "owner_cd_sq_max": 0.17305551234188327
+    },
+    {
+      "model_id": "00465451",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 168,
+      "predicted_directed_pair_count": 168,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 168,
+      "owner_cd_sq_mean": 0.007146850115311633,
+      "owner_cd_sq_max": 0.1921434581831044
+    },
+    {
+      "model_id": "00465451",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 168,
+      "predicted_directed_pair_count": 168,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 168,
+      "owner_cd_sq_mean": 0.007215874286711318,
+      "owner_cd_sq_max": 0.18681092758334383
+    },
+    {
+      "model_id": "00465451",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 168,
+      "predicted_directed_pair_count": 168,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 168,
+      "owner_cd_sq_mean": 0.007695732113013472,
+      "owner_cd_sq_max": 0.1763338192970319
+    },
+    {
+      "model_id": "00465451",
+      "method": "last_28677",
+      "gt_directed_pair_count": 168,
+      "predicted_directed_pair_count": 168,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 168,
+      "owner_cd_sq_mean": 0.009178845413157236,
+      "owner_cd_sq_max": 0.20987584554658195
+    },
+    {
+      "model_id": "00044176",
+      "method": "conditioned",
+      "gt_directed_pair_count": 30,
+      "predicted_directed_pair_count": 30,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 30,
+      "owner_cd_sq_mean": 0.008676038106053365,
+      "owner_cd_sq_max": 0.08374795591405429
+    },
+    {
+      "model_id": "00044176",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 30,
+      "predicted_directed_pair_count": 30,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 30,
+      "owner_cd_sq_mean": 0.010855279336602458,
+      "owner_cd_sq_max": 0.10563094963306592
+    },
+    {
+      "model_id": "00044176",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 30,
+      "predicted_directed_pair_count": 30,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 30,
+      "owner_cd_sq_mean": 0.008814472136950148,
+      "owner_cd_sq_max": 0.09238170469841425
+    },
+    {
+      "model_id": "00044176",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 30,
+      "predicted_directed_pair_count": 30,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 30,
+      "owner_cd_sq_mean": 0.008231221608991928,
+      "owner_cd_sq_max": 0.08386663209179987
+    },
+    {
+      "model_id": "00044176",
+      "method": "last_28677",
+      "gt_directed_pair_count": 30,
+      "predicted_directed_pair_count": 30,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 30,
+      "owner_cd_sq_mean": 0.00937798163291813,
+      "owner_cd_sq_max": 0.09812352356582972
+    },
+    {
+      "model_id": "00629874",
+      "method": "conditioned",
+      "gt_directed_pair_count": 14,
+      "predicted_directed_pair_count": 14,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 12,
+      "owner_cd_sq_mean": 0.00012430809499859114,
+      "owner_cd_sq_max": 0.000476751897704625
+    },
+    {
+      "model_id": "00629874",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 14,
+      "predicted_directed_pair_count": 14,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 12,
+      "owner_cd_sq_mean": 9.963137037904461e-05,
+      "owner_cd_sq_max": 0.0003583778796874296
+    },
+    {
+      "model_id": "00629874",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 14,
+      "predicted_directed_pair_count": 14,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 12,
+      "owner_cd_sq_mean": 9.137542425363934e-05,
+      "owner_cd_sq_max": 0.00027259219334294316
+    },
+    {
+      "model_id": "00629874",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 14,
+      "predicted_directed_pair_count": 14,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 12,
+      "owner_cd_sq_mean": 8.289924912171075e-05,
+      "owner_cd_sq_max": 0.0002594661265225481
+    },
+    {
+      "model_id": "00629874",
+      "method": "last_28677",
+      "gt_directed_pair_count": 14,
+      "predicted_directed_pair_count": 12,
+      "missing_gt_directed_pairs": 2,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 12,
+      "owner_cd_sq_mean": 6.513555454513768e-05,
+      "owner_cd_sq_max": 0.00017820386294773984
+    },
+    {
+      "model_id": "00180090",
+      "method": "conditioned",
+      "gt_directed_pair_count": 86,
+      "predicted_directed_pair_count": 94,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 8,
+      "common_directed_pair_count": 86,
+      "owner_cd_sq_mean": 3.888779868384281e-05,
+      "owner_cd_sq_max": 0.0004985768331708515
+    },
+    {
+      "model_id": "00180090",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 86,
+      "predicted_directed_pair_count": 94,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 8,
+      "common_directed_pair_count": 86,
+      "owner_cd_sq_mean": 4.038067577777491e-05,
+      "owner_cd_sq_max": 0.0005341787558813046
+    },
+    {
+      "model_id": "00180090",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 86,
+      "predicted_directed_pair_count": 94,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 8,
+      "common_directed_pair_count": 86,
+      "owner_cd_sq_mean": 3.45251036010042e-05,
+      "owner_cd_sq_max": 0.00023601396699418251
+    },
+    {
+      "model_id": "00180090",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 86,
+      "predicted_directed_pair_count": 94,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 8,
+      "common_directed_pair_count": 86,
+      "owner_cd_sq_mean": 3.554434694600513e-05,
+      "owner_cd_sq_max": 0.00020458450648669536
+    },
+    {
+      "model_id": "00180090",
+      "method": "last_28677",
+      "gt_directed_pair_count": 86,
+      "predicted_directed_pair_count": 92,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 6,
+      "common_directed_pair_count": 86,
+      "owner_cd_sq_mean": 3.308162789999751e-05,
+      "owner_cd_sq_max": 0.00031973525746138644
+    },
+    {
+      "model_id": "00081261",
+      "method": "conditioned",
+      "gt_directed_pair_count": 60,
+      "predicted_directed_pair_count": 60,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 60,
+      "owner_cd_sq_mean": 0.003427264797800002,
+      "owner_cd_sq_max": 0.023076816081966673
+    },
+    {
+      "model_id": "00081261",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 60,
+      "predicted_directed_pair_count": 60,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 60,
+      "owner_cd_sq_mean": 0.003332038809964454,
+      "owner_cd_sq_max": 0.012164231708005721
+    },
+    {
+      "model_id": "00081261",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 60,
+      "predicted_directed_pair_count": 60,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 60,
+      "owner_cd_sq_mean": 0.003168314518303484,
+      "owner_cd_sq_max": 0.020497266496350076
+    },
+    {
+      "model_id": "00081261",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 60,
+      "predicted_directed_pair_count": 60,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 60,
+      "owner_cd_sq_mean": 0.003210665807197866,
+      "owner_cd_sq_max": 0.01551458990473743
+    },
+    {
+      "model_id": "00081261",
+      "method": "last_28677",
+      "gt_directed_pair_count": 60,
+      "predicted_directed_pair_count": 60,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 60,
+      "owner_cd_sq_mean": 0.0030465820043087863,
+      "owner_cd_sq_max": 0.011883071450080268
+    },
+    {
+      "model_id": "00295085",
+      "method": "conditioned",
+      "gt_directed_pair_count": 114,
+      "predicted_directed_pair_count": 124,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 10,
+      "common_directed_pair_count": 114,
+      "owner_cd_sq_mean": 0.0030928358261767975,
+      "owner_cd_sq_max": 0.272795974525051
+    },
+    {
+      "model_id": "00295085",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 114,
+      "predicted_directed_pair_count": 122,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 8,
+      "common_directed_pair_count": 114,
+      "owner_cd_sq_mean": 0.000700486700538458,
+      "owner_cd_sq_max": 0.01864113435282764
+    },
+    {
+      "model_id": "00295085",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 114,
+      "predicted_directed_pair_count": 124,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 10,
+      "common_directed_pair_count": 114,
+      "owner_cd_sq_mean": 0.001001058385440618,
+      "owner_cd_sq_max": 0.05362933512974882
+    },
+    {
+      "model_id": "00295085",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 114,
+      "predicted_directed_pair_count": 122,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 8,
+      "common_directed_pair_count": 114,
+      "owner_cd_sq_mean": 0.0009802358250629848,
+      "owner_cd_sq_max": 0.05032907531562361
+    },
+    {
+      "model_id": "00295085",
+      "method": "last_28677",
+      "gt_directed_pair_count": 114,
+      "predicted_directed_pair_count": 126,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 12,
+      "common_directed_pair_count": 114,
+      "owner_cd_sq_mean": 0.0027638078224152033,
+      "owner_cd_sq_max": 0.24041003836320357
+    },
+    {
+      "model_id": "00130562",
+      "method": "conditioned",
+      "gt_directed_pair_count": 80,
+      "predicted_directed_pair_count": 78,
+      "missing_gt_directed_pairs": 2,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 78,
+      "owner_cd_sq_mean": 6.385431575214707e-05,
+      "owner_cd_sq_max": 0.000305718788089937
+    },
+    {
+      "model_id": "00130562",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 80,
+      "predicted_directed_pair_count": 78,
+      "missing_gt_directed_pairs": 2,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 78,
+      "owner_cd_sq_mean": 5.742303700660347e-05,
+      "owner_cd_sq_max": 0.0003136784226981035
+    },
+    {
+      "model_id": "00130562",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 80,
+      "predicted_directed_pair_count": 78,
+      "missing_gt_directed_pairs": 2,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 78,
+      "owner_cd_sq_mean": 8.012122733352817e-05,
+      "owner_cd_sq_max": 0.0005815414237072671
+    },
+    {
+      "model_id": "00130562",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 80,
+      "predicted_directed_pair_count": 78,
+      "missing_gt_directed_pairs": 2,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 78,
+      "owner_cd_sq_mean": 7.437502440450517e-05,
+      "owner_cd_sq_max": 0.00040260953975080927
+    },
+    {
+      "model_id": "00130562",
+      "method": "last_28677",
+      "gt_directed_pair_count": 80,
+      "predicted_directed_pair_count": 80,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 78,
+      "owner_cd_sq_mean": 5.969826005587247e-05,
+      "owner_cd_sq_max": 0.0003059464801613565
+    },
+    {
+      "model_id": "00086425",
+      "method": "conditioned",
+      "gt_directed_pair_count": 116,
+      "predicted_directed_pair_count": 110,
+      "missing_gt_directed_pairs": 12,
+      "extra_directed_pairs": 6,
+      "common_directed_pair_count": 104,
+      "owner_cd_sq_mean": 8.912645129440351e-05,
+      "owner_cd_sq_max": 0.0006376885227119299
+    },
+    {
+      "model_id": "00086425",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 116,
+      "predicted_directed_pair_count": 108,
+      "missing_gt_directed_pairs": 12,
+      "extra_directed_pairs": 4,
+      "common_directed_pair_count": 104,
+      "owner_cd_sq_mean": 0.00010529654236769393,
+      "owner_cd_sq_max": 0.001340261600941437
+    },
+    {
+      "model_id": "00086425",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 116,
+      "predicted_directed_pair_count": 112,
+      "missing_gt_directed_pairs": 10,
+      "extra_directed_pairs": 6,
+      "common_directed_pair_count": 104,
+      "owner_cd_sq_mean": 0.0001027672745731723,
+      "owner_cd_sq_max": 0.0007009893017267399
+    },
+    {
+      "model_id": "00086425",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 116,
+      "predicted_directed_pair_count": 110,
+      "missing_gt_directed_pairs": 10,
+      "extra_directed_pairs": 4,
+      "common_directed_pair_count": 104,
+      "owner_cd_sq_mean": 9.558460139347197e-05,
+      "owner_cd_sq_max": 0.0012022911862517738
+    },
+    {
+      "model_id": "00086425",
+      "method": "last_28677",
+      "gt_directed_pair_count": 116,
+      "predicted_directed_pair_count": 110,
+      "missing_gt_directed_pairs": 10,
+      "extra_directed_pairs": 4,
+      "common_directed_pair_count": 104,
+      "owner_cd_sq_mean": 7.247468233701606e-05,
+      "owner_cd_sq_max": 0.0004885357852493714
+    },
+    {
+      "model_id": "00711822",
+      "method": "conditioned",
+      "gt_directed_pair_count": 32,
+      "predicted_directed_pair_count": 36,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 4,
+      "common_directed_pair_count": 32,
+      "owner_cd_sq_mean": 0.003622406190468459,
+      "owner_cd_sq_max": 0.039317356286240696
+    },
+    {
+      "model_id": "00711822",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 32,
+      "predicted_directed_pair_count": 36,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 4,
+      "common_directed_pair_count": 32,
+      "owner_cd_sq_mean": 0.0026071760312890583,
+      "owner_cd_sq_max": 0.034159510731140916
+    },
+    {
+      "model_id": "00711822",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 32,
+      "predicted_directed_pair_count": 36,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 4,
+      "common_directed_pair_count": 32,
+      "owner_cd_sq_mean": 0.004133841203654139,
+      "owner_cd_sq_max": 0.03833942969976692
+    },
+    {
+      "model_id": "00711822",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 32,
+      "predicted_directed_pair_count": 36,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 4,
+      "common_directed_pair_count": 32,
+      "owner_cd_sq_mean": 0.005001061360330164,
+      "owner_cd_sq_max": 0.04292170512979904
+    },
+    {
+      "model_id": "00711822",
+      "method": "last_28677",
+      "gt_directed_pair_count": 32,
+      "predicted_directed_pair_count": 36,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 4,
+      "common_directed_pair_count": 32,
+      "owner_cd_sq_mean": 0.004564563187100212,
+      "owner_cd_sq_max": 0.03931552640497615
+    },
+    {
+      "model_id": "00640423",
+      "method": "conditioned",
+      "gt_directed_pair_count": 80,
+      "predicted_directed_pair_count": 80,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 80,
+      "owner_cd_sq_mean": 0.004998449478115215,
+      "owner_cd_sq_max": 0.14174478973215576
+    },
+    {
+      "model_id": "00640423",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 80,
+      "predicted_directed_pair_count": 80,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 80,
+      "owner_cd_sq_mean": 0.005920903833622188,
+      "owner_cd_sq_max": 0.1585521846494635
+    },
+    {
+      "model_id": "00640423",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 80,
+      "predicted_directed_pair_count": 80,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 80,
+      "owner_cd_sq_mean": 0.005656873948060946,
+      "owner_cd_sq_max": 0.16368745989569972
+    },
+    {
+      "model_id": "00640423",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 80,
+      "predicted_directed_pair_count": 80,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 80,
+      "owner_cd_sq_mean": 0.004244125392847636,
+      "owner_cd_sq_max": 0.11028523307702791
+    },
+    {
+      "model_id": "00640423",
+      "method": "last_28677",
+      "gt_directed_pair_count": 80,
+      "predicted_directed_pair_count": 80,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 80,
+      "owner_cd_sq_mean": 0.003951122190883175,
+      "owner_cd_sq_max": 0.11364743547383142
+    },
+    {
+      "model_id": "00296830",
+      "method": "conditioned",
+      "gt_directed_pair_count": 46,
+      "predicted_directed_pair_count": 46,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 46,
+      "owner_cd_sq_mean": 0.001940142494905962,
+      "owner_cd_sq_max": 0.02125264627340892
+    },
+    {
+      "model_id": "00296830",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 46,
+      "predicted_directed_pair_count": 46,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 46,
+      "owner_cd_sq_mean": 0.0019258566648075318,
+      "owner_cd_sq_max": 0.0213291228286127
+    },
+    {
+      "model_id": "00296830",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 46,
+      "predicted_directed_pair_count": 46,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 46,
+      "owner_cd_sq_mean": 0.0018019502531916433,
+      "owner_cd_sq_max": 0.0245075181563167
+    },
+    {
+      "model_id": "00296830",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 46,
+      "predicted_directed_pair_count": 46,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 46,
+      "owner_cd_sq_mean": 0.0023168324036816237,
+      "owner_cd_sq_max": 0.03491734181304506
+    },
+    {
+      "model_id": "00296830",
+      "method": "last_28677",
+      "gt_directed_pair_count": 46,
+      "predicted_directed_pair_count": 46,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 46,
+      "owner_cd_sq_mean": 0.001738174249144188,
+      "owner_cd_sq_max": 0.01719829778292844
+    },
+    {
+      "model_id": "00634251",
+      "method": "conditioned",
+      "gt_directed_pair_count": 40,
+      "predicted_directed_pair_count": 36,
+      "missing_gt_directed_pairs": 4,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 34,
+      "owner_cd_sq_mean": 0.0007088617973899637,
+      "owner_cd_sq_max": 0.011653292266377973
+    },
+    {
+      "model_id": "00634251",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 40,
+      "predicted_directed_pair_count": 36,
+      "missing_gt_directed_pairs": 4,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 34,
+      "owner_cd_sq_mean": 0.0007324489409828279,
+      "owner_cd_sq_max": 0.012300027295821699
+    },
+    {
+      "model_id": "00634251",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 40,
+      "predicted_directed_pair_count": 36,
+      "missing_gt_directed_pairs": 4,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 34,
+      "owner_cd_sq_mean": 0.0005488897049537368,
+      "owner_cd_sq_max": 0.009308176136300311
+    },
+    {
+      "model_id": "00634251",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 40,
+      "predicted_directed_pair_count": 36,
+      "missing_gt_directed_pairs": 4,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 34,
+      "owner_cd_sq_mean": 0.0003948710109812423,
+      "owner_cd_sq_max": 0.0060046968393024525
+    },
+    {
+      "model_id": "00634251",
+      "method": "last_28677",
+      "gt_directed_pair_count": 40,
+      "predicted_directed_pair_count": 34,
+      "missing_gt_directed_pairs": 6,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 34,
+      "owner_cd_sq_mean": 0.0006440643089758797,
+      "owner_cd_sq_max": 0.010292998752356354
+    },
+    {
+      "model_id": "00499421",
+      "method": "conditioned",
+      "gt_directed_pair_count": 48,
+      "predicted_directed_pair_count": 48,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 48,
+      "owner_cd_sq_mean": 0.0016729583959611616,
+      "owner_cd_sq_max": 0.010334321023254742
+    },
+    {
+      "model_id": "00499421",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 48,
+      "predicted_directed_pair_count": 48,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 48,
+      "owner_cd_sq_mean": 0.0016496409997187474,
+      "owner_cd_sq_max": 0.010941829244189509
+    },
+    {
+      "model_id": "00499421",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 48,
+      "predicted_directed_pair_count": 48,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 48,
+      "owner_cd_sq_mean": 0.0017244443024349912,
+      "owner_cd_sq_max": 0.010775761758814754
+    },
+    {
+      "model_id": "00499421",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 48,
+      "predicted_directed_pair_count": 48,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 48,
+      "owner_cd_sq_mean": 0.0017190509807419568,
+      "owner_cd_sq_max": 0.010814265524676268
+    },
+    {
+      "model_id": "00499421",
+      "method": "last_28677",
+      "gt_directed_pair_count": 48,
+      "predicted_directed_pair_count": 48,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 48,
+      "owner_cd_sq_mean": 0.0016742390141031727,
+      "owner_cd_sq_max": 0.011026197812782048
+    },
+    {
+      "model_id": "00896572",
+      "method": "conditioned",
+      "gt_directed_pair_count": 56,
+      "predicted_directed_pair_count": 56,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 56,
+      "owner_cd_sq_mean": 0.002113188372342109,
+      "owner_cd_sq_max": 0.0097169604224502
+    },
+    {
+      "model_id": "00896572",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 56,
+      "predicted_directed_pair_count": 56,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 56,
+      "owner_cd_sq_mean": 0.0019227267110377634,
+      "owner_cd_sq_max": 0.008390880007659989
+    },
+    {
+      "model_id": "00896572",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 56,
+      "predicted_directed_pair_count": 56,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 56,
+      "owner_cd_sq_mean": 0.002266199777815441,
+      "owner_cd_sq_max": 0.00914188936972822
+    },
+    {
+      "model_id": "00896572",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 56,
+      "predicted_directed_pair_count": 56,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 56,
+      "owner_cd_sq_mean": 0.0019380236209446667,
+      "owner_cd_sq_max": 0.007634777038156693
+    },
+    {
+      "model_id": "00896572",
+      "method": "last_28677",
+      "gt_directed_pair_count": 56,
+      "predicted_directed_pair_count": 56,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 56,
+      "owner_cd_sq_mean": 0.0018508352926011903,
+      "owner_cd_sq_max": 0.007833790022263554
+    },
+    {
+      "model_id": "00060075",
+      "method": "conditioned",
+      "gt_directed_pair_count": 58,
+      "predicted_directed_pair_count": 58,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 58,
+      "owner_cd_sq_mean": 0.003493640911119915,
+      "owner_cd_sq_max": 0.03644346834118742
+    },
+    {
+      "model_id": "00060075",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 58,
+      "predicted_directed_pair_count": 58,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 58,
+      "owner_cd_sq_mean": 0.0042703676246167235,
+      "owner_cd_sq_max": 0.03837692474084099
+    },
+    {
+      "model_id": "00060075",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 58,
+      "predicted_directed_pair_count": 58,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 58,
+      "owner_cd_sq_mean": 0.004037491145197353,
+      "owner_cd_sq_max": 0.030425271798377288
+    },
+    {
+      "model_id": "00060075",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 58,
+      "predicted_directed_pair_count": 58,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 58,
+      "owner_cd_sq_mean": 0.0023643028229786765,
+      "owner_cd_sq_max": 0.02321947627751273
+    },
+    {
+      "model_id": "00060075",
+      "method": "last_28677",
+      "gt_directed_pair_count": 58,
+      "predicted_directed_pair_count": 58,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 58,
+      "owner_cd_sq_mean": 0.0023791110654387787,
+      "owner_cd_sq_max": 0.02585240599502999
+    },
+    {
+      "model_id": "00976340",
+      "method": "conditioned",
+      "gt_directed_pair_count": 42,
+      "predicted_directed_pair_count": 42,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 42,
+      "owner_cd_sq_mean": 0.0013525411353555185,
+      "owner_cd_sq_max": 0.027315817282785926
+    },
+    {
+      "model_id": "00976340",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 42,
+      "predicted_directed_pair_count": 42,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 42,
+      "owner_cd_sq_mean": 0.0013100952108951595,
+      "owner_cd_sq_max": 0.026909878225182576
+    },
+    {
+      "model_id": "00976340",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 42,
+      "predicted_directed_pair_count": 42,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 42,
+      "owner_cd_sq_mean": 0.0012734244397857343,
+      "owner_cd_sq_max": 0.025009287600155798
+    },
+    {
+      "model_id": "00976340",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 42,
+      "predicted_directed_pair_count": 42,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 42,
+      "owner_cd_sq_mean": 0.0012538524820660684,
+      "owner_cd_sq_max": 0.024856009518985932
+    },
+    {
+      "model_id": "00976340",
+      "method": "last_28677",
+      "gt_directed_pair_count": 42,
+      "predicted_directed_pair_count": 42,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 42,
+      "owner_cd_sq_mean": 0.001297711753251717,
+      "owner_cd_sq_max": 0.025658353591158672
+    },
+    {
+      "model_id": "00001926",
+      "method": "conditioned",
+      "gt_directed_pair_count": 12,
+      "predicted_directed_pair_count": 12,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 12,
+      "owner_cd_sq_mean": 0.0009291852838108182,
+      "owner_cd_sq_max": 0.0056237876460174165
+    },
+    {
+      "model_id": "00001926",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 12,
+      "predicted_directed_pair_count": 12,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 12,
+      "owner_cd_sq_mean": 0.0008944271407592434,
+      "owner_cd_sq_max": 0.0053040417110587
+    },
+    {
+      "model_id": "00001926",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 12,
+      "predicted_directed_pair_count": 12,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 12,
+      "owner_cd_sq_mean": 0.0009518367697100131,
+      "owner_cd_sq_max": 0.005353678444729965
+    },
+    {
+      "model_id": "00001926",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 12,
+      "predicted_directed_pair_count": 12,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 12,
+      "owner_cd_sq_mean": 0.0009042213458476892,
+      "owner_cd_sq_max": 0.005022378941435944
+    },
+    {
+      "model_id": "00001926",
+      "method": "last_28677",
+      "gt_directed_pair_count": 12,
+      "predicted_directed_pair_count": 12,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 12,
+      "owner_cd_sq_mean": 0.0009386362733353147,
+      "owner_cd_sq_max": 0.005284268301817258
+    },
+    {
+      "model_id": "00685289",
+      "method": "conditioned",
+      "gt_directed_pair_count": 48,
+      "predicted_directed_pair_count": 48,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 48,
+      "owner_cd_sq_mean": 0.0013107654791019714,
+      "owner_cd_sq_max": 0.0081389065089317
+    },
+    {
+      "model_id": "00685289",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 48,
+      "predicted_directed_pair_count": 48,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 48,
+      "owner_cd_sq_mean": 0.0015699080003891879,
+      "owner_cd_sq_max": 0.009537090466375624
+    },
+    {
+      "model_id": "00685289",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 48,
+      "predicted_directed_pair_count": 48,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 48,
+      "owner_cd_sq_mean": 0.0013484457951928462,
+      "owner_cd_sq_max": 0.006395061208498778
+    },
+    {
+      "model_id": "00685289",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 48,
+      "predicted_directed_pair_count": 48,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 48,
+      "owner_cd_sq_mean": 0.0012288454387361356,
+      "owner_cd_sq_max": 0.0065819722515448684
+    },
+    {
+      "model_id": "00685289",
+      "method": "last_28677",
+      "gt_directed_pair_count": 48,
+      "predicted_directed_pair_count": 48,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 48,
+      "owner_cd_sq_mean": 0.001186321262141327,
+      "owner_cd_sq_max": 0.005525752684053087
+    },
+    {
+      "model_id": "00287841",
+      "method": "conditioned",
+      "gt_directed_pair_count": 96,
+      "predicted_directed_pair_count": 96,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 92,
+      "owner_cd_sq_mean": 0.0011487036078531127,
+      "owner_cd_sq_max": 0.011267257350254845
+    },
+    {
+      "model_id": "00287841",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 96,
+      "predicted_directed_pair_count": 94,
+      "missing_gt_directed_pairs": 2,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 92,
+      "owner_cd_sq_mean": 0.0010314152481171353,
+      "owner_cd_sq_max": 0.009879071809402146
+    },
+    {
+      "model_id": "00287841",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 96,
+      "predicted_directed_pair_count": 96,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 92,
+      "owner_cd_sq_mean": 0.001026216896529573,
+      "owner_cd_sq_max": 0.010741264211017341
+    },
+    {
+      "model_id": "00287841",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 96,
+      "predicted_directed_pair_count": 94,
+      "missing_gt_directed_pairs": 2,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 92,
+      "owner_cd_sq_mean": 0.001138642516280507,
+      "owner_cd_sq_max": 0.011300363711197279
+    },
+    {
+      "model_id": "00287841",
+      "method": "last_28677",
+      "gt_directed_pair_count": 96,
+      "predicted_directed_pair_count": 96,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 92,
+      "owner_cd_sq_mean": 0.001118623609160568,
+      "owner_cd_sq_max": 0.011867547576884848
+    },
+    {
+      "model_id": "00624661",
+      "method": "conditioned",
+      "gt_directed_pair_count": 16,
+      "predicted_directed_pair_count": 16,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 16,
+      "owner_cd_sq_mean": 0.000871912253509483,
+      "owner_cd_sq_max": 0.0011842556128998766
+    },
+    {
+      "model_id": "00624661",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 16,
+      "predicted_directed_pair_count": 16,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 16,
+      "owner_cd_sq_mean": 0.000904162712875006,
+      "owner_cd_sq_max": 0.001184685144369035
+    },
+    {
+      "model_id": "00624661",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 16,
+      "predicted_directed_pair_count": 16,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 16,
+      "owner_cd_sq_mean": 0.0008737197023181555,
+      "owner_cd_sq_max": 0.0012080136836016826
+    },
+    {
+      "model_id": "00624661",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 16,
+      "predicted_directed_pair_count": 16,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 16,
+      "owner_cd_sq_mean": 0.0008634238251462172,
+      "owner_cd_sq_max": 0.0011820206960610898
+    },
+    {
+      "model_id": "00624661",
+      "method": "last_28677",
+      "gt_directed_pair_count": 16,
+      "predicted_directed_pair_count": 16,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 16,
+      "owner_cd_sq_mean": 0.0008726766242918934,
+      "owner_cd_sq_max": 0.001183502626879585
+    },
+    {
+      "model_id": "00423247",
+      "method": "conditioned",
+      "gt_directed_pair_count": 30,
+      "predicted_directed_pair_count": 30,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 30,
+      "owner_cd_sq_mean": 0.0007874951194116166,
+      "owner_cd_sq_max": 0.013042045250410307
+    },
+    {
+      "model_id": "00423247",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 30,
+      "predicted_directed_pair_count": 30,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 30,
+      "owner_cd_sq_mean": 0.001069388859452058,
+      "owner_cd_sq_max": 0.01768231026798072
+    },
+    {
+      "model_id": "00423247",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 30,
+      "predicted_directed_pair_count": 30,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 30,
+      "owner_cd_sq_mean": 0.0011210273148257299,
+      "owner_cd_sq_max": 0.02128853192177939
+    },
+    {
+      "model_id": "00423247",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 30,
+      "predicted_directed_pair_count": 30,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 30,
+      "owner_cd_sq_mean": 0.0008169336215856243,
+      "owner_cd_sq_max": 0.015547719447083726
+    },
+    {
+      "model_id": "00423247",
+      "method": "last_28677",
+      "gt_directed_pair_count": 30,
+      "predicted_directed_pair_count": 30,
+      "missing_gt_directed_pairs": 0,
+      "extra_directed_pairs": 0,
+      "common_directed_pair_count": 30,
+      "owner_cd_sq_mean": 0.0011548506224957685,
+      "owner_cd_sq_max": 0.015367391297351544
+    },
+    {
+      "model_id": "00576154",
+      "method": "conditioned",
+      "gt_directed_pair_count": 98,
+      "predicted_directed_pair_count": 96,
+      "missing_gt_directed_pairs": 6,
+      "extra_directed_pairs": 4,
+      "common_directed_pair_count": 90,
+      "owner_cd_sq_mean": 0.0005599354858254193,
+      "owner_cd_sq_max": 0.005871378879979157
+    },
+    {
+      "model_id": "00576154",
+      "method": "candidate_1089",
+      "gt_directed_pair_count": 98,
+      "predicted_directed_pair_count": 94,
+      "missing_gt_directed_pairs": 6,
+      "extra_directed_pairs": 2,
+      "common_directed_pair_count": 90,
+      "owner_cd_sq_mean": 0.0005242255747122533,
+      "owner_cd_sq_max": 0.004861864018392654
+    },
+    {
+      "model_id": "00576154",
+      "method": "candidate_14520",
+      "gt_directed_pair_count": 98,
+      "predicted_directed_pair_count": 96,
+      "missing_gt_directed_pairs": 6,
+      "extra_directed_pairs": 4,
+      "common_directed_pair_count": 90,
+      "owner_cd_sq_mean": 0.0005656976515778635,
+      "owner_cd_sq_max": 0.007926016309874696
+    },
+    {
+      "model_id": "00576154",
+      "method": "resume_best_27588",
+      "gt_directed_pair_count": 98,
+      "predicted_directed_pair_count": 94,
+      "missing_gt_directed_pairs": 6,
+      "extra_directed_pairs": 2,
+      "common_directed_pair_count": 90,
+      "owner_cd_sq_mean": 0.0005255922737525732,
+      "owner_cd_sq_max": 0.005918641871203179
+    },
+    {
+      "model_id": "00576154",
+      "method": "last_28677",
+      "gt_directed_pair_count": 98,
+      "predicted_directed_pair_count": 96,
+      "missing_gt_directed_pairs": 6,
+      "extra_directed_pairs": 4,
+      "common_directed_pair_count": 90,
+      "owner_cd_sq_mean": 0.0006541648057358692,
+      "owner_cd_sq_max": 0.018924727444454423
+    }
+  ],
+  "inputs": [
+    {
+      "path": "/mnt/d/data/deepcad_v7/00000093/data.npz",
+      "sha256": "15685877c2f3a2026641e2e49a1ccfc5a23b1d44ff2e1d7b3d4168174f0a5fa8"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00000093/data.npz",
+      "sha256": "b156a5caafd249e3535bebe9ccd812b0666c16dda0aca903007c4e15573a80fd"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00000093/data.npz",
+      "sha256": "4e994a562200c8c09129c5056de0942cfbd7635d342849901643afe487c0104e"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00000093/data.npz",
+      "sha256": "4089cfbbf7f5b3eb1b3a5c69dae4d9e5acc16f8fe120c6407c8b655c76862451"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00000093/data.npz",
+      "sha256": "81122c73b54af3f7c72dac0cbfad69c7fd38b767b493d2cad3f78aad06acddeb"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00000093/data.npz",
+      "sha256": "25cf94fee76720aec9e56e9d072a73becea2a0814a9c392a47ef35028953c379"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00000797/data.npz",
+      "sha256": "52cf3f1c7bf4e286ddac3e35ac59ad16a69378abe3428e6974986ccc775c2886"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00000797/data.npz",
+      "sha256": "3966ac6d699aa0eec02c33849743b24bb65303b05019580dea79920ea1f9208a"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00000797/data.npz",
+      "sha256": "e6de687753b28c96ba00bed43b2173f762f7bf278ae6f69b25699fb29b5c9609"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00000797/data.npz",
+      "sha256": "d132bb07230a08f4d0ef4534e56e9c6c04855909e56f4ae55e74b93a0c6871e6"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00000797/data.npz",
+      "sha256": "fa08eca244c914d7f232b1ed11cea62e53e03634eaf217981ad96a4e9a9dfbb1"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00000797/data.npz",
+      "sha256": "4431cf4b26d359a44dcab280847ff767a81b995f86ede1ed250e8f0b739e865d"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00256640/data.npz",
+      "sha256": "a023e002ef99fdf58f89d73a8ffce33796397b16786166fdd15440d49789b863"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00256640/data.npz",
+      "sha256": "aecc65663e23929e6047cd1901171b31db6aae56ef385b7f4d4347db29bac172"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00256640/data.npz",
+      "sha256": "c5925173072e579f01d999ecb9f55e7a1805d73953d8236db438e9e3ed23e0d2"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00256640/data.npz",
+      "sha256": "f3c61255b3419570ab95bd76fb6b6615f4f727f588f5a32b7e8c411feed132dd"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00256640/data.npz",
+      "sha256": "9cc5d7e5822486045488f24ba9168b09a7e2a1fe20f289c81e29c385f00f70bf"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00256640/data.npz",
+      "sha256": "8216416217c6b0f0b5c8508879ad092188619a79b3c37f1f18e088d0836fd395"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00772578/data.npz",
+      "sha256": "4b5b9ef45cb6062b5a2fe9e939a4341d6708207d5ab837a5d283b341d2ea7597"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00772578/data.npz",
+      "sha256": "62dfb4630e5ce9d058b47b5abf3afa5dd2bf4a314550da65d88b4b276510799a"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00772578/data.npz",
+      "sha256": "18d86c82d6a39cafc5c3329b595e5d81465f110d8f62275f6a3af0cfba08edd6"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00772578/data.npz",
+      "sha256": "d87b0c5c7a85d73810450cbb91fc474f44303a4d14b733ebcebe9feac9473145"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00772578/data.npz",
+      "sha256": "1d608584f61dd4227427e04b7d9fc9757d6887a979fe2f22ab818728ac894f58"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00772578/data.npz",
+      "sha256": "4aafff7e7723f36c9fc2ca6845b4360d09150b23a0d2a393d634a4e4b0d281f8"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00042493/data.npz",
+      "sha256": "739190c005fd874aef0cd8396faad54076dce78920d2361b5dd619e3166b7c12"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00042493/data.npz",
+      "sha256": "ee1ddecd7f166a38430b15f4d6aa82e555ac4081ac5f2af37688f84d34b5177a"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00042493/data.npz",
+      "sha256": "415eb30faac785286885e94fa2761521a4f49e13f5a696d67e9dc2095d25a3bc"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00042493/data.npz",
+      "sha256": "4039b76063bf9ccbbef48a64f1a954c689812d983844f6cb88e4ba2d80b923e6"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00042493/data.npz",
+      "sha256": "b9d581216f13455db73cade9d16e2bbc077878f6fd9fd666e86aaaf8326e77e8"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00042493/data.npz",
+      "sha256": "cbb2004851d37df6b3de951af00cebd5dcc3926c898c3dc024db31a9b173e5e1"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00465451/data.npz",
+      "sha256": "e013b3b155a1bdc9094a756b40c11bc9129a88d65cbd670b349b36c03c1530f9"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00465451/data.npz",
+      "sha256": "cdf81bf44ae846705adcce9543a90ff9cc12b8264f66960551f175e9fc6c5a78"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00465451/data.npz",
+      "sha256": "cc6543e011cb33427409b8bcf1840d63fcf1cdfc3b801b857eb4caa44c2270bd"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00465451/data.npz",
+      "sha256": "e7ef37bf77b45b3bc4846bcc0bfe3bceadc164390e23467cfe2ad8877f4b1d46"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00465451/data.npz",
+      "sha256": "cef4ee99d41e74cfc223abd2883fac781e5cc6f8c0a7ce6491259883fd04b1d4"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00465451/data.npz",
+      "sha256": "3b1e502831a3a7a5899effa44a4cc511fcfbb5c1ecde742c55b7e87843978846"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00044176/data.npz",
+      "sha256": "0829d524e66cd9295f58f973e3478f54fad450acb34b0f87c9e79effc45e37b7"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00044176/data.npz",
+      "sha256": "fc5da462c24c5bc8ab9d9bc21ab96dedb25955d6ad46ebd879732efb0a491a34"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00044176/data.npz",
+      "sha256": "77c6c6f278ec189f3c0f69f5484d5c307a731e163dc2480244f3214ef09b57bd"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00044176/data.npz",
+      "sha256": "0b267cb1c7b0f8655d7ba0619971e38e722380768d6b538d47184a4087d73152"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00044176/data.npz",
+      "sha256": "da9a68a0af7faecf0d5af1c53750eb9a29941d7731a7446e2464999aa0ec5da9"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00044176/data.npz",
+      "sha256": "6a8b54baf9f98bd8fa8fe06f49c3c286870a29063276a17651fcf12d340ed9eb"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00629874/data.npz",
+      "sha256": "e72da4be33d2ae906cf171cd67717b12739f274bbd63b689964a3cd15fbbe764"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00629874/data.npz",
+      "sha256": "d985e8ce65352e4708523f92b8d4ed9bae947f7abc47b49ee9625f4e32759375"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00629874/data.npz",
+      "sha256": "22c05bdebb39ab7443399eb22850cdcd2a40d692608af1ad15a7c9df5a23d4ac"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00629874/data.npz",
+      "sha256": "c97014fa1e1e80ff73dd03dfe06030b043d7a34bc01143487babacb323c8150b"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00629874/data.npz",
+      "sha256": "e4c8ddee5fb4ea3ef6e83593065d6f2ff65efc7bba80ae4b6d18efa61f3fce51"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00629874/data.npz",
+      "sha256": "a945a40746dd68d6147579681c9371c3a3cfccce99403144290da46747ca0721"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00180090/data.npz",
+      "sha256": "8d477bcdded51e4a72e7bc92b97e99d4222f60fa2293b4ecf2e304a5f3824b89"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00180090/data.npz",
+      "sha256": "61ad55e171083267a4a4e22c21d9291422365b450947faa8dfe078486d416bd7"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00180090/data.npz",
+      "sha256": "361b8c6c3366682d3acdb0a454e156d4ac2318ffccf0f9a2249d6bd0dfeaa2ba"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00180090/data.npz",
+      "sha256": "404de2c6ecbb1de8c352c3555cc83b3dc41b56bde8b21d0b327b2942585b79d4"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00180090/data.npz",
+      "sha256": "1861154d543c30d76784f578284bb9b8ae9bbb1d2d645082dd0587fa37b7848a"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00180090/data.npz",
+      "sha256": "af9c500c98e0691ea17e720a996be5f45074571cbe2b5831d7ab9b46430e15d1"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00081261/data.npz",
+      "sha256": "69d450d709f5a62a27b75925c34562b9f008a663cf6fb5accb234f19b35ddf59"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00081261/data.npz",
+      "sha256": "af3354056c806429ed547308a4df99b8633a876068e70806dbd419845cd02304"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00081261/data.npz",
+      "sha256": "fa16b4711fe16b9464d7ab2e836e13b631acc7755d892d3686b94f63f9f55bdf"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00081261/data.npz",
+      "sha256": "53f9d6f506ed1d901fdd3e751775b194c1412c1d6ce811347193a283c61cbf83"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00081261/data.npz",
+      "sha256": "39edd7ae7c7ed0bf6bc8aa320211018e53c004999d1641b9d036d0668a696431"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00081261/data.npz",
+      "sha256": "79d3421946c8e65002e78352090c9bc7d9e3af71f7e48f449f586357032dd932"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00295085/data.npz",
+      "sha256": "fa98d1f21b757af1f92a7cb790896d3983d4cb449121a90c1340c5c3c74dcb27"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00295085/data.npz",
+      "sha256": "2ac93ea950a0e2a5e347506e2377f35630ff72b871a781706e7ee10223d2e02f"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00295085/data.npz",
+      "sha256": "3d4be0cd50aa0f925e2c7fc564f82141b466f12d533f1d7e251b8931b7a3c846"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00295085/data.npz",
+      "sha256": "3b64ef0b951a8a56549cba1088384bce6e688d9f8abce8cdfbb222e8ba26d3bc"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00295085/data.npz",
+      "sha256": "2f390c4db774126214518ba076917559669ee10ac238b69684a896f017b3b1d8"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00295085/data.npz",
+      "sha256": "6b4f89b72bb65519289e3146c11eb9096274048e71012f37c8c7605937b34bef"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00130562/data.npz",
+      "sha256": "8f0e3e86acf586de7bbb479d9e53ab4119007ae1026be771bc92b3e62788dd3f"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00130562/data.npz",
+      "sha256": "dc8ec3a785fa52b490f61b4245c2959363116554e29eff2cdd873bf029d7e269"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00130562/data.npz",
+      "sha256": "c84bba6b552aca2bf986997f31b54ef3a979cc358c6510f6160a209d41c40ff7"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00130562/data.npz",
+      "sha256": "6bee4c7abd542ab2fd491e08bf06bfef9453c85996efd36575535f97af788ad7"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00130562/data.npz",
+      "sha256": "81c9b273bf097b91c9624789492cfc470f9614e214d60c72abe80592a1d6fb48"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00130562/data.npz",
+      "sha256": "a8e702154b8d74826f91633c92b79106ce105bf370971e38da86ad03f56b1afa"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00086425/data.npz",
+      "sha256": "55577cfe39f1759d9eab7498dea9fb767895a0353c8bad260bb82968ff08bb6d"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00086425/data.npz",
+      "sha256": "7a676c849fa0b5c6180a19498e22d34a214563b505c3ee13c37b3dadf74b6648"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00086425/data.npz",
+      "sha256": "ad6b73a9cfcb02c983a58b9e6c3d72c5e93cb286bff0aaff33a4b31dc665e888"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00086425/data.npz",
+      "sha256": "b38c32f12fde4c7f4a10661ec6041a7d8905c3c2cfd14d44c1f317017700ef60"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00086425/data.npz",
+      "sha256": "298c2358d60553a76ee2d8e0d97c3731800257fd0d23b2a15be7296acd618b16"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00086425/data.npz",
+      "sha256": "e7380330c6a50f6064b82f969362de57dcfa1eca3529716a28d18abb2c1b373a"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00711822/data.npz",
+      "sha256": "edd420f4038cd9594968ea6fd932e13a0303c7f6ee65f561d08dc65a351c822a"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00711822/data.npz",
+      "sha256": "5129769925bb7e196348c1102050a38a93e9b2d1d3bfad9ba72e1bce89b31452"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00711822/data.npz",
+      "sha256": "10695ec815bc362c1d7c7805aa6c96aeea4ae1af639120991560133f9c3cdff5"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00711822/data.npz",
+      "sha256": "c5a1fa447352bf2087eae75525666acff3b675d7ae9b06a7d58c3ffe859b3569"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00711822/data.npz",
+      "sha256": "062987c8a778bdaeef6a0b1b6690589562221e12dc98001e1e6092e689ce248b"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00711822/data.npz",
+      "sha256": "0fcd691419e6f470d45533826a342bc52c76092f7e8183e273db36284a98975b"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00640423/data.npz",
+      "sha256": "a93aac59c79a29599e3831878f0c04d1e1dd706e9a5c9101d78b1455366236ee"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00640423/data.npz",
+      "sha256": "a4789db751ac988ac510af985ed3590521db808727c7683c31a38ff51dd4cb9b"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00640423/data.npz",
+      "sha256": "651e24b6784c63d996e2e305f3250f3222f921b0d732b8d5fef54ebced375794"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00640423/data.npz",
+      "sha256": "70e14c3e5154e282a486689d89dce4016372e722e6859ea8c511555db3dbf23c"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00640423/data.npz",
+      "sha256": "cfc22362ea8139f0db2b8b2aeaa23ca5c28bd25a11ed371e3b9e53b20d7e6b57"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00640423/data.npz",
+      "sha256": "4bc1eff7447f96643b2497b6aba5fe27bd3a8c7792318e6171be6c14c8fa3e9a"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00296830/data.npz",
+      "sha256": "1b8b424a3f6984ca894f67b2c28b68989115d14d212fd5ad8ea221f43027cd8f"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00296830/data.npz",
+      "sha256": "38d84c1f449c63965ef39b3a320f519da757b7e0c421166d3365daa9236de5a0"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00296830/data.npz",
+      "sha256": "e9b943cd6a0d57205dd00b66b712df17ec5ca890aad54c83fb6882356f6aaf60"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00296830/data.npz",
+      "sha256": "0922b6a289f578368c68376d4623738b0a5fd0c9160ec9552958f7324eb8fda7"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00296830/data.npz",
+      "sha256": "eca43b41bf4cab35d0c3abb811ac50254f930a906f785a0cf16b10766881ff1b"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00296830/data.npz",
+      "sha256": "2fd90186ea2a83d72bca1e7818c5de8915f8646e638fc84813d40c95c7d956eb"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00634251/data.npz",
+      "sha256": "217603d14b68ed266286ce9f77e21fe390fdab217c918b910c1bf98b0c929706"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00634251/data.npz",
+      "sha256": "76aa4a18578fa6eda0f52ba7a6f8836060ec08ae149f1fbd052b7e3f088880d5"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00634251/data.npz",
+      "sha256": "44ad860b5c4b23754ec1c4788f04bde1751ee0519fb85638ebb189c2ae2d077a"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00634251/data.npz",
+      "sha256": "86ad5071bc75c01506e45731f8ad93ad287bad37101cfebebe411e69e4cf31c2"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00634251/data.npz",
+      "sha256": "d539b56d3a5b2221e00a08c39924e9c46ce6146aa5c75fd479452a5e77fd4eae"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00634251/data.npz",
+      "sha256": "e9fce357b911f330513a76ee0df5754185c12c35bcfd549a366bb01b00715440"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00499421/data.npz",
+      "sha256": "21278f2793f436ac70ce19096ff85fc6cfb92f6af781174a4941037cfbf90b60"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00499421/data.npz",
+      "sha256": "3c6be33adc1060690f615476c41b1e5187c7ffa59e62825509f13c858601e29b"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00499421/data.npz",
+      "sha256": "89fba971ccd4b2d305cab5ff24446400349e386114bbe2ee54f24a6a7b0617fe"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00499421/data.npz",
+      "sha256": "d3be328243f8c45b688ebb55cca13d928e109c7178dde32340f4ab522ffe8f50"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00499421/data.npz",
+      "sha256": "c3a341cd77286eb9370fcb95cf2cd1d58449f132f357af0bfd3319b1937b7404"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00499421/data.npz",
+      "sha256": "27a1b80d40ab722123d6538355986fb5d97191c380250cf7e46690d6a5e81471"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00896572/data.npz",
+      "sha256": "1294a554745fb6c5e0ccd3ef76cd7b352c7980febc48f6f3de056fefc700fc09"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00896572/data.npz",
+      "sha256": "d76767048a250a28b79f639770794422f498995a6a3f238ee00a6b4b9b49d0b6"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00896572/data.npz",
+      "sha256": "80213d8d356d897dc044ef189cebdff13886ce756f38278fa563a5c0a7a9659e"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00896572/data.npz",
+      "sha256": "623c43994631443ff666fb560e30b006d10b9aa1b4e049775e79c6b3763f76d5"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00896572/data.npz",
+      "sha256": "5459ecdb856f95a7e7ebacbb1bdfa64e8d9a41ec3792f2af678193493602de21"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00896572/data.npz",
+      "sha256": "30773e44020b7f0d0835fc345213a748426808112d5a73020e8a9003fa792c64"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00060075/data.npz",
+      "sha256": "3c7512c3d276ea5f7099a3e157208b89d9c2b15d7cb1010505dfeffc9516a66d"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00060075/data.npz",
+      "sha256": "5628dcffb9e92cd910609f55836c991c8ef39b725a154903ce642be41a71390c"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00060075/data.npz",
+      "sha256": "b2b9aede2ca928b76ff31552b2ec9f4da3fd64e804e9e158c44fe242c27f645a"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00060075/data.npz",
+      "sha256": "9813d81229ca8a7991c664f71b2a876d55e3a52b2636ad8a04d5365600cce0ee"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00060075/data.npz",
+      "sha256": "e81f13b260d7f40c7b980a45c8760e9a5fe583165d22b14ba468bf2637f4d6f2"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00060075/data.npz",
+      "sha256": "44081da6376dbc0091fd97c748e1e24605ae63f1ba0b8473a9bf6c1055858613"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00976340/data.npz",
+      "sha256": "61859918648e0f790e6d3849c65e91bd6bb1b45e069374899cca0f2303e5ecb9"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00976340/data.npz",
+      "sha256": "24072569fdc36b548282cb2b276c6fcea1deb3853912c08a7543f38242e789cd"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00976340/data.npz",
+      "sha256": "4602957081c49515af4a97f91716702dedd0d6de931269cc8ccf7fe6d61a2b92"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00976340/data.npz",
+      "sha256": "109f3803b8152462ae14484622b5c6af7760eaf976998ad426175f894a9cb88d"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00976340/data.npz",
+      "sha256": "c30f107d283f779b85320a78de6f474a619a73a3bbebbaa1c31edb323df40379"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00976340/data.npz",
+      "sha256": "ac2064d6d642ea725270c69d312097086d143753c367d3b5454c296449994133"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00001926/data.npz",
+      "sha256": "42f8625b13e90fdbb1eb2a7d57b3bf356a663941b24873acdd233cb579e4af28"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00001926/data.npz",
+      "sha256": "955bb107b2d877d65916fb3b1051f3d005a1e27425d73dba43e9a0e6d4ef0e6d"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00001926/data.npz",
+      "sha256": "7242af74e808ae0ba0fad9df687d0930a8efd77a1426712f0a6224716d2adf27"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00001926/data.npz",
+      "sha256": "b821ada015b9474943cc17a50a49690de91769d5db1e35ed19416bb86209b252"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00001926/data.npz",
+      "sha256": "471b5ca1dcaa450488ae18ad6969bc2dbe7a43df3f827e686a65f0adec399f51"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00001926/data.npz",
+      "sha256": "b5b5b8c0714db046643b1c5e777b568cb187c7a9a29b69a6d1b7d84e79a4f915"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00685289/data.npz",
+      "sha256": "4e6de4f963f7ded01ea52d06a51c5eac3eb05a6f5b02ae2cd3fc5b5539b2fef8"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00685289/data.npz",
+      "sha256": "872dee041b455cd0b9fc711963a2ec08a222bc75c802a66720cb6f5d1807e98d"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00685289/data.npz",
+      "sha256": "31a00c9717173e0f5430b19c77d152eb0e2ec8c575cbccfaceca329da98b4de4"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00685289/data.npz",
+      "sha256": "d28d5de10ca7ebb57b323220361037175d74f38f2405e56a0e1a197f3c5739b8"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00685289/data.npz",
+      "sha256": "091588066531d837021625306a2c65abd449fb3cabc174f6e39e4c561d599946"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00685289/data.npz",
+      "sha256": "2314f6e3be4b908a8db2d5def44b543b01e26f4e5997c649ee5b88f8ef9fa009"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00287841/data.npz",
+      "sha256": "9ba545852705092f7072aa835a5b507002ea19b43f019fd1fb35db8a5da48cdf"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00287841/data.npz",
+      "sha256": "8f6dfb5ddaa8da100488253220b5549a0fd1a5e2e2f06dfd5971708ffa54e782"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00287841/data.npz",
+      "sha256": "86f62b304d74fb91ef49e4ed73fbbe877cfd47bbd7f24fd43b8975afbb532900"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00287841/data.npz",
+      "sha256": "d58f43aa7d3a1fa68b90031218527fcf6fa4eaace315fa311509bc09842fe6f1"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00287841/data.npz",
+      "sha256": "80c5609e179df4a1dd40a9e55559d8d214c4f802444ed25c02ab16ff744d0d50"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00287841/data.npz",
+      "sha256": "733dafac715eb1868892234ac2339609907938aca8b84d94750f46a85ea0e61c"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00624661/data.npz",
+      "sha256": "125b2d3ace685a19336dc628005e4a48195f2c5f24c3833f01ff7355a713a453"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00624661/data.npz",
+      "sha256": "dd9b57c5d75ddf7b9eead998bfcc9181d562954c262e8765d99d971dd8ce5433"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00624661/data.npz",
+      "sha256": "0517b2af2b9b639fa70f6d19c1e4bb55e8274435236f4609d02d020855653633"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00624661/data.npz",
+      "sha256": "4814bff16138ad9c2c68bd4b9ea8691b52c09c200c3704625f460f8deb566e85"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00624661/data.npz",
+      "sha256": "f98e8cef63f977b98a7d8b71734eab342737c5865a76aedc0ccbaeca3d400445"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00624661/data.npz",
+      "sha256": "082fbf6d4eb3434457b13e5acf247752b212c7b57991385370b2ec9c43241890"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00423247/data.npz",
+      "sha256": "69d6ca0b3d50ce394d0dc86ea78fbfc6878768aaee0b2262753e690d5213cb5f"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00423247/data.npz",
+      "sha256": "ed8f65f47539a8f260fd8e457ad2c2472e4761ab8d1eb981cf05364c29c06b84"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00423247/data.npz",
+      "sha256": "14930ec2d2c4ad41c720b56ee04bfd37d1ea8a5e8411d2151a9ef5b9157750b7"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00423247/data.npz",
+      "sha256": "740554a5a369ee6781e547e2553f1caa2cdb6705343db9ccfec00b04489a1b9c"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00423247/data.npz",
+      "sha256": "7d937d9b31b70fdcfaf1e0a48bffd448b823549f9254182f8cf37f665165c9f0"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00423247/data.npz",
+      "sha256": "649194ae392204a8dc45966c4f53a383a335cb0f450107d8f9efcc62b8bb5bcc"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7/00576154/data.npz",
+      "sha256": "646b738d6ee5e326827ce1658715be44f45027c0a058eb13d89cd9450c1c3786"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/conditioned/00576154/data.npz",
+      "sha256": "8a80762e139598adfb3a3a398b24e6f0404f69c58f28d67a70b52484a6ba45bb"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/candidate/raw_predictions/posterior_mean/encoder_edge_value/00576154/data.npz",
+      "sha256": "88c189dae6acc4a0380c6c8b81c1036576ffbf25d2174b07b9efe9f6da646636"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261015/endpoint_14520/candidate/raw_predictions/posterior_mean/encoder_edge_value/00576154/data.npz",
+      "sha256": "9a4b27b417f4b32eee47fd0c8868aa3893f07924292b2ed62bf977afcb16911e"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/resume_best/raw_predictions/posterior_mean/encoder_edge_value/00576154/data.npz",
+      "sha256": "4539eedcb286ff217f36399e1ffe4407dc28eb4665e3a48dcaa006c7c9ff204b"
+    },
+    {
+      "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/last/raw_predictions/posterior_mean/encoder_edge_value/00576154/data.npz",
+      "sha256": "ad1e9e78641e258333f9dda7d4914681a905492092cf29041c9574350de790b6"
+    }
+  ],
+  "algorithm": "SciPy cKDTree bidirectional nearest distances squared and summed mean; float64; independently mapped GT owner face pairs shared by all five snapshots; production uses broadcast distance matrices."
+}

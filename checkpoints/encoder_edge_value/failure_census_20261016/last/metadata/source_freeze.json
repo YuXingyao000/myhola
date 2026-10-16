@@ -1,0 +1,59 @@
+{
+  "schema": "encoder_census_source_freeze_v1",
+  "created_at_utc": "2026-10-16T04:19:04.992802+00:00",
+  "baseline_method": "conditioned",
+  "candidate_method": "encoder_edge_value",
+  "input_contract": "same_geometry_source",
+  "snapshot_group": "last",
+  "checkpoint_sha256": "040c05a45dd7edae825f2e6dd8e2cb3489a418146f9a7b2122cc54d38070618c",
+  "scientific_sources": {
+    "src/brepnet/data/shared_boundaries.py": "f0a740bf6050439613d0c113ab69ff7a506790741818fc03d998e4c0b2d7f1aa",
+    "src/brepnet/eval/metrics/validity.py": "8d8fb3ddde7a1281675b8341921fcdde1a2931c8034ce8c8b05ef68caabad92f",
+    "src/brepnet/post/chamferdist_torch.py": "fbc787a1530525b7eeeb18142ec2c53094193bbb2cc97069e70caa392bc3afa7",
+    "src/brepnet/post/constants.py": "76312fc450b073ef6ef475bb154fb9eba982146e14f0ba1c4919d939c227399b",
+    "src/brepnet/post/construct_brep.py": "3d66dfeb05afbfa288797f9b1bd488efc333d6e66776acb354934f9a4a6b65f4",
+    "src/brepnet/post/debug.py": "65ecf432f00b8dd5ab01e305d1eba18b508a06cdaf72abf98ebc59e2b157f4fe",
+    "src/brepnet/post/distance.py": "2156ebd91b647da54d505b4f2a1f4c0ce6fd50c551a9ec2e2ea2e8d96e6cbafc",
+    "src/brepnet/post/geometry_optimization.py": "46e660a3fd4997794ed10eacbeaee3d96bf1306178001473c2f54dddd0d46850",
+    "src/brepnet/post/mesh.py": "a66d843b06a460aefa2aae5ad2afc485b7e4d5573465a5eb3828e37a1de676ff",
+    "src/brepnet/post/occ_fit.py": "aca77a713e40d863ab125f144108e40bf162be7f85b77b0da5f7375d631ae8e6",
+    "src/brepnet/post/occ_topology.py": "2652cd061ab814cc8d3d73fa34224aa1b94efcde2c72406d7e76357d77774ab6",
+    "src/brepnet/post/shape.py": "4594df3cbb46b96251c3b6d6e160be70214abe07cfedaced9a0d26bce2aa3f59",
+    "src/brepnet/post/utils.py": "7a9656d1c942d2035867026600a601be34ec95420631e1c8cfe03cecd742edb2",
+    "tools/failure_census_contract.py": "b84060b9ebc6a6b1163f85acbf952ce0e020c9da4bea50ad733f5713e0ba0421",
+    "tools/intersection_failure_manifest.py": "6091bba3c2acb1869e4dade3b41e59b3ab3024ae1d5b6d0faec9e84bdba19dc7",
+    "tools/intersection_failure_report.py": "e9d8b06cd7083d0dc5ce75e0206633ab234c3feeed895a15a7a022196c7ce0d4",
+    "tools/legacy_failure_census_report.py": "a6ee65acdceb1ee8dd76cfe112743b27c1bd56c53470d909554e4792561ba316",
+    "tools/legacy_failure_geometry.py": "a3615de52d0f10cd0c9d3ba7dabca3d461ea6a7968f0c3d4c3ead8749f078401",
+    "tools/legacy_failure_provenance.py": "759ad496fa52c80dc8e1cf3947d8509e0ff7fdf59aa2d574081efe1ae95bfd1c",
+    "tools/legacy_failure_saved_step.py": "0258adf139d9d592abc49951976ba5e69d8fceccd17386edf914cca04f0b6bd6",
+    "tools/legacy_failure_trace.py": "45651b14e4e671f67d255d922904f3927bd3c127076fb3c4ebce395be563752a",
+    "tools/legacy_failure_upstream.py": "99e58f7378618bcf1dcedd1046529280c4d8079e3d1f2c52999c7e0d63d08657",
+    "tools/paired_failure_manifest.py": "3080f2311aca4fdf0599ea762e66294dcc7b6678b2e5856044db46e8b9a6ee5b",
+    "tools/paired_failure_report.py": "76ed0b3a6895e7443f754f0e31f13d49803e1144cbb151b19497c2a236b43b2f",
+    "tools/vae_compare_metrics.py": "7be118936ba0315bf19d30d719b71501048b8f9793058057737cf5bb6407c3f4",
+    "tools/vae_compare_post.py": "cd3d63b534dd1a7664460ba36a2e1f8e4d7cc9162e4c6eb2f3228564db9107d7"
+  },
+  "execution_plan": {
+    "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/failure_census_20261016/last/PLAN.md",
+    "sha256": "3bd43f345aa9002794655cc0b952ddc04149957afe370ff9334ae36152eda62c"
+  },
+  "validation": {
+    "prior_tests": [
+      "src/brepnet/test/test_paired_failure_census.py",
+      "src/brepnet/test/test_failure_census_contract.py"
+    ],
+    "prior_passed": 35,
+    "current_shared_sources_sha_identical": true,
+    "tests_rerun_this_task": false
+  },
+  "parent_execution_plan": {
+    "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/failure_census_20261016/PLAN.md",
+    "sha256": "f7eab7a8e94f8d48b8c6882980eb83e0bac80a925e4b9b43e1b973dc624b0d9e"
+  },
+  "evaluation_plan": {
+    "path": "/mnt/d/python_curve_eval/checkpoints/encoder_edge_value/evaluation_20261016/PLAN.md",
+    "sha256": "192c49686d274d1a093888b2a9ec9b5e9eef451e458db24b02836d93cac6b3b4"
+  },
+  "note": "Task-local orchestration only. All public scientific tools, production algorithms and measurement formulas SHA-identical to prior audited run."
+}

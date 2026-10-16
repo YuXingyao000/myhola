@@ -1,0 +1,7 @@
+# Reproducible large per-object data are local; compact reports are versioned.
+**/raw_metrics/*/per_object.csv
+/owner_per_object.csv
+/input_hashes.jsonl
+/diagnostics.json
+**/post/fit_only/conditioned
+**/post/optimized/conditioned
