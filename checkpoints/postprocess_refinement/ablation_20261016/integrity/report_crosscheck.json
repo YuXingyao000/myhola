@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "checked_utc": "2026-10-16T10:33:10.905967+00:00",
+  "cells_checked": 8,
+  "paired_comparisons_checked": 10,
+  "summary_sha256": "58266bdc694cafdc7387d9d3605e6dc9fe97969d073b6d06b36c4b082cea0005",
+  "independent_post_integrity_sha256": "9be23e92a3bb93210bad2e21ee5a94717119427d1a02c791073b5215134f7b66",
+  "architecture_preview_checked": true,
+  "native_validity_plot_preview_checked": true,
+  "production_sources_modified": false
+}

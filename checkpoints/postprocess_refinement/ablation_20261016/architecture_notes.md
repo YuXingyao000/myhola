@@ -1,0 +1,42 @@
+# Intersection 改进前后结构图：核对说明
+
+本图把已保留的单轮 refinement 与最终曲线头 conditioning 视为一个整体。图中的改进模型不包含局部面注意力实验、逐点坐标反馈或 encoder 的 edge-value GAT。
+
+![结构对照](architecture.png)
+
+[PNG 原图](architecture.png) · [可缩放 SVG](architecture.svg) · [生成脚本](render_architecture.py)
+
+## 权重与结构来源
+
+| 版本 | 实际权重 | 核验结果 |
+|---|---|---|
+| 原始 AE | `/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt` | epoch 8499 / step 1045500；704 个 state keys；181,583,229 参数 |
+| 两项改进整体 | `/mnt/d/python/checkpoints/intersection_refinement/curve_conditioning/20261013T083729.740439Z/weights/epoch=0157-step=00057354-val_loss=0.038204.ckpt` | epoch 157 / step 57354；736 个 state keys；181,965,981 参数 |
+
+本次以 `torch.load(..., mmap=True)` 读取两份实际 checkpoint，核对 inter 的投影、attention、FFN、classifier、refiner 输出和 conditioning 参数形状。改进权重 SHA-256 为 `4c7910b8169206c74fcf38c358cf171359149e0429c8debbc227d391aa56613f`；来源与冻结 encoder 的逐位核验另见 [已有训练审计](../../intersection_refinement/curve_conditioning/evaluation_20261014/training_audit.json)。
+
+总新增 382,752 参数，其中 refinement 143,328，conditioning 239,424。图中蓝色表示沿用网络结构，不表示微调后的 decoder 权重仍与旧权重相同。新模型内部的 coarse / final 阶段共享几何头及 classifier；face Transformer 与原 inter 均只运行一次。
+
+关键源码：
+
+- [原 inter](../../../src/brepnet/models/blocks.py)：`AttnIntersection`，8 层 TransformerDecoderLayer，512 维、8 heads、FFN 2048。`tgt` 与 `memory` 各只有一个 token；原位置参数形状为 `[1,2,512]`。
+- [refinement](../../../src/brepnet/models/blocks.py)：`GeometryRead`、`weighted_incident_mean`、`IntersectionRefiner`。
+- [最终曲线调制](../../../src/brepnet/models/blocks.py)：`FacePairConditioning`、`PrimitiveDecoder.forward`、`IntersectionDecoder._decode_stage`。
+- [原几何头与旧推理](../../../src/brepnet/models/vae.py)：`_make_face_points_decoder`、`_make_edge_points_decoder`、`_make_bbox_decoder`、`AutoEncoder.decode`。
+- [采纳状态依据](../../encoder_edge_value/PLAN.md)：后续 encoder 实验从“已保留的 curve-conditioning checkpoint”开始，并明确不沿用已放弃的 point-feedback。
+
+## 读图时需要保留的细节
+
+1. `N` 是当前对象的面数，`P` 表示当前版本的有向候选数。原模型枚举 `N²`，包括 self pair，逐方向判定存在性后只解码保留曲线；新模型枚举 `N(N−1)`，先解码全部候选供几何读取，再以最终概率筛选导出。新模型只平均 `ij/ji` 的 logits，不平均曲线几何或 edge feature。
+2. `GeometryRead` 对每张预测 `16×16` 面网格建立 450 个三角片。最近点投影是对这个分片平面网格的几何计算，不是 attention，也不是对未知光滑 CAD 曲面的精确投影或求交。
+3. 最近三角片的离散索引在 `torch.no_grad()` 中选择。随后从仍连接计算图的面坐标取出所选三角片，并重新计算投影。因此梯度能传到曲线点和所选面顶点，但不对三角片索引切换本身求导。没有将整条几何读取通路 detach。
+4. 曲线点的 17 维观察经过逐点 MLP，再沿 16 点 mean / max pooling 成一个候选级几何向量。投影坐标被用于读取信息，不直接替换预测曲线坐标。refiner 预测的是特征残差 `ΔF/ΔE`，随后由共享几何头生成坐标。
+5. conditioning 只在最终 refined 曲线头启用；coarse 阶段与 encoder-edge teacher 走原几何头。它在最终 `Conv1d(96,6,1)` 和 `Linear(768,4)` **之前**做通道 scale / shift，不是最后 XYZ 的逐点坐标残差。
+6. 一个 `ResBlockXD` 内为两层 Linear / Conv，各接 LayerNorm，带 ReLU 与 residual；改变通道数时另有投影 shortcut。图中 CNN 相邻分辨率之间由 kernel/stride 为 2 的转置卷积上采样；每个分辨率阶段一个 ResBlock。bbox 为 7 个 ResBlock，主宽 768。
+7. 输出保留既有有向曲线合同。显式 vertex、wire、coedge next/prev 等结构没有作为新增输出。图中的“拓扑相关”作用来自面对候选、预测概率和沿候选的特征汇聚，不能描述成已构造完整 B-Rep 拓扑。
+
+## 结果解释边界
+
+原始 AE、refinement、conditioning 的训练预算并不相等；conditioning 在 refinement 最佳权重之上又微调了 57,354 步。此图展示已评估模型之间的结构差异，不能把 checkpoint 净收益全部归因为某一个 MLP。此前 conditioning 单独比较的合法 solid 为 2113→2111，面几何与部分后处理几何有改善；该历史运行不是本轮统一输入均值的重算，数字不混入当前结果表。本轮整体消融的结果另见主报告，不提前假定每一项都会提高合法率。
+
+图像经实际渲染、字体检查与可视检查；PNG 为 4320×4500，SVG 的字体转为路径，便于周报缩放与跨机器查看。
