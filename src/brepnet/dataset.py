@@ -27,6 +27,7 @@ from PIL import Image
 
 from src.brepnet.data.rotations import NUM_CUBE24_VIEWS, cube24_rotation_matrix
 from src.brepnet.data.shared_boundaries import build_shared_boundary_targets, validate_legacy_geometry
+from src.brepnet.diffusion.image_loading import load_image_view
 
 
 def normalize_coord1112(v_points):
@@ -611,6 +612,8 @@ class Diffusion_dataset(torch.utils.data.Dataset):
         self.is_aug             = self.conf["is_aug"]           # Whether to apply rotation augmentation
         self.cached_condition   = self.conf["cached_condition"] # Whether to use cached condition features
         self.real_photo_ratio   = self.conf["real_photo_ratio"] # Ratio of real photo to use for conditioning
+        self.read_single_image_view = bool(self.conf.get("read_single_image_view", False))
+        self.return_original_images = bool(self.conf.get("return_original_images", True))
         
         if training_mode == "validation":
             self.is_aug = False
@@ -675,11 +678,13 @@ class Diffusion_dataset(torch.utils.data.Dataset):
         return torch.from_numpy(points).float()[None,]
 
     def _load_imgs(self, folder_path, rotation_id):
-        occ_imgs = np.load(self.condition_data_root / folder_path / "imgs.npz")
-        if self.condition_name == "single_img":
-            imgs = occ_imgs["svr_imgs"][rotation_id]
-        else:
-            imgs = occ_imgs["sketch_imgs"][rotation_id]
+        image_key = "svr_imgs" if self.condition_name == "single_img" else "sketch_imgs"
+        imgs = load_image_view(
+            self.condition_data_root / folder_path / "imgs.npz",
+            image_key,
+            rotation_id,
+            read_single_view=self.read_single_image_view,
+        )
         img_id = np.array([0], dtype=np.int64)
 
         if self.real_photo_ratio > 0:
@@ -759,11 +764,12 @@ class Diffusion_dataset(torch.utils.data.Dataset):
             }
         elif self.condition_name == "single_img" or self.condition_name == "sketch":
             imgs, img_id = self._load_imgs(model_id, rotation_id)
-            condition = {
-                "ori_imgs" : torch.from_numpy(imgs),
+            # 训练可省略未消费的原图，减少 worker IPC、pin memory 与 H2D。
+            condition = {"ori_imgs": torch.from_numpy(imgs)} if self.return_original_images else {}
+            condition.update({
                 "imgs" : self.img_transform(imgs),
                 "img_id" : torch.from_numpy(img_id)
-            }
+            })
         else:
             raise NotImplementedError(f"Invalid condition name: {self.condition_name}")
 

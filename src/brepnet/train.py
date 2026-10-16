@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import importlib
 import logging
+import os
 import warnings
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -40,6 +41,7 @@ from pytorch_lightning.callbacks import (
     ModelSummary,
 )
 from pytorch_lightning.loggers import TensorBoardLogger, WandbLogger
+from pytorch_lightning.strategies import DDPStrategy
 
 from src.brepnet.models import build_model
 from src.brepnet.prediction_export import save_item_predictions, vae_prediction_items
@@ -62,6 +64,28 @@ warnings.filterwarnings(
 # ---------------------------------------------------------------------------
 # Utilities
 # ---------------------------------------------------------------------------
+
+def _configure_num_threads(cfg: DictConfig) -> None:
+    """Apply an explicit CPU thread budget to each training process."""
+    num_threads = cfg.trainer.get("num_threads")
+    if num_threads is None:
+        return
+    if isinstance(num_threads, bool) or not isinstance(num_threads, int) or num_threads < 1:
+        raise ValueError("trainer.num_threads must be a positive integer or null.")
+    # Lightning's DDP launcher otherwise replaces the parent process's budget.
+    os.environ["OMP_NUM_THREADS"] = str(num_threads)
+    torch.set_num_threads(num_threads)
+
+
+def _build_strategy(cfg: DictConfig) -> DDPStrategy | str:
+    """Share the configured DDP behavior between training and benchmarks."""
+    if cfg.trainer.devices <= 1:
+        return "auto"
+    return DDPStrategy(
+        find_unused_parameters=cfg.trainer.get("ddp_find_unused_parameters", True),
+        gradient_as_bucket_view=cfg.trainer.get("ddp_gradient_as_bucket_view", False),
+    )
+
 
 def _validate_evaluation_devices(cfg: DictConfig) -> None:
     """Avoid duplicated distributed test samples writing the same NPZ paths."""
@@ -245,8 +269,8 @@ class UnifiedTrainer(pl.LightningModule):
             num_workers=self.num_workers,
             drop_last=True,
             pin_memory=True,
-            persistent_workers=self.num_workers > 0,
-            prefetch_factor=4 if self.num_workers > 0 else None,
+            persistent_workers=self.num_workers > 0 and self.cfg.trainer.get("persistent_workers", True),
+            prefetch_factor=self.cfg.trainer.get("prefetch_factor", 4) if self.num_workers > 0 else None,
         )
 
     def val_dataloader(self) -> DataLoader:
@@ -258,8 +282,8 @@ class UnifiedTrainer(pl.LightningModule):
             collate_fn=self.dataset_cls.collate_fn,
             num_workers=self.num_workers,
             pin_memory=True,
-            persistent_workers=self.num_workers > 0,
-            prefetch_factor=4 if self.num_workers > 0 else None,
+            persistent_workers=self.num_workers > 0 and self.cfg.trainer.get("persistent_workers", True),
+            prefetch_factor=self.cfg.trainer.get("prefetch_factor", 4) if self.num_workers > 0 else None,
         )
 
     def test_dataloader(self) -> DataLoader:
@@ -306,12 +330,31 @@ class UnifiedTrainer(pl.LightningModule):
                     sync_dist=True, batch_size=len(batch["v_prefix"]),
                 )
 
-        self.log(
-            "train/loss", total_loss,
-            prog_bar=True, logger=True,
-            on_step=True, on_epoch=True,
-            sync_dist=True, batch_size=len(batch["v_prefix"]),
-        )
+        if self.cfg.trainer.get("sync_train_step_loss", True):
+            self.log(
+                "train/loss", total_loss,
+                prog_bar=True, logger=True,
+                on_step=True, on_epoch=True,
+                sync_dist=True, batch_size=len(batch["v_prefix"]),
+            )
+        else:
+            # Keep the full, globally averaged epoch loss for comparisons.
+            self.log(
+                "train/loss_epoch", total_loss,
+                prog_bar=False, logger=True,
+                on_step=False, on_epoch=True,
+                sync_dist=True, batch_size=len(batch["v_prefix"]),
+            )
+            log_interval = self.cfg.trainer.log_every_n_steps
+            if self.global_rank == 0 and log_interval > 0 and (self.global_step + 1) % log_interval == 0:
+                # Local step diagnostics avoid both all-reduce and per-batch .item().
+                self.log(
+                    "train/loss_step_local", total_loss,
+                    prog_bar=False, logger=True,
+                    on_step=True, on_epoch=False,
+                    sync_dist=False, rank_zero_only=True,
+                    batch_size=len(batch["v_prefix"]),
+                )
         return total_loss
 
     # ------------------------------------------------------------------
@@ -346,6 +389,8 @@ class UnifiedTrainer(pl.LightningModule):
             batch_idx == 0
             and self.global_rank == 0
             and self.stage == "diffusion"
+            and self.cfg.trainer.get("diffusion_validation_inference", False)
+            and not self.trainer.sanity_checking
         ):
             self._diffusion_viz(batch)
 
@@ -460,6 +505,7 @@ class UnifiedTrainer(pl.LightningModule):
 @hydra.main(version_base="1.3", config_path="../../configs", config_name="train")
 def main(cfg: DictConfig):
     """Unified training entry point for HoLa-BRep."""
+    _configure_num_threads(cfg)
     _validate_evaluation_devices(cfg)
     logger.info(
         "Device setup: devices=%s, batch_size_per_device=%s, global_train_batch_size=%s "
@@ -532,13 +578,11 @@ def main(cfg: DictConfig):
     ]
 
     # --- Trainer ---
-    strategy = "ddp_find_unused_parameters_true" if cfg.trainer.devices > 1 else "auto"
-
     trainer = Trainer(
         default_root_dir=log_dir,
         logger=pl_logger,
         accelerator=cfg.trainer.accelerator,
-        strategy=strategy,
+        strategy=_build_strategy(cfg),
         devices=cfg.trainer.devices,
         callbacks=callbacks,
         max_epochs=cfg.trainer.max_epochs,

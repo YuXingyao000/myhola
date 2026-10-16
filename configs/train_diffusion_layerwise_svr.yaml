@@ -5,7 +5,20 @@ defaults:
 
 trainer:
   exp_name: diffusion_layerwise_svr
+  # 每张卡一个训练进程；限制 CPU 线程，避免与数据 workers 争抢。
+  num_threads: 4
+  num_workers: 4
+  prefetch_factor: 4
+  persistent_workers: true
+  # 当前单图/随机 padding/无 topology 路径的可训练参数均参与 forward。
+  ddp_find_unused_parameters: false
+  ddp_gradient_as_bucket_view: true
+  sync_train_step_loss: false
+  diffusion_validation_inference: false
 
 dataset:
   real_photo_ratio: 0.0
   validation_real_photo_ratio: 0.0
+  # 当前视角为 0：仅解压所需图片；不传输训练未使用的原始 RGB。
+  read_single_image_view: true
+  return_original_images: false

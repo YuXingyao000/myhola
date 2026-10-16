@@ -18,6 +18,9 @@ num_points: 10000
 epoch_scale_factor: 200
 real_photo_ratio: 1.0
 validation_real_photo_ratio: 0.0
+# Optional exact first-view read; legacy consumers may still need ori_imgs.
+read_single_image_view: false
+return_original_images: true
 augmentation:
   enabled: true
   random_rotate: true

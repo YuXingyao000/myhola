@@ -50,6 +50,7 @@
 
 当前配置为 `model.denoiser.conditioning=layerwise_cross_attention`，条件维度直接来自 `condition.output_dim`。
 当前先用 `train_diffusion_layerwise_svr.yaml`：训练/验证 photo ratio 均为 0，只读 `imgs.npz["svr_imgs"]`，不要求或读取 `real_photo.npz`；保持 `is_aug=false` 的视角 0 与对应 cache。`train_diffusion_layerwise_real.yaml` 保留生成图条件入口；`baseline` 文件名不保证旧模型。
+SVR 吞吐配置与本机验证见 [说明](../../checkpoints/diffusion/throughput/README.md)：首视图局部解压、省略未使用原图、每进程 CPU 线程4、DDP unused 检测关闭；逐步日志为 rank-0 local loss，全局 epoch/validation loss 仍聚合。`trainer.diffusion_validation_inference` 默认关闭且永远跳过 sanity；正常 validation/选模不变。显式暂存工具仅复制 train/validation 的灰模图与 rotation-0 latent，切换 photo/augmentation/test 前必须更换数据根目录。
 旧 `condition_fuser` 配置显式报错。历史 baseline tag `archive/2026-10-16/codex/diffusion-modular-baseline`（`b67c5d8e`）保留旧实现；旧 checkpoint 不能直接用于本架构 resume，不能用 `strict=False` 跳过新增层或旧 fuser 权重。
 `load_diffusion_state_dict` 只允许省略独立 VAE 权重，严格检查其余参数；不会用 diffusion checkpoint 内的 AE 覆盖单独加载的 AE。
 `checkpoints/diffusion/VALIDATION.json` 是旧模块拆分的等价性报告，不是新架构的验证或效果报告；新接口验证见同目录 `LAYERWISE_VALIDATION.json`。

@@ -3,6 +3,7 @@ defaults:
   - dataset: diffusion
   - model: diffusion
   - condition: single_img
+  - _self_
 
 trainer:
   batch_size: 64

@@ -205,3 +205,6 @@ env.txt
 /checkpoints/postprocess_refinement/**/validation/legacy_replay/
 /checkpoints/postprocess_refinement/**/report/cases.csv
 /checkpoints/postprocess_refinement/validation/policy_smoke*/*/
+
+# Raw multi-rank timing traces; keep the compact throughput report instead.
+/checkpoints/diffusion/performance/

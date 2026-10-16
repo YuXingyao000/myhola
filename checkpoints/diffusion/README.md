@@ -14,6 +14,7 @@ src/brepnet/diffusion/
 ├── model.py             # 装配、训练 forward、VAE 接口、严格权重加载
 ├── conditioning.py      # 条件工厂与编码路由
 ├── image_encoder.py     # 冻结 DINOv2 / Depth Anything ViT + 可训练投影
+├── image_loading.py     # NPZ 首视图精确读取；保持原图像预处理
 ├── fusion.py            # 单层 pre-LN image cross-attention + residual
 ├── denoiser.py          # 输入/时间投影、24 组 encoder + cross、最终 LN/输出
 ├── topology.py          # 可选 oracle / learned self-attention mask 或 bias
@@ -97,6 +98,10 @@ Depth Anything 选项仍只读取 ViT 特征，不产生深度预测或深度监
 ## 训练入口
 
 当前先用灰模训练，入口为 `configs/train_diffusion_layerwise_svr.yaml`，实验名为 `diffusion_layerwise_svr`。
+该入口已加入数据读取与 Lightning/DDP 吞吐优化；实测、暂存工具和本机命令见 [吞吐说明](throughput/README.md)。
+当前每卡 B64、4 workers/4 预取、CPU 线程4；仅此入口关闭 DDP unused-parameter 搜索与逐步全局 loss 同步。
+全局 epoch/validation loss 保留，逐步日志为 rank-0 的 `train/loss_step_local`。
+完整 DDPM 验证可视化改为显式 `trainer.diffusion_validation_inference=true`，sanity validation 始终跳过采样。
 它继承逐层条件配置，将 `dataset.real_photo_ratio` 与 `dataset.validation_real_photo_ratio` 都设为 `0.0`；
 训练、验证及后续测试只读取 `imgs.npz["svr_imgs"]`，不要求或读取 `real_photo.npz`。
 `condition.type=single_img`、`cached_features=false`、`is_overfit=false`、`is_aug=false` 沿用现有协议：

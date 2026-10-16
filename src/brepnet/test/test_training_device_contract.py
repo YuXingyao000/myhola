@@ -51,7 +51,11 @@ class _TinyDataset(Dataset):
 @pytest.mark.parametrize("method", ["train_dataloader", "val_dataloader"])
 def test_loaders_allow_lightning_to_install_rank_aware_worker_seeding(method, monkeypatch):
     module = SimpleNamespace(
-        dataset_cls=_TinyDataset, cfg=OmegaConf.create({"dataset": {}}),
+        dataset_cls=_TinyDataset,
+        cfg=OmegaConf.create({
+            "dataset": {},
+            "trainer": {"prefetch_factor": 4, "persistent_workers": True},
+        }),
         batch_size=4, num_workers=2,
     )
     loader = getattr(UnifiedTrainer, method)(module)
