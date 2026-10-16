@@ -96,17 +96,27 @@ Depth Anything 选项仍只读取 ViT 特征，不产生深度预测或深度监
 
 ## 训练入口
 
-当前入口为 `configs/train_diffusion_layerwise_real.yaml`，继承 `train_diffusion_baseline_real` 的数据协议和预算，
-只将 `trainer.exp_name` 设为 `diffusion_layerwise_real`，避免新 run 被命名成历史 baseline。
+当前先用灰模训练，入口为 `configs/train_diffusion_layerwise_svr.yaml`，实验名为 `diffusion_layerwise_svr`。
+它继承逐层条件配置，将 `dataset.real_photo_ratio` 与 `dataset.validation_real_photo_ratio` 都设为 `0.0`；
+训练、验证及后续测试只读取 `imgs.npz["svr_imgs"]`，不要求或读取 `real_photo.npz`。
+`condition.type=single_img`、`cached_features=false`、`is_overfit=false`、`is_aug=false` 沿用现有协议：
+图像使用视角 0，latent 对应 `{model_id}_0/features.npy`，VAE/cache 和模型架构不变。
+去掉照片文件要求后，可用对象数可能增加；实际过滤数量由 loader 与运行记录确认。
+本次 loader 检查接受训练 46,627 个 CAD、验证 3,505 个 CAD；各取一个实际样本，
+确认原图与 `svr_imgs[0]` 一致且照片加载函数从未调用，详见 [SVR_CONFIG_VALIDATION.json](SVR_CONFIG_VALIDATION.json)。未启动训练。
+
+`train_diffusion_layerwise_real.yaml` 保留为生成图条件入口，继承 `train_diffusion_baseline_real` 的数据协议和预算，
+实验名为 `diffusion_layerwise_real`。
 原配置文件名含 `baseline` 不代表它固定了旧架构；本分支的共享 `model/diffusion.yaml` 已是逐层条件模型。
 
 正式运行需明确设备数、每卡 batch、seed、数据/split、AE/cache 来源与训练预算。以下命令是待填环境变量的模板，本次未执行：
 
 ```bash
-python -m src.brepnet.train --config-name train_diffusion_layerwise_real \
+python -m src.brepnet.train --config-name train_diffusion_layerwise_svr \
   trainer.devices="${DIFFUSION_DEVICES:?}" \
   trainer.batch_size="${DIFFUSION_BATCH_SIZE:?}" \
   trainer.seed="${DIFFUSION_SEED:?}" \
+  trainer.max_steps="${DIFFUSION_MAX_STEPS:?}" \
   dataset.raw_data_root="${CAD_ROOT:?}" \
   dataset.cached_latent_root="${LATENT_CACHE_ROOT:?}" \
   dataset.condition_data_root="${CONDITION_ROOT:?}" \

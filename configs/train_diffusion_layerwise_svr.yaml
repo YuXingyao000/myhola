@@ -1,0 +1,11 @@
+# 灰模单图训练：只读 imgs.npz 的 svr_imgs，不要求或读取 real_photo.npz。
+defaults:
+  - train_diffusion_layerwise_real
+  - _self_
+
+trainer:
+  exp_name: diffusion_layerwise_svr
+
+dataset:
+  real_photo_ratio: 0.0
+  validation_real_photo_ratio: 0.0

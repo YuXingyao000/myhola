@@ -24,7 +24,7 @@
 6. 移除旧前端 fuser、alignment heads/loss 和未用 camera 参数。首个 image query 因主干入口加 t 而含时间信息，不新增逐层 t 或 adaLN。
 7. 更新单图推理配置和 `[B,3,224,224]` 输入合同；checkpoint 严格加载，独立 VAE 不被 diffusion 权重覆盖。
 8. 保留其他条件与可选 topology 接口，但本轮研究和实质验证只对单图路线负责；不借接口存在宣称完成其他模态验证。
-9. 新训练入口 `train_diffusion_layerwise_real.yaml` 继承已有 real 配置与预算，仅设置独立的 `diffusion_layerwise_real` 实验名；未启动训练。
+9. 逐层条件入口 `train_diffusion_layerwise_real.yaml` 保留。2026-10-16 用户改为先用灰模：新增 `train_diffusion_layerwise_svr.yaml`，训练/验证的照片混合比例均为 0，只读 `imgs.npz["svr_imgs"]`，实验名 `diffusion_layerwise_svr`；未启动训练。
 
 层次、张量形状、参数加载协议与模块入口见 [README.md](README.md)。
 神经网络讨论继续使用标准层/张量/残差图，不使用 Mermaid；理论解释和后续结构提案优先配图。
@@ -40,6 +40,10 @@
 正式研究训练前明确指定冻结 AE checkpoint、数据/split、seed、预算和输出 run；本次不启动训练。
 
 ## 后续判断方案：尚未运行
+
+当前阶段使用灰模条件，不使用之前的 FLUX 生成图。沿用视角 0、原 split、VAE/cache 与模型设置；
+双 photo ratio 为 0 时不再按 `real_photo.npz` 存在性过滤，因此后续 A/B 必须固定同一批实际可用 CAD 清单。
+灰模训练先验证几何条件建模，真实照片泛化仍需后续独立评估。
 
 第一轮比较控制数据/split、AE/cache、DDPM 设置和训练预算：
 

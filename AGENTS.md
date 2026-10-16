@@ -87,7 +87,7 @@ Diffusion 新代码从 `src/brepnet/diffusion/` 导入；保留的旧路径导�
 
 环境定义为 `environment.yml`，常规安装为 `conda env create -f environment.yml`、`conda activate hola-brep`、`pip install -e .`。先检查现有环境，不因阅读或文档任务自动重装。
 
-训练使用 `python -m src.brepnet.train --config-name <config>`。当前逐层条件训练入口为 `configs/train_diffusion_layerwise_real.yaml`，继承 `train_diffusion_baseline_real.yaml` 的数据协议与预算，只设置独立实验名；正式运行显式设置数据/split、设备数、每卡 batch、seed 与 AE checkpoint。配置名含 `baseline` 不保证仍是旧架构，旧模型要回 baseline 分支复现。不要把 `train_diffusion_real.yaml` 名字当作协议保证：它继承的 overfit / validation 条件有陷阱，详见源码指南。VAE loader 已接受规范字段及显式旧别名，冲突值必须报错；仍需核对实际数据。新联合边界 decoder 的命令与迁移协议见 [README](checkpoints/joint_boundary/README.md)。
+训练使用 `python -m src.brepnet.train --config-name <config>`。当前先用灰模的逐层条件训练入口为 `configs/train_diffusion_layerwise_svr.yaml`，训练/验证 photo ratio 均为 0，仅读取 `imgs.npz["svr_imgs"]`，不要求或读取 `real_photo.npz`；保留原 `is_aug=false` 视角 0、VAE/cache 和 split。`train_diffusion_layerwise_real.yaml` 保留为生成图条件入口；正式运行显式设置数据/split、设备数、每卡 batch、seed 与 AE checkpoint。配置名含 `baseline` 不保证仍是旧架构，旧模型要回 baseline 分支复现。不要把 `train_diffusion_real.yaml` 名字当作协议保证：它继承的 overfit / validation 条件有陷阱，详见源码指南。VAE loader 已接受规范字段及显式旧别名，冲突值必须报错；仍需核对实际数据。新联合边界 decoder 的命令与迁移协议见 [README](checkpoints/joint_boundary/README.md)。
 
 保持既有模块职责；有理由改变边界时说明迁移。用 Python 3.10+、四空格、snake_case、显式配置与适当类型注解。不要把研究行为藏在路径猜测、checkpoint 名称或静默 fallback 中。
 
