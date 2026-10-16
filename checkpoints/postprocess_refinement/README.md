@@ -10,6 +10,8 @@
 
 随后完成[原始 VAE × 两项模型改进 × 后处理的 2×2 对照](ablation_20261016/REPORT.md)。两项模型改进按用户要求合并为 refinement＋最终曲线 face-pair conditioning；它与上文仅 refinement 的权重分开。统一输入均值后，原模型＋原后处理到改后模型＋新后处理，validation 从2994/3495（85.67%）到3151/3495（90.16%），test 从2052/2417（84.90%）到2161/2417（89.41%）。只换模型、保留原后处理，分别为3066和2114；在改后模型上再换后处理，分别救回85和47件、零旧成功退步。整套组合仍分别有38和21件退步，不能将后处理单独的零退步推广到全部改动。完整四格、原始分母、几何误差与成本见报告，附[改进前后内部 block 图](ablation_20261016/architecture.png)与[合法率图](ablation_20261016/report/native_validity.png)。这是现有训练权重的系统对照，未补做等预算训练的单模块因果消融。
 
+用于周报的架构说明另提供[四张简图与下载入口](ablation_20261016/architecture_notes.md)：改进动机、原始结构、新增结构、机制与证据；另附[四页 PDF](ablation_20261016/story_figures/intersection_story.pdf)。
+
 ![后处理问题总览](validation_20261016/report/pipeline.png)
 
 ## 当前能确认的问题

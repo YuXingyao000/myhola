@@ -33,9 +33,11 @@
 
 ## 2. 模型内部具体增加在哪里
 
-![原始与改后 decoder 的 block、维度及数据流](/mnt/d/python_curve_eval/checkpoints/postprocess_refinement/ablation_20261016/architecture.png)
+![保留原网络，增加一次几何反馈与最终曲线条件调制](/mnt/d/python_curve_eval/checkpoints/postprocess_refinement/ablation_20261016/story_figures/03_additions.png)
 
-[查看可缩放 SVG](/mnt/d/python_curve_eval/checkpoints/postprocess_refinement/ablation_20261016/architecture.svg)。图中保留原 face transformer、intersection、几何头与分类器，并展开两个新增模块内部的数据流。
+周报版已拆成四张简图：[改进动机](story_figures/01_motivation.png)、[原始结构](story_figures/02_original.png)、[新增结构](story_figures/03_additions.png)、[机制与证据](story_figures/04_mechanism.png)。[下载四页 PDF](story_figures/intersection_story.pdf)；SVG 与读图说明见 [architecture_notes.md](architecture_notes.md)。
+
+需要核对维度、层数和内部算子时，仍可查看[完整 block 图](architecture.png)或[完整 SVG](architecture.svg)。图中保留原 face transformer、intersection、几何头与分类器，并展开两个新增模块内部的数据流。
 
 **第一项是让网络看到自己预测出来的几何，再修正一次特征。** 原 intersection 仍先从 face pair 得到边特征，原几何头先产生面与边。refiner 将预测面的 16×16 网格拆成三角片，把预测边的采样点投到两个所属面上，读取最近点、偏移和距离。它把这些量编码为消息，再给面特征、边特征各加一个增量，最后复用原几何头重新解码。这里的投影提供反馈，没有直接用投影点替换最终边。源码见 [IntersectionRefiner](/mnt/d/python_curve_eval/src/brepnet/models/blocks.py:969)。
 

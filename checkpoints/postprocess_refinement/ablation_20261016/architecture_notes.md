@@ -2,6 +2,23 @@
 
 本图把已保留的单轮 refinement 与最终曲线头 conditioning 视为一个整体。图中的改进模型不包含局部面注意力实验、逐点坐标反馈或 encoder 的 edge-value GAT。
 
+## 周报用四张简图
+
+按用户反馈，将总图拆成四张 16:9 图，只保留改进思路与主要数据流。层数、维度和内部算子留在下方详细图中。每张图均提供 PNG / SVG，另有[四页 PDF](story_figures/intersection_story.pdf)。
+
+| 图 | 要说明的问题 | 下载 |
+|---|---|---|
+| 1. 改进动机 | 边面不贴合是高频失败现象；沿着边的生成路径，找到 intersection 及后续解码作为改进入口。 | [PNG](story_figures/01_motivation.png) / [SVG](story_figures/01_motivation.svg) |
+| 2. 原始结构 | 两个面特征经过成对注意力得到边特征；classifier 判断存在性，曲线 decoder 生成几何。 | [PNG](story_figures/02_original.png) / [SVG](story_figures/02_original.svg) |
+| 3. 新增结构 | 保留原结构，加一轮面边几何反馈，并在最终曲线头注入两所属面特征。 | [PNG](story_figures/03_additions.png) / [SVG](story_figures/03_additions.svg) |
+| 4. 机制与证据 | 读取几何偏差，再带着所属面信息解码；附原后处理下模型整体的合法率对照。 | [PNG](story_figures/04_mechanism.png) / [SVG](story_figures/04_mechanism.svg) |
+
+图 1 / 4 的面与边是绘制的机制示意，不是真实失败样本或实测位移。投影读出偏差，最终坐标仍由网络解码；并不直接用投影点替换曲线。历史失败观察只作为研究动机，不证明 intersection 是唯一根因；历史统计协议与本轮分开，见[原模型历史失败统计](../../joint_boundary/legacy_failure_census_20261011/REPORT.md)。简图没有新增实验，也不拆分两项模型改进的独立收益。
+
+生成入口：[render_story_figures.py](render_story_figures.py)。PNG 为 2560×1440；SVG 字体转路径，PDF 嵌入字体。图像已渲染并逐张检查。
+
+## 完整 block 图
+
 ![结构对照](architecture.png)
 
 [PNG 原图](architecture.png) · [可缩放 SVG](architecture.svg) · [生成脚本](render_architecture.py)
