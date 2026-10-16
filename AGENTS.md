@@ -48,7 +48,7 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 
 当前单图路径：图片 → 冻结 DINOv2 的 CLS / patch tokens → 可训练图像投影；带时间嵌入的 noisy face latent → 24×（完整 TransformerEncoderLayer → 独立 image cross-attention residual）→ DDPM → 冻结 VAE → OCC 后处理。默认每面 32 维、最多 30 个 token、random duplicate padding。前端 4 层 fuser 与 alignment 已移除；这是当前实现，不是未来架构要求，也不代表已训练或已提升重建质量。
 
-Diffusion 新代码从 `src/brepnet/diffusion/` 导入；保留的旧路径导出不保证旧架构配置兼容。旧模块化 baseline 位于 `codex/diffusion-modular-baseline`（`b67c5d8e`）；当前 `codex/diffusion-layerwise-conditioning` 显式拒绝 `condition_fuser` 配置，旧 diffusion checkpoint 不可直接 resume 或宽松加载。当前结构、加载协议及历史验证边界见 [说明](checkpoints/diffusion/README.md)。本主题讨论神经网络架构时优先可视化每层、数据流、张量形状及输入输出，不使用 Mermaid 画神经网络。
+Diffusion 新代码从 `src/brepnet/diffusion/` 导入；保留的旧路径导出不保证旧架构配置兼容。旧模块化 baseline 位于归档 tag `archive/2026-10-16/codex/diffusion-modular-baseline`（`b67c5d8e`）；逐层条件实现已合入 `main`，显式拒绝 `condition_fuser` 配置，旧 diffusion checkpoint 不可直接 resume 或宽松加载。当前结构、加载协议及历史验证边界见 [说明](checkpoints/diffusion/README.md)，分支归档与恢复见 [Git 整理记录](checkpoints/repository_maintenance/20261016/README.md)。本主题讨论神经网络架构时优先可视化每层、数据流、张量形状及输入输出，不使用 Mermaid 画神经网络。
 
 细节见 [源码指南](src/brepnet/AGENTS.md)、[数据指南](src/brepnet/data/AGENTS.md)、[评估指南](src/brepnet/eval/AGENTS.md)。
 

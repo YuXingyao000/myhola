@@ -31,19 +31,19 @@
 
 ## 历史 baseline 与迁移边界
 
-2026-10-16 的行为保持模块拆分已保存到 `codex/diffusion-modular-baseline`，commit `b67c5d8e`。
+2026-10-16 的行为保持模块拆分已保存到归档 tag `archive/2026-10-16/codex/diffusion-modular-baseline`，commit `b67c5d8e`。
 当时从 `models/` 迁到 `diffusion/`，保留原模块属性树与数值语义；对应报告 [VALIDATION.json](VALIDATION.json) 保持原样。
-当前分支为 `codex/diffusion-layerwise-conditioning`，不再承诺与旧架构 state_dict 等价。
+逐层条件实现原位于 `codex/diffusion-layerwise-conditioning`，现已合入 `main`；不再承诺与旧架构 state_dict 等价。
 
 旧 `condition_fuser` 配置显式报错，旧 diffusion checkpoint 不能直接 resume，也不能用 `strict=False` 忽略差异。
-本轮没有自动旧权重迁移协议；复现旧模型使用 baseline 分支。VAE/cache 可以复用，但仍须确认实际来源同一。
+本轮没有自动旧权重迁移协议；复现旧模型使用上述 baseline tag。VAE/cache 可以复用，但仍须确认实际来源同一。
 正式研究训练前明确指定冻结 AE checkpoint、数据/split、seed、预算和输出 run；本次不启动训练。
 
 ## 后续判断方案：尚未运行
 
 第一轮比较控制数据/split、AE/cache、DDPM 设置和训练预算：
 
-- A：baseline 分支的前端 4 层 fuser + 24 层主干，将 alignment 关闭。
+- A：baseline tag 的前端 4 层 fuser + 24 层主干，将 alignment 关闭。
 - B：当前逐层 cross-attention，alignment 已从实现移除。
 
 先比较两种完整路线，而非把新路线称为参数量或算力严格匹配的单因素消融。
@@ -63,5 +63,5 @@
 参考与证据：
 
 - 当前源码：`src/brepnet/diffusion/`；配置：`configs/model/diffusion.yaml`、`configs/condition/single_img.yaml`。
-- 历史 baseline：`codex/diffusion-modular-baseline` / `b67c5d8e`，旧模块迁移报告 `VALIDATION.json`。
+- 历史 baseline：`archive/2026-10-16/codex/diffusion-modular-baseline` / `b67c5d8e`，旧模块迁移报告 `VALIDATION.json`。
 - [HoLa: B-Rep Generation using a Holistic Latent Representation](https://arxiv.org/abs/2504.14257)：表示的来源；本轮逐层条件路由属于仓库改动，不归为原论文架构或已证明的新贡献。

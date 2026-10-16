@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-16",
+  "timezone": "Asia/Shanghai",
+  "scope": "Git integration validation; no training, full dataset evaluation, Blender rendering or model generation.",
+  "source_merge_commit": "ad81cf20e2f51071be76a9aaef6f29b245d1d4cd",
+  "workspace_snapshot_commit": "2f2ed73e92df4b2c73ec88cd2255b5d6a762531b",
+  "pytest": {
+    "tests": 202,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "passed": 201,
+    "seconds": 23.08,
+    "test_modules": [
+      "src.brepnet.test.test_diffusion_conditioning",
+      "src.brepnet.test.test_diffusion_refactor",
+      "src.brepnet.test.test_encoder_edge_value",
+      "src.brepnet.test.test_encoder_edge_value_resume",
+      "src.brepnet.test.test_intersection_vae",
+      "src.brepnet.test.test_joint_decoder",
+      "src.brepnet.test.test_local_intersection",
+      "src.brepnet.test.test_local_intersection_migration",
+      "src.brepnet.test.test_occ_fit.OccFittingTests",
+      "src.brepnet.test.test_post_policies.PostPolicyTests",
+      "src.brepnet.test.test_postprocess_validation_report.PostprocessReportTests",
+      "src.brepnet.test.test_training_device_contract",
+      "src.brepnet.test.test_vae_compare_inference",
+      "src.brepnet.test.test_vae_compare_post.VaeComparePostTests"
+    ],
+    "skip_reason": "Optional real latent cache test: HOLABREP_DIFFUSION_CACHE_SAMPLE not set."
+  },
+  "workflow_control": {
+    "scope": "Workflow control and evidence checks using fixtures; no Codex or Blender calls.",
+    "tests": 24,
+    "passed": 24,
+    "failed": 0,
+    "pass": true
+  },
+  "transport_contract": {
+    "tests": 13,
+    "passed": 13,
+    "results": [
+      "new: pass",
+      "resume: pass",
+      "wrong_id: pass",
+      "exit_error: pass",
+      "launch_error: pass",
+      "missing_reply: pass",
+      "malformed_json: pass",
+      "missing_id: pass",
+      "incomplete: pass",
+      "dry_run: pass",
+      "compatibility_wrapper: pass",
+      "exec_parse: pass (help-only, no model)",
+      "resume_parse: pass (help-only, no model)"
+    ]
+  },
+  "changed_python_ast_checked": 58,
+  "preexisting_workspace_paths_verified": 60,
+  "preexisting_workspace_mismatches_before_documentation_update": 0,
+  "archive_tags_verified": 18,
+  "local_branches_before": 18,
+  "local_branches_after": 2,
+  "existing_stash_entries_preserved": 2,
+  "remote": {
+    "fetch_succeeded": false,
+    "push_performed": false,
+    "reason": "ssh.github.com DNS resolution failed",
+    "cached_origin_main": "27017eb5",
+    "cached_origin_main_is_ancestor": true
+  },
+  "whitespace_check": "Passed with core.whitespace=cr-at-eol; existing CSV CRLF files preserved byte-for-byte.",
+  "concurrent_work_preserved_uncommitted": [
+    "configs/train_diffusion_layerwise_svr.yaml",
+    "checkpoints/diffusion/SVR_CONFIG_VALIDATION.json",
+    "SVR-specific edits in AGENTS.md, src/brepnet/AGENTS.md, checkpoints/diffusion/{README,PLAN}.md"
+  ]
+}

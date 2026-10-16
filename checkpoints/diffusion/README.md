@@ -3,7 +3,7 @@
 2026-10-16：当前实现将前端 4 层 fuser 替换为 24 组「原 EncoderLayer → image cross-attention」，移除 alignment。
 这是架构变更，尚未正式训练或评估重建质量。研究假设与比较范围见 [PLAN.md](PLAN.md)，本轮接口验证见 [LAYERWISE_VALIDATION.json](LAYERWISE_VALIDATION.json)。
 
-旧模块化 baseline 保存在 `codex/diffusion-modular-baseline`，commit `b67c5d8e`。
+逐层条件实现已合入 `main`。旧模块化 baseline 保存在归档 tag `archive/2026-10-16/codex/diffusion-modular-baseline`，commit `b67c5d8e`。
 [VALIDATION.json](VALIDATION.json) 只记录该 baseline 的行为保持拆分验证，不能用作当前架构的兼容性或效果证据。
 
 ## 从哪里阅读
