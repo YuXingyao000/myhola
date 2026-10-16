@@ -197,6 +197,42 @@ def mechanism():
     return fig
 
 
+def conditioning_detail():
+    fig, ax = canvas(5, "新增②：让最终曲线头直接参考两张面", "插入位置：Refinement 之后，曲线几何头的最后输出层之前。")
+    box(ax, .7, 6.2, 5.95, 1.0, "更新后的边特征 E + 两面特征 Fᵢ、Fⱼ", GREEN, GREEN_BG, size=19)
+    box(ax, 7.6, 6.2, 3.6, 1.0, "小 MLP\n产生两组 γ、β", GREEN, GREEN_BG, size=19)
+    arrow(ax, [(6.68, 6.7), (7.56, 6.7)], GREEN)
+    box(ax, .7, 3.3, 1.6, 1.1, "边特征\nE", size=20)
+    box(ax, 3.2, 4.15, 3.5, 1.1, "原曲线 CNN\n形状特征", size=20)
+    box(ax, 3.2, 2.4, 3.5, 1.1, "原 center/scale MLP\n位置、尺度特征", size=17)
+    arrow(ax, [(2.33, 3.85), (2.72, 3.85), (2.72, 4.7), (3.16, 4.7)])
+    arrow(ax, [(2.72, 3.85), (2.72, 2.95), (3.16, 2.95)])
+    box(ax, 7.6, 2.4, 3.6, 2.85, color=GREEN, fill=GREEN_BG)
+    text(ax, 9.4, 4.72, "分别调制两路特征", 18, GREEN, weight="bold")
+    text(ax, 9.4, 3.94, "h′ = (1 + γ) × h + β", 19, GREEN)
+    text(ax, 9.4, 3.05, "形状：一组 γ、β\n位置 / 尺度：另一组", 16)
+    arrow(ax, [(9.4, 6.17), (9.4, 5.29)], GREEN)
+    arrow(ax, [(6.73, 4.7), (7.56, 4.7)])
+    arrow(ax, [(6.73, 2.95), (7.56, 2.95)])
+    box(ax, 12.1, 4.15, 3.2, 1.1, "原最后一层 Conv\n输出局部曲线", size=19)
+    box(ax, 12.1, 2.4, 3.2, 1.1, "原最后一层 Linear\n输出中心和尺度", size=18)
+    arrow(ax, [(11.23, 4.7), (12.06, 4.7)])
+    arrow(ax, [(11.23, 2.95), (12.06, 2.95)])
+    text(ax, 8, 1.66, "最后组合：全局曲线坐标 = 局部坐标 × scale + center", 20)
+    footer(ax, "γ、β 从零开始 → 初始 h′ = h；训练再逐渐学会如何利用两张面的信息。", size=18)
+    return fig
+
+
+def save_conditioning_detail():
+    OUT.mkdir(exist_ok=True)
+    fig = conditioning_detail()
+    fig.savefig(OUT / "05_conditioning_detail.png", dpi=160, facecolor="white")
+    svg = OUT / "05_conditioning_detail.svg"
+    fig.savefig(svg, facecolor="white")
+    svg.write_text("\n".join(line.rstrip() for line in svg.read_text().splitlines()) + "\n")
+    plt.close(fig)
+
+
 def main():
     OUT.mkdir(exist_ok=True)
     entries = [("01_motivation", motivation), ("02_original", original),
@@ -212,6 +248,7 @@ def main():
             plt.close(fig)
             print(OUT / f"{name}.png")
     print(OUT / "intersection_story.pdf")
+    save_conditioning_detail()
 
 
 if __name__ == "__main__":

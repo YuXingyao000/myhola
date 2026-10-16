@@ -17,6 +17,8 @@
 
 生成入口：[render_story_figures.py](render_story_figures.py)。PNG 为 2560×1440；SVG 字体转路径，PDF 嵌入字体。图像已渲染并逐张检查。
 
+补充：[新增②条件调制的插入位置](story_figures/05_conditioning_detail.png) / [SVG](story_figures/05_conditioning_detail.svg)。此图单独展开两路隐层调制，不加入上述四页 PDF。输入为 refinement 后的 E、Fᵢ、Fⱼ；两个零初始化输出头分别产生形状分支和中心／尺度分支的 γ、β，作用于最终输出层之前。只有最终曲线头启用，初稿、面头与 classifier 不经过此模块。
+
 ## 完整 block 图
 
 ![结构对照](architecture.png)
