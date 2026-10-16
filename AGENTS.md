@@ -38,17 +38,18 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 | `src/brepnet/models/joint_vae.py`、`joint_decoder.py`、`joint_losses.py` | 新 shared-boundary VAE 与面／边双向解码；保持旧 encoder 合同，具体实现见 `checkpoints/joint_boundary/PLAN.md` |
 | `src/brepnet/models/intersection_vae.py`、`intersection_decoder.py`、`intersection_refiner.py`、`intersection_losses.py` | 保留旧 HoLa 内核与线性 classifier 的单轮几何反馈实验；显式模块与协议见 `checkpoints/intersection_refinement/README.md` |
 | `src/brepnet/run_management.py`、`prediction_export.py` | 独立 run 目录、配置／Git 溯源、逐对象原始预测导出 |
-| `src/brepnet/models/diffusion.py` | diffusion 装配、损失、采样与 VAE 解码 |
-| `src/brepnet/models/diffusion_latents.py` | cached mean/std 或 VAE 编码 |
-| `src/brepnet/models/diffusion_padding.py` | face token padding、有效面筛选、重复 latent 去除 |
-| `src/brepnet/models/diffusion_condition.py`、`condition_encoders.py` | 条件工厂、图像／点云编码 |
-| `src/brepnet/models/diffusion_denoiser.py` | 图像融合、alignment、denoiser、可选 oracle / learned topology bias |
+| `src/brepnet/diffusion/model.py`、`sampling.py`、`losses.py` | diffusion 装配、训练损失、DDPM 采样与 VAE 接口 |
+| `src/brepnet/diffusion/latents.py`、`padding.py` | cached mean/std 或 VAE 编码，face token 打包、筛选与去重 |
+| `src/brepnet/diffusion/conditioning.py`、`image_encoder.py` | 条件工厂与图像编码；其他条件编码分文件保留 |
+| `src/brepnet/diffusion/denoiser.py`、`fusion.py`、`topology.py` | 去噪主干、图像融合／alignment、可选 oracle / learned topology bias |
 | `src/brepnet/data/datagen/`、`configs/datagen/` | Blender 渲染、FLUX 编辑、打包；存在入口契约漂移，见局部指南 |
 | `src/brepnet/data/rotations.py`、`extract_visibility.py` | cube24 旋转与可见性缓存 |
 | `src/brepnet/eval/run.py`、`eval/metrics/` | 统一评估调度与指标 |
 | `src/brepnet/post/` | 曲面／曲线拟合、裁剪、缝合、STEP 构造与检查 |
 
 典型路径：图片 → 冻结 DINOv2 patch tokens → 前端 cross-attention fuser → face-latent DDPM → 冻结 VAE 的面几何与成对 intersection 解码 → OCC 后处理。默认每面 32 维、最多 30 个 token、random duplicate padding。这是已有实现，不是未来架构要求。
+
+Diffusion 的旧 `models/diffusion*.py` / `condition_encoders.py` 路径仅兼容导出；新代码从 `src/brepnet/diffusion/` 导入。拆分协议与单图架构见 [说明](checkpoints/diffusion/README.md)。本主题讨论神经网络架构时优先可视化每层、数据流、张量形状及输入输出，不使用 Mermaid 画神经网络。
 
 细节见 [源码指南](src/brepnet/AGENTS.md)、[数据指南](src/brepnet/data/AGENTS.md)、[评估指南](src/brepnet/eval/AGENTS.md)。
 

@@ -5,7 +5,10 @@ description: Maintain and extend the modular HoLa-BRep diffusion model without b
 
 # BRepNet Diffusion Model Skill
 
-Use this skill when modifying `src/brepnet/models/diffusion*.py`, changing diffusion configs, adding a new condition modality, changing face padding, or running oracle topology experiments.
+2026-10-16 migration: the implementation now lives in `src/brepnet/diffusion/`.
+The old `models/diffusion*.py` and `models/condition_encoders.py` modules are compatibility re-exports.
+Use [the current implementation map](../../../checkpoints/diffusion/README.md) for paths, shapes, and known limitations;
+the detailed descriptions below retain historical context and are not an active experiment plan.
 
 The diffusion model is intentionally assembled from small modules. Keep the config protocol stable and avoid adding defensive runtime guesses. If a field is required, put it in the relevant config group and make the module read that field directly.
 
@@ -13,12 +16,13 @@ The diffusion model is intentionally assembled from small modules. Keep the conf
 
 Current source files:
 
-- `diffusion.py`: top-level model assembly, training loss, inference loop.
-- `diffusion_latents.py`: chooses cached latents or VAE-encoded latents.
-- `diffusion_padding.py`: packs variable-length face latents into fixed `[B, F, C]` sequences.
-- `diffusion_condition.py`: builds condition encoders from condition config.
-- `diffusion_denoiser.py`: condition fusion, alignment loss, timestep embedding, transformer denoising, oracle topology self-attention mask.
-- `vae.py`: autoencoder used to encode raw B-Rep faces or decode generated face latents.
+- `../diffusion/model.py`: model assembly and training/inference entry points.
+- `../diffusion/latents.py`, `padding.py`: latent source and fixed-slot packing.
+- `../diffusion/conditioning.py`, `image_encoder.py`: condition selection and image encoding.
+- `../diffusion/fusion.py`, `denoiser.py`: condition fusion and denoising backbone.
+- `../diffusion/topology.py`: optional oracle/learned self-attention bias.
+- `../diffusion/losses.py`, `sampling.py`: training objectives and DDPM loop.
+- `vae.py`: external autoencoder used to encode or decode face latents.
 
 High-level assembly:
 
@@ -326,13 +330,13 @@ cached_condition: ${condition.cached_features}
 When adding a new condition modality:
 
 1. Add a condition config under `configs/condition/`.
-2. Extend `build_condition_encoder()` in `diffusion_condition.py`.
+2. Extend `build_condition_encoder()` in `../diffusion/conditioning.py`.
 3. Keep the encoder output shape compatible with `condition_fuser.condition_dim`.
 4. Do not add modality-specific checks inside `Diffusion.forward()`.
 
 When adding a new padding mode:
 
-1. Implement it in `diffusion_padding.py`.
+1. Implement it in `../diffusion/padding.py`.
 2. Make it return a `LatentSequence`.
 3. If topology is enabled, ensure adjacency is remapped with the exact same face order.
 4. Update dataset config defaults only after the data protocol is stable.

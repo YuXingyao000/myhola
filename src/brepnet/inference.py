@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 sys.path.append('../../../')
 from src.brepnet.post.utils import export_edges
-from src.brepnet.models.diffusion import Diffusion
+from src.brepnet.diffusion import Diffusion
 from src.brepnet.post.construct_brep import construct_brep_from_datanpz
 
 import torch

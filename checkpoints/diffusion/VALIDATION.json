@@ -1,0 +1,151 @@
+{
+  "scope": "diffusion 模块整理的接口、数值与梯度回归；不评价重建效果。",
+  "checked_at": "2026-10-16T17:47:18.621201+08:00",
+  "status": "passed",
+  "baseline": {
+    "git_revision": "c6ac62adb8f5702e60af6dc36f0444a78177ec4e",
+    "source_snapshot": "/tmp/hola-diffusion-before",
+    "sources": {
+      "condition_encoders.py": {
+        "sha256": "b0b1d30c13939fa55049c946e3408e3057f5e9461eacd520504cbb26c269214d",
+        "matches_git_revision": true
+      },
+      "diffusion.py": {
+        "sha256": "56ac0a2da8b62fcef72520df48840adc8f9c89dc71a551c384b31f4501ad896a",
+        "matches_git_revision": true
+      },
+      "diffusion_condition.py": {
+        "sha256": "c74c885473e2516e1fb19088eb63e293afc5f9845a6a162bb449f23d9befbdfc",
+        "matches_git_revision": true
+      },
+      "diffusion_denoiser.py": {
+        "sha256": "db2e6243595f5794d7a7f8fb78f28e5b512ae296f7b554df2bd54a27656222f4",
+        "matches_git_revision": true
+      },
+      "diffusion_latents.py": {
+        "sha256": "3616e2821d0c97ccc73b7032ce58e06cf0b4dcd35a4fb06b1fccbf4b0257b2a1",
+        "matches_git_revision": true
+      },
+      "diffusion_padding.py": {
+        "sha256": "dc0739703c59a48af69c0fdb91935f5228d8d1b216d1a16a20adef7b87f4ddb6",
+        "matches_git_revision": true
+      }
+    },
+    "reproduction": "从上述 revision 的 src/brepnet/models/ 提取这六个文件到任意目录，以 HOLABREP_DIFFUSION_REFERENCE_DIR 显式指定；测试不依赖固定 Git revision。",
+    "loader": "旧源码在私有 Python namespace 内动态加载，仅替换这六个模块之间的 import 路径；未把旧网络源码复制到测试目录。"
+  },
+  "environment": {
+    "python_executable": "/mnt/d/anaconda3/envs/torch/bin/python",
+    "python_version": "3.10.13",
+    "torch_version": "2.4.1+cu124",
+    "device": "cpu",
+    "torch_num_threads": 1,
+    "installed_dependencies": false,
+    "downloaded_pretrained_weights": false
+  },
+  "test_run": {
+    "command": "HOLABREP_DIFFUSION_REFERENCE_DIR=/tmp/hola-diffusion-before HOLABREP_DIFFUSION_CACHE_SAMPLE=/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00487421_0/features.npy /mnt/d/anaconda3/envs/torch/bin/python -m pytest -q src/brepnet/test/test_diffusion_refactor.py src/brepnet/test/test_topology_attention_bias.py",
+    "passed": 44,
+    "failed": 0,
+    "skipped": 0,
+    "duration_seconds": 9.72,
+    "warnings": {
+      "count": 33,
+      "meaning": "PyTorch TransformerEncoder 在 norm_first=True 时不使用 nested tensor 优化；无数值失败。"
+    }
+  },
+  "coverage": {
+    "persistent_contract_cases": 10,
+    "real_cache_case": 1,
+    "optional_reference_parity_cases": 28,
+    "existing_topology_cases": 5,
+    "padding": [
+      "random",
+      "zero"
+    ],
+    "prediction_type": [
+      "epsilon",
+      "sample"
+    ],
+    "topology": [
+      "disabled",
+      "oracle_additive",
+      "oracle_log_multiplier",
+      "oracle_hard_mask",
+      "learned_additive",
+      "learned_log_multiplier",
+      "learned_hard_mask"
+    ],
+    "strict_parity": [
+      "state_dict key 顺序、形状及同 seed 初始化张量逐元素相等",
+      "旧→新与新→旧 strict=True 加载均成功",
+      "训练态同 seed forward、diffusion/alignment/validity/total loss 与 t 字段逐元素相等",
+      "所有同名参数的梯度（含 None 状态）逐元素相等",
+      "eval 模式同 seed 的完整四步 DDPM 采样后输入 VAE decoder 的 latent 逐元素相等"
+    ],
+    "rtol": 0,
+    "atol": 0,
+    "other_contracts": [
+      "旧 import 路径和 registry 指向新模块对象",
+      "单图输入→condition 输出形状，冻结图像 backbone 的 eval 状态及无梯度",
+      "cached features 按 mean/std 使用，含 use_mean=False 的显式标准差采样验证",
+      "random padding 保留每对象所有真实面、不会跨对象复制，去重阈值语义与空输入",
+      "zero padding 的 face mask 与尾部零值；uncached 分支的 VAE no_grad 及 pack",
+      "sampler 保留可覆写的 Diffusion.diffuse 调用，每次采样按 scheduler 的四个 timestep 执行"
+    ]
+  },
+  "fixture_protocol": {
+    "batch_size": 2,
+    "latent_dim": 4,
+    "max_faces": 4,
+    "denoiser": {
+      "hidden_dim": 64,
+      "num_layers": 1,
+      "feedforward_dim": 128,
+      "dropout": 0.1
+    },
+    "fuser": {
+      "hidden_dim": 64,
+      "num_layers": 1,
+      "feedforward_dim": 2048,
+      "dropout": 0.1
+    },
+    "alignment_projection_dim": 16,
+    "training_and_sampling_timesteps": 4,
+    "seeds": {
+      "input_batch": 17,
+      "state_initialization": 67,
+      "training_forward_and_backward": 71,
+      "reference_sampling": 73
+    },
+    "image_backbone": "TinyDino: [B,3,8,8]→[B,5,1024]，替代预训练 backbone；真实 DINOv2ImageEncoder projection 与 ConditionExtractor 参与验证。",
+    "autoencoder": "TinyAutoencoder: 冻结 linear 编码；decode_latents 原样记录输入，用于检查采样及筛选/去重的输出。",
+    "learned_topology": "保留实际 learned predictor heads 与 soft/hard bias 逻辑，仅替代其 DINO backbone；freeze=False 检查可训练参数梯度。"
+  },
+  "real_cache_probe": {
+    "path": "/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00487421_0/features.npy",
+    "sha256": "e771919e3c9c4397f8645e4d08df89b5b74668db5545a4eb6eff35916da53055",
+    "shape": [
+      12,
+      64
+    ],
+    "dtype": "float32",
+    "all_finite": true,
+    "std_min": 0.002629830501973629,
+    "std_max": 1.1454895734786987,
+    "network_latent_dim": 32,
+    "network_max_faces": 12,
+    "batch": "同一真实 cache 复制为 batch=2，使用合成图像与上述轻量 backbone，验证有限 loss/梯度；不构成真实图像-CAD 配对评估。"
+  },
+  "available_but_not_loaded": [
+    "/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt",
+    "/mnt/d/python/experiments/2026-06-28/outputs_oracle_topology_log_multiplier_real/checkpoints/last.ckpt",
+    "/mnt/d/python/experiments/2026-06-28/outputs_oracle_topology_log_multiplier_real/checkpoints/last-v1.ckpt"
+  ],
+  "limits": [
+    "未运行实际预训练 DINOv2 或完整 VAE，未加载完整历史 diffusion checkpoint。",
+    "严格兼容结论覆盖当前相同配置的轻量模型与实际模块逻辑；不能宣称已完成全部历史 checkpoint 的实载验证。",
+    "未启动训练；未测真实照片泛化、几何一致性、STEP/solid 有效率、OCC 后处理或采样质量。",
+    "可选旧版对照仅服务本次迁移，未来架构改变无需永久保持旧结构；不设置固定 Git revision 锁。"
+  ]
+}

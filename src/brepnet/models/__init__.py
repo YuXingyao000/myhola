@@ -49,7 +49,7 @@ _MODEL_LOADERS: Dict[str, Any] = {
         "src.brepnet.models.vae", "AutoEncoder_light_exp"
     ),
     "Diffusion": _lazy_import(
-        "src.brepnet.models.diffusion", "Diffusion"
+        "src.brepnet.diffusion.model", "Diffusion"
     ),
 }
 
