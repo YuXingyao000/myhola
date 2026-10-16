@@ -3,8 +3,8 @@ from itertools import combinations
 
 import numpy as np
 import trimesh
-from OCC.Core.BRep import BRep_Tool
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeFace, BRepBuilderAPI_MakeSolid, BRepBuilderAPI_MakeVertex, BRepBuilderAPI_Sewing
+from OCC.Core.BRep import BRep_Builder, BRep_Tool
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Copy, BRepBuilderAPI_MakeFace, BRepBuilderAPI_MakeSolid, BRepBuilderAPI_MakeVertex, BRepBuilderAPI_Sewing
 from OCC.Core.BRepCheck import BRepCheck_Analyzer
 from OCC.Core.BRepExtrema import BRepExtrema_DistShapeShape
 from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
@@ -32,7 +32,7 @@ from OCC.Core.TopAbs import (
 from OCC.Core.TopExp import TopExp_Explorer
 from OCC.Core.TopLoc import TopLoc_Location
 from OCC.Core.TopTools import TopTools_HSequenceOfShape
-from OCC.Core.TopoDS import topods
+from OCC.Core.TopoDS import TopoDS_Compound, topods
 from OCC.Core.gp import gp_Pnt
 
 from shared.occ_utils import get_primitives
@@ -181,7 +181,32 @@ def get_tolerance(v_item, v_type):
     return tolorancer.Tolerance(v_item, v_type)
 
 
-def create_trimmed_face_from_wire(geom_face, face_edges, wire_list, connected_tolerance):
+def copy_occ_shapes(shapes):
+    """Deep-copy one candidate together, preserving sharing inside that copy.
+
+    Copying Python handles or each face separately does not provide this
+    contract. ModifiedShape maps the original children through the single OCC
+    copy, including edges/vertices shared by several input faces.
+    """
+    compound = TopoDS_Compound()
+    builder = BRep_Builder()
+    builder.MakeCompound(compound)
+    for shape in shapes:
+        builder.Add(compound, shape)
+    copier = BRepBuilderAPI_Copy(compound, True, False)
+    if not copier.IsDone():
+        raise RuntimeError("OCC candidate copy failed")
+    copied = [copier.ModifiedShape(shape) for shape in shapes]
+    if any(shape.IsNull() for shape in copied):
+        raise RuntimeError("OCC candidate copy lost an input shape")
+    return copied
+
+
+def create_trimmed_face_from_wire(geom_face, face_edges, wire_list, connected_tolerance,
+                                  *, require_all_wires=False, diagnostics=None):
+    if diagnostics is not None:
+        diagnostics.update(input_wire_count=len(wire_list), natural_wire_replacement=False,
+                           accepted_wire_count=0, skipped_wires=[], boundary_complete=False)
     topo_face = BRepBuilderAPI_MakeFace(geom_face, 1e-6).Face()
     is_debug = False
     if len(wire_list) == 6:
@@ -193,6 +218,8 @@ def create_trimmed_face_from_wire(geom_face, face_edges, wire_list, connected_to
             final_wire = get_primitives(topo_face, TopAbs_WIRE)[0]
             final_wire = set_tolerance(final_wire, connected_tolerance)
             wire_list = [final_wire]
+            if diagnostics is not None:
+                diagnostics["natural_wire_replacement"] = True
             pass
     face_fixer = ShapeFix_Face()
     face_fixer.Init(geom_face, connected_tolerance, True)
@@ -207,17 +234,28 @@ def create_trimmed_face_from_wire(geom_face, face_edges, wire_list, connected_to
         wire_fixer.FixGaps3d()
 
         if wire_fixer.Wire().NbChildren() == 1 and not wire_fixer.Wire().Closed():
+            if diagnostics is not None:
+                diagnostics["skipped_wires"].append("single_open_edge")
             continue
 
         fixed_wire = wire_fixer.Wire()
 
         if not fixed_wire.Closed():
+            if diagnostics is not None:
+                diagnostics["skipped_wires"].append("open_wire")
             continue
 
         fixed_wire = set_tolerance(fixed_wire, connected_tolerance)
         face_fixer.Add(fixed_wire)
         fixed_wire_list.append(fixed_wire)
 
+    if diagnostics is not None:
+        diagnostics["effective_wire_count"] = len(wire_list)
+        diagnostics["accepted_wire_count"] = len(fixed_wire_list)
+    if require_all_wires and len(fixed_wire_list) != len(wire_list):
+        if diagnostics is not None:
+            diagnostics["rejection"] = "unexplained_wire_skip"
+        return (None)
     if len(fixed_wire_list) == 0:
         return None
 
@@ -253,11 +291,24 @@ def create_trimmed_face_from_wire(geom_face, face_edges, wire_list, connected_to
         return None
     face_occ = set_tolerance(face_occ, connected_tolerance)
 
+    if require_all_wires or diagnostics is not None:
+        final_wire_count = len(get_primitives(face_occ, TopAbs_WIRE))
+        if diagnostics is not None:
+            diagnostics["final_wire_count"] = final_wire_count
+        # A known full natural loop replaces the original input loops before
+        # this comparison; it is not mistaken for an unexplained lost hole.
+        if require_all_wires and final_wire_count < len(fixed_wire_list):
+            if diagnostics is not None:
+                diagnostics["rejection"] = "wire_count_decreased_during_face_fix"
+            return (None)
+
     if is_debug:
         viz_shapes([face_occ])
 
     face_analyzer = BRepCheck_Analyzer(face_occ)
     if face_analyzer.IsValid():
+        if diagnostics is not None:
+            diagnostics["boundary_complete"] = len(fixed_wire_list) == len(wire_list)
         return face_occ
     else:
         return None

@@ -1,7 +1,9 @@
 """Evaluate a strictly loaded intersection VAE with an explicit input contract.
 
 This runner writes only the new method. Legacy exports and their original
-protocol remain read-only references; GT is never used to select decoder edges.
+protocol remain read-only references. Explicit standalone posterior inference
+needs only canonical CAD inputs and a verified frozen legacy encoder; GT is
+never used to select decoder edges.
 """
 
 from __future__ import annotations
@@ -96,7 +98,8 @@ def audit_encoder_state(new_weights: dict, legacy_weights: dict,
 
 
 def load_intersection(checkpoint_path: Path, legacy_path: Path, device: torch.device,
-                      ids: list[str], *, input_source: str = "reference_latents") -> tuple[torch.nn.Module, dict]:
+                      ids: list[str], *, input_source: str = "reference_latents",
+                      require_legacy_encoder: bool = False) -> tuple[torch.nn.Module, dict]:
     from omegaconf import OmegaConf
     from src.brepnet.models.vae import AutoEncoder_intersection
 
@@ -107,13 +110,13 @@ def load_intersection(checkpoint_path: Path, legacy_path: Path, device: torch.de
     config = OmegaConf.to_container(OmegaConf.create(config), resolve=True)
     if input_source not in {"reference_latents", "checkpoint_posterior"}:
         raise ValueError(f"Unknown input source: {input_source}")
-    if input_source == "reference_latents" and not config.get("freeze_encoder", False):
+    if (input_source == "reference_latents" or require_legacy_encoder) and not config.get("freeze_encoder", False):
         raise ValueError("This fixed posterior replay requires a frozen encoder checkpoint")
     if float(config.get("edge_threshold", -1)) != .5:
         raise ValueError("The fixed protocol requires the recorded edge threshold to be 0.5")
     new_weights, legacy_weights = normalized_weights(checkpoint), normalized_weights(legacy_checkpoint)
     legacy_config = legacy_configuration(legacy_checkpoint)
-    if input_source == "reference_latents":
+    if input_source == "reference_latents" or require_legacy_encoder:
         audit = audit_encoder_state(new_weights, legacy_weights, config, legacy_config)
     else:
         audit = {"input_source": input_source, "encoder_equal": None,
@@ -151,6 +154,39 @@ def encode_identity_mean(model: torch.nn.Module, data_root: Path, model_id: str,
     if not np.isfinite(values).all():
         raise ValueError("Checkpoint posterior mean contains nonfinite values")
     return values
+
+
+def read_standalone_input(model: torch.nn.Module, data_root: Path, model_id: str,
+                          device: torch.device, checkpoint_digest: str,
+                          output_path: Path, resume: bool) -> tuple[np.ndarray, dict]:
+    """Bind canonical CAD and stored/actual means without a reference export."""
+    source = data_root / model_id / "data.npz"
+    source_digest = file_sha256(source)
+    with np.load(source, allow_pickle=False) as arrays:
+        faces = arrays["sample_points_faces"]
+        if faces.ndim != 4 or faces.shape[1:] != (16, 16, 6) or not len(faces):
+            raise ValueError("Standalone source must contain nonempty [F,16,16,6] canonical faces")
+        expected_shape = (len(faces), 32)
+    if resume and output_path.exists():
+        # CUDA re-encoding need not be bit-identical. A resumed output must keep
+        # its original means and match current source/checkpoint provenance below.
+        with np.load(output_path, allow_pickle=False) as saved:
+            latents = saved["face_latents"].copy()
+            recorded_digest = _scalar_text(saved, "input_latent_sha256")
+        if latent_sha256(latents) != recorded_digest:
+            raise ValueError("Existing checkpoint mean has an invalid latent digest")
+    else:
+        latents = encode_identity_mean(model, data_root, model_id, device)
+    if latents.dtype != np.float32 or latents.shape != expected_shape or not np.isfinite(latents).all():
+        raise ValueError("Standalone posterior mean changed canonical shape/dtype or contains nonfinite values")
+    if file_sha256(source) != source_digest:
+        raise ValueError("Canonical CAD source changed during posterior inference")
+    return latents, {
+        "input_source_path": str(source.resolve()), "input_source_sha256": source_digest,
+        "input_source_kind": "checkpoint_posterior_mean",
+        "encoder_checkpoint_sha256": checkpoint_digest,
+        "input_latent_sha256": latent_sha256(latents),
+    }
 
 
 def read_reference_protocol(reference_root: Path, mode: str, split_hash: str,
@@ -293,8 +329,11 @@ def audit_identity_means(model: torch.nn.Module, ids: list[str], reference_root:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkpoint", "--new-checkpoint", dest="checkpoint", type=Path, required=True)
-    for name in ("legacy-checkpoint", "reference-root", "data-root", "split-list", "output-root"):
+    for name in ("legacy-checkpoint", "data-root", "split-list", "output-root"):
         parser.add_argument(f"--{name}", type=Path, required=True)
+    parser.add_argument("--reference-root", type=Path)
+    parser.add_argument("--standalone", action="store_true",
+                        help="Encode canonical CAD without reference exports; require a frozen legacy-equal encoder")
     parser.add_argument("--mode", choices=("posterior_mean", "archived_latents"), required=True)
     parser.add_argument("--method", choices=("intersection", "local", "conditioned", "point_feedback",
                                             "encoder_edge_value", "encoder_gat_control"), default="intersection")
@@ -332,25 +371,34 @@ def main(argv: list[str] | None = None) -> int:
     fresh_posterior = args.input_source == "checkpoint_posterior"
     if fresh_posterior and args.mode != "posterior_mean":
         raise ValueError("Checkpoint posterior input only supports posterior_mean, never archived latents")
+    if args.standalone:
+        if not fresh_posterior:
+            raise ValueError("Standalone inference requires --input-source checkpoint_posterior")
+        if args.reference_root is not None:
+            raise ValueError("Standalone inference must not provide --reference-root")
+    elif args.reference_root is None:
+        raise ValueError("Reference inference requires --reference-root; use --standalone explicitly")
     if args.method in {"encoder_edge_value", "encoder_gat_control"} and not fresh_posterior:
         raise ValueError("Changed encoder methods require --input-source checkpoint_posterior")
     if args.num_shards < 1 or not 0 <= args.shard_index < args.num_shards:
         raise ValueError("Require 0 <= shard-index < num-shards")
-    if args.output_root.resolve() == args.reference_root.resolve():
+    if args.reference_root is not None and args.output_root.resolve() == args.reference_root.resolve():
         raise ValueError("New outputs must not use the historical reference root")
     ids = read_ids(args.split_list)
     shard_ids = ids[args.shard_index::args.num_shards]
     split_digest, legacy_digest = file_sha256(args.split_list), file_sha256(args.legacy_checkpoint)
-    reference, reference_digest = read_reference_protocol(
-        args.reference_root, args.mode, split_digest, len(ids), legacy_digest
-    )
-    posterior_reference, posterior_digest = read_reference_protocol(
-        args.reference_root, "posterior_mean", split_digest, len(ids), legacy_digest
-    )
+    if not args.standalone:
+        reference, reference_digest = read_reference_protocol(
+            args.reference_root, args.mode, split_digest, len(ids), legacy_digest
+        )
+        posterior_reference, posterior_digest = read_reference_protocol(
+            args.reference_root, "posterior_mean", split_digest, len(ids), legacy_digest
+        )
     numeric = configure_fp32()
     device = torch.device(args.device)
     model, model_audit = load_intersection(args.checkpoint, args.legacy_checkpoint, device, ids,
-                                         input_source=args.input_source)
+                                         input_source=args.input_source,
+                                         require_legacy_encoder=args.standalone)
     validate_method(model, args.method)
     source_files = ["tools/intersection_evaluate_inference.py", "tools/vae_compare_inference.py",
                     "src/brepnet/models/vae.py", "src/brepnet/models/blocks.py",
@@ -360,10 +408,6 @@ def main(argv: list[str] | None = None) -> int:
         "version": PROTOCOL_VERSION, "mode": args.mode, "method": args.method,
         "checkpoint": str(args.checkpoint.resolve()), "checkpoint_sha256": file_sha256(args.checkpoint),
         "legacy_checkpoint": str(args.legacy_checkpoint.resolve()), "legacy_checkpoint_sha256": legacy_digest,
-        "reference_root": str(args.reference_root.resolve()),
-        "reference_protocol_sha256": reference_digest,
-        "reference_protocol_file_sha256": file_sha256(args.reference_root / "metadata/inference" / args.mode / "protocol.json"),
-        "posterior_audit_protocol_sha256": posterior_digest,
         "data_root": str(args.data_root.resolve()), "split_list": str(args.split_list.resolve()),
         "split_sha256": split_digest, "intended_count": len(ids), "num_shards": args.num_shards,
         "numeric_settings": numeric, "model_audit": model_audit,
@@ -372,12 +416,23 @@ def main(argv: list[str] | None = None) -> int:
         "posterior_audit": {"count_per_shard": MEAN_AUDIT_COUNT, "atol": MEAN_ATOL, "rtol": MEAN_RTOL},
         "source_sha256": {name: file_sha256(REPOSITORY / name) for name in source_files},
     }
+    if not args.standalone:
+        protocol.update(
+            reference_root=str(args.reference_root.resolve()),
+            reference_protocol_sha256=reference_digest,
+            reference_protocol_file_sha256=file_sha256(args.reference_root / "metadata/inference" / args.mode / "protocol.json"),
+            posterior_audit_protocol_sha256=posterior_digest,
+        )
     if fresh_posterior:
         protocol.update(version="intersection_evaluate_inference_v2_checkpoint_posterior",
                         input_source="checkpoint_posterior", input_contract="same_geometry_source",
                         encoder_gt_topology=True, canonical_face_order=True,
                         posterior_audit={"kind": "finite_float32_canonical_face_count_every_object",
                                          "reference_latent_equality_required": False})
+    if args.standalone:
+        protocol.update(version="intersection_evaluate_inference_v3_standalone_posterior",
+                        input_contract="standalone_geometry_source", standalone=True,
+                        frozen_legacy_encoder_required=True)
     metadata = args.output_root / "metadata/inference" / args.mode
     protocol_digest = claim_protocol(metadata / "protocol.json", protocol)
     status_path = metadata / f"shard-{args.shard_index:03d}.jsonl"
@@ -390,6 +445,10 @@ def main(argv: list[str] | None = None) -> int:
         "git_status": subprocess.check_output(["git", "status", "--short"], cwd=REPOSITORY, text=True),
     }
     run_id = time.time_ns()
+    if args.standalone:
+        diff_path = metadata / f"shard-{args.shard_index:03d}-git-{run_id}.diff"
+        diff_path.write_text(subprocess.check_output(["git", "diff", "--binary"], cwd=REPOSITORY, text=True))
+        invocation["git_diff_path"] = str(diff_path.resolve())
     (metadata / f"shard-{args.shard_index:03d}-invocation-{run_id}.json").write_text(json.dumps(invocation, indent=2) + "\n")
     try:
         mean_audit = ({"passed": True, "max_abs_error": None,
@@ -417,10 +476,15 @@ def main(argv: list[str] | None = None) -> int:
                    "shard": args.shard_index, "status": "failed"}
             path = args.output_root / "raw_predictions" / args.mode / args.method / model_id / "data.npz"
             try:
-                latents, provenance = read_reference_input(
-                    args.reference_root, args.data_root, model_id, args.mode, reference, reference_digest
-                )
-                if fresh_posterior:
+                if args.standalone:
+                    latents, provenance = read_standalone_input(
+                        model, args.data_root, model_id, device, protocol["checkpoint_sha256"], path, args.resume
+                    )
+                else:
+                    latents, provenance = read_reference_input(
+                        args.reference_root, args.data_root, model_id, args.mode, reference, reference_digest
+                    )
+                if fresh_posterior and not args.standalone:
                     provenance.update(reference_input_latent_sha256=provenance.pop("input_latent_sha256"),
                                       input_source_kind="checkpoint_posterior_mean",
                                       encoder_checkpoint_sha256=protocol["checkpoint_sha256"])

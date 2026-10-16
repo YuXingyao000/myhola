@@ -198,3 +198,10 @@ env.txt
 # Evaluation reference links / reconstructed geometry are runtime assets.
 /checkpoints/**/evaluation_*/post/*/intersection
 /checkpoints/**/evaluation_*/post/*/local/
+
+# Fixed-input post experiments: per-object STEP, diagnostics and duplicate roots.
+/checkpoints/postprocess_refinement/**/post_variants/
+/checkpoints/postprocess_refinement/**/validation/post_smoke/
+/checkpoints/postprocess_refinement/**/validation/legacy_replay/
+/checkpoints/postprocess_refinement/**/report/cases.csv
+/checkpoints/postprocess_refinement/validation/policy_smoke*/*/

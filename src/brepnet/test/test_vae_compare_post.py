@@ -129,6 +129,9 @@ class VaeComparePostTests(unittest.TestCase):
 
     def test_reference_rejects_algorithm_budget_sampling_or_raw_mismatch(self):
         reference, current, source, protocol, path = self.reference_fixture()
+        with self.assertRaisesRegex(ValueError, "post_policy"):
+            load_reference_rows(reference, current, "fit_only", ["a"],
+                                {**protocol, "post_policy": "recover_v1"})
         for name in ("post_algorithm_files", "sampling", "timeout_seconds", "split_sha256", "data_root"):
             with self.subTest(field=name), self.assertRaisesRegex(ValueError, name):
                 load_reference_rows(reference, current, "fit_only", ["a"], {**protocol, name: "different"})

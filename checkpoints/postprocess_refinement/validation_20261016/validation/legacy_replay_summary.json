@@ -1,0 +1,80 @@
+{
+  "author": "independent replay audit",
+  "verified_utc": "2026-10-16T06:48:56.699608+00:00",
+  "status": "passed",
+  "reference_git_commit": "4da53954ff22669ccf7cce68021b27e54cb954b6",
+  "intended_count": 8,
+  "subprocess_count": 16,
+  "all_exit_codes_zero": true,
+  "protocol": {
+    "mode": "optimized",
+    "max_optimize_iter": 200,
+    "adaptive_max_optimize_iter": 600,
+    "drop_num": 0,
+    "use_cuda": false,
+    "threads_per_process": 1,
+    "post_policy": "omitted public argument; default legacy",
+    "seeding": "sha256(42:{model_id}:post) first four bytes little endian",
+    "input": "fixed original Intersection refinement validation posterior mean",
+    "isolation": "separate processes; every src.brepnet.post module path and SHA verified against the complete selected package; all other shared helpers from worktree"
+  },
+  "old_native_valid_count": 6,
+  "current_native_valid_count": 6,
+  "invalid_in_both": [
+    "00003406",
+    "00003999"
+  ],
+  "all_native_validity_and_topology_counts_equal": true,
+  "paired_readable_steps": 8,
+  "geometry_comparison": {
+    "method": "Native STEP per-face/edge samples with the same seed; no alignment or rescaling",
+    "maximum_symmetric_sampled_distance": 0.0,
+    "all_face_and_edge_sample_arrays_bitwise_equal": true,
+    "step_data_equal_count": 8,
+    "step_headers_compared": false,
+    "note": "STEP DATA equality supplements native validity, topology and numerical geometry checks; timestamp-bearing headers are excluded"
+  },
+  "wall_seconds": 21.625272340985248,
+  "current_source_sha256": {
+    "src/brepnet/post/distance.py": "2156ebd91b647da54d505b4f2a1f4c0ce6fd50c551a9ec2e2ea2e8d96e6cbafc",
+    "src/brepnet/post/shape.py": "4594df3cbb46b96251c3b6d6e160be70214abe07cfedaced9a0d26bce2aa3f59",
+    "src/brepnet/post/constants.py": "76312fc450b073ef6ef475bb154fb9eba982146e14f0ba1c4919d939c227399b",
+    "src/brepnet/post/occ_topology.py": "9765a2329754b2b49aba4c3b4e28bf0f5b1a04a91a5ea2400cdd9372bcde089f",
+    "src/brepnet/post/occ_fit.py": "a8db8365a31ac0c5378a7f62a7c4459cac189ae9c40f3fd86c173224c05f8be4",
+    "src/brepnet/post/chamferdist_torch.py": "fbc787a1530525b7eeeb18142ec2c53094193bbb2cc97069e70caa392bc3afa7",
+    "src/brepnet/post/geometry_optimization.py": "46e660a3fd4997794ed10eacbeaee3d96bf1306178001473c2f54dddd0d46850",
+    "src/brepnet/post/debug.py": "65ecf432f00b8dd5ab01e305d1eba18b508a06cdaf72abf98ebc59e2b157f4fe",
+    "src/brepnet/post/mesh.py": "a66d843b06a460aefa2aae5ad2afc485b7e4d5573465a5eb3828e37a1de676ff",
+    "src/brepnet/post/utils.py": "7a9656d1c942d2035867026600a601be34ec95420631e1c8cfe03cecd742edb2",
+    "src/brepnet/post/construct_brep.py": "718947c5bd3be8e435411f7a81a74936f8df7dea11c77a64af785e930c459d5c",
+    "src/brepnet/post/tools/__init__.py": "604b9cccd1ea14e5a4a7465918015b02890c3ff34e228b1c57540c419849ac42",
+    "src/brepnet/post/tools/construct_face.py": "2e979092bab92b1ed13ec53aee25f4100b6d72e68d6e418dd70b9d593266a0e9",
+    "src/brepnet/post/tools/move.py": "310b62f35e61e2b5387deca9a2f7777152d4bbc522e27e68a5678c79d7017838",
+    "src/brepnet/post/legacy/move_test.py": "ea00148be2f0bae978cdff84951f1f9f939135ccf1bb6f9ac1c740f3b440d5d5",
+    "src/brepnet/post/legacy/check_brep.py": "4e0eb0be7d46508cea9096ed79af00c3cb31a7bd122dc3112b12fc125e081b37",
+    "src/brepnet/post/legacy/__init__.py": "e95bdf6595112c101ad1e84d77d1cf93cdf660a4f5b32cd4b4f04467a2dadd04",
+    "src/brepnet/post/legacy/geom_optimization.py": "e22dff0ab5be4bca80031f6feda3a81b72dd875e39fc3667f52edeb80bbf76db",
+    "src/brepnet/post/legacy/brepgen_with_our_post.py": "d4e040ac5d34edb9cd5886f571f888410005f6c60320a3ea52de59fc43189cec",
+    "src/brepnet/post/legacy/optimization.py": "1336327b0e4b3397d54e0d9998d592706e7c6418c1225fc24903a41ce1346c46",
+    "src/brepnet/post/legacy/eval_brep.py": "d008f25fbfe25ddd20aedc6d8cfb4f2a342ba706d8639344f8f6a4ecff4233f5"
+  },
+  "runner_sha256": "a3a222d183147c85f9d8bf526f691ac66bdff0ac60acca0ce896d4ddf42bf407",
+  "model_ids": [
+    "00000178",
+    "00000894",
+    "00003202",
+    "00003406",
+    "00003999",
+    "00005825",
+    "00006067",
+    "00006608"
+  ],
+  "evidence": {
+    "validation/legacy_replay/comparison.json": "739610eda2645fa650bd9bcaa8325e492852842f217ca888f5e7957d6357d520",
+    "validation/legacy_replay/snapshot.json": "9d4613a632481aab57cf2c16725da1a81214c4505ad9f1c22556c9711f21cc3c",
+    "validation/legacy_replay/metadata/completion.json": "a5ca7987aa529bc4a6dd4121664b7ff649d064fac035db7e1395c21ee1dc0535",
+    "validation/legacy_replay/metadata/current_source_freeze.json": "0c597a39ba333b5768b2eb81979be79c6d0ac93b595889d451ac44257494309b",
+    "validation/legacy_replay/replay_worker.py": "843c51b92b341d3882695b5f7a10f74f2def2e0ba31624cdd15e22502ad07e3d",
+    "validation/legacy_replay/compare_results.py": "75f51445f08e4fb81b296aab8b668dcf3048ee3f66cd2b1d050eab514ed3fb79"
+  }
+}

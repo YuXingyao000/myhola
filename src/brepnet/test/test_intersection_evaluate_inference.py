@@ -344,3 +344,75 @@ def test_checkpoint_posterior_rejects_archived_latents_before_loading(tmp_path):
             "--mode", "archived_latents", "--input-source", "checkpoint_posterior"]
     with pytest.raises(ValueError, match="never archived"):
         main(args)
+
+
+def test_standalone_posterior_needs_no_reference_and_binds_resume_to_source(tmp_path, monkeypatch):
+    configure_fp32()
+    _, model, legacy_path, checkpoint, _, _ = make_models(tmp_path)
+    data = tmp_path / "data"
+    source = data / "example/data.npz"
+    source.parent.mkdir(parents=True)
+    faces, edges, conn = make_boundary_arrays()
+    np.savez(source, sample_points_faces=faces, sample_points_lines=edges, edge_face_connectivity=conn)
+    split = tmp_path / "ids.txt"
+    split.write_text("example\n")
+    output = tmp_path / "output"
+
+    def no_reference(*args, **kwargs):
+        raise AssertionError("Standalone inference must not read reference exports or protocols")
+
+    monkeypatch.setattr("tools.intersection_evaluate_inference.read_reference_protocol", no_reference)
+    monkeypatch.setattr("tools.intersection_evaluate_inference.read_reference_input", no_reference)
+    args = ["--checkpoint", str(checkpoint), "--legacy-checkpoint", str(legacy_path),
+            "--data-root", str(data), "--split-list", str(split), "--output-root", str(output),
+            "--mode", "posterior_mean", "--device", "cpu", "--standalone",
+            "--input-source", "checkpoint_posterior"]
+    assert main(args) == 0
+    protocol = json.loads((output / "metadata/inference/posterior_mean/protocol.json").read_text())
+    assert protocol["standalone"] and protocol["frozen_legacy_encoder_required"]
+    assert protocol["model_audit"]["encoder_equal"] is True
+    assert not any(key.startswith("reference") for key in protocol)
+    raw = output / "raw_predictions/posterior_mean/intersection/example/data.npz"
+    batch, _ = load_identity_geometry(source, "example", torch.device("cpu"))
+    with torch.inference_mode():
+        expected = model.sample(model.encode(batch, v_test=True)["face_features"], v_is_test=True)[0].numpy()
+    with np.load(raw, allow_pickle=False) as saved:
+        np.testing.assert_array_equal(saved["face_latents"], expected)
+        assert str(saved["input_source_sha256"]) == file_sha256(source)
+        assert str(saved["encoder_checkpoint_sha256"]) == file_sha256(checkpoint)
+        assert not any(key.startswith("reference") for key in saved.files)
+    original_raw_digest = file_sha256(raw)
+    assert main([*args, "--resume"]) == 0
+    assert file_sha256(raw) == original_raw_digest
+    with source.open("ab") as stream:
+        stream.write(b"source changed")
+    assert main([*args, "--resume"]) == 1
+    assert file_sha256(raw) == original_raw_digest
+    status = output / "metadata/inference/posterior_mean/shard-000.jsonl"
+    rows = [json.loads(line) for line in status.read_text().splitlines()]
+    assert [row["status"] for row in rows] == ["ok", "resumed_skip", "failed"]
+    assert "provenance mismatch: input_source_sha256" in rows[-1]["error"]
+
+
+def test_standalone_encoder_audit_rejects_changed_weights(tmp_path):
+    _, _, legacy_path, checkpoint, _, _ = make_models(tmp_path)
+    damaged = torch.load(checkpoint, weights_only=True)
+    key = next(key for key in damaged["state_dict"] if key.startswith("model.encoder."))
+    damaged["state_dict"][key] = damaged["state_dict"][key] + 1
+    torch.save(damaged, checkpoint)
+    with pytest.raises(ValueError, match="weights differ"):
+        load_intersection(checkpoint, legacy_path, torch.device("cpu"), ["example"],
+                          input_source="checkpoint_posterior", require_legacy_encoder=True)
+
+
+@pytest.mark.parametrize("extra, message", [
+    (["--standalone"], "requires --input-source"),
+    (["--standalone", "--input-source", "checkpoint_posterior", "--reference-root", "unused"],
+     "must not provide"),
+    ([], "requires --reference-root"),
+])
+def test_standalone_contract_requires_explicit_unambiguous_input(extra, message):
+    args = ["--checkpoint", "unused", "--legacy-checkpoint", "unused", "--data-root", "unused",
+            "--split-list", "unused", "--output-root", "unused", "--mode", "posterior_mean"]
+    with pytest.raises(ValueError, match=message):
+        main([*args, *extra])

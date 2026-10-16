@@ -1,7 +1,7 @@
 """Isolated, fixed-denominator OCC comparison for posterior-mean VAE exports.
 
 Run from the repository root with ``python -m tools.vae_compare_post``. This
-runner does not change the existing post algorithms. A hard timeout covers the
+runner selects an explicit post policy (legacy by default). A hard timeout covers the
 entire per-object subprocess, including geometry evaluation. Completed stages
 remain recorded if a later stage times out. Reinvocation resumes matching
 terminal records; algorithm failures/timeouts are not automatically retried.
@@ -32,6 +32,7 @@ METHODS = ("legacy", "joint")
 CANDIDATE_METHODS = ("joint", "intersection", "local", "conditioned", "point_feedback",
                      "encoder_edge_value", "encoder_gat_control")
 BASELINE_METHODS = ("legacy", "intersection", "conditioned", "encoder_gat_control")
+POST_POLICIES = ("legacy", "roundtrip_retry", "fit_score_v2", "recover_v1")
 
 
 def comparison_methods(candidate_method="joint", baseline_method="legacy"):
@@ -153,19 +154,32 @@ def read_step_at_precision(path: Path, mode: int = 0, precision: float = 0.1):
 def native_validity(shape) -> dict[str, Any]:
     """Analyze the as-read shape before any ShapeFix mutation or triangulation."""
     from OCC.Core.BRepCheck import BRepCheck_Analyzer
-    from OCC.Core.TopAbs import TopAbs_SOLID, TopAbs_FACE, TopAbs_EDGE, TopAbs_VERTEX
+    from OCC.Core.TopAbs import TopAbs_SOLID, TopAbs_FACE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_WIRE
+    from OCC.Core.BRep import BRep_Tool
+    from OCC.Core.TopoDS import topods
     from shared.occ_utils import get_primitives
     solid_type = shape.ShapeType() == TopAbs_SOLID
     checked = bool(BRepCheck_Analyzer(shape).IsValid())
+    primitives = {"face": get_primitives(shape, TopAbs_FACE, v_remove_half=True),
+                  "edge": get_primitives(shape, TopAbs_EDGE, v_remove_half=True),
+                  "vertex": get_primitives(shape, TopAbs_VERTEX, v_remove_half=True)}
+    tolerances = {}
+    for name, cast in (("face", topods.Face), ("edge", topods.Edge), ("vertex", topods.Vertex)):
+        values = [float(BRep_Tool.Tolerance(cast(item))) for item in primitives[name]]
+        tolerances[f"native_{name}_tolerance_max"] = max(values) if values else None
+    wire_counts = [len(get_primitives(face, TopAbs_WIRE, v_remove_half=True)) for face in primitives["face"]]
     return {
         "step_readable": True,
         "shape_type": int(shape.ShapeType()),
         "native_is_solid_type": solid_type,
         "native_brepcheck_valid": checked,
         "native_valid_solid": bool(solid_type and checked),
-        "num_faces": len(get_primitives(shape, TopAbs_FACE, v_remove_half=True)),
-        "num_edges": len(get_primitives(shape, TopAbs_EDGE, v_remove_half=True)),
-        "num_vertices": len(get_primitives(shape, TopAbs_VERTEX, v_remove_half=True)),
+        "num_faces": len(primitives["face"]),
+        "num_edges": len(primitives["edge"]),
+        "num_vertices": len(primitives["vertex"]),
+        "num_face_wire_occurrences": sum(wire_counts),
+        "num_faces_with_multiple_wires": sum(n > 1 for n in wire_counts),
+        **tolerances,
     }
 
 
@@ -286,6 +300,7 @@ def execute_job(job: dict, status_path: Path) -> dict:
     import numpy as np
     started = time.monotonic()
     row = {"sample_id": job["sample_id"], "method": job["method"], "mode": job["mode"],
+           "post_policy": job.get("post_policy", "legacy"),
            "protocol_fingerprint": job["protocol_fingerprint"], "raw_sha256": job["raw_sha256"],
            "status": "running", "stage": "validate_raw", "process_pid": os.getpid(),
            "seed": stable_seed(job["sample_id"], "post"), "post_status": "not_run",
@@ -315,14 +330,25 @@ def execute_job(job: dict, status_path: Path) -> dict:
         from src.brepnet.post.construct_brep import construct_brep_for_sample
         record(stage="post", post_status="running")
         post_started = time.monotonic()
+        policy_arguments = {}
+        if job.get("post_policy", "legacy") != "legacy":
+            policy_arguments = {
+                "post_policy": job["post_policy"],
+                "deadline_monotonic": started + job["timeout_seconds"],
+            }
         construct_brep_for_sample(
             job["raw_root"], job["post_root"], job["sample_id"], v_drop_num=0,
             is_ray=False, is_log=False, is_optimize_geom=job["mode"] == "optimized",
             v_max_optimize_iter=job["max_optimize_iter"], isdebug=False,
             use_cuda=False, from_scratch=True, is_save_data=False,
+            **policy_arguments,
         )
         record(post_status="returned", post_elapsed_seconds=time.monotonic() - post_started,
                step_exists=(output / "recon_brep.step").is_file(), success_marker=(output / "success.txt").is_file())
+        diagnostics = output / "post_diagnostics.json"
+        if diagnostics.is_file():
+            record(post_diagnostics_path=str(diagnostics),
+                   post_diagnostics_sha256=sha256_file(diagnostics))
     except Exception as exc:
         traceback.print_exc()
         record(status="post_error", post_status="error", error=f"{type(exc).__name__}: {exc}")
@@ -423,6 +449,7 @@ def run_isolated_jobs(jobs: list[dict], metadata: Path, workers: int, timeout: f
                     row.setdefault("sample_id", job["sample_id"])
                     row.setdefault("method", job["method"])
                     row.setdefault("mode", job["mode"])
+                    row.setdefault("post_policy", job.get("post_policy", "legacy"))
                     row.setdefault("protocol_fingerprint", job["protocol_fingerprint"])
                     row.setdefault("raw_sha256", job["raw_sha256"])
                     if expired:
@@ -552,6 +579,8 @@ def load_reference_rows(reference_root: Path, comparison_root: Path, mode: str,
     source = read_json(source_path)
     if not source:
         raise ValueError(f"Missing reference protocol: {source_path}")
+    if source.get("post_policy", "legacy") != protocol.get("post_policy", "legacy"):
+        raise ValueError("Reference post_policy differs; compare post variants in separate roots")
     differences = [name for name in REFERENCE_CONTRACT_FIELDS
                    if name not in source or name not in protocol or source[name] != protocol[name]]
     if differences:
@@ -606,6 +635,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--data-root", type=Path, required=True)
     parser.add_argument("--split-list", type=Path, required=True)
     parser.add_argument("--mode", choices=("fit_only", "optimized"), required=True)
+    parser.add_argument("--post-policy", choices=POST_POLICIES, default="legacy",
+                        help="Explicit post algorithm; model identity remains unchanged")
     parser.add_argument("--baseline-method", choices=BASELINE_METHODS, default="legacy")
     parser.add_argument("--candidate-method", choices=CANDIDATE_METHODS, default="joint")
     parser.add_argument("--reference-root", type=Path, help="Read-only compatible historical baseline results; never schedule baseline jobs")
@@ -654,6 +685,10 @@ def main() -> int:
     }
     protocol["candidate_method"] = args.candidate_method
     protocol["baseline_method"] = args.baseline_method
+    # Omission means legacy in historical protocols. Preserve reference reuse
+    # for that path while making any new policy part of the resume fingerprint.
+    if args.post_policy != "legacy":
+        protocol["post_policy"] = args.post_policy
     reference_rows = None
     if args.reference_root is not None:
         reference_rows, provenance = load_reference_rows(args.reference_root, args.comparison_root, args.mode, ids, protocol, baseline_method=args.baseline_method)
@@ -695,6 +730,7 @@ def main() -> int:
                         atomic_json(status_path, old)
                         continue
                 jobs.append({"sample_id": sample_id, "method": method, "mode": args.mode,
+                             "post_policy": args.post_policy, "timeout_seconds": args.timeout,
                              "raw_root": str(raw_root), "raw_sha256": raw_sha,
                              "post_root": str(args.comparison_root / "post" / args.mode / method),
                              "data_root": str(args.data_root), "cache_root": str(args.comparison_root / "metadata" / "gt_step_samples"),
