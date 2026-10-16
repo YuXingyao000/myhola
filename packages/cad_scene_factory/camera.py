@@ -5,7 +5,7 @@ import math
 import bpy
 from mathutils import Matrix, Vector
 
-from ..geometry import PerspectiveCamera
+from geometry import PerspectiveCamera
 
 
 def configure_camera(

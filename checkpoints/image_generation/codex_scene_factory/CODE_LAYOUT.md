@@ -1,10 +1,25 @@
-# 布景模板生成：代码组织方案
+# 布景模板生成：早期代码组织方案
 
-2026-10-12 架构设计，2026-10-13 更新实现状态；当前已实现[几何内核](GEOMETRY_CORE.md)、[AABB 保护区域检查](VISIBILITY_CORE.md)、[Blender 相机适配](BLENDER_CAMERA.md)、[模板入口读写](TEMPLATE_MANIFEST.md)与[构建参数取值](TEMPLATE_PARAMETERS.md)。已用现有 Blender 验证相机投影，尚未渲染图片或调用模型。需求以 [模板协议](TEMPLATE_CONTRACT_V0.md) 为准；本文是代码架构说明，不替代该执行协议。
+2026-10-15 当前布局：`packages/cad_scene_factory/` 根目录保留程序和 `README.md`。
+`workflow.py` 控制制作、外围预览、同会话只读审阅和有界返修；`call_llm.py` 负责
+新建／明确ID续接。所有模型文本与回复格式集中在 `prompts/`：协议、指南、需求示例、
+`RUNTIME.md` 运行说明，`stages/{create,inspect,repair}.md` 阶段模板，以及
+`review.schema.json` 审阅格式。Python读取这些文件并填入运行数据，不保存提示词正文。
+现行命令见 [README](../../../packages/cad_scene_factory/README.md)，流程背景见
+[闭环实施记录](workflow_loop/NOTE.md)。下面早期模块设计继续保留为历史。
+
+2026-10-14 状态说明：下文保留 10 月 12—13 日的设计和验证历史，不作为当前代码布局指南。
+按用户要求，`packages/cad_scene_factory/` 已改为同级脚本组织，删除 `examples/`、`src/`
+和 `tests/`；仍使用的数学与相机工具迁移为 `geometry.py`、`visibility.py` 和 `camera.py`。
+当前流程为 `call_llm.py` 生成模板脚本、`build.py` 保存 `.blend`、`render.py` 读取场景并批量渲染。
+现行接口及命令见 [README](../../../packages/cad_scene_factory/README.md) 和
+[执行协议](../../../packages/cad_scene_factory/prompts/DEVELOPER_INSTRUCTIONS.md)。下文及同目录早期笔记中的旧路径、测试命令属于历史记录。
+
+2026-10-12 架构设计，2026-10-13 更新实现状态；当前已实现[几何内核](GEOMETRY_CORE.md)、[AABB 保护区域检查](VISIBILITY_CORE.md)、[Blender 相机适配](BLENDER_CAMERA.md)、[模板入口读写](TEMPLATE_MANIFEST.md)、[构建参数取值](TEMPLATE_PARAMETERS.md)与[模板构建入口](BLENDER_BUILD.md)。已用现有 Blender 验证相机投影和手写模板构建，尚未渲染图片或调用模型。需求以 [模板协议](TEMPLATE_CONTRACT_V0.md) 为准；本文是代码架构说明，不替代该执行协议。
 
 ## 独立子项目
 
-项目放在 `packages/cad_scene_factory/`，计划以自己的 `pyproject.toml` 和 `src/cad_scene_factory/` 作为可独立安装、提取开源的项目。当前有纯数学模块 `geometry.py`、`visibility.py`，`blender/render.py` 中的相机配置函数，以及 `contracts.py` 中的模板入口读写；各有对应测试。安装配置和下面的其他文件按实际实现进度添加，不创建空壳模块。
+项目放在 `packages/cad_scene_factory/`，计划以自己的 `pyproject.toml` 和 `src/cad_scene_factory/` 作为可独立安装、提取开源的项目。当前有纯数学模块 `geometry.py`、`visibility.py`，`contracts.py` 中的清单读写与参数取值，`blender/render.py` 中的相机配置，以及 `blender/build.py` 中的模板构建入口；各有对应测试。安装配置和下面的其他文件按实际实现进度添加，不创建空壳模块。
 
 依据：主仓库 [pyproject.toml](../../../pyproject.toml) 直接依赖 Torch、Lightning、diffusers、torch-scatter 等训练栈。场景工具应能在没有 HoLa 模型和数据目录的情况下使用；核心不导入 `src.brepnet`，不读取 DeepCAD 目录约定。需要兼容旧 NPZ 时，由主项目适配层显式转换通用 manifest。
 
@@ -124,3 +139,5 @@ run 清单记录成功、拒收、失败、超时和未审阅。输入摘要不�
 第四切片 `contracts.py` 定义模板入口清单与连续参数，提供普通 JSON 读写，见 [TEMPLATE_MANIFEST.md](TEMPLATE_MANIFEST.md)。附一个只展示数据格式的 JSON 示例及往返保存测试，已通过用户审阅；不执行模板程序，也不宣称已完成模板包验收或冻结。
 
 第五切片在同一文件增加 `resolve_parameters()`：默认值加显式覆盖，检查实际值范围，返回一次构建所需的参数字典，见 [TEMPLATE_PARAMETERS.md](TEMPLATE_PARAMETERS.md)。沿用现有测试文件，未新增功能模块；此改动已通过用户审阅。
+
+第六切片 `blender/build.py` 增加 `build_template()` 和 `BuiltTemplate`：在当前空场景创建环境根节点，调用模板的 `build_scene()`，返回输入记录与根节点／支撑对象，见 [BLENDER_BUILD.md](BLENDER_BUILD.md)。Blender 中的 6 项构建测试通过，代码待用户审阅；检查导出、生产渲染及作者程序隔离仍待后续实现。

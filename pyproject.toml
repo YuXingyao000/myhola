@@ -29,6 +29,7 @@ dependencies = [
     "plyfile",
     "h5py",
     "tqdm",
+    "rich>=13.7",
 ]
 
 [tool.setuptools.packages.find]

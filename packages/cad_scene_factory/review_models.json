@@ -1,0 +1,87 @@
+{
+  "version": "face_count_v1",
+  "selection": "沿用 workshop_002 首轮 12 个训练零件，按 normalized_shape.step 的唯一 TopAbs_FACE 数重排；不声称代表全库面数分布。",
+  "split": "training",
+  "split_file": "deduplicated_deepcad_training_7_30.txt",
+  "split_sha256": "bfd0f90428a40600c6f9f72658544c018e75f5576ad6f0af00dbe29224ac9417",
+  "face_count_method": "PythonOCC STEPControl_Reader -> OneShape -> topexp.MapShapes(TopAbs_FACE) -> IndexedMap.Size",
+  "quick_ids": [
+    "00000061",
+    "00000070",
+    "00951201"
+  ],
+  "models": [
+    {
+      "model_id": "00000061",
+      "face_count": 7,
+      "stl_sha256": "431078d36c83444a7c65f7d300e9fb6e2a9960f175fdf6e5ec7e0872b5cb685c",
+      "step_sha256": "00563cc2031f1f94d9bd7f64fb6a57f3b622d010157e7192e1dc4901a2cc6c3c"
+    },
+    {
+      "model_id": "00369859",
+      "face_count": 7,
+      "stl_sha256": "bd44710b3367d666b766ad873ae07123396e49f0e4d679c1060665c8c9cf2aa2",
+      "step_sha256": "565149b3426895686eb2eaa9f1350f4a59bf80a932c05bcd1673e2f31ef7ba87"
+    },
+    {
+      "model_id": "00999999",
+      "face_count": 9,
+      "stl_sha256": "6810e15011bd45ed774fac1c4936f8813b84889646b47d6614b367ef031025f5",
+      "step_sha256": "72fa7ff666483d4b4bb3789f51989ddc3fab9f91e50936d714aaedb759cb2eea"
+    },
+    {
+      "model_id": "00177436",
+      "face_count": 10,
+      "stl_sha256": "6bacde4a77fae4485b6a2caee46852372a4090ca7a392b850d7b3ba1a8c4bf8f",
+      "step_sha256": "62ad0763cf5d130ef0c09fec2c7af3aac7189f5146fab501aa0c894c10e97b35"
+    },
+    {
+      "model_id": "00719511",
+      "face_count": 13,
+      "stl_sha256": "083fe20132dd038849d19774edc68925007ad74dd2d1b8d740abdd3edd7a5685",
+      "step_sha256": "b3c161dd7aedc92718a11916ab27184699ea1d55b650b31fe3b61f231108d08a"
+    },
+    {
+      "model_id": "00000070",
+      "face_count": 14,
+      "stl_sha256": "23c10db4269a02707524f0faf7e2a5a9c5b4510709ce5e2a6e8955180091da7a",
+      "step_sha256": "da3cef260eadfa00ba7570da20b3570804ec2702e6daa2ae548bce7c2fe70be2"
+    },
+    {
+      "model_id": "00447835",
+      "face_count": 14,
+      "stl_sha256": "1616a20277972e2b808a92afcc4d819be2c322740ef22d0021ea691b35b110ea",
+      "step_sha256": "4b1b345460790603ff87e0b365b187810989b7335c5ea0d8209990ca5fe83414"
+    },
+    {
+      "model_id": "00787296",
+      "face_count": 14,
+      "stl_sha256": "b98c4c489dd327dd289f7176f0dad6962219421fa9142757450a6bafa9d87af4",
+      "step_sha256": "36d279c6979f681bcae8480704fdfe11fcbf8be30ef7e9dd9a2a02b3be479031"
+    },
+    {
+      "model_id": "00843446",
+      "face_count": 15,
+      "stl_sha256": "cf2020bfd2fa4202046a263c71a172150dbecc29322aef0512a92b3987091e9b",
+      "step_sha256": "618822df728230bafedab31567169c4127ffb4ff40c8656eaaad0c56cbbbbece"
+    },
+    {
+      "model_id": "00214089",
+      "face_count": 18,
+      "stl_sha256": "dd52d38031358d19f7b0abab410aa8f52c31f501ab707401395374d5d0439f7b",
+      "step_sha256": "0d88ce22791127c6a8f8dbd926a3cb76697fc5069e559b13f7448bdcabf2a1fd"
+    },
+    {
+      "model_id": "00098169",
+      "face_count": 19,
+      "stl_sha256": "8e3af8ff91b49c14dd1e3f2e31e9f1edfd80b343b0cdffb419633d9d97a071dc",
+      "step_sha256": "1f8b9904abd5b2c115782914e069b3edae46998916898b6983e94460a5c650f8"
+    },
+    {
+      "model_id": "00951201",
+      "face_count": 28,
+      "stl_sha256": "66a9ccac6e3ae1ef95b13468a063b07565aae058dfb0d646bbd9a18017c6576b",
+      "step_sha256": "dcbfe2ad8af9b253bb9c5d8c44832df9eb434537b7863d8df133bf04a0d5832f"
+    }
+  ]
+}

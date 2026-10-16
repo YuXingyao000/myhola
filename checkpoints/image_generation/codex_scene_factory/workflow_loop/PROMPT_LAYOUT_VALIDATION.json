@@ -1,0 +1,71 @@
+{
+  "date": "2026-10-16",
+  "changes": "Prompt files relocated; workflow behavior preserved.",
+  "checks": {
+    "create_content_unchanged": true,
+    "inspect_content_unchanged": true,
+    "repair_content_unchanged": true,
+    "review_schema_unchanged": true,
+    "DEVELOPER_INSTRUCTIONS.md_content_unchanged": true,
+    "PROMPT.EXAMPLE.md_content_unchanged": true,
+    "SCENE_GUIDE.md_content_unchanged": true,
+    "ACCEPTANCE.md_content_unchanged": true,
+    "ASSET_TOOLS.md_content_unchanged": true,
+    "old_python_prompt_module_removed": true,
+    "stage_loader_matches_original": true,
+    "schema_loader_matches_original": true,
+    "workflow.py_dry_run": true,
+    "workflow.py_runtime_rendered": true,
+    "workflow.py_prompt_hashes_recorded": true,
+    "call_llm.py_dry_run": true,
+    "call_llm.py_runtime_rendered": true,
+    "call_llm.py_prompt_hashes_recorded": true
+  },
+  "workflow_validation": {
+    "scope": "Workflow control and evidence checks using fixtures; no Codex or Blender calls.",
+    "tests": 24,
+    "passed": 24,
+    "failed": 0,
+    "pass": true,
+    "output_dir": "/tmp/cad-scene-workflow-validation-gwcu4wjj",
+    "source_sha256": {
+      "workflow.py": "3b81642f8320b4d88006565ada6569bc5527f4874d67cd6b26a0c621e021181a",
+      "preview.py": "473a0f3f0060843295054ec8417f80013adbcb0de17205b82a9e3476a9008907",
+      "call_llm.py": "abd0a1bb732bcbaa99db5283a143ae28bfdd7a24de1931630bf93fad6c7ac28f"
+    },
+    "prompt_sha256": {
+      "prompts/ACCEPTANCE.md": "50552cdad4240bc73be0e6ea4858d1d64e7e77009ab93d93c4dfc7bc79e8a3b5",
+      "prompts/ASSET_TOOLS.md": "a0806db70082290672f1fa27e7a128bf3f05ba651d9b6bebae27983ef3410ef7",
+      "prompts/DEVELOPER_INSTRUCTIONS.md": "7967dab7453e5d61a84aa7d82c9856bea02afe9fc8512bb998707397b9e94099",
+      "prompts/PROMPT.EXAMPLE.md": "cc58be51968d8271eaedfe8d0c4d4f1d9f6bb3361f7e4e47b8307940a71c2504",
+      "prompts/RUNTIME.md": "e51b3cac36957daae955e68effa22a098dda9928eadde717d98b711fc3c73f89",
+      "prompts/SCENE_GUIDE.md": "e282b8f531d8789af48b58c3ded1260bf842115717983662e00c9ef83e198b09",
+      "prompts/review.schema.json": "ff1b303845c6b9c655754611bf955d61da03fff787775640466523332921e164",
+      "prompts/stages/create.md": "ab9adf5271278bc863084a368450cee61a2c271f65a633a17581d414f46a656b",
+      "prompts/stages/inspect.md": "8b077fde30e1d722de38c8a9f0c72536f64c71f9949b796df64e88a0b26992e6",
+      "prompts/stages/repair.md": "e13e6aba1df70156686ff22200bd83ce1dbb11f3b8deaf1d9051aa992bc31ed6"
+    }
+  },
+  "transport_validation": {
+    "passed": 13,
+    "cases": [
+      "new: pass",
+      "resume: pass",
+      "wrong_id: pass",
+      "exit_error: pass",
+      "launch_error: pass",
+      "missing_reply: pass",
+      "malformed_json: pass",
+      "missing_id: pass",
+      "incomplete: pass",
+      "dry_run: pass",
+      "compatibility_wrapper: pass",
+      "exec_parse: pass (help-only, no model)",
+      "resume_parse: pass (help-only, no model)"
+    ]
+  },
+  "dry_run_directory": "/tmp/cad-scene-prompt-layout-50nhun2b",
+  "original_backup": "/tmp/cad-scene-prompts-before-in8jlyfq",
+  "real_codex_calls": 0,
+  "blender_rerun": false
+}

@@ -1,0 +1,48 @@
+{
+  "source_inventories": [
+    {
+      "root": "deepcad_v6",
+      "model_count": 102904,
+      "geometry_files": {
+        "mesh.ply": 102904,
+        "normalized_shape.step": 102904,
+        "pc.ply": 102904,
+        "post_processed_shape.step": 102888
+      },
+      "examples": {
+        "mesh.ply": "/mnt/d/data/deepcad_v6/00000007/mesh.ply",
+        "normalized_shape.step": "/mnt/d/data/deepcad_v6/00000007/normalized_shape.step",
+        "pc.ply": "/mnt/d/data/deepcad_v6/00000007/pc.ply",
+        "post_processed_shape.step": "/mnt/d/data/deepcad_v6/00000007/post_processed_shape.step"
+      }
+    },
+    {
+      "root": "deepcad_v6_cond",
+      "model_count": 55448,
+      "geometry_files": {
+        "pc.ply": 54321
+      },
+      "examples": {
+        "pc.ply": "/mnt/d/data/deepcad_v6_cond/00000061/pc.ply"
+      }
+    }
+  ],
+  "identity_audit": {
+    "union": 102904,
+    "root_overlap": 55448,
+    "cond_only_count": 0,
+    "cond_only_ids": [],
+    "split_unique": 52556,
+    "split_intersections": {
+      "training-validation": 0,
+      "training-testing": 0,
+      "validation-testing": 0
+    },
+    "split_missing_roots": {
+      "training": [],
+      "validation": [],
+      "testing": []
+    },
+    "unassigned_count": 50348
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "old_report": "/mnt/d/data/cad_scene_templates/workshop_workflow_001/workflow/round_00/preview/preview_report.json",
+  "new_report": "/mnt/d/data/cad_scene_workflow_validation/20261016_stl_shading/preview_report.json",
+  "counts": {
+    "planned": 15,
+    "success": 15,
+    "failed": 0,
+    "missing": 0
+  },
+  "technical": "pass",
+  "template_files_unchanged": true,
+  "panel_unchanged": true,
+  "models_match_panel": true,
+  "new_codex_calls": 0,
+  "human_review": "pending",
+  "pixel_identical_images": [],
+  "empty_image_differences": [
+    {
+      "image": "empty_000.png",
+      "rgb_mae_0_255": 6.866455078125e-05,
+      "max_abs_difference": 1.0
+    },
+    {
+      "image": "empty_001.png",
+      "rgb_mae_0_255": 6.357828776041667e-05,
+      "max_abs_difference": 1.0
+    },
+    {
+      "image": "empty_002.png",
+      "rgb_mae_0_255": 5.9763590494791664e-05,
+      "max_abs_difference": 1.0
+    }
+  ],
+  "workflow_validation": {
+    "passed": 24,
+    "tests": 24,
+    "report": "/tmp/cad-scene-workflow-validation-116gh6r2/results.json"
+  },
+  "render_request": {
+    "scene_file": "/mnt/d/data/cad_scene_workflow_validation/20261016_stl_shading/scene.blend",
+    "models": [
+      "/mnt/d/data/deepcad_stl_total/00000061.stl",
+      "/mnt/d/data/deepcad_stl_total/00369859.stl",
+      "/mnt/d/data/deepcad_stl_total/00999999.stl",
+      "/mnt/d/data/deepcad_stl_total/00177436.stl",
+      "/mnt/d/data/deepcad_stl_total/00719511.stl",
+      "/mnt/d/data/deepcad_stl_total/00000070.stl",
+      "/mnt/d/data/deepcad_stl_total/00447835.stl",
+      "/mnt/d/data/deepcad_stl_total/00787296.stl",
+      "/mnt/d/data/deepcad_stl_total/00843446.stl",
+      "/mnt/d/data/deepcad_stl_total/00214089.stl",
+      "/mnt/d/data/deepcad_stl_total/00098169.stl",
+      "/mnt/d/data/deepcad_stl_total/00951201.stl"
+    ],
+    "samples": 256,
+    "seed": 0,
+    "model_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "continue_on_error": true,
+    "empty_heights": [
+      -0.901,
+      -0.4505,
+      0.0
+    ],
+    "device": "OPTIX",
+    "gpu_index": 0,
+    "support_contact_tolerance": 1e-06,
+    "stl_shading": {
+      "method": "smooth_by_angle",
+      "angle_degrees": 30.0
+    },
+    "blender_version": "5.2.2 LTS",
+    "camera": {
+      "position": [
+        2.0,
+        2.0,
+        2.0
+      ],
+      "target": [
+        1.4226497411727905,
+        1.4226497411727905,
+        1.42264986038208
+      ],
+      "up_reference": [
+        -0.4082482159137726,
+        -0.4082481861114502,
+        0.8164966106414795
+      ],
+      "vertical_fov_degrees": 44.9999978371445,
+      "width": 512,
+      "height": 512,
+      "near_clip": 0.009999999776482582,
+      "far_clip": 100.0
+    },
+    "template_sources": {
+      "scene_script": "/mnt/d/data/cad_scene_templates/workshop_workflow_001/build_scene.py",
+      "scene_script_sha256": "003fd6d2a38ba348dfd52d4714790b86632d570378d21d9922f396f19c96138b",
+      "material_script": "/mnt/d/data/cad_scene_templates/workshop_workflow_001/build_material.py",
+      "material_script_sha256": "23c94fce40d84349ad3f240c6b67ad579844a564d83c09a840190266ad7a51df"
+    }
+  },
+  "normal_validation": "RESULTS_NORMALS.json",
+  "source_hashes": {
+    "preview.py": "473a0f3f0060843295054ec8417f80013adbcb0de17205b82a9e3476a9008907",
+    "build.py": "a7b37117fc83e8d56b88465f0cf956e381b30ff7851fdfbaa49d8c00c1b54266",
+    "render.py": "803dc216c568a5435ba5416a4bd24fa8d215c4eabde54f13d69baf48ac22467e",
+    "camera.py": "8ea1dab46b2f3d5806ba3e2d8f91f5f15dcd9e69b9aca2a6d90a31dfc57b65c6",
+    "geometry.py": "e45d88dce0b2dda6f7de26db7242f906d42b983a914d00d05b01180ba6f2632a",
+    "visibility.py": "883720219f7e1416b0c8acaf7978597f2cd50f97dba3a99d907e95fe4d3b0df9",
+    "call_llm.py": "abd0a1bb732bcbaa99db5283a143ae28bfdd7a24de1931630bf93fad6c7ac28f",
+    "workflow.py": "3b81642f8320b4d88006565ada6569bc5527f4874d67cd6b26a0c621e021181a",
+    "assets.py": "f13f5544a74a1f87bc90f6bf68733ca63d50f96cc706dd3e38bc437955ec7c72",
+    "prompts/ACCEPTANCE.md": "742980ee41744df9c0e2e58772423fcd042013f83450fb4114f912a7a461610b",
+    "prompts/ASSET_TOOLS.md": "a0806db70082290672f1fa27e7a128bf3f05ba651d9b6bebae27983ef3410ef7",
+    "prompts/DEVELOPER_INSTRUCTIONS.md": "7967dab7453e5d61a84aa7d82c9856bea02afe9fc8512bb998707397b9e94099",
+    "prompts/PROMPT.EXAMPLE.md": "cc58be51968d8271eaedfe8d0c4d4f1d9f6bb3361f7e4e47b8307940a71c2504",
+    "prompts/RUNTIME.md": "e51b3cac36957daae955e68effa22a098dda9928eadde717d98b711fc3c73f89",
+    "prompts/SCENE_GUIDE.md": "e282b8f531d8789af48b58c3ded1260bf842115717983662e00c9ef83e198b09",
+    "prompts/review.schema.json": "ff1b303845c6b9c655754611bf955d61da03fff787775640466523332921e164",
+    "prompts/stages/create.md": "ab9adf5271278bc863084a368450cee61a2c271f65a633a17581d414f46a656b",
+    "prompts/stages/inspect.md": "89983fe66854ab679191fd11c3367a58b0098839c620332c80207b2d0338d8a6",
+    "prompts/stages/repair.md": "e13e6aba1df70156686ff22200bd83ce1dbb11f3b8deaf1d9051aa992bc31ed6"
+  }
+}

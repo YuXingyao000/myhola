@@ -2,7 +2,7 @@
 
 from collections.abc import Mapping
 
-from .geometry import BoundingBox, PerspectiveCamera, Vector3
+from geometry import BoundingBox, PerspectiveCamera, Vector3
 
 
 def find_blockers(

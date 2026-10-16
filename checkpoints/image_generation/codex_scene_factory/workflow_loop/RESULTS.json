@@ -1,0 +1,381 @@
+{
+  "date": "2026-10-15",
+  "branch": "codex/data-generation",
+  "git_commit": "c6ac62adb8f5702e60af6dc36f0444a78177ec4e",
+  "real_codex_calls": 0,
+  "transport": {
+    "passed": 13,
+    "results": [
+      "new: pass",
+      "resume: pass",
+      "wrong_id: pass",
+      "exit_error: pass",
+      "launch_error: pass",
+      "missing_reply: pass",
+      "malformed_json: pass",
+      "missing_id: pass",
+      "incomplete: pass",
+      "dry_run: pass",
+      "compatibility_wrapper: pass",
+      "exec_parse: pass (help-only, no model)",
+      "resume_parse: pass (help-only, no model)"
+    ]
+  },
+  "workflow": {
+    "tests": 24,
+    "passed": 24,
+    "failed": 0,
+    "output_dir": "/tmp/cad-scene-workflow-validation-v3n_kz8p",
+    "cases": [
+      {
+        "case": "first_ready",
+        "pass": true,
+        "status": "ready_for_review",
+        "events": [
+          "create",
+          "preview",
+          "inspect"
+        ],
+        "repairs_used": 0,
+        "error": null
+      },
+      {
+        "case": "technical_failure_then_ready",
+        "pass": true,
+        "status": "ready_for_review",
+        "events": [
+          "create",
+          "preview",
+          "repair",
+          "preview",
+          "inspect"
+        ],
+        "repairs_used": 1,
+        "error": null
+      },
+      {
+        "case": "host_launch_failure",
+        "pass": true,
+        "status": "incomplete",
+        "events": [
+          "create",
+          "preview"
+        ],
+        "repairs_used": 0,
+        "error": null
+      },
+      {
+        "case": "fixed_stl_mismatch",
+        "pass": true,
+        "status": "incomplete",
+        "events": [
+          "create",
+          "preview"
+        ],
+        "repairs_used": 0,
+        "error": null
+      },
+      {
+        "case": "visual_revise_then_ready",
+        "pass": true,
+        "status": "ready_for_review",
+        "events": [
+          "create",
+          "preview",
+          "inspect",
+          "repair",
+          "preview",
+          "inspect"
+        ],
+        "repairs_used": 1,
+        "error": null
+      },
+      {
+        "case": "repair_limit",
+        "pass": true,
+        "status": "incomplete",
+        "events": [
+          "create",
+          "preview",
+          "inspect",
+          "repair",
+          "preview",
+          "inspect",
+          "repair",
+          "preview",
+          "inspect"
+        ],
+        "repairs_used": 2,
+        "error": null
+      },
+      {
+        "case": "blocked",
+        "pass": true,
+        "status": "incomplete",
+        "events": [
+          "create",
+          "preview",
+          "inspect"
+        ],
+        "repairs_used": 0,
+        "error": null
+      },
+      {
+        "case": "malformed_review_json",
+        "pass": true,
+        "status": "incomplete",
+        "events": [
+          "create",
+          "preview",
+          "inspect"
+        ],
+        "repairs_used": 0,
+        "error": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "case": "malformed_review_fields",
+        "pass": true,
+        "status": "incomplete",
+        "events": [
+          "create",
+          "preview",
+          "inspect"
+        ],
+        "repairs_used": 0,
+        "error": "ValueError: 审阅回复字段不符合review schema"
+      },
+      {
+        "case": "missing_image_list",
+        "pass": true,
+        "status": "incomplete",
+        "events": [
+          "create",
+          "preview",
+          "inspect"
+        ],
+        "repairs_used": 0,
+        "error": "ValueError: 审阅图片清单没有逐一对应当前全部预览"
+      },
+      {
+        "case": "ready_with_issues",
+        "pass": true,
+        "status": "incomplete",
+        "events": [
+          "create",
+          "preview",
+          "inspect"
+        ],
+        "repairs_used": 0,
+        "error": "ValueError: ready不能同时包含待解决的问题"
+      },
+      {
+        "case": "create_missing_plan",
+        "pass": true,
+        "status": "ready_for_review",
+        "events": [
+          "create",
+          "preview",
+          "repair",
+          "preview",
+          "inspect"
+        ],
+        "repairs_used": 1,
+        "error": null
+      },
+      {
+        "case": "readonly_script_change",
+        "pass": true,
+        "status": "incomplete",
+        "events": [
+          "create",
+          "preview",
+          "inspect"
+        ],
+        "repairs_used": 0,
+        "error": "ValueError: 审阅期间模板、素材、测试配置或外围代码改变；旧预览不可交付"
+      },
+      {
+        "case": "readonly_asset_change",
+        "pass": true,
+        "status": "incomplete",
+        "events": [
+          "create",
+          "preview",
+          "inspect"
+        ],
+        "repairs_used": 0,
+        "error": "ValueError: 审阅期间模板、素材、测试配置或外围代码改变；旧预览不可交付"
+      },
+      {
+        "case": "readonly_image_change",
+        "pass": true,
+        "status": "incomplete",
+        "events": [
+          "create",
+          "preview",
+          "inspect"
+        ],
+        "repairs_used": 0,
+        "error": "ValueError: 审阅期间图片改变：000000_fixture_part.png"
+      },
+      {
+        "case": "readonly_blend_change",
+        "pass": true,
+        "status": "incomplete",
+        "events": [
+          "create",
+          "preview",
+          "inspect"
+        ],
+        "repairs_used": 0,
+        "error": "ValueError: 审阅期间构建产物或报告改变：/tmp/cad-scene-workflow-validation-v3n_kz8p/readonly_blend_change/template/workflow/round_00/preview/scene.blend；本轮证据无效"
+      },
+      {
+        "case": "readonly_report_change",
+        "pass": true,
+        "status": "incomplete",
+        "events": [
+          "create",
+          "preview",
+          "inspect"
+        ],
+        "repairs_used": 0,
+        "error": "ValueError: 审阅期间构建产物或报告改变：/tmp/cad-scene-workflow-validation-v3n_kz8p/readonly_report_change/template/workflow/round_00/preview/preview_report.json；本轮证据无效"
+      },
+      {
+        "case": "readonly_stl_change",
+        "pass": true,
+        "status": "incomplete",
+        "events": [
+          "create",
+          "preview",
+          "inspect"
+        ],
+        "repairs_used": 0,
+        "error": "ValueError: 审阅期间源STL改变：fixture_part"
+      },
+      {
+        "case": "create_panel_change",
+        "pass": true,
+        "status": "incomplete",
+        "events": [
+          "create"
+        ],
+        "repairs_used": 0,
+        "error": "ValueError: 外围代码或固定测试组在Agent执行后改变；停止工作流，不采用新基线"
+      },
+      {
+        "case": "repair_panel_change",
+        "pass": true,
+        "status": "incomplete",
+        "events": [
+          "create",
+          "preview",
+          "inspect",
+          "repair"
+        ],
+        "repairs_used": 1,
+        "error": "ValueError: 外围代码或固定测试组在Agent执行后改变；停止工作流，不采用新基线"
+      },
+      {
+        "case": "create_host_change",
+        "pass": true,
+        "status": "incomplete",
+        "events": [
+          "create"
+        ],
+        "repairs_used": 0,
+        "error": "ValueError: 外围代码或固定测试组在Agent执行后改变；停止工作流，不采用新基线"
+      },
+      {
+        "case": "repair_host_change",
+        "pass": true,
+        "status": "incomplete",
+        "events": [
+          "create",
+          "preview",
+          "inspect",
+          "repair"
+        ],
+        "repairs_used": 1,
+        "error": "ValueError: 外围代码或固定测试组在Agent执行后改变；停止工作流，不采用新基线"
+      },
+      {
+        "case": "without_blender",
+        "pass": true,
+        "status": "generated_unverified",
+        "events": [
+          "create"
+        ],
+        "repairs_used": 0,
+        "error": null
+      },
+      {
+        "case": "dry_run",
+        "pass": true,
+        "status": "dry_run",
+        "events": [],
+        "repairs_used": 0,
+        "error": null
+      }
+    ],
+    "source_sha256": {
+      "workflow.py": "0f6da33931266b5d6afcaeb141fb737ce0460be05b2c74cbbab73f1f44cb2f59",
+      "workflow_prompts.py": "b9bcb1bd2c42e6fbdb66b026b698852e6025b54cf29173ff68a07e212df92078",
+      "preview.py": "2466771787c00ed9cd79781274e052eeacc954100987a8c98f76452b5a0dad9c",
+      "call_llm.py": "beb16397c1f6bd1e1c33c505c4052eb84f866e79d9619128e0efa20a684a762e"
+    }
+  },
+  "blender": {
+    "agent_mode": "stub_no_visual_judgment",
+    "real_blender": true,
+    "source_unchanged": true,
+    "source_hashes": {
+      "build_scene.py": "78afffcb545fb70c3305cd4d71169212a31d95de306be0ed56f43415515d7dae",
+      "build_material.py": "9c4376970187306adc9fc763e7f23c456e32ea56a922ad8843c022925d69db29",
+      "assets.json": "33e58ec9e640a768f6f452ce5edd355d3a8fbfd728f54351b734afafd68d17e0"
+    },
+    "calls": [
+      {
+        "session_id": null,
+        "images": 0,
+        "output_schema": "None"
+      },
+      {
+        "session_id": "blender-integration-stub",
+        "images": 15,
+        "output_schema": "/mnt/d/data/cad_scene_workflow_validation/20261015_blender_final/workflow/review_schema.json"
+      }
+    ],
+    "workflow_status": "ready_for_review",
+    "rounds": [
+      {
+        "revision": 0,
+        "report": "/mnt/d/data/cad_scene_workflow_validation/20261015_blender_final/workflow/round_00/preview/preview_report.json",
+        "technical": "pass",
+        "counts": {
+          "planned": 15,
+          "success": 15,
+          "failed": 0,
+          "missing": 0
+        },
+        "decision": "ready",
+        "review": "/mnt/d/data/cad_scene_workflow_validation/20261015_blender_final/workflow/round_00/review.json"
+      }
+    ]
+  },
+  "preview_report": "/mnt/d/data/cad_scene_workflow_validation/20261015_blender_final/workflow/round_00/preview/preview_report.json",
+  "checks_not_run": [
+    "template_relocation",
+    "exact_support_surface_contact",
+    "pixel_visibility",
+    "visual_realism",
+    "STEP_to_STL_fidelity",
+    "entire_dataset_coverage"
+  ],
+  "current_source_matches_validation": true,
+  "limitations": [
+    "Codex process and image review were stubs; no real model end-to-end validation.",
+    "No new scene-quality, CAD normals, relocation or downstream training result is claimed."
+  ]
+}
