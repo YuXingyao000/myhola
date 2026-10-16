@@ -6,9 +6,12 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+import warnings
 from unittest.mock import patch
 
-from tools.postprocess_validation_report import POLICIES, aggregate, main, validate_policy_records
+from tools.postprocess_validation_report import (
+    POLICIES, aggregate, draw_results, main, validate_policy_records,
+)
 from tools.vae_compare_post import atomic_json, fingerprint, read_json, sha256_file
 
 
@@ -97,7 +100,49 @@ class PostprocessReportTests(unittest.TestCase):
             with self.subTest(ids=chosen, count=count), self.assertRaisesRegex(ValueError, "Invalid intended"):
                 aggregate(records, chosen, original_count=count)
 
-    def report_fixture(self, root):
+    def test_explicit_two_policies_preserve_metrics_and_default_requires_all_four(self):
+        records, ids = self.fixture()
+        full = aggregate(records, ids, original_count=6)
+        policies = ("legacy", "recover_v1")
+        selected = {p: records[p] for p in policies}
+        result = aggregate(selected, ids, original_count=6, policies=policies)
+        self.assertEqual(tuple(result["policies"]), policies)
+        self.assertEqual(result["policies"], {p: full["policies"][p] for p in policies})
+        self.assertEqual(result["paired"], {"recover_v1": full["paired"]["recover_v1"]})
+        with self.assertRaisesRegex(ValueError, "Missing policy records"):
+            aggregate(selected, ids, original_count=6)
+
+    def test_invalid_policy_selections_are_rejected(self):
+        records, ids = self.fixture()
+        for policies, error in (((), "legacy"), (("recover_v1",), "legacy"),
+                                (("legacy",), "candidate"),
+                                (("legacy", "recover_v1", "legacy"), "Duplicate"),
+                                (("legacy", "unknown"), "Unknown")):
+            with self.subTest(policies=policies), self.assertRaisesRegex(ValueError, error):
+                aggregate(records, ids, original_count=6, policies=policies)
+
+    def test_two_policy_chart_uses_selected_labels_and_test_split(self):
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+
+        records, ids = self.fixture()
+        result = aggregate(records, ids, original_count=6, policies=("legacy", "recover_v1"))
+        with tempfile.TemporaryDirectory() as temporary, warnings.catch_warnings(), \
+                patch("tools.postprocess_validation_report.configure_plot", return_value=plt), \
+                patch("matplotlib.figure.Figure.savefig"), patch.object(plt, "close"):
+            warnings.filterwarnings("ignore", message="Glyph .* missing from font")
+            draw_results(result, Path(temporary), Path("unused-font"), split_label="test")
+            figure = plt.gcf()
+            self.assertEqual([t.get_text() for t in figure.axes[0].get_yticklabels()],
+                             ["原后处理", "原流程优先＋失败再修复"])
+            self.assertEqual([t.get_text() for t in figure.axes[1].get_xticklabels()], ["失败再修复"])
+            self.assertEqual(len(figure.axes[0].patches), 2)
+            self.assertIn("5 个预定 test 样本", figure.axes[0].get_xlabel())
+            self.assertNotIn("validation", figure.axes[0].get_xlabel())
+        plt.close(figure)
+
+    def report_fixture(self, root, policies=POLICIES):
         records, ids = self.fixture()
         split = root / "split.txt"
         split.write_text("\n".join(ids) + "\n")
@@ -107,7 +152,7 @@ class PostprocessReportTests(unittest.TestCase):
             "sampling": {"face": 1024, "edge": 128}, "native_validity": "read mode 0",
             "timeout_seconds": 180, "max_optimize_iter": 200, "post_algorithm_files": {"test.py": "sha"},
         }
-        for policy in POLICIES:
+        for policy in policies:
             protocol = {**common, "post_policy": policy}
             directory = root / "post_variants" / policy / "metadata/post/optimized"
             atomic_json(directory / "protocol.json", protocol)
@@ -136,12 +181,13 @@ class PostprocessReportTests(unittest.TestCase):
             with self.subTest(field=field), self.assertRaises(ValueError):
                 validate_policy_records({**protocol, field: wrong}, [], "recover_v1", "split", 1, 2)
 
-    def run_report(self, root, split, original_count=6):
+    def run_report(self, root, split, original_count=6, extra_args=()):
         argv = ["postprocess_validation_report.py", "--run-root", str(root), "--split-list", str(split),
-                "--original-count", str(original_count)]
+                "--original-count", str(original_count), *extra_args]
         with patch.object(sys, "argv", argv), patch("tools.postprocess_validation_report.draw_explanations"), \
-                patch("tools.postprocess_validation_report.draw_results"), redirect_stdout(StringIO()):
+                patch("tools.postprocess_validation_report.draw_results") as draw, redirect_stdout(StringIO()):
             main()
+        return draw
 
     def test_report_rejects_cli_subset_that_differs_from_frozen_split(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -160,6 +206,26 @@ class PostprocessReportTests(unittest.TestCase):
             self.assertEqual(result["intended_count"], 5)
             self.assertEqual(result["original_count"], 6)
             self.assertEqual(result["policies"]["legacy"]["native_valid_count"], 2)
+
+    def test_report_accepts_only_selected_two_policies_and_labels_test(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            policies = ("legacy", "recover_v1")
+            split = self.report_fixture(root, policies=policies)
+            draw = self.run_report(root, split, extra_args=("--policies", *policies, "--split-label", "test"))
+            result = read_json(root / "report/summary.json")
+            self.assertEqual(tuple(result["policies"]), policies)
+            self.assertEqual(tuple(result["protocols"]), policies)
+            self.assertEqual(result["split_label"], "test")
+            self.assertEqual(draw.call_args.kwargs["split_label"], "test")
+
+    def test_report_rejects_invalid_policy_cli_before_creating_outputs(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for policies in (("recover_v1",), ("legacy", "legacy"), ("legacy", "unknown")):
+                with self.subTest(policies=policies), self.assertRaises(ValueError):
+                    self.run_report(root, root / "missing.txt", extra_args=("--policies", *policies))
+                self.assertFalse((root / "report").exists())
 
     def test_report_rejects_cli_original_denominator_that_differs_from_protocol(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -10,14 +10,16 @@ python -m src.brepnet.post.construct_brep
 
 ## 后处理研究的数据边界（2026-10-16）
 
-用户在本轮澄清：当前 DeepCAD 用于开发与探索，后续 ABC 的最终评估更严格隔离；不将 validation 优先扩大为禁止利用已有 DeepCAD 分析。
+用户的最新约定：当前DeepCAD继续开发，但后处理分析和方案调整只使用validation；test在方案冻结后评估数据。后续ABC最终评估进一步保持隔离。
 
-- DeepCAD 的规则、容差、修复顺序、候选排序和重试预算优先在 validation 上筛选。允许利用已有 DeepCAD test 失败分析定位问题和形成方案，如实记录其开发用途，不将其表述为完全未见的独立检验。
+- DeepCAD 的规则、容差、修复顺序、候选排序和重试预算在validation上筛选，失败原因分析也在validation进行。test用于冻结方案的数据比较，不据test个例继续调整。历史test曾参与开发，如实记录，不将其表述为从未见过的独立检验。
 - 固定开发比较的 CAD 清单、split 来源、checkpoint、原始预测和选择准则。比较覆盖完整预定集合，同时报告救回、退步、几何保真、边界保留和耗时；失败、缺失、超时不移出分母。GT 可用于诊断与评估，不能进入实际修复或候选选择。
 - 旧后处理与候选使用相同输入信息和预定总预算，新增 fallback、容差尝试及重试均计入成本。保留原始 split 和历史结果。
 - ABC 最终评估子集在方案、代码／配置、checkpoint 与协议冻结后使用，不据其结果或失败样本调规则、阈值或挑版本。开展 ABC 工作时明确具体子集，并核对与 DeepCAD 等开发数据的 CAD／几何重叠；不同数据集名称本身不证明独立性。
 
 本轮已按上述规则完成原 Intersection refinement VAE 的3495件validation对照：`recover_v1`原生合法率88.01%→90.04%，新增71件、原有成功件无退步。它保留为显式可选策略，默认仍为`legacy`。几何退步、较大内部容差与组环结构差异均单列，详见[图文总览](../../../checkpoints/postprocess_refinement/README.md)与[结果报告](../../../checkpoints/postprocess_refinement/validation_20261016/REPORT.md)。
+
+固定同一方案的[2417件test评估](../../../checkpoints/postprocess_refinement/test_20261016/REPORT.md)也已完成：87.34%→89.16%，新增44件、零退步；未按test结果修改规则，后续失败原因分析仍使用validation。
 
 ## 圆柱面表示与特殊处理（2026-10-16 核对）
 

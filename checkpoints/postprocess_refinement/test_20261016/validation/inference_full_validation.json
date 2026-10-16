@@ -1,0 +1,50 @@
+{
+  "status": "passed",
+  "verified_utc": "2026-10-16T09:00:31.756752+00:00",
+  "intended_count": 2417,
+  "original_count": 2424,
+  "raw_count": 2417,
+  "successful_records": 2417,
+  "failed_records": 0,
+  "missing_raw": 0,
+  "all_eight_exit_codes": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "inference_wall_seconds": 29.573553872003686,
+  "validation_wall_seconds": 15.327745440008584,
+  "checkpoint_sha256": "9b18509de2a21f50d8fad41b8c37695842fe2e92745dc779713b0ecac06e2107",
+  "split_sha256": "2864849e8240134c6033cc6cd64efa19337f67fea94b89a493690ae84355b7b3",
+  "protocol_sha256": "f69a275bc698de6d668302e76781be523ee4a0e1e5f6cd7625590b59149ce82e",
+  "encoder_equal_tensor_count": 243,
+  "raw_manifest": "/mnt/d/python_curve_eval/checkpoints/postprocess_refinement/test_20261016/metadata/raw_manifest.json",
+  "raw_manifest_sha256": "618da7bb98741afc1ada05db59b729cf7dfafa16a4011f37deb902f48891c9ed",
+  "total_faces": 30707,
+  "total_directed_edges": 141550,
+  "validation_protocol_differences": [
+    "intended_count",
+    "split_list",
+    "split_sha256"
+  ],
+  "same_numeric_and_model_contract_as_validation": true,
+  "frozen_plan_sha256": "b319db88346f7eb8f705c765064ba897f1a5eb2d5339fe3d4c88d6fbf6b13daf",
+  "validation_script_sha256": "00d493228c7ed0b940bbac3803cf391d9fbe683a18d61e1aa921461f89fb2647",
+  "checks": [
+    "exact unique split coverage and ordered shard IDs",
+    "all source CAD hashes reread",
+    "every NPZ field decompressed",
+    "actual latent SHA256 and source face count",
+    "float32 finite arrays and valid connectivity",
+    "checkpoint/protocol provenance",
+    "no reference-derived input fields",
+    "frozen source code fingerprints",
+    "test-vs-validation protocol differs only in split path/hash/count"
+  ],
+  "scope": "Inference integrity and provenance only; no test postprocessing outcomes or failure cases inspected"
+}

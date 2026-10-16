@@ -19,6 +19,23 @@ from tools.vae_compare_post import (
 POLICIES = ("legacy", "roundtrip_retry", "fit_score_v2", "recover_v1")
 LABELS = ("原后处理", "检查边界＋继续尝试", "修正拟合评分", "原流程优先＋失败再修复")
 COLORS = ("#68788e", "#3079ba", "#c99130", "#16877c")
+POLICY_LABELS = dict(zip(POLICIES, LABELS))
+POLICY_COLORS = dict(zip(POLICIES, COLORS))
+SHORT_LABELS = {"roundtrip_retry": "边界＋重试", "fit_score_v2": "拟合评分",
+                "recover_v1": "失败再修复"}
+
+
+def validate_policies(policies) -> tuple[str, ...]:
+    policies = tuple(policies)
+    if len(set(policies)) != len(policies):
+        raise ValueError("Duplicate post policies are not allowed")
+    if set(policies) - set(POLICIES):
+        raise ValueError("Unknown post policy in report selection")
+    if "legacy" not in policies:
+        raise ValueError("Report policies must include legacy")
+    if len(policies) < 2:
+        raise ValueError("Report requires legacy and at least one candidate policy")
+    return policies
 
 
 def validate_policy_records(protocol: dict, rows: list[dict], policy: str,
@@ -40,11 +57,15 @@ def validate_policy_records(protocol: dict, rows: list[dict], policy: str,
             raise ValueError(f"Row post_policy mismatch: {policy}/{row.get('sample_id')}")
 
 
-def aggregate(records: dict[str, list[dict]], ids: list[str], original_count: int) -> dict:
+def aggregate(records: dict[str, list[dict]], ids: list[str], original_count: int,
+              *, policies=POLICIES) -> dict:
+    policies = validate_policies(policies)
     if len(ids) != len(set(ids)) or not ids or original_count < len(ids):
         raise ValueError("Invalid intended split/denominator")
     maps = {}
-    for policy in POLICIES:
+    for policy in policies:
+        if policy not in records:
+            raise ValueError(f"Missing policy records: {policy}")
         rows = records[policy]
         if len(rows) != len(ids) or {r["sample_id"] for r in rows} != set(ids):
             raise ValueError(f"Record IDs differ: {policy}")
@@ -52,11 +73,11 @@ def aggregate(records: dict[str, list[dict]], ids: list[str], original_count: in
             raise ValueError(f"Nonterminal record: {policy}")
         maps[policy] = {r["sample_id"]: r for r in rows}
     for sample_id in ids:
-        if len({maps[p][sample_id].get("raw_sha256") for p in POLICIES}) != 1:
+        if len({maps[p][sample_id].get("raw_sha256") for p in policies}) != 1:
             raise ValueError(f"Raw predictions differ: {sample_id}")
     result = {"intended_count": len(ids), "original_count": original_count,
               "policies": {}, "paired": {}}
-    for policy in POLICIES:
+    for policy in policies:
         rows = records[policy]
         count = sum(bool(r.get("native_valid_solid")) for r in rows)
         result["policies"][policy] = {
@@ -180,22 +201,26 @@ def draw_explanations(output: Path, font_path: Path) -> None:
     fig.tight_layout(rect=[0,0,1,.90]);fig.savefig(output/"changes.png",dpi=145,bbox_inches="tight");plt.close(fig)
 
 
-def draw_results(summary: dict, output: Path, font_path: Path) -> None:
+def draw_results(summary: dict, output: Path, font_path: Path,
+                 *, split_label: str = "validation") -> None:
+    policies = validate_policies(summary["policies"])
+    candidates = [p for p in policies if p != "legacy"]
     plt = configure_plot(font_path)
     fig, axes = plt.subplots(1, 2, figsize=(13, 5), facecolor="#f6f8fc")
-    values = [summary["policies"][p]["native_valid_count"] for p in POLICIES]
+    values = [summary["policies"][p]["native_valid_count"] for p in policies]
     n = summary["intended_count"]
-    bars = axes[0].barh(LABELS, [100*v/n for v in values], color=COLORS, height=.55)
-    axes[0].set(xlim=(0,100),xlabel=f"原生合法 solid / {n} 个预定 validation 样本（%）",title="固定 VAE、固定原始预测")
+    bars = axes[0].barh([POLICY_LABELS[p] for p in policies], [100*v/n for v in values],
+                        color=[POLICY_COLORS[p] for p in policies], height=.55)
+    axes[0].set(xlim=(0,100),xlabel=f"原生合法 solid / {n} 个预定 {split_label} 样本（%）",title="固定 VAE、固定原始预测")
     axes[0].invert_yaxis()
     for bar,v in zip(bars,values):
         axes[0].text(1,bar.get_y()+bar.get_height()/2,f"{v}/{n} · {100*v/n:.2f}%",va="center",color="white",weight="bold")
-    x=range(3)
-    gains=[summary["paired"][p]["counts"]["rescued"] for p in POLICIES[1:]]
-    losses=[summary["paired"][p]["counts"]["regressed"] for p in POLICIES[1:]]
+    x=range(len(candidates))
+    gains=[summary["paired"][p]["counts"]["rescued"] for p in candidates]
+    losses=[summary["paired"][p]["counts"]["regressed"] for p in candidates]
     axes[1].bar(x,gains,color="#16877c",label="原失败 → 新成功")
     axes[1].bar(x,[-v for v in losses],color="#bb6255",label="原成功 → 新失败")
-    axes[1].set(xticks=list(x),xticklabels=["边界＋重试","拟合评分","失败再修复"],ylabel="件数",title="和原后处理逐件配对",
+    axes[1].set(xticks=list(x),xticklabels=[SHORT_LABELS[p] for p in candidates],ylabel="件数",title="和原后处理逐件配对",
                 ylim=(-max(losses)-12, max(gains)+12))
     for i,(g,l) in enumerate(zip(gains,losses)):
         axes[1].annotate(f"+{g}",(i,g),xytext=(0,5),textcoords="offset points",ha="center")
@@ -206,7 +231,8 @@ def draw_results(summary: dict, output: Path, font_path: Path) -> None:
     fig.tight_layout();fig.savefig(output/"results.png",dpi=150,bbox_inches="tight");plt.close(fig)
 
 
-def draw_case(run_root: Path, sample_id: str, output: Path, font_path: Path) -> dict:
+def draw_case(run_root: Path, sample_id: str, output: Path, font_path: Path,
+              *, split_label: str = "validation") -> dict:
     """Two common camera views; missing triangulations are explicitly labelled."""
     import numpy as np
     from matplotlib.colors import to_rgb
@@ -285,7 +311,8 @@ def draw_case(run_root: Path, sample_id: str, output: Path, font_path: Path) -> 
     diagnostics = read_json(run_root / "post_variants/recover_v1/post/optimized/intersection" / sample_id / "post_diagnostics.json")
     path_label = {"roundtrip_fit_only": "跳过几何优化后救回", "roundtrip_optimized": "完整边界和重试后救回",
                   "fit_score_v2_roundtrip_optimized": "修正拟合后救回"}.get(diagnostics.get("chosen_path"), diagnostics.get("chosen_path", "unknown"))
-    fig.suptitle(f"验证样本 {sample_id} · {path_label}", x=.04, ha="left", fontsize=18, weight="bold")
+    sample_label = "验证" if split_label == "validation" else "测试"
+    fig.suptitle(f"{sample_label}样本 {sample_id} · {path_label}", x=.04, ha="left", fontsize=18, weight="bold")
     fig.text(.05, .02, "两行是不同观察角度；三列使用相同坐标与比例。图像用于看形状，合法性由保存后的原生 STEP 检查确定。", color="#52647a", fontsize=10)
     fig.tight_layout(rect=(0, .04, 1, .94))
     target = output / f"case_{sample_id}.png"
@@ -301,16 +328,22 @@ def main() -> None:
     parser.add_argument("--run-root",type=Path,required=True)
     parser.add_argument("--split-list",type=Path,required=True)
     parser.add_argument("--original-count",type=int,default=3505)
+    parser.add_argument("--policies", nargs="+", default=POLICIES,
+                        help="Explicit post policies; include legacy and at least one candidate")
+    parser.add_argument("--split-label", choices=("validation", "test"), default="validation")
     parser.add_argument("--font-path",type=Path,default=Path("/root/.cache/hola-browser-libs/fonts/NotoSansCJKsc-Regular.otf"))
     parser.add_argument("--figures-only",action="store_true")
     parser.add_argument("--case-ids", nargs="*", default=[], help="Illustration only; does not select evaluation samples")
     args=parser.parse_args()
+    policies = validate_policies(args.policies)
+    if args.case_ids and "recover_v1" not in policies:
+        raise ValueError("Case illustrations require recover_v1 in the selected policies")
     output=args.run_root/"report";output.mkdir(parents=True,exist_ok=True)
     draw_explanations(output,args.font_path)
     if args.figures_only:return
     ids=[s.strip() for s in args.split_list.read_text().splitlines() if s.strip()]
     records={};protocols={}
-    for policy in POLICIES:
+    for policy in policies:
         root=args.run_root/"post_variants"/policy
         meta=root/"metadata/post/optimized"
         protocols[policy]=read_json(meta/"protocol.json")
@@ -323,19 +356,21 @@ def main() -> None:
     for field in fields:
         if len({fingerprint(p.get(field)) for p in protocols.values()}) != 1:
             raise ValueError(f"Comparison contract differs: {field}")
-    summary=aggregate(records,ids,args.original_count)
+    summary=aggregate(records,ids,args.original_count,policies=policies)
     summary["protocols"]=protocols
+    summary["split_label"]=args.split_label
     atomic_json(output/"summary.json",summary)
     with (output/"cases.csv").open("w",newline="") as handle:
         writer=csv.DictWriter(handle,fieldnames=["policy","sample_id","status","native_valid_solid","face_cd","edge_cd","wall_seconds"])
         writer.writeheader()
         for policy,rows in records.items():
             for row in rows:writer.writerow({"policy":policy,**{k:row.get(k) for k in writer.fieldnames if k != "policy"}})
-    draw_results(summary,output,args.font_path)
+    draw_results(summary,output,args.font_path,split_label=args.split_label)
     if args.case_ids:
         if set(args.case_ids) - set(ids):
             raise ValueError("Illustrated case is outside the frozen evaluation split")
-        cases = [draw_case(args.run_root, sample_id, output, args.font_path) for sample_id in args.case_ids]
+        cases = [draw_case(args.run_root, sample_id, output, args.font_path,
+                           split_label=args.split_label) for sample_id in args.case_ids]
         atomic_json(output / "illustrated_cases.json", {"selection": "Explicit illustrative IDs; no effect on evaluation or repair selection", "cases": cases})
     print(json.dumps({p:v["native_valid_count"] for p,v in summary["policies"].items()}))
 
