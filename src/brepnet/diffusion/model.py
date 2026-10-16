@@ -1,4 +1,4 @@
-"""Diffusion 装配与训练入口；保留原 checkpoint 的 nn.Module 属性树。"""
+"""Diffusion 装配、训练和采样；逐层条件版本需使用新架构 checkpoint。"""
 
 from __future__ import annotations
 
@@ -11,7 +11,6 @@ from src.brepnet.models.vae import build_autoencoder
 
 from .conditioning import build_condition_encoder
 from .denoiser import BRepDenoiser
-from .fusion import build_condition_fuser
 from .latents import LatentProvider
 from .losses import compute_diffusion_losses
 from .padding import build_face_padder
@@ -24,6 +23,13 @@ class Diffusion(nn.Module):
 
     def __init__(self, cfg: dict, condition_cfg: dict):
         super().__init__()
+        if "condition_fuser" in cfg:
+            raise ValueError(
+                "Legacy condition_fuser config is incompatible with layerwise conditioning. "
+                "Use the new model/diffusion.yaml; reproduce old runs on codex/diffusion-modular-baseline."
+            )
+        if cfg["denoiser"].get("conditioning") != "layerwise_cross_attention":
+            raise ValueError("Set denoiser.conditioning='layerwise_cross_attention' explicitly.")
         self.latent_dim = cfg["latent"]["dim"]
         self.max_faces = cfg["padding"]["max_faces"]
         self.prediction_type = cfg["noise"]["prediction_type"]
@@ -51,17 +57,12 @@ class Diffusion(nn.Module):
             autoencoder=self.autoencoder,
         )
 
-        # 3. 条件与去噪网络：保持注册顺序，兼容已有优化器参数顺序。
+        # 3. 图像 memory 在每一层独立注入，不再经过前端 fuser。
         self.condition_encoder = build_condition_encoder(condition_cfg)
-        condition_fuser = build_condition_fuser(
-            fuser_cfg=cfg["condition_fuser"],
-            condition_cfg=condition_cfg,
-            hidden_dim=cfg["denoiser"]["hidden_dim"],
-        )
         self.denoiser = BRepDenoiser(
             latent_dim=self.latent_dim,
             cfg=cfg["denoiser"],
-            condition_fuser=condition_fuser,
+            condition_dim=condition_cfg["output_dim"] if self.condition_encoder is not None else None,
         )
         self.oracle_topology_self_attention = build_topology_self_attention(
             cfg=cfg["topology_bias"],
@@ -82,13 +83,43 @@ class Diffusion(nn.Module):
         clean_latent_sequence: Tensor | None = None,
         self_attention_mask: Tensor | None = None,
     ) -> tuple[Tensor, Tensor | None]:
-        return self.denoiser(
+        """保留旧调用返回格式；clean_latent_sequence 已弃用且不会被读取。"""
+        prediction = self.denoiser(
             noisy_latent_sequence,
             timesteps,
             condition,
-            clean_latent_sequence,
             self_attention_mask,
         )
+        return prediction, None
+
+    def load_state_dict(self, state_dict, strict: bool = True, assign: bool = False):
+        """禁止把旧架构或残缺权重静默加载成部分随机的新模型。"""
+        if not strict:
+            raise ValueError(
+                "Diffusion requires strict=True. For inference with a separately loaded VAE, "
+                "use load_diffusion_state_dict(); legacy fuser checkpoints require the baseline branch."
+            )
+        return super().load_state_dict(state_dict, strict=True, assign=assign)
+
+    def load_diffusion_state_dict(self, state_dict: dict[str, Tensor]):
+        """推理时保留已加载的 VAE，其余全部参数必须严格匹配新架构。"""
+        ae_prefixes = (
+            "autoencoder.", "latent_provider.autoencoder.",
+            "latent_codec.autoencoder.", "ae_model.",
+        )
+        current = self.state_dict()
+        weights = {key: value for key, value in state_dict.items() if not key.startswith(ae_prefixes)}
+        expected = {key for key in current if not key.startswith(ae_prefixes)}
+        missing = sorted(expected - weights.keys())
+        unexpected = sorted(weights.keys() - expected)
+        if missing or unexpected:
+            raise RuntimeError(
+                "Diffusion checkpoint does not match the layerwise architecture: "
+                f"missing={missing[:8]}, unexpected={unexpected[:8]}. "
+                "Old fuser checkpoints require codex/diffusion-modular-baseline."
+            )
+        ae_weights = {key: value for key, value in current.items() if key.startswith(ae_prefixes)}
+        return self.load_state_dict({**ae_weights, **weights}, strict=True)
 
     def _topology_input(self, batch: dict) -> Tensor | None:
         """Pick the right input for the topology self-attention module.
@@ -119,12 +150,11 @@ class Diffusion(nn.Module):
         topology_input = self._topology_input(batch)
         self_attention_mask = self.oracle_topology_self_attention(topology_input, timesteps)
 
-        prediction, align_loss = self.diffuse(
+        prediction, _ = self.diffuse(
             noisy_latent_sequence,
             timesteps,
             condition,
-            latent_sequence,
-            self_attention_mask,
+            self_attention_mask=self_attention_mask,
         )
         target = latent_sequence if self.prediction_type == "sample" else noise
         valid_loss = self.face_padder.validity_loss(
@@ -133,7 +163,7 @@ class Diffusion(nn.Module):
             self.valid_loss_weight,
         )
         return compute_diffusion_losses(
-            prediction, target, timesteps, self.loss_fn, align_loss, valid_loss
+            prediction, target, timesteps, self.loss_fn, validity_loss=valid_loss
         )
 
     def inference(

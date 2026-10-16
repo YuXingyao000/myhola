@@ -178,7 +178,8 @@ class UnifiedTrainer(pl.LightningModule):
             else:
                 model_state[key] = value
 
-        missing, unexpected = self.model.load_state_dict(model_state, strict=False)
+        # 新 diffusion 架构禁止静默遗漏 cross-attention 参数。
+        missing, unexpected = self.model.load_state_dict(model_state, strict=self.stage == "diffusion")
         logger.info(
             "Initialized model from %s (missing=%d, unexpected=%d)",
             ckpt_path,

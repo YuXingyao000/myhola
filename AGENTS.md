@@ -19,7 +19,7 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 
 ## 从哪里恢复上下文
 
-- 原论文：[HoLa: B-Rep Generation using a Holistic Latent Representation](https://arxiv.org/abs/2504.14257)。论文的 surface-only holistic latent 与仓库新增的 condition fuser、alignment、topology bias 分开描述。
+- 原论文：[HoLa: B-Rep Generation using a Holistic Latent Representation](https://arxiv.org/abs/2504.14257)。论文的 surface-only holistic latent 与仓库历史 condition fuser / alignment、当前逐层 image cross-attention 及可选 topology bias 分开描述。
 - 实验历史：[ROADMAP](experiments/ROADMAP.md)、[REFERENCES](experiments/REFERENCES.md)、日期目录中的 `NOTE.md`。其中“当前主线／下一步”截至六月，**重启后不自动代表当前计划**。
 - 恢复状态不能只读笔记：核对 checkpoint 元数据、实际输出及评估报告，区分“已实现、已训练、已评估”。
 - [2026-06-28 NOTE](experiments/2026-06-28/NOTE.md) 仍写待训练，但该日 `outputs_oracle_topology_log_multiplier_real/checkpoints/last.ckpt` 已到 100,000 steps（该运行设定上限）；`last-v1.ckpt` 到 892,437 steps / epoch 48（上限 1,000,000）。两者均为 real-photo、`log_multiplier`、`max_multiplier=2`。本次未在该输出目录找到完整下游评估报告；不能称为尚未训练，也不能宣称有效性已提升。
@@ -41,15 +41,15 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 | `src/brepnet/diffusion/model.py`、`sampling.py`、`losses.py` | diffusion 装配、训练损失、DDPM 采样与 VAE 接口 |
 | `src/brepnet/diffusion/latents.py`、`padding.py` | cached mean/std 或 VAE 编码，face token 打包、筛选与去重 |
 | `src/brepnet/diffusion/conditioning.py`、`image_encoder.py` | 条件工厂与图像编码；其他条件编码分文件保留 |
-| `src/brepnet/diffusion/denoiser.py`、`fusion.py`、`topology.py` | 去噪主干、图像融合／alignment、可选 oracle / learned topology bias |
+| `src/brepnet/diffusion/denoiser.py`、`fusion.py`、`topology.py` | 24 层去噪主干、每层后的独立 image cross-attention、可选 oracle / learned topology bias |
 | `src/brepnet/data/datagen/`、`configs/datagen/` | Blender 渲染、FLUX 编辑、打包；存在入口契约漂移，见局部指南 |
 | `src/brepnet/data/rotations.py`、`extract_visibility.py` | cube24 旋转与可见性缓存 |
 | `src/brepnet/eval/run.py`、`eval/metrics/` | 统一评估调度与指标 |
 | `src/brepnet/post/` | 曲面／曲线拟合、裁剪、缝合、STEP 构造与检查 |
 
-典型路径：图片 → 冻结 DINOv2 patch tokens → 前端 cross-attention fuser → face-latent DDPM → 冻结 VAE 的面几何与成对 intersection 解码 → OCC 后处理。默认每面 32 维、最多 30 个 token、random duplicate padding。这是已有实现，不是未来架构要求。
+当前单图路径：图片 → 冻结 DINOv2 的 CLS / patch tokens → 可训练图像投影；带时间嵌入的 noisy face latent → 24×（完整 TransformerEncoderLayer → 独立 image cross-attention residual）→ DDPM → 冻结 VAE → OCC 后处理。默认每面 32 维、最多 30 个 token、random duplicate padding。前端 4 层 fuser 与 alignment 已移除；这是当前实现，不是未来架构要求，也不代表已训练或已提升重建质量。
 
-Diffusion 的旧 `models/diffusion*.py` / `condition_encoders.py` 路径仅兼容导出；新代码从 `src/brepnet/diffusion/` 导入。拆分协议与单图架构见 [说明](checkpoints/diffusion/README.md)。本主题讨论神经网络架构时优先可视化每层、数据流、张量形状及输入输出，不使用 Mermaid 画神经网络。
+Diffusion 新代码从 `src/brepnet/diffusion/` 导入；保留的旧路径导出不保证旧架构配置兼容。旧模块化 baseline 位于 `codex/diffusion-modular-baseline`（`b67c5d8e`）；当前 `codex/diffusion-layerwise-conditioning` 显式拒绝 `condition_fuser` 配置，旧 diffusion checkpoint 不可直接 resume 或宽松加载。当前结构、加载协议及历史验证边界见 [说明](checkpoints/diffusion/README.md)。本主题讨论神经网络架构时优先可视化每层、数据流、张量形状及输入输出，不使用 Mermaid 画神经网络。
 
 细节见 [源码指南](src/brepnet/AGENTS.md)、[数据指南](src/brepnet/data/AGENTS.md)、[评估指南](src/brepnet/eval/AGENTS.md)。
 
@@ -82,7 +82,7 @@ Diffusion 的旧 `models/diffusion*.py` / `condition_encoders.py` 路径仅兼�
 
 环境定义为 `environment.yml`，常规安装为 `conda env create -f environment.yml`、`conda activate hola-brep`、`pip install -e .`。先检查现有环境，不因阅读或文档任务自动重装。
 
-训练使用 `python -m src.brepnet.train --config-name <config>`。准备 real-photo baseline 时优先检查 `configs/train_diffusion_baseline_real.yaml`，显式设置数据路径、设备数与 checkpoint。不要把 `train_diffusion_real.yaml` 名字当作协议保证：它继承的 overfit / validation 条件有陷阱，详见源码指南。VAE loader 已接受规范字段及显式旧别名，冲突值必须报错；仍需核对实际数据。新联合边界 decoder 的命令与迁移协议见 [README](checkpoints/joint_boundary/README.md)。
+训练使用 `python -m src.brepnet.train --config-name <config>`。当前逐层条件训练入口为 `configs/train_diffusion_layerwise_real.yaml`，继承 `train_diffusion_baseline_real.yaml` 的数据协议与预算，只设置独立实验名；正式运行显式设置数据/split、设备数、每卡 batch、seed 与 AE checkpoint。配置名含 `baseline` 不保证仍是旧架构，旧模型要回 baseline 分支复现。不要把 `train_diffusion_real.yaml` 名字当作协议保证：它继承的 overfit / validation 条件有陷阱，详见源码指南。VAE loader 已接受规范字段及显式旧别名，冲突值必须报错；仍需核对实际数据。新联合边界 decoder 的命令与迁移协议见 [README](checkpoints/joint_boundary/README.md)。
 
 保持既有模块职责；有理由改变边界时说明迁移。用 Python 3.10+、四空格、snake_case、显式配置与适当类型注解。不要把研究行为藏在路径猜测、checkpoint 名称或静默 fallback 中。
 

@@ -8,7 +8,6 @@ import torch
 from torch import nn
 
 from .image_encoder import DINOv2ImageEncoder
-from .legacy_encoders import CameraEmbedding
 from .point_encoder import PointNetEncoder
 
 
@@ -35,7 +34,7 @@ class ConditionExtractor(nn.Module):
         if "txt" in condition:
             raise NotImplementedError("txt conditioning is disabled until the new dataset format is defined.")
 
-        # 图像编码；保留构造顺序以兼容旧权重及随机初始化。
+        # 图像编码只保留实际使用的 backbone 和 projection。
         if ("single_img" in condition or "sketch" in condition):
             self.with_img = True
             backbone = config["backbone"]
@@ -44,11 +43,6 @@ class ConditionExtractor(nn.Module):
                 projection_dim=projection_dim,
                 backbone=backbone,
                 depth_anything_v2_ckpt=da_ckpt,
-            )
-            # 单视图 forward 不使用它；保留参数名称以加载旧 checkpoint。
-            self.camera_embedding = CameraEmbedding(
-                num_views=8,
-                output_dim=projection_dim,
             )
 
         # 点云为独立条件分支，不与图像同时融合。

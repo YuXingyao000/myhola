@@ -1,21 +1,17 @@
 """Diffusion package contracts; no pretrained model download is required.
 
-Optional migration parity check (an explicitly supplied pre-refactor source tree):
-    HOLABREP_DIFFUSION_REFERENCE_DIR=/path/to/old/modules python -m pytest ...
-
 Optional real cache check:
     HOLABREP_DIFFUSION_CACHE_SAMPLE=/path/to/features.npy python -m pytest ...
 
-These checks verify implementation compatibility, not reconstruction quality.
+The modular baseline parity tests are preserved on codex/diffusion-modular-baseline.
+These current tests verify interfaces, not reconstruction quality.
 """
 
 from __future__ import annotations
 
 import importlib
 import os
-from pathlib import Path
-import sys
-from types import ModuleType, SimpleNamespace
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -91,17 +87,11 @@ def tiny_config(padding: str = "random", prediction: str = "epsilon", latent_dim
         },
         "denoiser": {
             "hidden_dim": 64,
-            "num_layers": 1,
-            "nhead_divisor": 64,
+            "num_layers": 3,
+            "nhead_divisor": 32,
             "feedforward_dim": 128,
             "dropout": 0.1,
-        },
-        "condition_fuser": {
-            "type": "cross_attention",
-            "condition_dim": 64,
-            "hidden_dim": 64,
-            "num_layers": 1,
-            "alignment": {"enabled": True, "weight": 1.0, "temperature": 0.07, "projection_dim": 16},
+            "conditioning": "layerwise_cross_attention",
         },
         "topology_bias": {
             "enabled": False,
@@ -116,7 +106,7 @@ def tiny_config(padding: str = "random", prediction: str = "epsilon", latent_dim
     }
     condition_cfg = {
         "type": "single_img",
-        "output_dim": 64,
+        "output_dim": 80,
         "image": {"backbone": "dinov2", "depth_anything_v2_ckpt": None},
         "point_cloud": {"augment_probability": 0.0, "encoder": "pointnet"},
     }
@@ -152,8 +142,6 @@ def test_legacy_imports_and_registry_point_to_new_modules(tiny_dependencies):
     old_denoiser = importlib.import_module("src.brepnet.models.diffusion_denoiser")
     separated = {
         "denoiser": ["BRepDenoiser"],
-        "fusion": ["NoConditionFuser", "CrossAttentionConditionFuser", "build_condition_fuser"],
-        "losses": ["clip_style_symmetric_infonce"],
         "topology": ["OracleTopologySelfAttentionMask", "LearnedTopologySelfAttentionMask", "LearnedTopologyPredictor", "build_soft_topology_attention_bias", "build_topology_self_attention"],
     }
     for new_name, exports in separated.items():
@@ -169,11 +157,11 @@ def test_single_image_forward_backward_and_sampling_contract(tiny_dependencies, 
     cfg, condition_cfg = tiny_config(padding, prediction)
     model = tiny_dependencies.Diffusion(cfg, condition_cfg).train()
     batch = tiny_batch()
-    assert model.extract_condition(batch).shape == (2, 1, 5, 64)
+    assert model.extract_condition(batch).shape == (2, 1, 5, 80)
     assert not model.condition_encoder.image_encoder.img_model.training
 
     losses = model(batch)
-    expected = {"diffusion_loss", "align_loss", "total_loss", "t"}
+    expected = {"diffusion_loss", "total_loss", "t"}
     if padding == "zero":
         expected.add("valid_loss")
     assert losses.keys() == expected
@@ -182,7 +170,10 @@ def test_single_image_forward_backward_and_sampling_contract(tiny_dependencies, 
     torch.testing.assert_close(losses["total_loss"], sum(value for name, value in losses.items() if name not in {"total_loss", "t"}))
     losses["total_loss"].backward()
     assert model.denoiser.input_projection[0].weight.grad is not None
-    assert model.denoiser.condition_fuser.cad_alignment_head.weight.grad is not None
+    for layer in model.denoiser.cross_attention_layers:
+        assert layer.attention.q_proj_weight.grad is not None
+        assert layer.attention.k_proj_weight.grad is not None
+        assert layer.attention.v_proj_weight.grad is not None
     assert model.condition_encoder.image_encoder.projection[0].weight.grad is not None
     assert all(torch.isfinite(param.grad).all() for param in model.parameters() if param.grad is not None)
     assert all(param.grad is None for param in model.autoencoder.parameters())
@@ -200,9 +191,9 @@ def test_single_image_forward_backward_and_sampling_contract(tiny_dependencies, 
     model.eval()
     with torch.no_grad():
         torch.manual_seed(31)
-        first = model.inference(2, torch.device("cpu"), batch, v_log=False)
+        first = model.inference(2, torch.device("cpu"), {"conditions": batch["conditions"]}, v_log=False)
         torch.manual_seed(31)
-        second = model.inference(2, torch.device("cpu"), batch, v_log=False)
+        second = model.inference(2, torch.device("cpu"), {"conditions": batch["conditions"]}, v_log=False)
     assert calls == [torch.Size([2, 4, 4])] * 8
     assert len(first) == len(second) == 2
     for a, b in zip(first, second):
@@ -282,86 +273,3 @@ def test_real_cache_sample_shape_loss_and_gradient(tiny_dependencies):
     assert torch.isfinite(loss)
     loss.backward()
     assert torch.isfinite(model.denoiser.input_projection[0].weight.grad).all()
-
-
-@pytest.fixture
-def reference_modules(monkeypatch, tiny_dependencies):
-    """Load old files in a private namespace; never duplicate them in the repo."""
-    source_dir = os.environ.get("HOLABREP_DIFFUSION_REFERENCE_DIR")
-    if not source_dir:
-        pytest.skip("Set HOLABREP_DIFFUSION_REFERENCE_DIR for one-time migration parity.")
-    package_name = "_hola_diffusion_reference"
-    package = ModuleType(package_name)
-    package.__path__ = []
-    monkeypatch.setitem(sys.modules, package_name, package)
-    names = ["condition_encoders", "diffusion_condition", "diffusion_padding", "diffusion_latents", "diffusion_denoiser", "diffusion"]
-    modules = {}
-    for name in names:
-        path = Path(source_dir) / f"{name}.py"
-        source = path.read_text()
-        for dependency in names:
-            source = source.replace(f"src.brepnet.models.{dependency} import", f"{package_name}.{dependency} import")
-        module = ModuleType(f"{package_name}.{name}")
-        module.__file__ = str(path)
-        module.__package__ = package_name
-        monkeypatch.setitem(sys.modules, module.__name__, module)
-        exec(compile(source, str(path), "exec"), module.__dict__)
-        modules[name] = module
-    monkeypatch.setattr(modules["diffusion"], "build_autoencoder", lambda cfg: TinyAutoencoder(cfg["fixture_dim"]))
-    return SimpleNamespace(**modules)
-
-
-@pytest.mark.parametrize("padding", ["random", "zero"])
-@pytest.mark.parametrize("prediction", ["epsilon", "sample"])
-@pytest.mark.parametrize("topology", ["disabled", "additive", "log_multiplier", "hard_mask", "learned_additive", "learned_log_multiplier", "learned_hard_mask"])
-def test_optional_reference_model_exact_parity(reference_modules, tiny_dependencies, padding, prediction, topology):
-    cfg, condition_cfg = tiny_config(padding, prediction)
-    if topology.startswith("learned_"):
-        cfg["topology_bias"]["source"] = "learned"
-        cfg["topology_bias"]["predictor"] = {
-            "max_faces": 4, "hidden_dim": 16, "face_dim": 8, "freeze": False,
-        }
-        topology = topology.removeprefix("learned_")
-    if topology != "disabled":
-        cfg["topology_bias"]["enabled"] = True
-        if topology == "hard_mask":
-            cfg["topology_bias"]["mode"] = topology
-        else:
-            cfg["topology_bias"]["parameterization"] = topology
-    torch.manual_seed(67)
-    old = reference_modules.diffusion.Diffusion(cfg, condition_cfg)
-    torch.manual_seed(67)
-    new = tiny_dependencies.Diffusion(cfg, condition_cfg)
-    assert list(old.state_dict()) == list(new.state_dict())
-    for name, tensor in old.state_dict().items():
-        torch.testing.assert_close(new.state_dict()[name], tensor, rtol=0, atol=0)
-    new.load_state_dict(old.state_dict(), strict=True)
-    old.load_state_dict(new.state_dict(), strict=True)
-
-    batch = tiny_batch()
-    outputs, gradients = [], []
-    for model in (old, new):
-        model.train()
-        torch.manual_seed(71)
-        losses = model(batch)
-        losses["total_loss"].backward()
-        outputs.append(losses)
-        gradients.append({name: param.grad for name, param in model.named_parameters()})
-    assert outputs[0].keys() == outputs[1].keys()
-    for name in outputs[0]:
-        torch.testing.assert_close(outputs[0][name], outputs[1][name], rtol=0, atol=0)
-    assert gradients[0].keys() == gradients[1].keys()
-    for name, grad in gradients[0].items():
-        if grad is None:
-            assert gradients[1][name] is None
-        else:
-            torch.testing.assert_close(grad, gradients[1][name], rtol=0, atol=0)
-
-    samples = []
-    for model in (old, new):
-        model.eval()
-        torch.manual_seed(73)
-        with torch.no_grad():
-            samples.append(model.inference(2, torch.device("cpu"), batch, v_log=False))
-    for old_item, new_item in zip(*samples):
-        torch.testing.assert_close(old_item["face_latents"], new_item["face_latents"], rtol=0, atol=0)

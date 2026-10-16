@@ -8,7 +8,7 @@
 - 多卡由 `trainer.devices` 启用，W&B 仅记录；`batch_size`／`num_workers` 按卡计。joint-boundary frozen 默认 8 卡 × batch 32，joint 每卡 batch 4；改变全局 batch 后要重新核对样本曝光预算。正式测试／NPZ 导出暂要求 `trainer.devices=1`，避免 distributed sampler 补齐产生重复输出。变长 packed geometry 配置关闭 `trainer.cudnn_benchmark`，其他配置保留原行为。
 - 所有训练入口默认使用 `checkpoints/<exp_name>/<UTC 时间戳>`。`trainer.run_dir` 指定完整路径；续训／测试显式提供 `trainer.resume_from_checkpoint`，恢复原 run。`trainer.output_dir` 始终表示输出根，不被 Hydra 改写成 run。运行目录和逐对象 NPZ 合同分别由 `run_management.py`、`prediction_export.py` 管理。
 - `models/__init__.py`：`build_model`；主模型在 `models/vae.py` 与 `diffusion/model.py`。旧 `models/diffusion*.py` 保留兼容导出。
-- `inference.py`：独立推理工具，仍手工构造配置并带旧兼容逻辑；使用前核对参数与 checkpoint，不能认为它完整复现训练配置。
+- `inference.py`：独立推理工具，手工配置已切到逐层 image cross-attention，单图输入为 `[B,3,224,224]`。权重通过 `load_diffusion_state_dict` 加载，保留独立指定的 VAE，严格检查其余 key；仍需核对训练时的完整配置，不能认为手写默认值完整复现任意 run。
 - `eval/run.py`：`python -m src.brepnet.eval.run`；`post/` 完成 OCC B-Rep 构造。
 - 行为配置归属 `configs/model/`、`dataset/`、`condition/`、`trainer/`、`datagen/`；不要复活已移除的 `model.py`、`diffusion_model.py`、`train_diffusion.py` 入口。
 
@@ -30,11 +30,17 @@
 
 1. `dataset.py:Diffusion_dataset` 读取 cache 并完成 padding；`diffusion/latents.py:LatentProvider` 取 mean，或用 std 采样。非 cache 分支调用冻结 VAE 再由 padder 打包。
 2. `diffusion/model.py` 对 `[B, F, 32]` 加噪；默认 DDPM 1000 steps、epsilon prediction、L2 loss；损失汇总与采样分别在 `losses.py` / `sampling.py`。
-3. `diffusion/conditioning.py` 选择条件编码器。当前支持 single image、sketch、point cloud 或无条件，显式拒绝 `multi_img` / `text`；有 YAML 或论文支持不代表当前路径可用。
+3. `diffusion/conditioning.py` 选择条件编码器。此次研究与实质验证以 single image 为范围；sketch、point cloud、无条件保留接口，不据此宣称已验证同等能力。显式拒绝 `multi_img` / `text`；有 YAML 或论文支持不代表当前路径可用。
 4. `diffusion/image_encoder.py` 默认冻结 DINOv2 ViT-L，224 输入得到 257 个 token（CLS + 256 patches），再训练 projection。Depth Anything V2 选项只使用其 ViT 特征，不等于显式深度预测／监督。
-5. `diffusion/fusion.py` 的前端 fuser 用 noisy face tokens 查询 image tokens，默认 4 层完整 decoder block（self-attention、cross-attention、FFN）。训练 alignment 用 clean latent 的汇聚表示；它不是 face-to-pixel 对应监督。
-6. fuser 之后加入 timestep embedding，再经过默认 24 层 self-attention backbone（hidden 768），预测噪声。每个 diffusion timestep 都重新调用 fuser，但 backbone 各层没有独立 image cross-attention。
+5. `diffusion/denoiser.py` 先将 noisy latent 投影为 `[B,30,768]`，在主干入口加 timestep embedding `[B,1,768]`。保留 24 个完整 TransformerEncoderLayer（pre-LN self-attention + residual、pre-LN FFN + residual），每层后由 `fusion.py` 的独立 image cross-attention 再查询共享图像 memory；各层 Q=768，K/V 从 `condition.output_dim`（默认 1024）投影到 768，12 heads。
+6. 每个 DDPM timestep 都运行 24 组 encoder + cross-attention；推理图像编码一次。首个 image query 已含 t，但没有逐层另加 t 或 adaLN。24 组后执行最终 LN 与输出投影。旧前端 4 层 fuser、全局 alignment 及未用的 camera 参数已移除。
 7. 采样后筛选／去重 face latent，交给冻结 VAE 解码。当前 diffusion loss 不直接优化 OCC solid validity，也没有直接渲染重投影损失。
+
+当前配置为 `model.denoiser.conditioning=layerwise_cross_attention`，条件维度直接来自 `condition.output_dim`。
+训练入口 `train_diffusion_layerwise_real.yaml` 继承已有 real 配置与预算，仅用 `diffusion_layerwise_real` 区分新 run；`baseline` 文件名不保证旧模型。
+旧 `condition_fuser` 配置显式报错。历史 baseline 分支 `codex/diffusion-modular-baseline`（`b67c5d8e`）保留旧实现；旧 checkpoint 不能直接用于本架构 resume，不能用 `strict=False` 跳过新增层或旧 fuser 权重。
+`load_diffusion_state_dict` 只允许省略独立 VAE 权重，严格检查其余参数；不会用 diffusion checkpoint 内的 AE 覆盖单独加载的 AE。
+`checkpoints/diffusion/VALIDATION.json` 是旧模块拆分的等价性报告，不是新架构的验证或效果报告；新接口验证见同目录 `LAYERWISE_VALIDATION.json`。
 
 ## Face padding 与 topology 的共同契约
 
@@ -60,7 +66,7 @@ Diffusion loader 字段为 `raw_data_root`、`cached_latent_root`、`condition_d
 
 ## 修改与验证
 
-Diffusion 实现在 `diffusion/`：cache 在 `latents.py`，padding 在 `padding.py`，编码选择在 `conditioning.py`，图像编码在 `image_encoder.py`，条件融合在 `fusion.py`，去噪主干在 `denoiser.py`，可选拓扑在 `topology.py`，装配／loss／采样分别在 `model.py` / `losses.py` / `sampling.py`。旧 `models/` 路径仅兼容导出。说明与验证见 `checkpoints/diffusion/`；后续新增完整架构可建新模块与显式 config。
+Diffusion 实现在 `diffusion/`：cache 在 `latents.py`，padding 在 `padding.py`，编码选择在 `conditioning.py`，图像编码在 `image_encoder.py`，单层 image cross-attention 在 `fusion.py`，24 组路由及去噪主干在 `denoiser.py`，可选拓扑在 `topology.py`，装配／loss／采样分别在 `model.py` / `losses.py` / `sampling.py`。旧 `models/` 路径保留当前对象导出，不恢复已删除的 fuser / alignment。说明与验证见 `checkpoints/diffusion/`；后续新增完整架构可建新模块与显式 config。
 
 重设计交代训练／推理各自可得的信息、face correspondence、mask、相机约定、输出表示、checkpoint 迁移及最终评估。联合 geometry/topology 训练可以作为新方向，需明确损失语义和权重，不沿用旧指南中限制联合训练的默认立场。
 

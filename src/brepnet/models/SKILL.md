@@ -1,378 +1,42 @@
 ---
 name: brepnet-diffusion-model-maintenance
-description: Maintain and extend the modular HoLa-BRep diffusion model without breaking latent padding, conditioning, alignment, or oracle topology self-attention behavior.
+description: Maintain or extend the HoLa-BRep diffusion implementation in src/brepnet/diffusion, including layerwise image conditioning, latent/padding contracts, and checkpoint loading. Use for repository diffusion changes, not as a fixed future research plan.
 ---
 
-# BRepNet Diffusion Model Skill
+# Diffusion 模块维护
 
-2026-10-16 migration: the implementation now lives in `src/brepnet/diffusion/`.
-The old `models/diffusion*.py` and `models/condition_encoders.py` modules are compatibility re-exports.
-Use [the current implementation map](../../../checkpoints/diffusion/README.md) for paths, shapes, and known limitations;
-the detailed descriptions below retain historical context and are not an active experiment plan.
+当前实现与形状见 [README](../../../checkpoints/diffusion/README.md)，研究范围和历史 baseline 见 [PLAN](../../../checkpoints/diffusion/PLAN.md)。
+以当前源码、配置和两级 `AGENTS.md` 为准；本文件不要求延续旧架构。
 
-The diffusion model is intentionally assembled from small modules. Keep the config protocol stable and avoid adding defensive runtime guesses. If a field is required, put it in the relevant config group and make the module read that field directly.
+## 实现入口
 
-## Module Composition
+- `../diffusion/model.py`：装配、训练/推理与 checkpoint 加载。
+- `../diffusion/conditioning.py`、`image_encoder.py`：条件路由、冻结 ViT 与可训练图像投影。
+- `../diffusion/denoiser.py`、`fusion.py`：原完整 EncoderLayer 后接独立 image cross-attention；默认共 24 组。
+- `../diffusion/latents.py`、`padding.py`：latent 来源、面 slots 打包、有效性筛选和去重。
+- `../diffusion/topology.py`：可选 oracle / learned self-attention mask 或 bias。
+- `../diffusion/losses.py`、`sampling.py`：训练目标与 DDPM 反向迭代。
+- `vae.py`、`blocks.py`：外部 VAE 与共享算子，不为 diffusion 整理擅自修改其表示。
 
-Current source files:
+## 当前合同
 
-- `../diffusion/model.py`: model assembly and training/inference entry points.
-- `../diffusion/latents.py`, `padding.py`: latent source and fixed-slot packing.
-- `../diffusion/conditioning.py`, `image_encoder.py`: condition selection and image encoding.
-- `../diffusion/fusion.py`, `denoiser.py`: condition fusion and denoising backbone.
-- `../diffusion/topology.py`: optional oracle/learned self-attention bias.
-- `../diffusion/losses.py`, `sampling.py`: training objectives and DDPM loop.
-- `vae.py`: external autoencoder used to encode or decode face latents.
+单图条件为 `conditions["imgs"]: [B,3,224,224]`，图像 memory 默认 `[B,257,1024]`。
+去噪输入 `[B,30,32]` 先投影到 768 并加时间嵌入，再进入 24 组 encoder + image cross-attention，最后 LN/输出投影。
+条件维度只读取 `condition.output_dim`；`denoiser.conditioning=layerwise_cross_attention` 显式指定当前路线。
+旧前端 fuser、alignment 和未用的 camera 参数已移除，不再要求提供 clean latent alignment 输入或相应 loss。
 
-High-level assembly:
+Cache 的后半维是 **std**，不是 log-variance。random padding 复制并重排真实面；任何 face-level 条件或标签必须复用同一 padding index。
+若使用 oracle adjacency，必须确保行列顺序等于 latent slots 顺序；GT topology 是 oracle，默认关闭。非 cache 路径若另行随机 padding，不能假定外部 adjacency 自动对齐。
+推理不输入 GT 面数；训练打包使用 GT 面数，两者需分开描述。
 
-```text
-configs/model/diffusion.yaml
-configs/condition/*.yaml
-        |
-        v
-+-----------------------------------------------------------+
-| Diffusion                                                 |
-|-----------------------------------------------------------|
-| DDPMScheduler                                             |
-| AutoEncoder                                               |
-| FacePadder                                                |
-| LatentProvider                                            |
-| ConditionEncoder                                          |
-| CrossAttentionConditionFuser                              |
-| BRepDenoiser                                              |
-| OracleTopologySelfAttentionMask                           |
-+-----------------------------------------------------------+
-```
+## 权重与变更
 
-Expanded module graph:
+旧结构在 `codex/diffusion-modular-baseline`（`b67c5d8e`）。当前显式拒绝 `condition_fuser` 配置，旧 diffusion checkpoint 不能直接 resume。
+完整当前模型权重使用严格加载；独立推理用 `load_diffusion_state_dict` 保留单独指定的 AE，并严格检查所有非 AE 参数。
+不要以 `strict=False` 掩盖旧层/新层不匹配。表示或结构改变时明确说明旧权重、cache 与 run 的迁移边界。
 
-```text
-batch
- |
- |  cached latent path:
- |    cached_latent_stats [B,F,2C], face_mask [B,F]
- |
- |  raw latent path:
- |    face_points, edge_points, face_counts
- v
-+-----------------+
-| LatentProvider  |
-+-----------------+
- |                      +----------------+
- | use_cached_latents   | AutoEncoder    |
- | -------------------> | encode/sample  |  only when use_cached_latents=false
- |                      +----------------+
- v
-latent_sequence [B,F,C]
-face_mask [B,F] or None
- |
- |                 batch conditions
- |                       |
- |                       v
- |              +------------------+
- |              | ConditionEncoder |
- |              +------------------+
- |                       |
- |                       v
- |              condition_tokens
- |
- | face_adj [B,F,F], timesteps [B]
- |              |
- |              v
- | +---------------------------------+
- | | OracleTopologySelfAttentionMask |
- | +---------------------------------+
- |              |
- |              v
- | self_attention_mask [B,F,F] or None
- |
- v
-+-------------------------------------------------------------+
-| BRepDenoiser                                                |
-|-------------------------------------------------------------|
-| noisy latent -> input_projection                            |
-| clean latent -> input_projection -> alignment branch         |
-| condition_tokens -> CrossAttentionConditionFuser             |
-| timestep -> sinusoidal embedding -> time MLP                 |
-| self_attention_mask -> TransformerEncoder src_mask           |
-| output_projection                                            |
-+-------------------------------------------------------------+
- |
- v
-prediction [B,F,C], align_loss or None
-```
+配置字段属于对应 Hydra 配置组，不通过路径、文件名或静默 fallback 推断架构。
+结构调整应解释要解决的失败机制，画清层、张量、残差和训练/推理可用信息；不把这份实现地图当作禁止重设计的要求。
 
-## Training Forward Flow
-
-`Diffusion.forward(batch)` is the training entry point.
-
-```text
-1. latent_batch = LatentProvider(batch)
-      values:    latent_sequence [B,F,C]
-      face_mask: validity mask for zero padding, or all-valid for random padding
-
-2. timesteps ~ Uniform(0, num_train_timesteps)
-
-3. noise = randn_like(latent_sequence)
-
-4. noisy_latent_sequence = DDPMScheduler.add_noise(
-      latent_sequence,
-      noise,
-      timesteps
-   )
-
-5. condition = ConditionEncoder(batch)
-
-6. self_attention_mask = OracleTopologySelfAttentionMask(
-      batch["face_adj"],
-      timesteps
-   )
-
-7. prediction, align_loss = BRepDenoiser(
-      noisy_latent_sequence,
-      timesteps,
-      condition,
-      clean_latent_sequence=latent_sequence,
-      self_attention_mask=self_attention_mask
-   )
-
-8. diffusion target:
-      epsilon prediction: target = noise
-      sample prediction:  target = latent_sequence
-
-9. total_loss =
-      diffusion_loss
-    + align_loss, if enabled
-    + validity_loss, only for zero padding
-```
-
-## Denoiser Flow
-
-`BRepDenoiser.forward()` mirrors the historical diffusion model:
-
-```text
-noisy_latent_sequence
-  -> input_projection
-  -> cross-attention query projection
-  -> cross-attention with condition tokens
-  -> hidden conditioned on image/point/text
-
-clean_latent_sequence
-  -> input_projection
-  -> same query projection
-  -> CAD/image alignment projection
-  -> CLIP-style symmetric InfoNCE loss
-
-timesteps
-  -> sincos_embedding
-  -> time_embedding MLP
-
-conditioned hidden + time embedding
-  -> TransformerEncoder self-attention
-       optionally with oracle topology self_attention_mask
-  -> output_projection
-  -> prediction
-```
-
-The alignment branch must use clean latent, not noisy latent. This preserves the old experiment semantics:
-
-```text
-diffusion branch: noisy CAD latent + image condition -> denoise target
-alignment branch: clean CAD latent + image condition -> CLIP-style alignment loss
-```
-
-## Oracle Topology Self-Attention
-
-The current config key is still `model.topology_bias` for compatibility, but the implementation is `OracleTopologySelfAttentionMask`.
-
-This module only affects denoiser self-attention. It does not add a new model branch.
-
-Input:
-
-```text
-face_adj:  [B,F,F], already aligned with padded face order
-timesteps: [B]
-```
-
-Modes:
-
-```text
-mode: hard_mask
-  self and GT-adjacent faces can attend
-  non-adjacent faces are masked out
-  returns bool tensor [B,F,F]
-
-mode: soft_bias
-  GT-adjacent faces receive an additive attention-logit boost
-  non-adjacent faces remain attendable
-  returns float tensor [B,F,F]
-```
-
-Hard mask semantics:
-
-```text
-allowed_attention = face_adj OR identity
-self_attention_mask = NOT allowed_attention
-
-PyTorch bool src_mask:
-  True  means blocked
-  False means allowed
-```
-
-Soft bias semantics:
-
-```text
-self_attention_mask = face_adj.float() * timestep_weight * scale
-
-PyTorch float src_mask:
-  values are added to attention logits before softmax
-```
-
-Treat `soft_bias` as an ablation with an explicit trick. Treat `hard_mask` as the cleaner oracle topology upper-bound experiment.
-
-## Face Padding And Topology Alignment
-
-The topology matrix must be constructed in the same padded face order as the latent sequence.
-
-Cached latent path, currently used by diffusion training:
-
-```text
-Diffusion_dataset.__getitem__()
-  latent_stats: [N,2C]
-  face_adj:     [N,N]
-
-  if padding=random:
-      face_padding_indices: [F]
-      cached_latent_stats = latent_stats[face_padding_indices]
-      padded_face_adj     = face_adj[face_padding_indices][:, face_padding_indices]
-
-  if padding=zero:
-      cached_latent_stats[:N] = latent_stats
-      padded_face_adj[:N,:N]  = face_adj
-```
-
-For a 7-face shape with `F=30`, random padding creates one length-30 index. That same index must be used for both `[30,2C]` latent stats and `[30,30]` adjacency.
-
-Do not create `face_adj [F,F]` in a different module or with a second random sample.
-
-Raw latent path, `use_cached_latents=false`, is not currently a complete stable protocol for diffusion topology experiments. To support it correctly:
-
-```text
-dataset returns raw B-Rep tensors and raw face_adj
-AutoEncoder encodes raw faces -> unpadded face_latents
-FacePadder creates face_padding_indices
-the same face_padding_indices remap both:
-  face_latents -> latent_sequence [B,F,C]
-  raw face_adj -> padded face_adj [B,F,F]
-```
-
-Do not enable oracle topology with `use_cached_latents=false` until `LatentSequence` carries the padding indices or padded adjacency returned by the same packing step.
-
-## Config Protocol
-
-The top-level diffusion config owns model assembly:
-
-```yaml
-latent:
-  dim: 32
-  use_cached_latents: true
-  use_mean: true
-
-padding:
-  type: random        # zero or random
-  max_faces: 30
-  valid_loss_weight: 0.01
-
-noise:
-  prediction_type: epsilon
-  beta_schedule: squaredcos_cap_v2
-  num_train_timesteps: 1000
-
-condition_fuser:
-  type: cross_attention
-  condition_dim: 1024
-  hidden_dim: 1024
-  num_layers: 4
-  alignment:
-    enabled: true
-    weight: 1.0
-    temperature: 0.07
-    projection_dim: 256
-
-topology_bias:
-  enabled: true
-  mode: hard_mask     # hard_mask or soft_bias
-  scale: 2.0          # only meaningful for soft_bias
-```
-
-The condition config owns condition modality:
-
-```yaml
-type: single_img
-dataset_names: [single_img]
-cached_features: false
-output_dim: 1024
-```
-
-The dataset config owns data layout and must match model padding:
-
-```yaml
-load_topology: true
-max_faces: ${model.padding.max_faces}
-padding: ${model.padding.type}
-condition_names: ${condition.dataset_names}
-cached_condition: ${condition.cached_features}
-```
-
-## Extension Rules
-
-When adding a new condition modality:
-
-1. Add a condition config under `configs/condition/`.
-2. Extend `build_condition_encoder()` in `../diffusion/conditioning.py`.
-3. Keep the encoder output shape compatible with `condition_fuser.condition_dim`.
-4. Do not add modality-specific checks inside `Diffusion.forward()`.
-
-When adding a new padding mode:
-
-1. Implement it in `../diffusion/padding.py`.
-2. Make it return a `LatentSequence`.
-3. If topology is enabled, ensure adjacency is remapped with the exact same face order.
-4. Update dataset config defaults only after the data protocol is stable.
-
-When changing topology experiments:
-
-1. Keep topology injection inside denoiser self-attention.
-2. Prefer explicit modes such as `hard_mask` and `soft_bias`.
-3. Avoid generic strategy names unless there are real separate implementations.
-4. Document whether the mask is bool hard blocking or float additive logits.
-
-When changing latent source:
-
-1. `use_cached_latents=true` expects dataset-provided `cached_latent_stats`.
-2. `use_cached_latents=false` requires raw VAE input tensors.
-3. Do not mix cached-latent dataset output with raw VAE encoding behavior.
-
-## Minimal Mental Model
-
-The diffusion model is:
-
-```text
-latent source
-  -> fixed face sequence
-  -> add noise
-  -> condition fusion through cross-attention
-  -> optional clean-latent alignment loss
-  -> timestep-conditioned transformer denoiser
-  -> optional oracle topology self-attention mask
-  -> latent prediction
-```
-
-The most important invariant:
-
-```text
-latent_sequence order == face_adjacency row/column order
-```
-
-If this invariant breaks, oracle topology experiments are invalid even if tensor shapes still look correct.
+按改动检查实际形状、梯度、采样和加载合同。单图以外接口保留不等于已做能力验证。
+[VALIDATION.json](../../../checkpoints/diffusion/VALIDATION.json) 是旧模块拆分记录；当前接口验证为 [LAYERWISE_VALIDATION.json](../../../checkpoints/diffusion/LAYERWISE_VALIDATION.json)，二者都不构成重建质量结论。

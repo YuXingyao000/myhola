@@ -1,0 +1,273 @@
+{
+  "scope": "逐层 image cross-attention 架构实现验证；不是性能比较或研究有效性结论。",
+  "checked_at": "2026-10-16T19:38:37.647092+08:00",
+  "status": "passed",
+  "branch": "codex/diffusion-layerwise-conditioning",
+  "baseline_branch": "codex/diffusion-modular-baseline",
+  "baseline_commit": "b67c5d8e30c1f59e7432c0d4dfc16c9ba9b460ab",
+  "architecture": {
+    "conditioning": "layerwise_cross_attention",
+    "order": "input_projection(z_t) + time_embedding(t) → 24 × [完整 TransformerEncoderLayer(self-attention + FFN) → 独立 image cross-attention residual] → final norm → output_projection",
+    "default_latent_shape": [
+      "B",
+      30,
+      32
+    ],
+    "default_hidden_shape": [
+      "B",
+      30,
+      768
+    ],
+    "default_image_memory": [
+      "B",
+      257,
+      1024
+    ],
+    "image_cross_attention": {
+      "num_layers": 24,
+      "num_heads": 12,
+      "head_dim": 64,
+      "query_dim": 768,
+      "key_value_input_dim": 1024
+    },
+    "removed": [
+      "前置四层 condition fuser",
+      "clean latent alignment分支/损失/参数",
+      "未使用的camera_embedding参数"
+    ],
+    "clean_argument": "Diffusion.diffuse 仅保留旧参数位置的兼容 facade；不读取clean_latent_sequence，返回(prediction,None)。底层BRepDenoiser无clean参数。"
+  },
+  "source_sha256": {
+    "src/brepnet/diffusion/denoiser.py": "e5d2b0e2fdb0723715e7139359c430e29b413ddc7a22245118d49f47b12cbc19",
+    "src/brepnet/diffusion/fusion.py": "e3065ebc40a069cc234dc5d0a0b072cd0e73a9c17fa0b7fd1f5a79507986e4b0",
+    "src/brepnet/diffusion/model.py": "9bf033729ce20977535fa5c88a6ac4ebda7bccef81c7b0a6294a4b9de015a94e",
+    "src/brepnet/diffusion/sampling.py": "ab40dc948e5ae81075577275328b8cdbb86fc068c160966b203d70f10c5e550f",
+    "src/brepnet/diffusion/losses.py": "c700c1f3c6c1f565edda78181fd07f9ce6903d8e82fcbd53160d7fdc559dbf71",
+    "src/brepnet/diffusion/conditioning.py": "de228d0efc8c2fea065f43cdb5c2893036debaa00f55f3b42b60c3e1a7bcc715",
+    "src/brepnet/test/test_diffusion_refactor.py": "bd9fe01f88e1cd8822c97d29e239566fcbc1d906658a73a13dbcb0857450d407",
+    "src/brepnet/test/test_diffusion_conditioning.py": "079b89d00f5ffad5772ee09d268f4961b20c43d58757ab9698f32f91c4aeaa94",
+    "src/brepnet/test/test_topology_attention_bias.py": "bfac459b1b7dd47a0a09e02052eeeeb9128419d38a912f38a6061d3bea694a10",
+    "configs/model/diffusion.yaml": "bab9bf9b0ddd0fc959fdbe57743194583ad2c28ee04eda1fd4211de502083d89",
+    "configs/train_diffusion_layerwise_real.yaml": "9a4d2fbeed99f9730caac6b98c8660d64d57307e7ee401937c586b0838b89e17",
+    "checkpoints/diffusion/validate_real_batch.py": "4846c9455384fa5997f42b32736ff7a7aa7ca8a89e3fd7b3ca0d7c36c169cf19"
+  },
+  "unit_validation": {
+    "command": "HOLABREP_DIFFUSION_CACHE_SAMPLE=/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00487421_0/features.npy /mnt/d/anaconda3/envs/torch/bin/python -m pytest -q src/brepnet/test/test_diffusion_refactor.py src/brepnet/test/test_diffusion_conditioning.py src/brepnet/test/test_topology_attention_bias.py",
+    "python": "3.10.13",
+    "torch": "2.4.1+cu124",
+    "device": "cpu",
+    "num_threads": 1,
+    "passed": 41,
+    "failed": 0,
+    "skipped": 0,
+    "duration_seconds": 7.47,
+    "warnings": [
+      "1条Hydra提示：历史train_diffusion_baseline_real defaults缺少_self_；实际compose的数据协议与预算一致性通过。"
+    ],
+    "fixture": {
+      "batch_size": 2,
+      "max_faces": 4,
+      "latent_dim": 4,
+      "hidden_dim": 64,
+      "condition_dim": 80,
+      "num_layers": 3,
+      "num_heads": 2,
+      "dropout": 0.1,
+      "ddpm_timesteps": 4,
+      "image_backbone": "TinyDino",
+      "vae": "TinyAutoencoder"
+    },
+    "seeds": {
+      "batch": 17,
+      "direct_denoiser_initialization": 101,
+      "direct_denoiser_inputs": 103,
+      "cross_attention_gradients": 107,
+      "checkpoint_target": 109,
+      "checkpoint_source": 113
+    },
+    "coverage": [
+      "默认完整模型以meta device检查24个完整EncoderLayer及24个image cross-attention模块/维度/heads",
+      "每层执行顺序、时间在首层前注入、同一图像memory供每层K/V读取、各层Q/K/V参数独立",
+      "全部image层Q/K/V/out/query_norm与图像memory均有有限非零梯度",
+      "图像条件和timestep改变会影响预测；timestep改变影响第一层image query",
+      "无mask、soft bias、hard mask的面排列等变，mask按同一面索引重排",
+      "3D memory与singleton view 4D输入完全一致；缺失/多视图/错误rank、batch、feature维度明确拒绝",
+      "无条件分支不构造image cross-attention，允许condition=None",
+      "clean参数填充NaN仍不影响预测且无梯度；训练和纯图推理不传cleanGT",
+      "采样仅需conditions.imgs；不调用latent cache provider或VAE encode",
+      "旧condition_fuser配置拒绝；新state strict加载；禁止strict=False",
+      "独立加载VAE时过滤全部历史AE别名，保留现有VAE且其余网络必须完整；缺层/旧fuser/错误shape拒绝",
+      "random/zero padding、epsilon/sample目标、mean/std缓存、冻结编码器梯度及采样合同",
+      "单个真实(12,64)cache喂32维tiny网络的有限loss/梯度",
+      "新的train_diffusion_layerwise_real配置继承baseline数据/条件协议与batch、设备、学习率、step预算"
+    ],
+    "permutation_tolerance": {
+      "rtol": 2e-05,
+      "atol": 2e-06
+    },
+    "identical_condition_layout_tolerance": {
+      "rtol": 0,
+      "atol": 0
+    },
+    "targeted_followup": {
+      "command": "/mnt/d/anaconda3/envs/torch/bin/python -m pytest -q src/brepnet/test/test_diffusion_conditioning.py::test_float_topology_bias_has_same_semantics_in_grad_and_inference_modes",
+      "passed": 1,
+      "failed": 0,
+      "duration_seconds": 2.38,
+      "reason": "强化已有一项（总数仍41）：以enable_grad的原生EncoderLayer为独立参考，比较no_grad显式floatbias路径，并验证bias自身有限非零梯度；没有重跑全套或完整模型。"
+    }
+  },
+  "float_topology_inference_regression": {
+    "found": "torch 2.4.1 在偶数heads、eval+no_grad下的TransformerEncoderLayer fused fastpath可把float additive mask错误处理：dense softbias输出NaN；非零bias带diag0也可能改变语义。",
+    "independent_reproduction": {
+      "fastpath_true_eval_no_grad": "non_finite",
+      "fastpath_false_eval_no_grad": "finite",
+      "fastpath_true_grad_enabled": "finite"
+    },
+    "fix": "仅float src_mask使用显式完整EncoderLayer已有norm/self-attention/FFN/两条residual，绕过fused encoder；保留原参数，无mask和bool mask仍用普通forward。",
+    "regression_result": "2heads的softbias排列等变及grad/no_grad输出一致性通过；没有在测试里全局关闭fastpath掩盖问题。",
+    "independent_reference": "在同一个eval EncoderLayer上，以enable_grad原生layer(hidden,src_mask=bias)为参考；显式helper在no_grad的结果在rtol=2e-5、atol=2e-6内一致。helper的bias requires_grad回传有限且非零。"
+  },
+  "checkpoint_break_validation": {
+    "baseline_commit": "b67c5d8e30c1f59e7432c0d4dfc16c9ba9b460ab",
+    "old_source_files": [
+      "src/brepnet/diffusion/losses.py",
+      "src/brepnet/diffusion/fusion.py",
+      "src/brepnet/diffusion/denoiser.py"
+    ],
+    "strict_old_denoiser_rejected": true,
+    "old_state_dict_keys": 90,
+    "new_state_dict_keys": 80,
+    "old_only_keys": 34,
+    "new_only_keys": 24,
+    "rejection_reason": "Missing new cross_attention_layers parameters and unexpected legacy condition_fuser parameters.",
+    "full_default_denoiser_parameter_counts": {
+      "baseline_with_fuser_and_alignment": 187388448,
+      "layerwise_cross_attention": 200924960,
+      "old_front_fuser": 52634368,
+      "new_all_cross_attention_layers": 66170880,
+      "shared_backbone": 132337152,
+      "scope": "Only denoiser parameters; excludes DINO/projection, VAE, padding validity head, and optional topology predictor. Counts computed on meta device, not runtime memory.",
+      "increase_percent": 7.223770805764929
+    }
+  },
+  "full_pretrained_backbone_validation": {
+    "provenance": "由/root运行/tmp/check_layerwise_real_batch.py，结果读取自/tmp/hola-layerwise-real-batch.json；记录的是成功执行的原始脚本结果。",
+    "original_script_sha256": "4febb326115f8bd63b1aa2093d8b041b679a331b71c410ae2372dab6b8b5991c",
+    "result": {
+      "purpose": "Implementation validation only; no optimizer update or quality claim",
+      "seed": 20261016,
+      "torch": "2.4.1+cu124",
+      "device": "NVIDIA GeForce RTX 4090",
+      "model_id": "00487421",
+      "rotation_id": 0,
+      "condition_source": "/mnt/d/data/deepcad_v7_cond/00487421/real_photo.npz:flux (synthetic photorealistic)",
+      "latent_source": "/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00487421_0/features.npy",
+      "ae_checkpoint": "/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt",
+      "batch_shapes": {
+        "condition": [
+          1,
+          1,
+          257,
+          1024
+        ],
+        "prediction": [
+          1,
+          30,
+          32
+        ],
+        "cached_latent_stats": [
+          1,
+          30,
+          64
+        ],
+        "image": [
+          1,
+          3,
+          224,
+          224
+        ]
+      },
+      "layers": 24,
+      "cross_attention_layers": 24,
+      "trainable_parameters": 203026208,
+      "missing_gradients": [],
+      "finite_gradients": true,
+      "cross_attention_q_gradient_norm_min": 0.0015004436718299985,
+      "frozen_backbones_no_grad_and_eval": true,
+      "losses": {
+        "diffusion_loss": 1.140973448753357,
+        "total_loss": 1.140973448753357
+      },
+      "diagnostic_sampling_steps": 2,
+      "sampling_inputs": [
+        "conditions.imgs"
+      ],
+      "decoded_outputs": {
+        "face_latents": [
+          30,
+          32
+        ],
+        "pred_face_adj": [
+          900
+        ],
+        "pred_face_adj_prob": [
+          111
+        ],
+        "pred_edge_face_connectivity": [
+          37,
+          3
+        ],
+        "pred_face": [
+          30,
+          16,
+          16,
+          3
+        ],
+        "pred_edge": [
+          37,
+          16,
+          3
+        ]
+      },
+      "peak_cuda_allocated_gib": 3.3738913536071777,
+      "elapsed_seconds": 7.996351073001279
+    },
+    "input_and_weight_details": {
+      "dataset_class": "src.brepnet.dataset.Diffusion_dataset",
+      "config_name_used": "train_diffusion_baseline_real（当时共享model/diffusion.yaml已是逐层架构）",
+      "split_override": {
+        "mode": "validation",
+        "selected_cad_ids": [
+          "00487421"
+        ],
+        "validation_list": "/tmp/hola-layerwise-validation-list.txt"
+      },
+      "image_type": "real_photo.npz 的flux字段是FLUX合成真实感图像，不是实拍",
+      "image_backbone": "本地预训练facebook/dinov2-large，HF_HUB_OFFLINE=1/TRANSFORMERS_OFFLINE=1",
+      "vae": "实际AutoEncoder_light +已记录AE checkpoint",
+      "diffusion": "当前完整768×24随机初始化，未加载已训练的新diffusion checkpoint",
+      "optimizer_updates": 0,
+      "sampling": "缩短至2步只检查纯图输入→DDPM→真实VAE.decode_latents接口，不是质量采样协议",
+      "optional_topology_enabled": false
+    },
+    "reproducible_script": "checkpoints/diffusion/validate_real_batch.py",
+    "reproduction_command": "/mnt/d/anaconda3/envs/torch/bin/python -m checkpoints.diffusion.validate_real_batch --raw-data-root /mnt/d/data/deepcad_v7 --condition-data-root /mnt/d/data/deepcad_v7_cond --latent-cache-root /mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24 --ae-checkpoint /mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt --model-id 00487421 --device cuda:0 --seed 20261016 --sampling-steps 2 --output /tmp/hola-layerwise-real-batch-reproduced.json",
+    "script_validation": "参数化整理版本通过--help与py_compile；未重复已成功的完整模型运行。默认用新的train_diffusion_layerwise_real，其数据协议/预算一致性已有单元验证。 后补decoded浮点输出有限性断言，未执行新增断言，因此原始完整模型结果不新增该项结论。",
+    "timing_and_memory_scope": "记录一次模型加载+单对象前后向+2步解码的耗时/峰值allocation；不包含optimizer状态，不外推正式训练吞吐或显存需求。"
+  },
+  "limits": [
+    "实现、真实小批量形状/梯度与纯图推理接口已验证，但未启动正式训练或做optimizer update。",
+    "没有比较新旧网络的重建精度、真实照片泛化、几何对应、STEP/solid有效性或OCC后处理。",
+    "全模型验证仅一个CAD identity/rotation；图片为合成真实感，不能称为实拍评估集。",
+    "2步随机初始化采样不提供质量证据；未用GT选择样本或补充面数/拓扑。",
+    "旧架构完整checkpoint不兼容；真实旧源码生成的tiny denoiser state strict拒绝已验证，未将完整4GB历史checkpoint载入新网络。",
+    "baseline等价测试与原始重构验证报告保留在baseline分支；当前架构不再承诺旧网络数值相等。"
+  ],
+  "entrypoint_validation": {
+    "command": "/mnt/d/anaconda3/envs/torch/bin/python -m src.brepnet.inference --help",
+    "status": "passed",
+    "provenance": "/root已执行成功，真实完整CLI依赖导入，无stub。",
+    "scope": "只验证入口加载；不等于运行训练或效果评估。"
+  }
+}

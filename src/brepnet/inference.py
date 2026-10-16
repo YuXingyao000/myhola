@@ -76,23 +76,12 @@ def build_model_conf(autoencoder_checkpoint: str) -> dict:
             "num_train_timesteps": 1000,
         },
         "denoiser": {
+            "conditioning": "layerwise_cross_attention",
             "hidden_dim": 768,
             "num_layers": 24,
             "nhead_divisor": 64,
             "feedforward_dim": 2048,
             "dropout": 0.1,
-        },
-        "condition_fuser": {
-            "type": "cross_attention",
-            "condition_dim": 1024,
-            "hidden_dim": 1024,
-            "num_layers": 4,
-            "alignment": {
-                "enabled": True,
-                "weight": 1.0,
-                "temperature": 0.07,
-                "projection_dim": 256,
-            },
         },
         "topology_bias": {
             "enabled": False,
@@ -136,10 +125,9 @@ def load_diffusion_weights(model: Diffusion, checkpoint_path: str, device: torch
     for key, value in state_dict.items():
         if key.startswith("model."):
             key = key[len("model."):]
-        if key.startswith("autoencoder.") or key.startswith("latent_codec.autoencoder.") or key.startswith("ae_model."):
-            continue
         weights[key] = value
-    model.load_state_dict(weights, strict=False)
+    # VAE 权重来源独立指定；其余 key 必须匹配当前逐层条件架构。
+    model.load_diffusion_state_dict(weights)
 
 
 if __name__ == '__main__':
@@ -221,14 +209,11 @@ if __name__ == '__main__':
                 T.ToTensor(),
                 T.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
             ])
-            img = np.array(Image.open(input_file))
-            if img.shape[2] == 4:
-                img = img[:, :, :3]
-            # img[img>100]=255
+            img = np.array(Image.open(input_file).convert("RGB"))
             img = transform(img).to(device)
-            img = img[None, None, :].repeat(num_proposals, 1, 1, 1, 1)
+            # 单图编码器直接接收 [B,3,224,224]，不添加 view 轴。
+            img = img[None].repeat(num_proposals, 1, 1, 1)
             data["conditions"]["imgs"] = img
-            data["conditions"]["img_id"] = torch.zeros((num_proposals, 1), dtype=torch.long, device=device)
         else:
             raise ValueError(f"Unknown condition type: {condition_type}")
 

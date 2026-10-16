@@ -21,22 +21,12 @@ noise:
   num_train_timesteps: 1000
 
 denoiser:
+  conditioning: layerwise_cross_attention
   hidden_dim: 768
   num_layers: 24
   nhead_divisor: 64
   feedforward_dim: 2048
   dropout: 0.1
-
-condition_fuser:
-  type: cross_attention
-  condition_dim: 1024
-  hidden_dim: 1024
-  num_layers: 4
-  alignment:
-    enabled: true
-    weight: 1.0
-    temperature: 0.07
-    projection_dim: 256
 
 topology_bias:
   enabled: false

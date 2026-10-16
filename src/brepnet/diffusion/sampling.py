@@ -30,8 +30,7 @@ def sample_latent_sequence(
             latent_sequence,
             timesteps,
             condition,
-            latent_sequence,  # 保留旧调用合同；推理不使用返回的 alignment loss。
-            attention_mask,
+            self_attention_mask=attention_mask,
         )
         latent_sequence = noise_scheduler.step(
             prediction, timestep, latent_sequence

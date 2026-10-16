@@ -1,0 +1,7 @@
+# 当前逐层图像条件入口；继承数据协议与预算，仅区分实验名称。
+defaults:
+  - train_diffusion_baseline_real
+  - _self_
+
+trainer:
+  exp_name: diffusion_layerwise_real
