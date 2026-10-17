@@ -149,6 +149,11 @@ python -m src.brepnet.train --config-name train_diffusion_layerwise_svr \
 
 ## 尚未解决的限制
 
+2026-10-17 用户手动停止训练后的实测见 [SVR 与历史 HoLa 对照](svr_comparison_20261017/README.md)：
+固定 validation100、K=1、1000步DDPM及相同后处理，用户指定HoLa1500k的原生合法solid为74/100，
+当前最低val-loss best（54,639步）为29/100，last（实际保存182,130步）为54/100。
+last的面CD²更低，但实体有效率仍落后；这不是等训练预算架构消融。历史CLIP式对齐候选的身份与小集限制另列，不能称为已确认的用户历史最佳。
+
 - zero padding validity head 在训练读取 prediction、推理读取最终 latent；epsilon 配置下二者分布不同。
 - learned topology 固定 slots adjacency 与随机面 slots 的对应问题未解决，也没有自动 topology BCE；GT topology 仍是 oracle，默认关闭。
 - 可选 topology mask/bias 只作用于原 encoder self-attention，不作用于图像 cross-attention。针对本地 PyTorch 2.4.1 在偶数 heads、eval/no_grad 下 fused EncoderLayer 误处理浮点 bias（出现 NaN 或改变语义）的问题，浮点 mask 路径显式执行同一个 EncoderLayer 的原子层与两次残差，保留原参数和 additive-logit 语义；无 mask / bool hard mask 仍调用原 forward。默认 topology 关闭，grad/no_grad 一致性回归见本轮验证报告。

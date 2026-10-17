@@ -1,0 +1,80 @@
+{
+  "scope": "Actual saved tensors, including both AE state aliases in each current checkpoint; no config-based inference",
+  "comparison": "Exact normalized key set, shape, dtype and torch.equal for every tensor",
+  "state_sha256_algorithm": "For normalized keys in Python sorted order: UTF-8 JSON [key,str(torch.dtype),list(shape)] with separators=(comma,colon), ensure_ascii=True; newline; contiguous tensor NumPy C-order bytes; newline. SHA256 across that stream. This is an AE tensor-content hash, not a whole-checkpoint file hash.",
+  "reference": {
+    "path": "/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt",
+    "bytes": 2179870215,
+    "mtime_ns": 1772776500552960090,
+    "global_step": 1045500,
+    "epoch": 8499,
+    "key_count": 704,
+    "state_sha256": "1d3a601b126bde86ac22cb876d4c4c021e006c72681814b90be688649d67d6b4"
+  },
+  "checkpoints": {
+    "current_best": {
+      "path": "/mnt/d/python/checkpoints/diffusion_layerwise_svr/20261016T143450.891057Z/weights/epoch=0002-step=00054639-val_loss=0.042497.ckpt",
+      "bytes": 4381411404,
+      "mtime_ns": 1792176882805005841,
+      "global_step": 54639,
+      "epoch": 2,
+      "full_state_key_count": 2353,
+      "aliases": {
+        "model.autoencoder.": {
+          "key_count": 704,
+          "exact_equal": true,
+          "missing_keys": [],
+          "extra_keys": [],
+          "shape_mismatches": [],
+          "dtype_mismatches": [],
+          "unequal_keys": [],
+          "state_sha256": "1d3a601b126bde86ac22cb876d4c4c021e006c72681814b90be688649d67d6b4",
+          "hash_matches_reference": true
+        },
+        "model.latent_provider.autoencoder.": {
+          "key_count": 704,
+          "exact_equal": true,
+          "missing_keys": [],
+          "extra_keys": [],
+          "shape_mismatches": [],
+          "dtype_mismatches": [],
+          "unequal_keys": [],
+          "state_sha256": "1d3a601b126bde86ac22cb876d4c4c021e006c72681814b90be688649d67d6b4",
+          "hash_matches_reference": true
+        }
+      }
+    },
+    "current_last": {
+      "path": "/mnt/d/python/checkpoints/diffusion_layerwise_svr/20261016T143450.891057Z/weights/last.ckpt",
+      "bytes": 4381411468,
+      "mtime_ns": 1792232756295507575,
+      "global_step": 182130,
+      "epoch": 9,
+      "full_state_key_count": 2353,
+      "aliases": {
+        "model.autoencoder.": {
+          "key_count": 704,
+          "exact_equal": true,
+          "missing_keys": [],
+          "extra_keys": [],
+          "shape_mismatches": [],
+          "dtype_mismatches": [],
+          "unequal_keys": [],
+          "state_sha256": "1d3a601b126bde86ac22cb876d4c4c021e006c72681814b90be688649d67d6b4",
+          "hash_matches_reference": true
+        },
+        "model.latent_provider.autoencoder.": {
+          "key_count": 704,
+          "exact_equal": true,
+          "missing_keys": [],
+          "extra_keys": [],
+          "shape_mismatches": [],
+          "dtype_mismatches": [],
+          "unequal_keys": [],
+          "state_sha256": "1d3a601b126bde86ac22cb876d4c4c021e006c72681814b90be688649d67d6b4",
+          "hash_matches_reference": true
+        }
+      }
+    }
+  }
+}

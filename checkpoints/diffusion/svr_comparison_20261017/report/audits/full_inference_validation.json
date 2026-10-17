@@ -1,0 +1,20 @@
+{
+  "methods": [
+    "hola_1500k",
+    "current_best_54639",
+    "current_last_182130",
+    "alignment_150k",
+    "alignment_best_250k"
+  ],
+  "intended_count": 100,
+  "inference_successes": 500,
+  "per_method_distinct_protocol_identities": {
+    "hola_1500k": 1,
+    "current_best_54639": 1,
+    "current_last_182130": 1,
+    "alignment_150k": 1,
+    "alignment_best_250k": 1
+  },
+  "shared_input_pixel_hashes": "100/100 identical across all five models",
+  "shared_normalized_tensor_hashes": "100/100 identical across all five models"
+}

@@ -1,0 +1,48 @@
+{
+  "paths": {
+    "legacy_diffusion": "/mnt/d/ckpt/HoLa/Diffusion_svr_sq30_1500k.ckpt",
+    "published_ae": "/mnt/d/ckpt/HoLa/AE_deepcad_1100k.ckpt",
+    "current_ae": "/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt"
+  },
+  "metadata": {
+    "legacy_diffusion": {
+      "step": 1500000,
+      "epoch": 82,
+      "keys": 1375
+    },
+    "published_ae": {
+      "step": 1045500,
+      "epoch": 8499,
+      "keys": 704
+    },
+    "current_ae": {
+      "step": 1045500,
+      "epoch": 8499,
+      "keys": 704
+    }
+  },
+  "legacy_ae_keys": 704,
+  "comparisons": {
+    "published_ae": {
+      "missing": [],
+      "additional": [],
+      "shape_mismatches": [],
+      "unequal_count": 0,
+      "unequal": [],
+      "exact_equal": true,
+      "common_keys": 704
+    },
+    "current_ae": {
+      "missing": [],
+      "additional": [],
+      "shape_mismatches": [],
+      "unequal_count": 0,
+      "unequal": [],
+      "exact_equal": true,
+      "common_keys": 704
+    }
+  },
+  "source_audit_name": "historical-svr-ae-audit.json",
+  "source_audit_sha256": "7d93215157c12671bebaab268958e21ad52989d63c6f626b1147337b06e8371e",
+  "source_audit_bytes": 976
+}

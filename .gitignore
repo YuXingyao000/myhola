@@ -208,3 +208,6 @@ env.txt
 
 # Raw multi-rank timing traces; keep the compact throughput report instead.
 /checkpoints/diffusion/performance/
+
+# Frozen SVR comparison: retain compact reports; fitted CAD/diagnostics stay local.
+/checkpoints/diffusion/svr_comparison_20261017/post/

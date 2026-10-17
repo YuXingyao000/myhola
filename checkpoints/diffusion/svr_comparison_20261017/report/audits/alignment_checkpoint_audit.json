@@ -1,0 +1,150 @@
+{
+  "candidate150k": {
+    "checkpoint": "/mnt/d/data/new_cond_ckpt/0423_deepcad_natural_blender_align.ckpt",
+    "actual_step": 150000,
+    "actual_epoch": 513,
+    "saved_experiment_name": "0413_deepcad_natural_blender_align",
+    "training_run_id": "ya2o4xi1",
+    "recorded_git_commit": "be94bbea8a6eadc49ef7539e2ea0c13525b71a72"
+  },
+  "callback_selected_best": {
+    "checkpoint": "/mnt/d/python/outputs_brepnet_diffusion/Diffusion_0413_deepcad_natural_blender_align/img2brep/ya2o4xi1/checkpoints/epoch=856-step=250000.ckpt",
+    "actual_step": 250000,
+    "actual_epoch": 856,
+    "monitor": "Validation_Loss",
+    "score": 0.02854456752538681,
+    "selection_evidence": "同run原始last.ckpt callback.best_model_path/best_model_score，独立于此次100对象评估结果",
+    "original_last_checkpoint": "/mnt/d/python/outputs_brepnet_diffusion/Diffusion_0413_deepcad_natural_blender_align/img2brep/ya2o4xi1/checkpoints/last.ckpt",
+    "original_last_actual_step": 352152,
+    "original_last_actual_epoch": 1205
+  },
+  "split_audit": {
+    "path": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+    "entries": 750,
+    "unique_identities": 750,
+    "sha256_current_file": "3548e39608ed86667a267c40bab272e3396a097e6d8e6db7a5a50f716cb3d338",
+    "same_path_for_saved_train_val_and_test": true,
+    "source_commit_tracks_split": false,
+    "frozen100_exact_identity_overlap": 0,
+    "current3505_validation_exact_identity_overlap": 0,
+    "limitation": "当前文件未被历史Git版本化，不能证明其内容与训练时完全一致；零交集只针对当前可恢复的精确CAD ID，不证明几何去重组绝无重叠。"
+  },
+  "input_source_evidence": {
+    "archived_dataset": "be94bbea:src/brepnet/dataset.py:166",
+    "single_img_member": "imgs.npz:svr_imgs",
+    "augmentation_code": "np.random.randint(0,63), yielding0..62",
+    "saved_condition_root": "/mnt/d/data/deepcad_v6_cond",
+    "saved_latent_root": "/mnt/d/data/ae_cache/1119_deepcad_aug1_11k",
+    "current_comparison": "固定validation100、rotation0、K1、DDPM1000steps、FP32",
+    "limit": "多个不同外观run记录相同Git commit；训练时未提交源码修改没有被完整保存。归档源码/实验关联支持灰模来源，不能彻底排除当时工作树差异。"
+  },
+  "alignment_source_evidence": {
+    "module": "be94bbea:src/brepnet/diffusion_model.py",
+    "fusion": "4-layer1024D TransformerDecoder, then24-layer768D TransformerEncoder",
+    "backbone": "HuggingFace facebook/dinov2-large",
+    "alignment": "clean CAD latent projection vs image tokens, pooled256D embeddings; symmetric InfoNCE,tau0.07,lambda1",
+    "trainable_alignment_tensors": 8,
+    "oracle_topology_in_archived_runtime": false,
+    "inference_reads_gt": false
+  },
+  "strict_cpu_loading": {
+    "150k": {
+      "checkpoint": "/mnt/d/data/new_cond_ckpt/0423_deepcad_natural_blender_align.ckpt",
+      "checkpoint_bytes": 4219985091,
+      "global_step": 150000,
+      "epoch": 513,
+      "source_commit": "be94bbea8a6eadc49ef7539e2ea0c13525b71a72",
+      "source_archive": "/tmp/hola-svr-alignment-87yjipus",
+      "source_sha256": {
+        "shared/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "shared/common_utils.py": "5341507d550159e14ffb1e561878a3bf54af8d04883d39d615dde0925690561c",
+        "src/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "src/brepnet/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "src/brepnet/dataset.py": "edef903da9990cdb44f112c108dc948a14c43d37a47962952e2b755f03afefcc",
+        "src/brepnet/diffusion_model.py": "45ad23389254657838bd0863176b40d5027ecee86b46bf1d25cda5a3c30bf484",
+        "src/brepnet/model.py": "b6c4f240cb53a4b7a8550d02dca52c99ee4fc95c4137d56bea4c6feb4e0f1dcd"
+      },
+      "model_class": "src.brepnet.diffusion_model.Diffusion_condition",
+      "autoencoder_class": "src.brepnet.model.AutoEncoder_1119_light",
+      "original_autoencoder_path": "/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt",
+      "autoencoder_weight_source": "complete checkpoint model.ae_model.*",
+      "dino_weight_source": "complete checkpoint model.img_model.*",
+      "dino_architecture": "facebook/dinov2-large, local configuration only",
+      "dino_attention_implementation": "sdpa",
+      "strict_load": true,
+      "state_key_count": 1556,
+      "missing_keys": [],
+      "unexpected_keys": [],
+      "native_inference_preserved": true,
+      "input_shapes": {
+        "conditions.imgs": "[B,1,3,224,224]",
+        "conditions.img_id": "[B,1]"
+      },
+      "saved_experiment_name": "0413_deepcad_natural_blender_align",
+      "saved_train_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "saved_validation_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "saved_augmentation": 1,
+      "alignment": {
+        "kind": "symmetric InfoNCE",
+        "temperature": 0.07,
+        "weight": 1.0
+      },
+      "protocol_limit": "历史保存配置的训练/验证为同一小集；SVR像素来源由归档源码支持，未保存的训练期源码修改无法从checkpoint排除。"
+    },
+    "250k": {
+      "checkpoint": "/mnt/d/python/outputs_brepnet_diffusion/Diffusion_0413_deepcad_natural_blender_align/img2brep/ya2o4xi1/checkpoints/epoch=856-step=250000.ckpt",
+      "checkpoint_bytes": 4219985985,
+      "global_step": 250000,
+      "epoch": 856,
+      "source_commit": "be94bbea8a6eadc49ef7539e2ea0c13525b71a72",
+      "source_archive": "/tmp/hola-svr-alignment-xpq8s62m",
+      "source_sha256": {
+        "shared/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "shared/common_utils.py": "5341507d550159e14ffb1e561878a3bf54af8d04883d39d615dde0925690561c",
+        "src/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "src/brepnet/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "src/brepnet/dataset.py": "edef903da9990cdb44f112c108dc948a14c43d37a47962952e2b755f03afefcc",
+        "src/brepnet/diffusion_model.py": "45ad23389254657838bd0863176b40d5027ecee86b46bf1d25cda5a3c30bf484",
+        "src/brepnet/model.py": "b6c4f240cb53a4b7a8550d02dca52c99ee4fc95c4137d56bea4c6feb4e0f1dcd"
+      },
+      "model_class": "src.brepnet.diffusion_model.Diffusion_condition",
+      "autoencoder_class": "src.brepnet.model.AutoEncoder_1119_light",
+      "original_autoencoder_path": "/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt",
+      "autoencoder_weight_source": "complete checkpoint model.ae_model.*",
+      "dino_weight_source": "complete checkpoint model.img_model.*",
+      "dino_architecture": "facebook/dinov2-large, local configuration only",
+      "dino_attention_implementation": "sdpa",
+      "strict_load": true,
+      "state_key_count": 1556,
+      "missing_keys": [],
+      "unexpected_keys": [],
+      "native_inference_preserved": true,
+      "input_shapes": {
+        "conditions.imgs": "[B,1,3,224,224]",
+        "conditions.img_id": "[B,1]"
+      },
+      "saved_experiment_name": "0413_deepcad_natural_blender_align",
+      "saved_train_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "saved_validation_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "saved_augmentation": 1,
+      "alignment": {
+        "kind": "symmetric InfoNCE",
+        "temperature": 0.07,
+        "weight": 1.0
+      },
+      "protocol_limit": "历史保存配置的训练/验证为同一小集；SVR像素来源由归档源码支持，未保存的训练期源码修改无法从checkpoint排除。"
+    }
+  },
+  "native_autoencoder_150k_equality": {
+    "alignment_checkpoint": "/mnt/d/data/new_cond_ckpt/0423_deepcad_natural_blender_align.ckpt",
+    "reference_ae": "/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt",
+    "alignment_ae_tensors": 704,
+    "reference_ae_tensors": 704,
+    "keys_equal": true,
+    "shape_mismatches": [],
+    "unequal_values": [],
+    "exact_tensor_equality": true
+  },
+  "claim_boundary": "可称此0413历史run的callback-best250k；不是已确认用户记忆中的全历史最佳，不是与当前大训练集同预算的架构消融。历史自验证分数不可直接和当前独立validation loss比较。",
+  "temporary_broad_inventory": "/tmp/legacy-diffusion-weight-metadata.json"
+}

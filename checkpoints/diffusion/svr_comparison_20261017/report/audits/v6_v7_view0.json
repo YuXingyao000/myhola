@@ -1,0 +1,64 @@
+{
+  "scope": "Frozen validation100 only; view0, original geometry arrays and rotation0 cached mean/std",
+  "count": 100,
+  "errors": [],
+  "view0_equal_count": 100,
+  "geometry_all_equal_count": 100,
+  "latent0_equal_count": 100,
+  "source_audit_name": "historical-svr-v6-v7-audit.json",
+  "source_audit_sha256": "e7fc89af74b0ebc75ddb73025265bc6987118fe08f59116a56a57f154599be88",
+  "source_audit_bytes": 88000,
+  "frozen_ids_sha256": "6c952c3556860c0a2782a0bedbf139b48bc2769b385788baf0fcb82fac1be587",
+  "recheck_by_content_hash_equal_counts": {
+    "svr_view0": 100,
+    "geometry": 100,
+    "rotation0_latent": 100
+  },
+  "images_array_shapes": {
+    "v6": [
+      64,
+      224,
+      224,
+      3
+    ],
+    "v7": [
+      24,
+      224,
+      224,
+      3
+    ]
+  },
+  "geometry_fields": [
+    "edge_face_connectivity",
+    "face_adj",
+    "sample_points_faces",
+    "sample_points_lines",
+    "zero_positions"
+  ],
+  "aggregate_content_sha256": {
+    "v6": {
+      "svr_view0": "75f4b41e2b0934b99c5525a055e6e6fb521f7894dadd86b449943a60a6485619",
+      "geometry": "10a22653b145f4049107c4bb37f5440eb6a87554163602fa4dd6802df5112f65",
+      "rotation0_latent": "4828b8ce137c6a6f951056f5c3875b120e809bc083eef476800720438c97d3aa"
+    },
+    "v7": {
+      "svr_view0": "75f4b41e2b0934b99c5525a055e6e6fb521f7894dadd86b449943a60a6485619",
+      "geometry": "10a22653b145f4049107c4bb37f5440eb6a87554163602fa4dd6802df5112f65",
+      "rotation0_latent": "4828b8ce137c6a6f951056f5c3875b120e809bc083eef476800720438c97d3aa"
+    }
+  },
+  "hash_algorithm": "Per object: for array names in sorted order, hash UTF-8 compact JSON [name,numpy.dtype.str,list(shape)] + newline + C-order contiguous bytes + newline. Per asset kind: SHA256 over frozen validation100 order of ID + tab + per-object hash hex + newline. Geometry excludes legacy-only imgs; all remaining fields must have the same names.",
+  "source_roots": {
+    "v6_geometry": "/mnt/d/data/deepcad_v6",
+    "v7_geometry": "/mnt/d/data/deepcad_v7",
+    "v6_images": "/mnt/d/data/deepcad_v6_cond",
+    "v7_images": "/mnt/d/data/deepcad_v7_cond",
+    "old_latents": "/mnt/d/data/ae_cache/1119_deepcad_aug1_11k",
+    "current_latents": "/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24"
+  },
+  "limitations": [
+    "Only the frozen 100 validation objects and view/rotation 0 were checked.",
+    "The available on-disk assets are identical in this scope; the checkpoint does not store historical dataset content hashes.",
+    "Equality at index 0 does not establish identical mapping for all 64 Euler-grid and 24 cube rotations."
+  ]
+}

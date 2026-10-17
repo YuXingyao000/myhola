@@ -1,0 +1,45 @@
+{
+  "created_utc": "2026-10-17T12:02:05.740272+00:00",
+  "scope": "Historical SVR checkpoint/source/runtime, actual AE equality, recoverable train/validation split intersection, and frozen100 v6/v7 view0 assets",
+  "gpu_used_for_this_audit": false,
+  "files": {
+    "audits/current_ae_equality.json": {
+      "bytes": 3139,
+      "sha256": "94ecc50ffd5033617e4d41151a244d0ff67de95f29896dae039b7777d8004a38"
+    },
+    "audits/historical_ae_equality.json": {
+      "bytes": 1154,
+      "sha256": "1eb8054e820f464463e6c8cc5f504c81e1d86caa6e9a2f745634640e32620ec3"
+    },
+    "audits/historical_checkpoint.json": {
+      "bytes": 7146,
+      "sha256": "b04a677cf785f338f959cc1300f54a9a413ca1e8dfe62e8fbbc2c4ef11d8a147"
+    },
+    "audits/historical_splits.json": {
+      "bytes": 2801,
+      "sha256": "f68713c73dbfb875afd9865434f79808b8b537cdd521a23f040d3ab95c9c3971"
+    },
+    "audits/legacy_cpu_forward_validation.json": {
+      "bytes": 515,
+      "sha256": "f29426c711304e05cb5be96f8792cdadfe4d197ac3cec601add8192e3daf4994"
+    },
+    "audits/legacy_runtime_validation.json": {
+      "bytes": 2323,
+      "sha256": "059a4d21a9e873233b0288a5ae0d764eab07d9caeb23f9c4cc91d6d9cbf53964"
+    },
+    "audits/v6_v7_view0.json": {
+      "bytes": 2575,
+      "sha256": "8efbc27e1fb613201368062498e5f10d8774ecaa2bfd38ffd201d54f18a6ceeb"
+    },
+    "provenance.md": {
+      "bytes": 8514,
+      "sha256": "4b835f871bee460b942defec0ccdf19251dfdc7a5f1d91147bc3027671a6b13e"
+    }
+  },
+  "notes": [
+    "This manifest fingerprints the audit artifacts, not the complete multi-GB checkpoint files.",
+    "Referenced source audits in /tmp are summarized in these durable files; source_audit_sha256 fingerprints the original full reports.",
+    "The manifest does not hash itself.",
+    "Only artifacts produced by the historical/AE/input audit are included; independently generated alignment and training reports are outside this manifest."
+  ]
+}

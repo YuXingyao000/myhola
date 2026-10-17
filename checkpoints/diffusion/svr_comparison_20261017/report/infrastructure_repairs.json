@@ -1,0 +1,12 @@
+[
+  {
+    "kind": "export_compatibility_repair",
+    "reason": "Historical native inference exports integer-valued connectivity as float32; reused validator requires integer dtype. All 100 failed at validation before OCC. Preserve predictions and add lossless dtype-only adapter; no inference retry or geometry change.",
+    "changed_sampling": false,
+    "changed_geometry": false
+  },
+  {
+    "kind": "interface_record_identity_upgrade",
+    "reason": "First current-best sample archived and regenerated with complete config/source/condition hashes before full run; unchanged algorithm and per-ID seed."
+  }
+]
