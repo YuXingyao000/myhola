@@ -5,6 +5,8 @@ defaults:
 
 trainer:
   exp_name: diffusion_layerwise_svr
+  # 长训练总步数上限；resume 从已有 global_step 继续，非额外增加的步数。
+  max_steps: 10000000
   # 每张卡一个训练进程；限制 CPU 线程，避免与数据 workers 争抢。
   num_threads: 4
   num_workers: 4

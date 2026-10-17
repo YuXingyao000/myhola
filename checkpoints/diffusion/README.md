@@ -1,7 +1,8 @@
 # 单视图 Diffusion：逐层图像条件
 
 2026-10-16：当前实现将前端 4 层 fuser 替换为 24 组「原 EncoderLayer → image cross-attention」，移除 alignment。
-这是架构变更，尚未正式训练或评估重建质量。研究假设与比较范围见 [PLAN.md](PLAN.md)，本轮接口验证见 [LAYERWISE_VALIDATION.json](LAYERWISE_VALIDATION.json)。
+这是架构变更。2026-10-17 已核实首个灰模正式运行完成 100,000 steps，尚未评估生成/B-Rep 重建质量；
+训练结果与继续训练的预算见 [训练记录](training_budget/README.md)。研究假设与比较范围见 [PLAN.md](PLAN.md)，接口验证见 [LAYERWISE_VALIDATION.json](LAYERWISE_VALIDATION.json)。
 
 逐层条件实现已合入 `main`。旧模块化 baseline 保存在归档 tag `archive/2026-10-16/codex/diffusion-modular-baseline`，commit `b67c5d8e`。
 [VALIDATION.json](VALIDATION.json) 只记录该 baseline 的行为保持拆分验证，不能用作当前架构的兼容性或效果证据。
@@ -98,6 +99,7 @@ Depth Anything 选项仍只读取 ViT 特征，不产生深度预测或深度监
 ## 训练入口
 
 当前先用灰模训练，入口为 `configs/train_diffusion_layerwise_svr.yaml`，实验名为 `diffusion_layerwise_svr`。
+默认 `trainer.max_steps=10000000`，按用户要求留出手动停止空间；这是包括已完成步数在内的总上限。此前命令的 100,000 steps 只是预算，未使用 loss early stopping。
 该入口已加入数据读取与 Lightning/DDP 吞吐优化；实测、暂存工具和本机命令见 [吞吐说明](throughput/README.md)。
 当前每卡 B64、4 workers/4 预取、CPU 线程4；仅此入口关闭 DDP unused-parameter 搜索与逐步全局 loss 同步。
 全局 epoch/validation loss 保留，逐步日志为 rank-0 的 `train/loss_step_local`。
@@ -108,7 +110,7 @@ Depth Anything 选项仍只读取 ViT 特征，不产生深度预测或深度监
 图像使用视角 0，latent 对应 `{model_id}_0/features.npy`，VAE/cache 和模型架构不变。
 去掉照片文件要求后，可用对象数可能增加；实际过滤数量由 loader 与运行记录确认。
 本次 loader 检查接受训练 46,627 个 CAD、验证 3,505 个 CAD；各取一个实际样本，
-确认原图与 `svr_imgs[0]` 一致且照片加载函数从未调用，详见 [SVR_CONFIG_VALIDATION.json](SVR_CONFIG_VALIDATION.json)。未启动训练。
+确认原图与 `svr_imgs[0]` 一致且照片加载函数从未调用，详见 [SVR_CONFIG_VALIDATION.json](SVR_CONFIG_VALIDATION.json)。该报告当时未启动训练；后续正式运行见上述训练记录。
 
 `train_diffusion_layerwise_real.yaml` 保留为生成图条件入口，继承 `train_diffusion_baseline_real` 的数据协议和预算，
 实验名为 `diffusion_layerwise_real`。

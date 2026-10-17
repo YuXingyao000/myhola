@@ -86,7 +86,7 @@ python checkpoints/diffusion/stage_svr_inputs.py \
 ```bash
 /mnt/d/anaconda3/envs/torch/bin/python -m src.brepnet.train \
   --config-name train_diffusion_layerwise_svr \
-  trainer.devices=8 trainer.batch_size=64 trainer.seed=42 trainer.max_steps=100000 \
+  trainer.devices=8 trainer.batch_size=64 trainer.seed=42 trainer.max_steps=10000000 \
   dataset.raw_data_root=/mnt/d/data/deepcad_v7 \
   dataset.condition_data_root=/dev/shm/hola-svr-20261016/conditions \
   dataset.cached_latent_root=/dev/shm/hola-svr-20261016/latents \
@@ -103,6 +103,9 @@ python checkpoints/diffusion/stage_svr_inputs.py \
 当前改动不改变任何神经网络 state key，已有本架构 checkpoint 仍可 resume；旧 fuser 架构的限制仍然适用。
 关闭验证采样会减少随机数消耗，故即使 seed 相同，也不承诺与旧完整 run 的逐步训练轨迹 bitwise 一致；输入与训练目标的定义不变。
 用户此前短 run 未保存 checkpoint，因此本机命令开始新 run，没有假装续训。
+
+2026-10-17 更新：按用户要求，上面的新 run 命令现采用 10,000,000 总步数，由用户手动停止。后续正式运行已完成此前设置的 100,000 steps，
+其 `last.ckpt` 可续训；不要为增加预算重新初始化，续训命令与曲线记录见 [训练预算说明](../training_budget/README.md)。
 
 ## 复现诊断
 
