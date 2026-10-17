@@ -177,7 +177,8 @@ class LearnedTopologySelfAttentionMask(nn.Module):
         )
         ckpt_path = predictor_cfg.get("checkpoint", None)
         if ckpt_path:
-            ckpt = torch.load(ckpt_path, map_location="cpu")
+            # The toy writer stores tensors plus primitive args/metrics dictionaries.
+            ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=True)
             state = ckpt["model"] if isinstance(ckpt, dict) and "model" in ckpt else ckpt
             self.predictor.load_state_dict(state, strict=False)
 

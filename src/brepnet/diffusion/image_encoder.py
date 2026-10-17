@@ -57,7 +57,7 @@ class DINOv2ImageEncoder(nn.Module):
                     f'thirdparty/Depth_Anything_V2/checkpoints/depth_anything_v2_{encoder}.pth'
                 )
             _da_v2.load_state_dict(
-                torch.load(depth_anything_v2_ckpt, map_location='cpu')
+                torch.load(depth_anything_v2_ckpt, map_location='cpu', weights_only=True)
             )
             self.img_model = _da_v2.pretrained
             del _da_v2

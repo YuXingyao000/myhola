@@ -199,7 +199,8 @@ class UnifiedTrainer(pl.LightningModule):
         if self.cfg.trainer.resume_from_checkpoint:
             raise ValueError("Choose either init_from_checkpoint or resume_from_checkpoint, not both.")
 
-        checkpoint = torch.load(str(ckpt_path), map_location="cpu")
+        # Project-owned Lightning checkpoints also contain configuration metadata.
+        checkpoint = torch.load(str(ckpt_path), map_location="cpu", weights_only=False)
         state_dict = checkpoint.get("state_dict", checkpoint)
         model_state = {}
         for key, value in state_dict.items():
