@@ -48,3 +48,7 @@ Codex真实请求与项目指南加载已通过，目标也已配置源机使用
 **diffusion提醒**：人工检查时源机旧运行已到100000 step并停止；另一个用户研究会话随后提交 `7bb75c7c`，将总预算改为10000000。本迁移不干预该训练，仍按用户要求暂缓其运行目录与权重，后续单独补同步。
 
 参考：[Codex CLI](https://learn.chatgpt.com/docs/codex/cli)、[无界面服务器认证](https://learn.chatgpt.com/docs/auth)、[Node.js 官方发行目录](https://nodejs.org/dist/v24.22.0/)。
+
+## 命令行与字体补充
+
+按用户后续要求，目标 root 已启用 Zsh、Oh My Zsh、命令建议/语法高亮和 Powerlevel10k；保留 Conda，实际 SSH 登录通过。容器已安装标题/UI用 Jost、正文/内容用 Archivo、中文用思源黑体。具体终端审美待用户指定，详见 [配置记录](shell/README.md)。此补充不改变数据传输完成hook。
