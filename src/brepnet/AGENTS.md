@@ -38,6 +38,8 @@
 
 2026-10-15 新增可选 [Encoder边内容消息实验](../../checkpoints/encoder_edge_value/PLAN.md)。`blocks.py:EdgeValueGATv2Conv` 保留原GATv2 attention/value/self-loop/bias，增加原始 `[target F,source F,E]` 的 `128→64→32` 消息增量，末层零初始化。`vae.py:HolisticEncoder` 按 `model.encoder_edge_value.enabled` 替换五层GAT，旧key不变，仅新增51,680参数，默认关闭。`init_encoder_edge_value_checkpoint` 只从完整conditioned、无point-feedback/value分支的模型迁移；完整加载/resume仍严格匹配。`train_vae_encoder_edge_value` 两组均解冻encoder/posterior/decoder，恢复既有KL项；原GAT解冻对照与候选使用相同预算。此实验改变latent语义，旧cache/diffusion不可直接认定兼容。
 
+2026-10-17 新增可选 [UV面编码器](../../checkpoints/uv_face_encoder/README.md)。`blocks.py:UVFaceEncoder` 接收`[M,6,16,16]`，几何MLP与归一化UV索引MLP相加，六层512维／8heads／FFN2048的PreNorm attention保留全部256 tokens，单query汇聚后输出`[M,32]`，再进入原面间attention／GAT／global／posterior。`model.face_encoder.kind`默认`cnn`，`uv_attention`只替换`encoder.face_coords`；旧默认参数、state与RNG行为不变。新模块22,219,040参数，比旧CNN增加171,000；不增加最终latent维度。`init_face_encoder_checkpoint`严格验证完整conditioned来源（包括被弃用的旧CNN），仅初始化UV、保留其余689项；新run解冻全模型，旧loss及KL不变。完整UV加载须同配置并清空组件初始化，resume自动清空；strict state加载不替代对nhead等无shape变化配置的核对。入口`train_vae_uv_encoder`，不混用local-inter、point-feedback或edge-value。仅实现与CPU合同验证已完成，未正式训练、未验证OCC收益；旧cache／diffusion不能默认兼容。
+
 ## Diffusion：实际数据流
 
 1. `dataset.py:Diffusion_dataset` 读取 cache 并完成 padding；`diffusion/latents.py:LatentProvider` 取 mean，或用 std 采样。非 cache 分支调用冻结 VAE 再由 padder 打包。

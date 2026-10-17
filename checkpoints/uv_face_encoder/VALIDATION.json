@@ -1,0 +1,322 @@
+{
+  "date_utc": "2026-10-17T08:11:03Z",
+  "purpose": "Implementation validation only; no formal training or CAD quality claim",
+  "device": "cpu",
+  "torch_version": "2.4.1+cu124",
+  "threads": 2,
+  "seed": 42,
+  "source_checkpoint": "/mnt/d/python/checkpoints/intersection_refinement/curve_conditioning/20261013T083729.740439Z/weights/epoch=0157-step=00057354-val_loss=0.038204.ckpt",
+  "source_sha256": "4c7910b8169206c74fcf38c358cf171359149e0429c8debbc227d391aa56613f",
+  "source_parameters": 181965981,
+  "candidate_parameters": 182136981,
+  "candidate_face_encoder_parameters": 22219040,
+  "retained_tensors_bitwise_equal": 689,
+  "changed_model_config_fields_from_source": {
+    "face_encoder": [
+      null,
+      {
+        "kind": "uv_attention",
+        "hidden_dim": 512,
+        "embedding_dim": 128,
+        "num_layers": 6,
+        "nhead": 8,
+        "dim_feedforward": 2048,
+        "dropout": 0.0
+      }
+    ],
+    "freeze_encoder": [
+      true,
+      false
+    ],
+    "init_face_encoder_checkpoint": [
+      null,
+      "/mnt/d/python/checkpoints/intersection_refinement/curve_conditioning/20261013T083729.740439Z/weights/epoch=0157-step=00057354-val_loss=0.038204.ckpt"
+    ],
+    "curve_point_feedback": [
+      null,
+      {
+        "enabled": false,
+        "hidden_dim": 128,
+        "feature_dim": 64
+      }
+    ],
+    "init_refinement_checkpoint": [
+      "/mnt/d/python/checkpoints/intersection_refinement/frozen/20261011T123836.485257Z/weights/epoch=0010-step=00003993-val_loss=0.039476.ckpt",
+      null
+    ],
+    "encoder_edge_value": [
+      null,
+      {
+        "enabled": false,
+        "hidden_dim": 64
+      }
+    ]
+  },
+  "initialization_report": {
+    "source": "/mnt/d/python/checkpoints/intersection_refinement/curve_conditioning/20261013T083729.740439Z/weights/epoch=0157-step=00057354-val_loss=0.038204.ckpt",
+    "source_epoch": 157,
+    "source_global_step": 57354,
+    "retained_state_keys": 689,
+    "discarded_face_encoder_state_keys": 47,
+    "discarded_face_encoder_parameters": 22048040,
+    "initialized_face_encoder_state_keys": [
+      "encoder.face_coords.geometry_embedding.0.bias",
+      "encoder.face_coords.geometry_embedding.0.weight",
+      "encoder.face_coords.geometry_embedding.2.bias",
+      "encoder.face_coords.geometry_embedding.2.weight",
+      "encoder.face_coords.layers.0.linear1.bias",
+      "encoder.face_coords.layers.0.linear1.weight",
+      "encoder.face_coords.layers.0.linear2.bias",
+      "encoder.face_coords.layers.0.linear2.weight",
+      "encoder.face_coords.layers.0.norm1.bias",
+      "encoder.face_coords.layers.0.norm1.weight",
+      "encoder.face_coords.layers.0.norm2.bias",
+      "encoder.face_coords.layers.0.norm2.weight",
+      "encoder.face_coords.layers.0.self_attn.in_proj_bias",
+      "encoder.face_coords.layers.0.self_attn.in_proj_weight",
+      "encoder.face_coords.layers.0.self_attn.out_proj.bias",
+      "encoder.face_coords.layers.0.self_attn.out_proj.weight",
+      "encoder.face_coords.layers.1.linear1.bias",
+      "encoder.face_coords.layers.1.linear1.weight",
+      "encoder.face_coords.layers.1.linear2.bias",
+      "encoder.face_coords.layers.1.linear2.weight",
+      "encoder.face_coords.layers.1.norm1.bias",
+      "encoder.face_coords.layers.1.norm1.weight",
+      "encoder.face_coords.layers.1.norm2.bias",
+      "encoder.face_coords.layers.1.norm2.weight",
+      "encoder.face_coords.layers.1.self_attn.in_proj_bias",
+      "encoder.face_coords.layers.1.self_attn.in_proj_weight",
+      "encoder.face_coords.layers.1.self_attn.out_proj.bias",
+      "encoder.face_coords.layers.1.self_attn.out_proj.weight",
+      "encoder.face_coords.layers.2.linear1.bias",
+      "encoder.face_coords.layers.2.linear1.weight",
+      "encoder.face_coords.layers.2.linear2.bias",
+      "encoder.face_coords.layers.2.linear2.weight",
+      "encoder.face_coords.layers.2.norm1.bias",
+      "encoder.face_coords.layers.2.norm1.weight",
+      "encoder.face_coords.layers.2.norm2.bias",
+      "encoder.face_coords.layers.2.norm2.weight",
+      "encoder.face_coords.layers.2.self_attn.in_proj_bias",
+      "encoder.face_coords.layers.2.self_attn.in_proj_weight",
+      "encoder.face_coords.layers.2.self_attn.out_proj.bias",
+      "encoder.face_coords.layers.2.self_attn.out_proj.weight",
+      "encoder.face_coords.layers.3.linear1.bias",
+      "encoder.face_coords.layers.3.linear1.weight",
+      "encoder.face_coords.layers.3.linear2.bias",
+      "encoder.face_coords.layers.3.linear2.weight",
+      "encoder.face_coords.layers.3.norm1.bias",
+      "encoder.face_coords.layers.3.norm1.weight",
+      "encoder.face_coords.layers.3.norm2.bias",
+      "encoder.face_coords.layers.3.norm2.weight",
+      "encoder.face_coords.layers.3.self_attn.in_proj_bias",
+      "encoder.face_coords.layers.3.self_attn.in_proj_weight",
+      "encoder.face_coords.layers.3.self_attn.out_proj.bias",
+      "encoder.face_coords.layers.3.self_attn.out_proj.weight",
+      "encoder.face_coords.layers.4.linear1.bias",
+      "encoder.face_coords.layers.4.linear1.weight",
+      "encoder.face_coords.layers.4.linear2.bias",
+      "encoder.face_coords.layers.4.linear2.weight",
+      "encoder.face_coords.layers.4.norm1.bias",
+      "encoder.face_coords.layers.4.norm1.weight",
+      "encoder.face_coords.layers.4.norm2.bias",
+      "encoder.face_coords.layers.4.norm2.weight",
+      "encoder.face_coords.layers.4.self_attn.in_proj_bias",
+      "encoder.face_coords.layers.4.self_attn.in_proj_weight",
+      "encoder.face_coords.layers.4.self_attn.out_proj.bias",
+      "encoder.face_coords.layers.4.self_attn.out_proj.weight",
+      "encoder.face_coords.layers.5.linear1.bias",
+      "encoder.face_coords.layers.5.linear1.weight",
+      "encoder.face_coords.layers.5.linear2.bias",
+      "encoder.face_coords.layers.5.linear2.weight",
+      "encoder.face_coords.layers.5.norm1.bias",
+      "encoder.face_coords.layers.5.norm1.weight",
+      "encoder.face_coords.layers.5.norm2.bias",
+      "encoder.face_coords.layers.5.norm2.weight",
+      "encoder.face_coords.layers.5.self_attn.in_proj_bias",
+      "encoder.face_coords.layers.5.self_attn.in_proj_weight",
+      "encoder.face_coords.layers.5.self_attn.out_proj.bias",
+      "encoder.face_coords.layers.5.self_attn.out_proj.weight",
+      "encoder.face_coords.memory_norm.bias",
+      "encoder.face_coords.memory_norm.weight",
+      "encoder.face_coords.output_norm.bias",
+      "encoder.face_coords.output_norm.weight",
+      "encoder.face_coords.output_projection.bias",
+      "encoder.face_coords.output_projection.weight",
+      "encoder.face_coords.query",
+      "encoder.face_coords.query_norm.bias",
+      "encoder.face_coords.query_norm.weight",
+      "encoder.face_coords.readout_attention.in_proj_bias",
+      "encoder.face_coords.readout_attention.in_proj_weight",
+      "encoder.face_coords.readout_attention.out_proj.bias",
+      "encoder.face_coords.readout_attention.out_proj.weight",
+      "encoder.face_coords.readout_ffn.0.bias",
+      "encoder.face_coords.readout_ffn.0.weight",
+      "encoder.face_coords.readout_ffn.3.bias",
+      "encoder.face_coords.readout_ffn.3.weight",
+      "encoder.face_coords.readout_ffn_norm.bias",
+      "encoder.face_coords.readout_ffn_norm.weight",
+      "encoder.face_coords.uv_embedding.0.bias",
+      "encoder.face_coords.uv_embedding.0.weight",
+      "encoder.face_coords.uv_embedding.2.bias",
+      "encoder.face_coords.uv_embedding.2.weight"
+    ],
+    "initialized_face_encoder_parameters": 22219040
+  },
+  "validation_ids": [
+    "00000178",
+    "00007585"
+  ],
+  "face_counts": [
+    7,
+    7
+  ],
+  "edge_count": 48,
+  "dataset_root": "/mnt/d/data/deepcad_v7",
+  "split_path": "/mnt/d/python_curve_eval/checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt",
+  "split_sha256": "ae607bfe5499e919d1e68a5110c0c211daf1158aedbe57a4756eda99f6f3f0ed",
+  "split_size": 3495,
+  "fp32_forward_backward_finite": true,
+  "cpu_bf16_training_forward_backward_finite": true,
+  "gradient_groups": {
+    "encoder.face_coords.geometry_embedding": {
+      "parameter_tensors": 4,
+      "with_gradient": 4,
+      "gradient_abs_sum": 2248.0490560531616
+    },
+    "encoder.face_coords.uv_embedding": {
+      "parameter_tensors": 4,
+      "with_gradient": 4,
+      "gradient_abs_sum": 2389.135908126831
+    },
+    "encoder.face_coords.layers": {
+      "parameter_tensors": 72,
+      "with_gradient": 72,
+      "gradient_abs_sum": 196770.86725497246
+    },
+    "encoder.face_coords.query": {
+      "parameter_tensors": 3,
+      "with_gradient": 3,
+      "gradient_abs_sum": 42.38587223738432
+    },
+    "encoder.face_coords.readout_attention": {
+      "parameter_tensors": 4,
+      "with_gradient": 4,
+      "gradient_abs_sum": 26539.604320526123
+    },
+    "encoder.face_coords.readout_ffn": {
+      "parameter_tensors": 6,
+      "with_gradient": 6,
+      "gradient_abs_sum": 32238.697077274323
+    },
+    "encoder.face_coords.output_projection": {
+      "parameter_tensors": 2,
+      "with_gradient": 2,
+      "gradient_abs_sum": 3482.815242767334
+    },
+    "encoder.edge_coords": {
+      "parameter_tensors": 47,
+      "with_gradient": 47,
+      "gradient_abs_sum": 186.39416668377817
+    },
+    "posterior": {
+      "parameter_tensors": 4,
+      "with_gradient": 4,
+      "gradient_abs_sum": 1596.7558331489563
+    },
+    "decoder": {
+      "parameter_tensors": 493,
+      "with_gradient": 493,
+      "gradient_abs_sum": 33381.11100744258
+    }
+  },
+  "mean_latents_shape": [
+    14,
+    32
+  ],
+  "mean_std_shape": [
+    14,
+    64
+  ],
+  "exports": [
+    {
+      "pred_face": [
+        7,
+        16,
+        16,
+        3
+      ],
+      "pred_edge": [
+        0,
+        16,
+        3
+      ],
+      "face_latents": [
+        7,
+        32
+      ],
+      "cached_latent_stats": [
+        7,
+        64
+      ],
+      "all_candidate_pairs": [
+        42,
+        2
+      ],
+      "probability_symmetry_max_abs_error": 9.313225746154785e-10
+    },
+    {
+      "pred_face": [
+        7,
+        16,
+        16,
+        3
+      ],
+      "pred_edge": [
+        0,
+        16,
+        3
+      ],
+      "face_latents": [
+        7,
+        32
+      ],
+      "cached_latent_stats": [
+        7,
+        64
+      ],
+      "all_candidate_pairs": [
+        42,
+        2
+      ],
+      "probability_symmetry_max_abs_error": 2.3283064365386963e-10
+    }
+  ],
+  "evaluation_loss_at_random_encoder_initialization": 4.395794868469238,
+  "elapsed_seconds": 17.928892679017736,
+  "limitations": [
+    "No GPU throughput/peak memory measured",
+    "No formal training started",
+    "No OCC validity assessment",
+    "Test split not loaded",
+    "Zero accepted edges at random encoder initialization is not a trained result"
+  ],
+  "diagnostic_note": "Initial export assertion required bitwise probability symmetry. Observed CPU sigmoid rounding below 1e-9; checked with rtol=1e-6, atol=1e-8. Model code unchanged.",
+  "unit_regression": {
+    "passed": 185,
+    "failed": 0,
+    "uv_specific_passed": 66,
+    "elapsed_seconds": 29.4,
+    "files": [
+      "test_uv_face_encoder.py",
+      "test_uv_face_encoder_migration.py",
+      "test_intersection_vae.py",
+      "test_intersection_decoder.py",
+      "test_intersection_losses.py",
+      "test_local_intersection_migration.py",
+      "test_encoder_edge_value.py",
+      "test_run_management.py"
+    ],
+    "directory": "src/brepnet/test",
+    "gpu_used": false
+  }
+}

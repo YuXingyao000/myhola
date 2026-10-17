@@ -169,6 +169,7 @@ class UnifiedTrainer(pl.LightningModule):
                     "model.init_refinement_checkpoint for validated refinement migration, "
                     "model.init_curve_feedback_checkpoint to add final point feedback, "
                     "model.init_encoder_edge_value_checkpoint to add GAT edge messages, "
+                    "model.init_face_encoder_checkpoint to replace only the face CNN, "
                     "model.checkpoint for new-model initialization, or trainer.resume_from_checkpoint."
                 )
             if has_resume:
@@ -176,6 +177,7 @@ class UnifiedTrainer(pl.LightningModule):
                 OmegaConf.update(model_cfg, "init_refinement_checkpoint", None, force_add=True)
                 OmegaConf.update(model_cfg, "init_curve_feedback_checkpoint", None, force_add=True)
                 OmegaConf.update(model_cfg, "init_encoder_edge_value_checkpoint", None, force_add=True)
+                OmegaConf.update(model_cfg, "init_face_encoder_checkpoint", None, force_add=True)
                 model_cfg.checkpoint = None
                 OmegaConf.update(model_cfg, "restoring_checkpoint", True, force_add=True)
         self.model = build_model(model_cfg, cfg.condition)

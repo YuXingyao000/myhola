@@ -283,6 +283,129 @@ class ResBlockXD(nn.Module):
 
 
 # ---------------------------------------------------------------------------
+# Face geometry token encoder
+# ---------------------------------------------------------------------------
+
+
+class UVFaceEncoder(nn.Module):
+    """Encode a 16 x 16 XYZ/normal grid without intermediate spatial pooling.
+
+    This optional replacement for the face CNN keeps all 256 parameter-grid
+    positions through its self-attention layers. A single learned query then
+    reads the complete face into one vector. Faces are independent batch items;
+    the existing downstream face attention/GAT performs cross-face fusion.
+
+    The UV coordinates are normalized grid indices, not additional CAD samples
+    or a claim that the samples have equal spacing in world coordinates.
+    Input: ``[M, 6, 16, 16]``. Output: ``[M, out_channels]``.
+    """
+
+    def __init__(
+        self,
+        in_channels: int = 6,
+        out_channels: int = 32,
+        hidden_dim: int = 512,
+        embedding_dim: int = 128,
+        num_layers: int = 6,
+        nhead: int = 8,
+        dim_feedforward: int = 2048,
+        dropout: float = 0.0,
+    ) -> None:
+        super().__init__()
+        if isinstance(in_channels, bool) or not isinstance(in_channels, int) or in_channels != 6:
+            raise ValueError("UVFaceEncoder requires in_channels=6 (XYZ and normal)")
+        dimensions = {
+            "out_channels": out_channels,
+            "hidden_dim": hidden_dim,
+            "embedding_dim": embedding_dim,
+            "num_layers": num_layers,
+            "nhead": nhead,
+            "dim_feedforward": dim_feedforward,
+        }
+        for name, value in dimensions.items():
+            if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+                raise ValueError(f"{name} must be a positive integer")
+        if hidden_dim % nhead:
+            raise ValueError("hidden_dim must be divisible by nhead")
+        if isinstance(dropout, bool) or not isinstance(dropout, (int, float)) or not 0 <= dropout < 1:
+            raise ValueError("dropout must be a number in [0, 1)")
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.hidden_dim = hidden_dim
+
+        self.geometry_embedding = nn.Sequential(
+            nn.Linear(in_channels, embedding_dim),
+            nn.GELU(),
+            nn.Linear(embedding_dim, hidden_dim),
+        )
+        self.uv_embedding = nn.Sequential(
+            nn.Linear(2, embedding_dim),
+            nn.GELU(),
+            nn.Linear(embedding_dim, hidden_dim),
+        )
+        coordinates = torch.arange(16, dtype=torch.float32) / 15
+        u, v = torch.meshgrid(coordinates, coordinates, indexing="ij")
+        # Deterministic for every checkpoint; follows flatten(2)'s i-major order.
+        self.register_buffer(
+            "uv_grid", torch.stack((u, v), dim=-1).reshape(1, 256, 2), persistent=False
+        )
+        # Instantiate each layer separately: no copied/shared initial parameters.
+        self.layers = nn.ModuleList([
+            nn.TransformerEncoderLayer(
+                d_model=hidden_dim,
+                nhead=nhead,
+                dim_feedforward=dim_feedforward,
+                dropout=dropout,
+                activation="gelu",
+                batch_first=True,
+                norm_first=True,
+            )
+            for _ in range(num_layers)
+        ])
+        self.memory_norm = nn.LayerNorm(hidden_dim)
+        self.query = nn.Parameter(torch.empty(1, 1, hidden_dim))
+        nn.init.normal_(self.query, std=0.02)
+        self.query_norm = nn.LayerNorm(hidden_dim)
+        self.readout_attention = nn.MultiheadAttention(
+            hidden_dim, nhead, dropout=dropout, batch_first=True
+        )
+        self.readout_dropout = nn.Dropout(dropout)
+        self.readout_ffn_norm = nn.LayerNorm(hidden_dim)
+        self.readout_ffn = nn.Sequential(
+            nn.Linear(hidden_dim, dim_feedforward),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(dim_feedforward, hidden_dim),
+            nn.Dropout(dropout),
+        )
+        self.output_norm = nn.LayerNorm(hidden_dim)
+        self.output_projection = nn.Linear(hidden_dim, out_channels)
+
+    def forward(self, face_points: Tensor) -> Tensor:
+        if not isinstance(face_points, Tensor) or face_points.layout != torch.strided:
+            raise ValueError("face_points must be a dense floating tensor [M, 6, 16, 16]")
+        if (face_points.ndim != 4 or tuple(face_points.shape[1:]) != (6, 16, 16)
+                or face_points.shape[0] == 0 or not face_points.is_floating_point()):
+            raise ValueError("face_points must have floating shape [M, 6, 16, 16] with M > 0")
+
+        # [M, 6, 16, 16] -> [M, 256, 6] -> [M, 256, hidden_dim].
+        points = face_points.flatten(2).transpose(1, 2)
+        tokens = self.geometry_embedding(points) + self.uv_embedding(self.uv_grid)
+        for layer in self.layers:
+            tokens = layer(tokens)
+        memory = self.memory_norm(tokens)
+
+        # Q: [M, 1, hidden_dim]; K/V: all [M, 256, hidden_dim] positions.
+        query = self.query.expand(face_points.shape[0], -1, -1)
+        readout, _ = self.readout_attention(
+            self.query_norm(query), memory, memory, need_weights=False
+        )
+        summary = query + self.readout_dropout(readout)
+        summary = summary + self.readout_ffn(self.readout_ffn_norm(summary))
+        return self.output_projection(self.output_norm(summary)).squeeze(1)
+
+
+# ---------------------------------------------------------------------------
 # Encoder graph message values
 # ---------------------------------------------------------------------------
 

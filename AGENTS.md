@@ -63,6 +63,8 @@ Diffusion 新代码从 `src/brepnet/diffusion/` 导入；保留的旧路径导�
 
 2026-10-14 新增可选 [最终曲线逐点反馈](checkpoints/intersection_refinement/point_feedback/README.md)，仍写在 `blocks.py`／`vae.py`。`model.curve_point_feedback` 默认关闭；启用时在 final 曲线点读取 final 预测 owner 曲面，不池化，以零初始化 XYZ 增量同时更新 local/global 几何。新 run 使用 `init_curve_feedback_checkpoint` 严格保留已训练 conditioned refinement；原 inter、loss 和 encoder 合同不变。通用 `trainer.max_time` 可设运行时间预算，resume 会恢复 Timer 累计时间。
 
+2026-10-17 新增可选 [UV面编码器](checkpoints/uv_face_encoder/README.md)，在 `blocks.py`／`vae.py` 中仅替换面CNN：保持256个带UV位置的token，经六层512维attention和单query汇聚到原32维接口。`model.face_encoder.kind`默认`cnn`；入口`train_vae_uv_encoder`开启`uv_attention`，通过`init_face_encoder_checkpoint`只替换完整conditioned来源的面CNN并解冻全模型。原edge CNN、GAT、decoder与loss不改。实现及CPU验证完成，正式训练／OCC收益尚未验证；旧latent cache和diffusion不可默认兼容。
+
 ## 架构讨论必须处理的问题
 
 - **观测与先验**：区分可见几何证据与隐藏补全。单张照片通常不能唯一确定完整 CAD；每张训练图只有一个 GT 本身并不否定 conditional diffusion / CVAE 的概率学习。分析唯一输出假设、潜在变量和评估是否错误惩罚合理补全。

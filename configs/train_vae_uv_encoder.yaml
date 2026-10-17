@@ -1,0 +1,39 @@
+defaults:
+  - train_vae_intersection
+  - _self_
+
+# Added 2026-10-17: only the face CNN architecture is replaced. Its output
+# remains 32-D before the original face attention / GAT / global / posterior.
+# New run and optimizer; use the evaluated conditioned-refinement checkpoint.
+trainer:
+  exp_name: uv_face_encoder/candidate
+  devices: 8
+  batch_size: 16
+  max_epochs: 1000
+  max_steps: 100000
+  max_time: null
+
+model:
+  freeze_encoder: false
+  init_face_encoder_checkpoint: ???
+  face_encoder:
+    kind: uv_attention
+    hidden_dim: 512
+    embedding_dim: 128
+    num_layers: 6
+    nhead: 8
+    dim_feedforward: 2048
+    dropout: 0.0
+  encoder_edge_value:
+    enabled: false
+  curve_conditioning:
+    enabled: true
+    hidden_dim: 128
+  curve_point_feedback:
+    enabled: false
+  refinement:
+    candidate_chunk_size: 256
+    geometry_chunk_size: 128
+    checkpoint_candidates: false
+  loss_weights:
+    geometry_chunk_size: 128

@@ -57,6 +57,7 @@ from src.brepnet.models.blocks import (
     ResBlockXD,
     AttnIntersection,
     EdgeValueGATv2Conv,
+    UVFaceEncoder,
     DecoderStage,
     IntersectionDecoder,
     JointBoundaryDecoder,
@@ -1244,14 +1245,27 @@ class AutoEncoder_intersection(nn.Module):
         refinement_path = cfg.get("init_refinement_checkpoint")
         curve_feedback_path = cfg.get("init_curve_feedback_checkpoint")
         edge_value_path = cfg.get("init_encoder_edge_value_checkpoint")
+        face_encoder_path = cfg.get("init_face_encoder_checkpoint")
+        face_encoder_cfg = dict(cfg.get("face_encoder") or {})
+        face_encoder_kind = face_encoder_cfg.pop("kind", "cnn")
+        if face_encoder_kind not in {"cnn", "uv_attention"}:
+            raise ValueError(f"Unknown face_encoder.kind {face_encoder_kind!r}")
+        allowed_face_options = {
+            "hidden_dim", "embedding_dim", "num_layers", "nhead",
+            "dim_feedforward", "dropout",
+        }
+        if face_encoder_cfg.keys() - allowed_face_options:
+            raise ValueError(f"Unknown face_encoder options: {sorted(face_encoder_cfg.keys() - allowed_face_options)}")
+        uv_encoder_enabled = face_encoder_kind == "uv_attention"
         edge_value_cfg = cfg.get("encoder_edge_value") or {}
         edge_value_enabled = bool(edge_value_cfg.get("enabled", False))
         restoring = bool(cfg.get("restoring_checkpoint", False))
-        sources = (legacy_path, refinement_path, curve_feedback_path, edge_value_path, full_path)
+        sources = (legacy_path, refinement_path, curve_feedback_path, edge_value_path, face_encoder_path, full_path)
         if sum(bool(path) for path in sources) > 1:
             raise ValueError(
                 "Choose only one of init_legacy_checkpoint, init_refinement_checkpoint, "
-                "init_curve_feedback_checkpoint, init_encoder_edge_value_checkpoint or checkpoint"
+                "init_curve_feedback_checkpoint, init_encoder_edge_value_checkpoint, "
+                "init_face_encoder_checkpoint or checkpoint"
             )
         if restoring and any(sources):
             raise ValueError("Resume must restore the new checkpoint without a second initialization")
@@ -1259,7 +1273,7 @@ class AutoEncoder_intersection(nn.Module):
             raise ValueError(
                 "Refusing to freeze random weights: provide init_legacy_checkpoint, "
                 "init_refinement_checkpoint, init_curve_feedback_checkpoint, "
-                "init_encoder_edge_value_checkpoint or checkpoint"
+                "init_encoder_edge_value_checkpoint, init_face_encoder_checkpoint or checkpoint"
             )
         intersection_cfg = cfg.get("intersection")
         curve_conditioning_cfg = cfg.get("curve_conditioning")
@@ -1267,6 +1281,21 @@ class AutoEncoder_intersection(nn.Module):
         conditioning_enabled = bool((curve_conditioning_cfg or {}).get("enabled", False))
         curve_feedback_enabled = bool((curve_point_feedback_cfg or {}).get("enabled", False))
         intersection_kind = (intersection_cfg or {}).get("kind", "legacy")
+        # Added 2026-10-17: replace only the local face encoder. Keep the accepted
+        # conditioned legacy-inter/refinement decoder and all original losses.
+        if face_encoder_path and not uv_encoder_enabled:
+            raise ValueError("init_face_encoder_checkpoint requires face_encoder.kind=uv_attention")
+        if uv_encoder_enabled and (legacy_path or refinement_path or curve_feedback_path or edge_value_path):
+            raise ValueError("UV face encoder requires init_face_encoder_checkpoint, checkpoint or resume")
+        if uv_encoder_enabled and (
+            intersection_kind != "legacy" or not cfg["refinement"]["enabled"]
+            or not conditioning_enabled or curve_feedback_enabled or edge_value_enabled
+        ):
+            raise ValueError(
+                "UV face encoder retains conditioned legacy refinement without point feedback or edge values"
+            )
+        if uv_encoder_enabled and self.freeze_encoder and self.runtime_mode == "train":
+            raise ValueError("UV face encoder training requires freeze_encoder=false")
         if edge_value_path and not edge_value_enabled:
             raise ValueError("init_encoder_edge_value_checkpoint requires encoder_edge_value.enabled")
         if edge_value_enabled and (legacy_path or refinement_path or curve_feedback_path):
@@ -1308,6 +1337,17 @@ class AutoEncoder_intersection(nn.Module):
         # registered in this model, and all original geometry heads are reused.
         legacy_cfg = {**cfg, "checkpoint": legacy_path, "mode": "train"}
         legacy = AutoEncoder_light(legacy_cfg)
+        legacy_face_state = None
+        if uv_encoder_enabled:
+            if face_encoder_path:
+                legacy_face_state = legacy.face_coords.state_dict()
+            # Do not shift initialization of the retained decoder/refiner.
+            with torch.random.fork_rng(devices=[]):
+                legacy.face_coords = UVFaceEncoder(
+                    in_channels=legacy.in_channels,
+                    out_channels=legacy.face_feature_dim,
+                    **face_encoder_cfg,
+                )
         self.face_feature_dim = legacy.face_feature_dim
         self.encoder = HolisticEncoder(legacy, edge_value_cfg)
         self.posterior = FacePosterior(legacy)
@@ -1327,6 +1367,8 @@ class AutoEncoder_intersection(nn.Module):
             self._init_curve_feedback(curve_feedback_path)
         if edge_value_path:
             self._init_encoder_edge_value(edge_value_path)
+        if face_encoder_path:
+            self._init_face_encoder(face_encoder_path, legacy_face_state)
         if full_path:
             checkpoint = torch.load(str(full_path), map_location="cpu", weights_only=False)
             state = checkpoint.get("state_dict", checkpoint)
@@ -1338,6 +1380,64 @@ class AutoEncoder_intersection(nn.Module):
         if self.runtime_mode == "frozen_inference":
             self.requires_grad_(False)
         self.train(self.runtime_mode == "train")
+
+    def _init_face_encoder(self, path: str, legacy_face_state: Mapping[str, Tensor]) -> None:
+        """Replace exactly the CNN; strictly retain the complete conditioned VAE.
+
+        Validate the discarded CNN too: a partial, already-UV, local-inter,
+        point-feedback or edge-value checkpoint is not a migration source.
+        Complete UV models must use checkpoint / resume instead.
+        """
+        checkpoint = torch.load(str(path), map_location="cpu", weights_only=False)
+        if not isinstance(checkpoint, Mapping):
+            raise ValueError("Face encoder checkpoint must be a mapping")
+        raw_state = checkpoint.get("state_dict", checkpoint)
+        if not isinstance(raw_state, Mapping):
+            raise ValueError("Face encoder state_dict must be a mapping")
+        source = {}
+        for key, value in raw_state.items():
+            if not isinstance(key, str):
+                raise ValueError("Face encoder source state keys must be strings")
+            normalized = key.removeprefix("model.")
+            if normalized in source:
+                raise ValueError(f"Ambiguous checkpoint key after removing model prefix: {normalized}")
+            source[normalized] = value
+
+        prefix = "encoder.face_coords."
+        expected_old = {prefix + key: value for key, value in legacy_face_state.items()}
+        old = {key: value for key, value in source.items() if key.startswith(prefix)}
+        if old.keys() != expected_old.keys() or any(
+            not isinstance(value, Tensor) or value.shape != expected_old[key].shape
+            for key, value in old.items()
+        ):
+            raise ValueError("Face encoder source must contain the complete original face CNN state")
+        current = self.state_dict()
+        retained = {key: value for key, value in source.items() if not key.startswith(prefix)}
+        expected = {key for key in current if not key.startswith(prefix)}
+        missing = sorted(expected - retained.keys())
+        unexpected = sorted(retained.keys() - expected)
+        mismatched = sorted(
+            key for key in expected & retained.keys()
+            if not isinstance(retained[key], Tensor) or retained[key].shape != current[key].shape
+        )
+        if missing or unexpected or mismatched:
+            raise ValueError(
+                "Face encoder migration may replace only encoder.face_coords in the complete conditioned model; "
+                f"missing={missing}, unexpected={unexpected}, shape_mismatch={mismatched}"
+            )
+        fresh = {key: value for key, value in current.items() if key.startswith(prefix)}
+        self.load_state_dict({**retained, **fresh}, strict=True)
+        self.initialization_report = {
+            "source": str(path),
+            "source_epoch": checkpoint.get("epoch"),
+            "source_global_step": checkpoint.get("global_step"),
+            "retained_state_keys": len(retained),
+            "discarded_face_encoder_state_keys": len(old),
+            "discarded_face_encoder_parameters": sum(value.numel() for value in old.values()),
+            "initialized_face_encoder_state_keys": sorted(fresh),
+            "initialized_face_encoder_parameters": sum(value.numel() for value in fresh.values()),
+        }
+        logger.info("UV face encoder initialization: %s", self.initialization_report)
 
     def _init_from_refinement(self, path: str, legacy_inter_state: Mapping[str, Tensor]) -> None:
         """Replace exactly the legacy inter, strictly preserving every other weight.

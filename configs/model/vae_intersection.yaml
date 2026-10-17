@@ -13,9 +13,21 @@ init_legacy_checkpoint: null
 init_refinement_checkpoint: null
 init_curve_feedback_checkpoint: null
 init_encoder_edge_value_checkpoint: null
+init_face_encoder_checkpoint: null
 checkpoint: null
 trainable_scope: all
 edge_threshold: 0.5
+
+# Added 2026-10-17: optional full-resolution UV tokens, then query pooling.
+# Default CNN keeps the exact existing weights/keys and initialization order.
+face_encoder:
+  kind: cnn
+  hidden_dim: 512
+  embedding_dim: 128
+  num_layers: 6
+  nhead: 8
+  dim_feedforward: 2048
+  dropout: 0.0
 
 # Added 2026-10-15: direct edge content in each of the five GAT messages.
 # 128 -> 64 -> 32 residual MLP; final layer zero-initialized, +51,680 params.
