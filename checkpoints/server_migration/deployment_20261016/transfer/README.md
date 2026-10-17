@@ -14,7 +14,7 @@
 # 当前进度（status.json 包含每组开始/结束时间、PID、进度、退出码与日志路径）
 cat /mnt/d/migration-transfer-logs/status.json
 
-# SSH master 必须可用；无认证信息写入脚本、清单或日志
+# 优先复用 SSH master；普通公钥登录现已可用，master 失效时可直接连接
 ssh -S /tmp/hola-migration-ssh-%C -o BatchMode=yes -p 12222 root@172.31.224.142 true
 
 # 首次启动或中断后继续；锁保证重复启动不会多开队列
@@ -22,7 +22,7 @@ nohup /mnt/d/anaconda3/bin/python /mnt/d/python/checkpoints/server_migration/dep
   </dev/null >>/mnt/d/migration-transfer-logs/queue.log 2>&1 &
 ```
 
-如需暂停，对 `status.json` 的队列 `pid` 发送 `SIGTERM`。这只中断当前 rsync；临时文件保存在目标 `.rsync-partial/`，源文件和训练进程不受影响。之后重启同一脚本：跳过已完成组，重试未完成组，rsync 复用目标现有内容。网络断开会定时重试；原 SSH master 失效时需重新建立可用连接。源机重启后需要重新启动队列，未安装系统开机服务。
+如需暂停，对 `status.json` 的队列 `pid` 发送 `SIGTERM`。这只中断当前 rsync；临时文件保存在目标 `.rsync-partial/`，源文件和训练进程不受影响。之后重启同一脚本：跳过已完成组，重试未完成组，rsync 复用目标现有内容。网络断开会定时重试；原 SSH master 失效时可用普通公钥新连接（`ssh -o BatchMode=yes -p 12222 root@172.31.224.142`）；无需改密码或复制私钥。源机重启后需要重新启动队列，未安装系统开机服务。
 
 传输错误 10/12/30/35/255 持续每 30 秒重试；其他错误每组最多三次，然后留下 `failed` 状态并继续独立资产。最终 `needs_attention` 表示仍有失败项；只有全部组 rsync 成功才记为 `completed`。单组完成不等于已执行全量独立哈希核验；部署加载、稳定权重哈希与科学软链接闭包仍由验收步骤判断。
 

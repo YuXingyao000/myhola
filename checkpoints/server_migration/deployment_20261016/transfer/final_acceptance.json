@@ -1,0 +1,329 @@
+{
+  "observed_at_utc": "2026-10-17T07:24:15.990112+00:00",
+  "status": "passed",
+  "queue_finished_at_utc": "2026-10-17T07:22:27.077374+00:00",
+  "groups": [
+    {
+      "id": "ae_deepcad",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/ae_deepcad.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "dinov2_large",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/dinov2_large.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "development_samples_64",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/development_samples_64.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "blender_4_2",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/blender_4_2.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "blender_5_2",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/blender_5_2.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "report_font",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/report_font.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "flux_selected",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/flux_selected.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "ae_abc",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/ae_abc.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "legacy_baseline_replay",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/legacy_baseline_replay.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "generation_refactored_logs",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/generation_refactored_logs.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "generation_legacy_provenance",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/generation_legacy_provenance.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "deepcad_v7",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/deepcad_v7.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "deepcad_v7_cond",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/deepcad_v7_cond.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "recent_checkpoints_main",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/recent_checkpoints_main.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "recent_checkpoints_curve",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/recent_checkpoints_curve.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "1119_deepcad_aug1_11k_24",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/1119_deepcad_aug1_11k_24.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "deepcad_v7_visibility",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/deepcad_v7_visibility.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "deepcad_stl_total",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/deepcad_stl_total.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "deepcad_v6",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/deepcad_v6.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "cad_scene_assets",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/cad_scene_assets.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "cad_scene_references",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/cad_scene_references.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "cad_scene_templates",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/cad_scene_templates.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "cad_scene_workflow_validation",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/cad_scene_workflow_validation.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "deepcad_inventory",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/deepcad_inventory.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "deepcad_lists",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/deepcad_lists.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "deepcad_lists_1000",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/deepcad_lists_1000.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "deepcad_splits_1000",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/deepcad_splits_1000.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "gt_photo",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/gt_photo.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "my_6_demo",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/my_6_demo.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "procad_flux_single_view",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/procad_flux_single_view.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "data_step",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/data_step.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "abc_v2_new_imgs",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/abc_v2_new_imgs.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "abc_v2_natural_AA",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/abc_v2_natural_AA.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "abc_v2_sketch_AA",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/abc_v2_sketch_AA.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    },
+    {
+      "id": "cad_sketch_data",
+      "status": "completed",
+      "exit_code": 0,
+      "attempt": 1,
+      "log": "/mnt/d/migration-transfer-logs/cad_sketch_data.attempt-1.log",
+      "final_statistics_present": true,
+      "tail_errors": []
+    }
+  ],
+  "target_explicit_roots": {
+    "checked_roots": 262,
+    "missing": []
+  },
+  "logical_bytes": 1619432969446,
+  "rsync_sent_bytes": 819217032942,
+  "scope": "35 final exit codes and log tails; explicit destination roots only. Prior 124-link and 104-file hash acceptance retained; no repeated full scan or ABC content inspection."
+}

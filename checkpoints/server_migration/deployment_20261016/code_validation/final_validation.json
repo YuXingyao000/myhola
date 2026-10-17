@@ -1,0 +1,246 @@
+{
+  "status": "passed",
+  "source": {
+    "observed_at_utc": "2026-10-17T07:24:15.782677+00:00",
+    "worktrees": [
+      {
+        "root": "/mnt/d/python",
+        "head": {
+          "returncode": 0,
+          "stdout": "b540fd644c0971ee3dd0f6cc1bb879740b597d35",
+          "stderr": ""
+        },
+        "branch": {
+          "returncode": 0,
+          "stdout": "refs/heads/codex/diffusion-training-throughput",
+          "stderr": ""
+        },
+        "status": {
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        "git_dir": {
+          "returncode": 0,
+          "stdout": "/mnt/d/python/.git",
+          "stderr": ""
+        },
+        "fsck": {
+          "returncode": 0,
+          "stderr": "",
+          "dangling_line_count": 604,
+          "non_dangling_output": []
+        }
+      },
+      {
+        "root": "/mnt/d/python_curve_eval",
+        "head": {
+          "returncode": 0,
+          "stdout": "d3dda308cd7dfb77646c1953eb7e1241d1f4c072",
+          "stderr": ""
+        },
+        "branch": {
+          "returncode": 0,
+          "stdout": "refs/heads/codex/postprocess-validation",
+          "stderr": ""
+        },
+        "status": {
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        "git_dir": {
+          "returncode": 0,
+          "stdout": "/mnt/d/python/.git/worktrees/python_curve_eval",
+          "stderr": ""
+        },
+        "fsck": {
+          "returncode": 0,
+          "stderr": "",
+          "dangling_line_count": 604,
+          "non_dangling_output": []
+        }
+      },
+      {
+        "root": "/mnt/d/python_legacy_post_main",
+        "head": {
+          "returncode": 0,
+          "stdout": "73b63b736af2d1002ffa01d5dfb397a9b76d3923",
+          "stderr": ""
+        },
+        "branch": {
+          "returncode": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "status": {
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        "git_dir": {
+          "returncode": 0,
+          "stdout": "/mnt/d/python/.git/worktrees/python_legacy_post_main",
+          "stderr": ""
+        },
+        "fsck": {
+          "returncode": 0,
+          "stderr": "",
+          "dangling_line_count": 604,
+          "non_dangling_output": []
+        }
+      },
+      {
+        "root": "/root/.codex/worktrees/data-generation/python",
+        "head": {
+          "returncode": 0,
+          "stdout": "2e4ed187da45ecede44b53bad2b686c475b337b7",
+          "stderr": ""
+        },
+        "branch": {
+          "returncode": 0,
+          "stdout": "refs/heads/codex/data-generation-migration",
+          "stderr": ""
+        },
+        "status": {
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        "git_dir": {
+          "returncode": 0,
+          "stdout": "/mnt/d/python/.git/worktrees/python",
+          "stderr": ""
+        },
+        "fsck": {
+          "returncode": 0,
+          "stderr": "",
+          "dangling_line_count": 604,
+          "non_dangling_output": []
+        }
+      }
+    ]
+  },
+  "target": {
+    "observed_at_utc": "2026-10-17T07:24:19.221023+00:00",
+    "worktrees": [
+      {
+        "root": "/mnt/d/python",
+        "head": {
+          "returncode": 0,
+          "stdout": "b540fd644c0971ee3dd0f6cc1bb879740b597d35",
+          "stderr": ""
+        },
+        "branch": {
+          "returncode": 0,
+          "stdout": "refs/heads/codex/diffusion-training-throughput",
+          "stderr": ""
+        },
+        "status": {
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        "git_dir": {
+          "returncode": 0,
+          "stdout": "/mnt/d/python/.git",
+          "stderr": ""
+        },
+        "fsck": {
+          "returncode": 0,
+          "stderr": "",
+          "dangling_line_count": 602,
+          "non_dangling_output": []
+        }
+      },
+      {
+        "root": "/mnt/d/python_curve_eval",
+        "head": {
+          "returncode": 0,
+          "stdout": "d3dda308cd7dfb77646c1953eb7e1241d1f4c072",
+          "stderr": ""
+        },
+        "branch": {
+          "returncode": 0,
+          "stdout": "refs/heads/codex/postprocess-validation",
+          "stderr": ""
+        },
+        "status": {
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        "git_dir": {
+          "returncode": 0,
+          "stdout": "/mnt/d/python/.git/worktrees/python_curve_eval",
+          "stderr": ""
+        },
+        "fsck": {
+          "returncode": 0,
+          "stderr": "",
+          "dangling_line_count": 602,
+          "non_dangling_output": []
+        }
+      },
+      {
+        "root": "/mnt/d/python_legacy_post_main",
+        "head": {
+          "returncode": 0,
+          "stdout": "73b63b736af2d1002ffa01d5dfb397a9b76d3923",
+          "stderr": ""
+        },
+        "branch": {
+          "returncode": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "status": {
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        "git_dir": {
+          "returncode": 0,
+          "stdout": "/mnt/d/python/.git/worktrees/python_legacy_post_main",
+          "stderr": ""
+        },
+        "fsck": {
+          "returncode": 0,
+          "stderr": "",
+          "dangling_line_count": 602,
+          "non_dangling_output": []
+        }
+      },
+      {
+        "root": "/root/.codex/worktrees/data-generation/python",
+        "head": {
+          "returncode": 0,
+          "stdout": "2e4ed187da45ecede44b53bad2b686c475b337b7",
+          "stderr": ""
+        },
+        "branch": {
+          "returncode": 0,
+          "stdout": "refs/heads/codex/data-generation-migration",
+          "stderr": ""
+        },
+        "status": {
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        "git_dir": {
+          "returncode": 0,
+          "stdout": "/mnt/d/python/.git/worktrees/python",
+          "stderr": ""
+        },
+        "fsck": {
+          "returncode": 0,
+          "stderr": "",
+          "dangling_line_count": 602,
+          "non_dangling_output": []
+        }
+      }
+    ]
+  },
+  "scope": "Four HEAD/branch/worktree states and connectivity-only fsck on both hosts. No historical worktree update, pruning or full .git copy."
+}

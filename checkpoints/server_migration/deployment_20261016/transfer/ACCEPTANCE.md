@@ -1,6 +1,18 @@
-# 资产迁移验收（进行中）
+# 资产迁移验收（已完成所选传输）
 
-截至 **2026-10-17 12:00（Asia/Shanghai）**：35 组必要资产中 30 组 rsync 成功，ABC 原始 STEP 正在传输，后面还有 4 组 ABC 图像目录；没有失败组。此时 STEP 已传约 807 GB。**本次迁移尚未全部完成。** 动态状态以 `/mnt/d/migration-transfer-logs/status.json` 为准，Git 中的 [状态快照](status_snapshot.json) 只表示记录时刻。
+## 最终验收：2026-10-17
+
+队列于 **07:22:27 UTC（15:22:27 Asia/Shanghai）** 正常完成。逐项对照固定清单与原始状态，**35/35 组均为 completed、exit_code=0、attempt=1**；逐组日志末尾均含最终 rsync 统计，未发现错误或警告。目标清单显式指定的 262 个根路径全部存在。本次没有失败组、补传或全库重扫。
+
+完成组实际传输文件内容共 **1,619,432,969,446 B**，rsync 发送 **819,217,032,942 B**；两者不是目标磁盘占用，后者不包含 SSH framing。ABC STEP 组完整返回成功，共传 1,000,000 个常规文件；只检查传输记录及根目录存在性，没有打开 ABC 几何或最终评估内容。
+
+证据见 [最终验收](final_acceptance.json)、[最终状态快照](status_snapshot.json) 和 [逐组统计](group_transfer_summary.json)。先前 124 个科学/模型链接、104 份 training 文件哈希及 AE 哈希结果继续有效，未重复执行；这仍不代表全库逐文件独立哈希审计。
+
+保留缺口：活跃 diffusion 运行目录和权重明确暂缓；源端 visibility 的 3 个 CAD 缺口不补造；ABC 只交付所选原始资产及显式提取入口，没有完整 HoLa 几何、latent 和条件对应训练包。数据打包、旋转映射及来源记录的既有入口缺口见 [数据入口说明](../data_entrypoints/README.md)。
+
+## 完成前的进度记录
+
+以下保留完成前的历史进度。截至 **2026-10-17 12:00（Asia/Shanghai）**：35 组必要资产中 30 组 rsync 成功，ABC 原始 STEP 正在传输，后面还有 4 组 ABC 图像目录；没有失败组。此时 STEP 已传约 807 GB。**本次迁移尚未全部完成。** 动态状态以 `/mnt/d/migration-transfer-logs/status.json` 为准，Git 中的 [状态快照](status_snapshot.json) 只表示记录时刻。
 
 DeepCAD 原始数据、条件、24-view features、visibility、近期研究资产、两套 AE、DINOv2、精选 FLUX 和 Blender 已完成对应传输组。源机的 diffusion 运行目录按用户要求暂不迁移，之后仍需单独同步稳定权重。
 
@@ -24,7 +36,7 @@ DeepCAD 原始数据、条件、24-view features、visibility、近期研究资�
 
 在上述记录时刻，按 STEP 剩余约 160–170 GB、后续图像约 250 GB 及已观测速率粗估，可能仍需约 **3–5 小时**。这不是完成承诺；盘上文件分布、其他读写与图像组的目录开销会改变耗时。不能使用 rsync 当前增量文件列表显示的 `99%` 代表整个 ABC 库已经完成 99%。
 
-## 尚待确认
+## 当时尚待确认（现已完成）
 
 只有剩余 5 组都返回成功，队列总状态变为 `completed`，才能声明所选资产传输完成。之后更新状态快照并检查最终返回码与日志异常。代码、Git 工作树、新环境运行验证由主迁移流程验收；本报告仅覆盖资产，不替代它们，也不是研究质量评估。
 

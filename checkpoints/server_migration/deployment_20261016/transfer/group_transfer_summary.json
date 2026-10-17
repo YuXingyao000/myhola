@@ -1,16 +1,16 @@
 {
-  "observed_at_utc": "2026-10-17T04:02:40.802116+00:00",
-  "state_updated_at_utc": "2026-10-17T04:02:36.881353+00:00",
-  "state_age_seconds": 3.9,
+  "observed_at_utc": "2026-10-17T07:22:44.139083+00:00",
+  "state_updated_at_utc": "2026-10-17T07:22:27.077389+00:00",
+  "state_age_seconds": 17.1,
   "state_stale": false,
-  "overall_status": "running",
-  "current_asset": "data_step",
-  "completed_groups": 30,
+  "overall_status": "completed",
+  "current_asset": null,
+  "completed_groups": 35,
   "total_groups": 35,
   "failed_groups": [],
-  "completed_groups_transferred_logical_bytes": 398529983401,
-  "completed_groups_rsync_sent_bytes": 399025776140,
-  "current_attempt_logical_bytes": 812299143678,
+  "completed_groups_transferred_logical_bytes": 1619432969446,
+  "completed_groups_rsync_sent_bytes": 819217032942,
+  "current_attempt_logical_bytes": 0,
   "accounting": "Rsync file-content transfer bytes, not allocated disk space. Prior development samples are skipped by later full groups; copies in distinct worktrees remain distinct. Retry history and SSH framing are not included in the completed-attempt wire counters. Current transfer bytes are uncompressed logical bytes, not wire speed. Completion records transfer status, not a full independent checksum audit.",
   "groups": [
     {
@@ -465,28 +465,78 @@
     },
     {
       "id": "data_step",
-      "status": "running",
+      "status": "completed",
       "attempt": 1,
       "started_at_utc": "2026-10-16T23:42:17.618744+00:00",
-      "elapsed_seconds": 15619.3,
-      "current_attempt_logical_bytes": 812299143678,
-      "progress_observed_at_utc": "2026-10-17T04:02:36.881333+00:00"
+      "finished_at_utc": "2026-10-17T04:58:24.542449+00:00",
+      "elapsed_seconds": 18966.9,
+      "exit_code": 0,
+      "listed_items": 2000004,
+      "regular_files_transferred": 1000000,
+      "listed_logical_bytes": 966575214354,
+      "transferred_logical_bytes": 966575214354,
+      "rsync_sent_bytes": 165749486405,
+      "rsync_received_bytes": 25806895
     },
     {
       "id": "abc_v2_new_imgs",
-      "status": "pending"
+      "status": "completed",
+      "attempt": 1,
+      "started_at_utc": "2026-10-17T04:58:24.547671+00:00",
+      "finished_at_utc": "2026-10-17T05:06:59.157849+00:00",
+      "elapsed_seconds": 514.6,
+      "exit_code": 0,
+      "listed_items": 367274,
+      "regular_files_transferred": 183635,
+      "listed_logical_bytes": 11372570079,
+      "transferred_logical_bytes": 11372570079,
+      "rsync_sent_bytes": 11392756806,
+      "rsync_received_bytes": 4999051
     },
     {
       "id": "abc_v2_natural_AA",
-      "status": "pending"
+      "status": "completed",
+      "attempt": 1,
+      "started_at_utc": "2026-10-17T05:06:59.163892+00:00",
+      "finished_at_utc": "2026-10-17T06:16:24.472772+00:00",
+      "elapsed_seconds": 4165.3,
+      "exit_code": 0,
+      "listed_items": 367277,
+      "regular_files_transferred": 183636,
+      "listed_logical_bytes": 113643323739,
+      "transferred_logical_bytes": 113643323739,
+      "rsync_sent_bytes": 113687190337,
+      "rsync_received_bytes": 5010679
     },
     {
       "id": "abc_v2_sketch_AA",
-      "status": "pending"
+      "status": "completed",
+      "attempt": 1,
+      "started_at_utc": "2026-10-17T06:16:24.479145+00:00",
+      "finished_at_utc": "2026-10-17T06:29:02.327237+00:00",
+      "elapsed_seconds": 757.8,
+      "exit_code": 0,
+      "listed_items": 46657,
+      "regular_files_transferred": 23326,
+      "listed_logical_bytes": 27069056576,
+      "transferred_logical_bytes": 27069056576,
+      "rsync_sent_bytes": 27077939475,
+      "rsync_received_bytes": 640912
     },
     {
       "id": "cad_sketch_data",
-      "status": "pending"
+      "status": "completed",
+      "attempt": 1,
+      "started_at_utc": "2026-10-17T06:29:02.333399+00:00",
+      "finished_at_utc": "2026-10-17T07:22:27.071360+00:00",
+      "elapsed_seconds": 3204.7,
+      "exit_code": 0,
+      "listed_items": 367277,
+      "regular_files_transferred": 183636,
+      "listed_logical_bytes": 102242821297,
+      "transferred_logical_bytes": 102242821297,
+      "rsync_sent_bytes": 102283883779,
+      "rsync_received_bytes": 5007460
     }
   ]
 }

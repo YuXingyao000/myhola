@@ -1,0 +1,205 @@
+{
+  "phase": "training",
+  "torch": "2.8.0+cu128",
+  "device": "NVIDIA GeForce RTX 5090",
+  "seed": 42,
+  "git_commit": "b540fd644c0971ee3dd0f6cc1bb879740b597d35",
+  "git_metadata_ready": true,
+  "validation_script_sha256": "e3f9cc045c6b6186dd9c7048fc5fcd01bf157e7ef2ff3fea6743324a0d5d9f42",
+  "input_ids": [
+    "00000061",
+    "00000070"
+  ],
+  "source_split": "/mnt/d/python/src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt",
+  "source_split_sha256": "bfd0f90428a40600c6f9f72658544c018e75f5576ad6f0af00dbe29224ac9417",
+  "input_split_role": "training",
+  "input_files": {
+    "/mnt/d/data/deepcad_v7/00000061/data.npz": {
+      "bytes": 8328,
+      "sha256": "0be65329762278fbc05af51b4769ca965e991bff62eb9c907f36ba428f43878a"
+    },
+    "/mnt/d/data/deepcad_v7_cond/00000061/imgs.npz": {
+      "bytes": 51446,
+      "sha256": "a65303f123d44151ca63b3739371239a674e7e1a743d91d40a701ad2bbc7dc45"
+    },
+    "/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000061_0/features.npy": {
+      "bytes": 1920,
+      "sha256": "ca273ffc70d291bd070d45ccc3a60347a5004ea07d15ad256bc428b0b1643c9e"
+    },
+    "/mnt/d/data/deepcad_v7/00000070/data.npz": {
+      "bytes": 19644,
+      "sha256": "b7d029116021b974f754b0586a8519b4167aadd03ca97ef1e23b1caf9800455f"
+    },
+    "/mnt/d/data/deepcad_v7_cond/00000070/imgs.npz": {
+      "bytes": 69066,
+      "sha256": "9564fb9abab6b4d282e51d9fde7b8e88bc815d6d463a6daf4e1c8f1327c4f698"
+    },
+    "/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000070_0/features.npy": {
+      "bytes": 3712,
+      "sha256": "98e7d05b69f514df4cd794554bdc73a427c690d911b5307d4a582cf9474500e6"
+    }
+  },
+  "diffusion_batch_shapes": {
+    "v_prefix": [
+      "00000061",
+      "00000070"
+    ],
+    "cached_latent_stats": [
+      2,
+      30,
+      64
+    ],
+    "face_mask": [
+      2,
+      30
+    ],
+    "conditions": {
+      "imgs": [
+        2,
+        3,
+        224,
+        224
+      ],
+      "img_id": [
+        2,
+        1
+      ]
+    },
+    "rotation_id": [
+      2
+    ]
+  },
+  "diffusion_num_layers": 24,
+  "diffusion_trainable_parameters": 203026208,
+  "autoencoder_checkpoint": "/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt",
+  "diffusion_checkpoint": null,
+  "diffusion_checkpoint_note": "当前 diffusion 使用随机初始化，仅验证完整架构运行；源机在训权重按用户要求暂不复制。",
+  "condition_tokens_shape": [
+    2,
+    1,
+    257,
+    1024
+  ],
+  "diffusion_loss": 1.1767784357070923,
+  "diffusion_gradients": {
+    "trainable_tensors": 500,
+    "gradients_present": 500,
+    "nonzero_gradient_tensors": 500,
+    "all_present_gradients_finite": true,
+    "missing": []
+  },
+  "image_projection_gradients": {
+    "trainable_tensors": 6,
+    "gradients_present": 6,
+    "nonzero_gradient_tensors": 6,
+    "all_present_gradients_finite": true,
+    "missing": []
+  },
+  "frozen_dino_and_vae_no_gradients": true,
+  "diffusion_peak_gpu_bytes": 3644252160,
+  "vae_batch_shapes": {
+    "v_prefix": [
+      "00000061"
+    ],
+    "face_points": [
+      7,
+      16,
+      16,
+      6
+    ],
+    "face_norm": [
+      7,
+      16,
+      16,
+      6
+    ],
+    "edge_points": [
+      30,
+      16,
+      6
+    ],
+    "edge_norm": [
+      30,
+      16,
+      6
+    ],
+    "face_bbox": [
+      7,
+      4
+    ],
+    "edge_bbox": [
+      30,
+      4
+    ],
+    "edge_face_connectivity": [
+      30,
+      3
+    ],
+    "zero_positions": [
+      19,
+      2
+    ],
+    "attn_mask": [
+      7,
+      7
+    ],
+    "edge_attn_mask": [
+      30,
+      30
+    ],
+    "face_counts": [
+      1
+    ],
+    "valid_mask": [
+      1,
+      7
+    ],
+    "conditions": {}
+  },
+  "trainer_init_trusted_checkpoint": true,
+  "vae_loss": 0.028873605653643608,
+  "vae_gradients": {
+    "trainable_tensors": 704,
+    "gradients_present": 704,
+    "nonzero_gradient_tensors": 704,
+    "all_present_gradients_finite": true,
+    "missing": []
+  },
+  "vae_cached_mean_decode_shapes": {
+    "face_latents": [
+      7,
+      32
+    ],
+    "pred_face_adj": [
+      49
+    ],
+    "pred_face_adj_prob": [
+      90
+    ],
+    "pred_edge_face_connectivity": [
+      30,
+      3
+    ],
+    "pred_face": [
+      7,
+      16,
+      16,
+      3
+    ],
+    "pred_edge": [
+      30,
+      16,
+      3
+    ]
+  },
+  "post_imports": [
+    "src.brepnet.post.construct_brep",
+    "src.brepnet.post.occ_fit",
+    "src.brepnet.post.occ_topology",
+    "src.brepnet.eval.run",
+    "src.brepnet.data.extract_brep"
+  ],
+  "scope": "真实 training batch 的 CUDA/BF16 前向、反向、冻结与缓存解码、OCC/post 入口；无优化器更新和正式训练。",
+  "status": "passed",
+  "elapsed_seconds": 16.99285602848977
+}

@@ -1,0 +1,63 @@
+{
+  "phase": "flux",
+  "torch": "2.8.0+cu128",
+  "device": "NVIDIA GeForce RTX 5090",
+  "seed": 42,
+  "git_commit": "b540fd644c0971ee3dd0f6cc1bb879740b597d35",
+  "git_metadata_ready": true,
+  "validation_script_sha256": "e3f9cc045c6b6186dd9c7048fc5fcd01bf157e7ef2ff3fea6743324a0d5d9f42",
+  "input_ids": [
+    "00000061",
+    "00000070"
+  ],
+  "source_split": "/mnt/d/python/src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt",
+  "source_split_sha256": "bfd0f90428a40600c6f9f72658544c018e75f5576ad6f0af00dbe29224ac9417",
+  "input_split_role": "training",
+  "input_files": {
+    "/mnt/d/data/deepcad_v7/00000061/data.npz": {
+      "bytes": 8328,
+      "sha256": "0be65329762278fbc05af51b4769ca965e991bff62eb9c907f36ba428f43878a"
+    },
+    "/mnt/d/data/deepcad_v7_cond/00000061/imgs.npz": {
+      "bytes": 51446,
+      "sha256": "a65303f123d44151ca63b3739371239a674e7e1a743d91d40a701ad2bbc7dc45"
+    },
+    "/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000061_0/features.npy": {
+      "bytes": 1920,
+      "sha256": "ca273ffc70d291bd070d45ccc3a60347a5004ea07d15ad256bc428b0b1643c9e"
+    },
+    "/mnt/d/data/deepcad_v7/00000070/data.npz": {
+      "bytes": 19644,
+      "sha256": "b7d029116021b974f754b0586a8519b4167aadd03ca97ef1e23b1caf9800455f"
+    },
+    "/mnt/d/data/deepcad_v7_cond/00000070/imgs.npz": {
+      "bytes": 69066,
+      "sha256": "9564fb9abab6b4d282e51d9fde7b8e88bc815d6d463a6daf4e1c8f1327c4f698"
+    },
+    "/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24/00000070_0/features.npy": {
+      "bytes": 3712,
+      "sha256": "98e7d05b69f514df4cd794554bdc73a427c690d911b5307d4a582cf9474500e6"
+    }
+  },
+  "full_weight_load_seconds": 30.35907933115959,
+  "input_image_shape": [
+    256,
+    256,
+    3
+  ],
+  "output_shape": [
+    256,
+    256,
+    3
+  ],
+  "output_finite": true,
+  "output_path": "/mnt/d/migration/project-validation/flux_training_smoke.png",
+  "steps": 2,
+  "output_sha256": "5395a46f14a7eff130edda8b44f4485e9120e28dc412c991f4eb84559cc5af5d",
+  "gpu_peak_allocated_bytes": 13601082368,
+  "transformer_path": "/mnt/d/model/Flux1_Kontext_dev_GGUF/flux1-kontext-dev-Q8_0.gguf",
+  "base_model_path": "/mnt/d/model/Flux1_Kontext_dev",
+  "scope": "仓库 Img2BrepPipeline 完整加载 Q8 GGUF+CLIP/T5/VAE，256px/2步真实 training 渲染条件编辑；仅环境连通验证，不判断合成图质量或几何一致性。",
+  "status": "passed",
+  "elapsed_seconds": 53.74342706706375
+}

@@ -25,7 +25,7 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 PYTHONPATH=/mnt/d/python \
 
 运行时产物保存在目标 `/mnt/d/migration/project-validation/`。紧凑的 `training.json` / `flux.json` 结果复制回本目录后记录结论；生成图片留在运行目录，不作为研究数据或质量证据。
 
-## 当前状态与完成 hook 交接
+## 首轮状态与完成 hook 交接（历史）
 
 2026-10-17，按用户要求停止持续轮询，把后续检查交给传输完成 hook。
 
@@ -41,8 +41,19 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 PYTHONPATH=/mnt/d/python \
 **待完成 hook 接管：**
 
 1. 确认环境 agent 的 torchvision bundled libjpeg SONAME 冲突修复已完成。首次训练检查在最后的 `post.construct_brep -> OCC.IGESControl` 导入失败；原因是 torchvision 自带 libjpeg 的 SONAME 与 Conda libjpeg 冲突，导致 libtiff 找不到 `jpeg12_write_raw_data`。修复前证据保留在 [training-before-occ-fix.json](training-before-occ-fix.json)，不得将其整体标为 passed。
-2. 源码与 `.git` 同步完整后，按上文命令重跑 `training`（首次约 34 秒）。脚本还增加真实 `UnifiedTrainer._init_model_from_checkpoint` 的可信 AE 加载验证，以覆盖 PyTorch 2.8 的 `weights_only` 兼容修复。首次检查时 Git 元数据仍在传输，因此 JSON 明确记录 `git_metadata_ready=false`；重跑应记录实际 HEAD。
+2. 源码与 Git 对象通过安全增量推送同步完整后，按上文命令重跑 `training`（首次约 34 秒）。脚本还增加真实 `UnifiedTrainer._init_model_from_checkpoint` 的可信 AE 加载验证，以覆盖 PyTorch 2.8 的 `weights_only` 兼容修复。首次检查时 Git 元数据仍在传输，因此 JSON 明确记录 `git_metadata_ready=false`；重跑应记录实际 HEAD。
 3. 按上文命令重跑 `flux`（首次总计约 196 秒），确认修复后的 uint8 导出产生 256px 图片及 `status=passed`。修复前证据保留在 [flux-before-export-fix.json](flux-before-export-fix.json)。该图片仅为环境验证，不纳入研究数据、不据此评估质量。
 4. 将目标 `/mnt/d/migration/project-validation/training.json` 和 `flux.json` 复制回本目录，并据实际结果更新本页。GPU 验证进程已退出，没有后台正式训练。
 
 所有首次报告均原样保留，没有把后续修复追写成当时已通过。检查未触碰 ABC 最终评估子集，没有移动源机仍在训练的 diffusion 权重，也没有改动源机 Python 环境。
+
+
+## 完成 hook 最终结果：2026-10-17
+
+本次仅重跑交接中的 `training` 与 `flux`；两个进程均正常退出，报告均为 `status=passed`。验证代码为两端一致的 `b540fd644c0971ee3dd0f6cc1bb879740b597d35`，`git_metadata_ready=true`，脚本 SHA256 与源文件一致。输入仍为上述两个 training CAD、seed 42；未启动正式训练、更新 optimizer、迁移 diffusion 权重或读取 ABC 内容。
+
+- [training.json](training.json)：16.99 秒，24 层 diffusion 的 500/500、图像投影 6/6、AE 704/704 参数张量得到非零有限梯度；冻结 DINO/AE 无梯度。真实 trainer 的可信 AE 初始化通过，cached mean 解码有限，post/eval/extract_brep 全部导入成功，覆盖前次 OCC 导入失败处。
+- [flux.json](flux.json)：53.74 秒，其中完整 Q8/CLIP/T5/VAE 加载 30.36 秒；2 步输出有限，uint8 图片导出成功，形状 `[256,256,3]`。图片仍仅保存在目标 `/mnt/d/migration/project-validation/flux_training_smoke.png`，SHA256 记入报告；不纳入研究数据或用于质量结论。
+- 执行日志：目标 `/mnt/d/migration/logs/final-training-validation.log`、`final-flux-validation.log`。本次未重新安装依赖或重复已通过的 8 卡/NCCL/Blender 基础检查；JPEG SONAME 修复沿用已验收的目标环境补丁。
+
+首轮失败报告继续保留。两项最终报告只是迁移运行验收，不构成训练收敛、几何重建质量或端到端数据生产能力证据。
