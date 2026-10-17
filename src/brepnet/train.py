@@ -313,11 +313,45 @@ class UnifiedTrainer(pl.LightningModule):
         )
         return optimizer
 
+    def configure_gradient_clipping(
+        self, optimizer, gradient_clip_val=None, gradient_clip_algorithm=None,
+    ):
+        # bf16/fp32 have no GradScaler to skip a nonfinite update. Fail before
+        # norm clipping spreads one bad gradient to every parameter and Adam
+        # state. Finite gradients use the same norm/clipping rule as Lightning.
+        precision = self.trainer.precision_plugin
+        if (gradient_clip_algorithm != "norm" or gradient_clip_val is None or gradient_clip_val <= 0
+                or getattr(precision, "scaler", None) is not None):
+            return super().configure_gradient_clipping(
+                optimizer, gradient_clip_val, gradient_clip_algorithm,
+            )
+        try:
+            torch.nn.utils.clip_grad_norm_(
+                list(precision.main_params(optimizer)), gradient_clip_val,
+                error_if_nonfinite=True,
+            )
+        except RuntimeError as error:
+            if "non-finite" not in str(error):
+                raise
+            # Inspect individual tensors only on failure, not on every step.
+            invalid = [
+                name for name, parameter in self.named_parameters()
+                if parameter.grad is not None and not torch.isfinite(parameter.grad).all()
+            ]
+            raise RuntimeError(
+                "Nonfinite gradient norm before optimizer update; "
+                f"step={self.global_step}, rank={self.global_rank}, "
+                f"batch={getattr(self, '_train_batch_prefixes', ())}, "
+                f"nonfinite_parameters={invalid[:8]} (total={len(invalid)}). "
+                "Parameters and optimizer state have not been updated in this step."
+            ) from error
+
     # ------------------------------------------------------------------
     # Training
     # ------------------------------------------------------------------
 
     def training_step(self, batch: Dict[str, Any], batch_idx: int) -> torch.Tensor:
+        self._train_batch_prefixes = tuple(batch.get("v_prefix", ()))
         loss_dict = self._forward_step(batch, is_training=True)
         total_loss = loss_dict["total_loss"]
 

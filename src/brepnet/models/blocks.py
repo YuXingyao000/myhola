@@ -639,8 +639,19 @@ def _project_to_segments(points: Tensor, starts: Tensor, ends: Tensor) -> tuple[
     squared_lengths = directions.square().sum(dim=-1)
     valid = squared_lengths > torch.finfo(points.dtype).tiny
     denominators = torch.where(valid, squared_lengths, torch.ones_like(squared_lengths))
-    fractions = ((points - starts) * directions).sum(dim=-1) / denominators
-    fractions = torch.where(valid, fractions.clamp(0.0, 1.0), torch.zeros_like(fractions))
+    numerators = ((points - starts) * directions).sum(dim=-1)
+    with torch.no_grad():
+        fractions = numerators / denominators
+        interior = valid & (fractions >= 0.0) & (fractions <= 1.0)
+        fractions = torch.where(valid, fractions.clamp(0.0, 1.0), torch.zeros_like(fractions))
+    if torch.is_grad_enabled():
+        # A clamped endpoint has no derivative through its fraction. Mask before
+        # division: masking afterwards can still produce 0 * inf in backward
+        # for a tiny segment and a distant point. Keep endpoint clamp semantics.
+        interior_fractions = torch.where(interior, numerators, 0.0) / torch.where(
+            interior, denominators, 1.0
+        )
+        fractions = torch.where(interior, interior_fractions, fractions)
     return starts + fractions[..., None] * directions, fractions
 
 
@@ -661,9 +672,19 @@ def _project_to_triangles(points: Tensor, triangles: Tensor) -> Tensor:
     denominator = torch.where(valid, area_squared, torch.ones_like(area_squared))
 
     relative = points - vertex_a
-    weight_b = (torch.linalg.cross(relative, side_c, dim=-1) * normal).sum(dim=-1) / denominator
-    weight_c = (torch.linalg.cross(side_b, relative, dim=-1) * normal).sum(dim=-1) / denominator
-    inside = valid & (weight_b >= 0.0) & (weight_c >= 0.0) & (weight_b + weight_c <= 1.0)
+    numerator_b = (torch.linalg.cross(relative, side_c, dim=-1) * normal).sum(dim=-1)
+    numerator_c = (torch.linalg.cross(side_b, relative, dim=-1) * normal).sum(dim=-1)
+    with torch.no_grad():
+        weight_b = numerator_b / denominator
+        weight_c = numerator_c / denominator
+        inside = valid & (weight_b >= 0.0) & (weight_c >= 0.0) & (weight_b + weight_c <= 1.0)
+    if torch.is_grad_enabled():
+        # The chosen plane remains differentiable. Unused plane projections can
+        # have huge barycentric weights on thin triangles; exclude their unsafe
+        # divisions from backward instead of relying on the final torch.where.
+        selected_denominator = torch.where(inside, denominator, 1.0)
+        weight_b = torch.where(inside, numerator_b, 0.0) / selected_denominator
+        weight_c = torch.where(inside, numerator_c, 0.0) / selected_denominator
     plane_point = vertex_a + weight_b[..., None] * side_b + weight_c[..., None] * side_c
 
     edge_ab, _ = _project_to_segments(points, vertex_a, vertex_b)

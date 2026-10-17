@@ -1,0 +1,123 @@
+{
+  "device": "NVIDIA GeForce RTX 5090",
+  "torch": "2.8.0+cu128",
+  "forward_bitwise_equal": true,
+  "results": [
+    {
+      "case": "skinny_surface",
+      "variant": "before",
+      "forward_finite": true,
+      "loss": 0.5476312637329102,
+      "point_grad_finite": true,
+      "geometry_grad_finite": false,
+      "geometry_gradient": [
+        [
+          [
+            [
+              "NaN",
+              "NaN",
+              "NaN"
+            ],
+            [
+              0.0,
+              0.0,
+              0.0
+            ]
+          ],
+          [
+            [
+              "NaN",
+              "NaN",
+              "NaN"
+            ],
+            [
+              "NaN",
+              "NaN",
+              "NaN"
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "case": "skinny_surface",
+      "variant": "after",
+      "forward_finite": true,
+      "loss": 0.5476312637329102,
+      "point_grad_finite": true,
+      "geometry_grad_finite": true,
+      "geometry_gradient": [
+        [
+          [
+            [
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0
+            ]
+          ],
+          [
+            [
+              -0.9128405451774597,
+              0.3652092516422272,
+              -0.1826046258211136
+            ],
+            [
+              0.0,
+              0.0,
+              0.0
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "case": "tiny_segment",
+      "variant": "before",
+      "forward_finite": true,
+      "loss": 1.0954450368881226,
+      "point_grad_finite": true,
+      "geometry_grad_finite": false,
+      "geometry_gradient": [
+        [
+          [
+            "NaN",
+            "NaN",
+            "NaN"
+          ],
+          [
+            "NaN",
+            "NaN",
+            "NaN"
+          ]
+        ]
+      ]
+    },
+    {
+      "case": "tiny_segment",
+      "variant": "after",
+      "forward_finite": true,
+      "loss": 1.0954450368881226,
+      "point_grad_finite": true,
+      "geometry_grad_finite": true,
+      "geometry_gradient": [
+        [
+          [
+            0.9128710031509399,
+            -0.3651483952999115,
+            -0.18257419764995575
+          ],
+          [
+            -0.9128710031509399,
+            -0.3651483952999115,
+            -0.18257419764995575
+          ]
+        ]
+      ]
+    }
+  ]
+}

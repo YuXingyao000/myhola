@@ -1,0 +1,91 @@
+{
+  "created_utc": "2026-10-17T11:15:37.265004+00:00",
+  "purpose": "Bounded numerical diagnostics only; no formal training or quality evaluation.",
+  "server": "172.31.224.142:12222",
+  "device": "8 x RTX 5090",
+  "pytorch": "2.8.0+cu128",
+  "base_commit": "4c881fac18a514a145e2e84e163795ff83b61e98",
+  "source_checkpoint": "/mnt/d/python/checkpoints/uv_face_encoder/candidate/20261017T085436.965155Z/weights/last.ckpt",
+  "source_checkpoint_sha256": "604485105d1c7591c9571217a449a9d88a81cdb2d3595dea2b04d1420270ebe8",
+  "settings": {
+    "devices": 8,
+    "batch_per_gpu": 16,
+    "precision": "bf16-mixed",
+    "learning_rate": 2e-05,
+    "seed": 42,
+    "gradient_clip_val": 1.0,
+    "freeze_encoder": false,
+    "optimizer_restored": true,
+    "model_restored_strict": true
+  },
+  "diagnostic_only_changes": [
+    "max_steps=1300",
+    "validation disabled",
+    "regular metric logging disabled",
+    "per-parameter finite-gradient check before optimizer update",
+    "bad batch/RNG and pre-update state capture on failure"
+  ],
+  "production_overlay_sha256": {
+    "blocks.py": "e435c14f089ca6b599cf298b97d74e10cb4c607824d78d20f2c535cf2b3057dc",
+    "train.py": "d8b213aa0d89d725dcd9a3951d2c88f2bd428552ce69a30e8c9b041af150fba3"
+  },
+  "runs": {
+    "old": {
+      "completion": {
+        "step": 1300,
+        "status": "all_observed_gradients_finite"
+      },
+      "restored_global_step": 1089,
+      "completed_optimizer_updates": 211,
+      "all_training_losses_finite": true,
+      "all_per_parameter_gradients_finite_every_step": true,
+      "logged_ranks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "logged_loss_min": 0.27632054686546326,
+      "logged_loss_max": 0.5553673505783081,
+      "elapsed_seconds_between_logged_steps_1090_and_1290": 262.6455068588257,
+      "new_gradient_guard_logged_success_count": 0,
+      "log_file": "logs/diagnostic_v2.log"
+    },
+    "fixed": {
+      "completion": {
+        "step": 1300,
+        "status": "all_observed_gradients_finite"
+      },
+      "restored_global_step": 1089,
+      "completed_optimizer_updates": 211,
+      "all_training_losses_finite": true,
+      "all_per_parameter_gradients_finite_every_step": true,
+      "logged_ranks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "logged_loss_min": 0.27590227127075195,
+      "logged_loss_max": 0.5526658296585083,
+      "elapsed_seconds_between_logged_steps_1090_and_1290": 270.65939497947693,
+      "new_gradient_guard_logged_success_count": 21,
+      "log_file": "logs/diagnostic_fixed.log"
+    }
+  },
+  "original_failure_reproduced": false,
+  "limitation": "The original failing batch and RNG were not saved. Neither bounded trajectory reproduces the original interruption; the CUDA minimal cases demonstrate a real projection-backward defect, not a proven unique cause of the original run.",
+  "cuda_minimal_reproduction": "cuda_projection_ab.json",
+  "remote_tracked_source_modified": false,
+  "sealed_training_run_modified": false,
+  "formal_training_started": false,
+  "diagnostic_checkpoint_saved": false
+}

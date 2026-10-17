@@ -138,6 +138,87 @@ def test_explicit_threads_and_null_preserve_environment(monkeypatch):
     assert torch.get_num_threads() == 2 and os.environ["OMP_NUM_THREADS"] == "2"
 
 
+def _attach_clipping_context(module, optimizer, scaler=None):
+    module._trainer = SimpleNamespace(
+        global_step=1089, global_rank=0,
+        precision_plugin=SimpleNamespace(
+            scaler=scaler,
+            main_params=lambda current: (
+                parameter for group in current.param_groups for parameter in group["params"]
+            ),
+        ),
+    )
+    module._train_batch_prefixes = ("sample_a", "sample_b")
+
+
+def test_finite_clipping_retains_existing_rule(tiny_module):
+    optimizer = tiny_module.configure_optimizers()
+    _attach_clipping_context(tiny_module, optimizer)
+    tiny_module.model.weight.grad = torch.tensor(7.0)
+    reference = torch.nn.Parameter(torch.ones(()))
+    reference.grad = torch.tensor(7.0)
+    torch.nn.utils.clip_grad_norm_([reference], 1.0)
+    tiny_module.configure_gradient_clipping(optimizer, 1.0, "norm")
+    torch.testing.assert_close(tiny_module.model.weight.grad, reference.grad, rtol=0, atol=0)
+
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), -float("inf")])
+def test_bad_gradient_is_rejected_before_clipping_other_gradients(tiny_module, bad):
+    tiny_module.model.other = torch.nn.Parameter(torch.ones(()))
+    optimizer = tiny_module.configure_optimizers()
+    _attach_clipping_context(tiny_module, optimizer)
+    tiny_module.model.weight.grad = torch.tensor(bad)
+    tiny_module.model.other.grad = torch.tensor(2.0)
+    with pytest.raises(RuntimeError, match="step=1089.*sample_a.*model.weight"):
+        tiny_module.configure_gradient_clipping(optimizer, 1.0, "norm")
+    assert tiny_module.model.other.grad.item() == 2.0
+    assert all(torch.isfinite(parameter).all() for parameter in tiny_module.parameters())
+    assert not optimizer.state
+
+
+def test_grad_scaler_retains_lightning_overflow_handling(tiny_module, monkeypatch):
+    optimizer = tiny_module.configure_optimizers()
+    _attach_clipping_context(tiny_module, optimizer, scaler=object())
+    calls = []
+    monkeypatch.setattr(
+        pl.LightningModule, "configure_gradient_clipping",
+        lambda module, opt, value, algorithm: calls.append((opt, value, algorithm)),
+    )
+    tiny_module.configure_gradient_clipping(optimizer, 1.0, "norm")
+    assert calls == [(optimizer, 1.0, "norm")]
+
+
+@pytest.mark.parametrize("clip_value", [None, 0.0, -1.0])
+def test_disabled_clipping_retains_lightning_behavior(tiny_module, monkeypatch, clip_value):
+    optimizer = tiny_module.configure_optimizers()
+    _attach_clipping_context(tiny_module, optimizer)
+    calls = []
+    monkeypatch.setattr(
+        pl.LightningModule, "configure_gradient_clipping",
+        lambda module, opt, value, algorithm: calls.append((opt, value, algorithm)),
+    )
+    tiny_module.configure_gradient_clipping(optimizer, clip_value, "norm")
+    assert calls == [(optimizer, clip_value, "norm")]
+
+
+def test_lightning_stops_before_adam_can_apply_nonfinite_gradient(tiny_module):
+    original = tiny_module.model.weight.detach().clone()
+    handle = tiny_module.model.weight.register_hook(lambda grad: grad * float("nan"))
+    trainer = pl.Trainer(
+        accelerator="cpu", devices=1, max_steps=1, logger=False,
+        enable_checkpointing=False, enable_progress_bar=False, enable_model_summary=False,
+        limit_val_batches=0, num_sanity_val_steps=0, gradient_clip_val=1.0,
+        gradient_clip_algorithm="norm",
+    )
+    try:
+        with pytest.raises(RuntimeError, match="Nonfinite gradient norm before optimizer update"):
+            trainer.fit(tiny_module)
+    finally:
+        handle.remove()
+    torch.testing.assert_close(tiny_module.model.weight, original, rtol=0, atol=0)
+    assert not trainer.optimizers[0].state
+
+
 def test_strategy_defaults_remain_compatible_and_svr_can_disable_unused_detection():
     cfg = OmegaConf.create({"trainer": {"devices": 1}})
     assert training._build_strategy(cfg) == "auto"

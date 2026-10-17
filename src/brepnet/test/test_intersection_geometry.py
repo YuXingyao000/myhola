@@ -71,6 +71,59 @@ def test_surface_selected_projection_passes_gradcheck():
     assert torch.autograd.gradcheck(closest_surface_points, (points, surfaces), atol=1e-5)
 
 
+@pytest.mark.parametrize("dtype", [torch.float32, torch.bfloat16])
+def test_unused_skinny_triangle_plane_has_finite_backward(dtype):
+    # The nearest point is an edge endpoint. The unused plane's barycentric
+    # weights are enormous: its unmasked division backward previously made
+    # surface gradients NaN although the forward projection was finite.
+    surfaces = torch.tensor(
+        [[[[0.0, 0.0, 0.0], [5e-5, 1e-11, 0.0]],
+          [[1e-4, 0.0, 0.0], [1e-4, 2e-11, 0.0]]]],
+        dtype=dtype, requires_grad=True,
+    )
+    points = torch.tensor([[[0.5, -0.2, 0.1]]], dtype=dtype, requires_grad=True)
+    closest, distances = closest_surface_points(points, surfaces)
+    torch.testing.assert_close(closest, surfaces.detach()[:, 1, :1].float())
+    distances.sum().backward()
+    assert points.grad.isfinite().all()
+    assert surfaces.grad.isfinite().all()
+    assert surfaces.grad.abs().sum() > 0
+
+
+@pytest.mark.parametrize("scale, aspect", [(1e-8, 1.0), (1e-7, 1e-3)])
+def test_tiny_selected_plane_matches_double_precision_gradients(scale, aspect):
+    # Both cases have area_squared**2 below float32's representable range;
+    # the selected plane must remain differentiable, not detached or clamped.
+    points = torch.tensor([[[0.4, 0.2 * aspect, 0.3 * aspect]]]) * scale
+    surfaces = plane_grid() * torch.tensor([scale, scale * aspect, scale])
+    results = []
+    for dtype in (torch.float32, torch.float64):
+        typed_points = points.to(dtype).detach().requires_grad_()
+        typed_surfaces = surfaces.to(dtype).detach().requires_grad_()
+        closest, distances = closest_surface_points(typed_points, typed_surfaces)
+        gradients = torch.autograd.grad(closest.sum() + distances.sum(), (typed_points, typed_surfaces))
+        results.append((closest, distances, *gradients))
+    for actual, reference in zip(*results):
+        assert actual.isfinite().all()
+        # Barycentric derivatives amplify roundoff with the aspect ratio.
+        gradient_atol = max(2e-6, 2 * torch.finfo(torch.float32).eps / aspect)
+        torch.testing.assert_close(actual, reference.float(), atol=gradient_atol, rtol=2e-4)
+    torch.testing.assert_close(results[0][0][..., :2], points[..., :2], atol=scale * 1e-6, rtol=1e-5)
+    torch.testing.assert_close(results[0][0][..., 2], torch.zeros_like(points[..., 2]))
+
+
+def test_scaled_skinny_selected_plane_passes_gradcheck():
+    points = torch.tensor([[[0.4, 0.2, 0.3]]], dtype=torch.float64, requires_grad=True)
+    surfaces = plane_grid(torch.float64).requires_grad_()
+    scale = torch.tensor([1e-7, 1e-10, 1e-7], dtype=torch.float64)
+
+    def scaled_projection(unit_points, unit_surfaces):
+        closest, distances = closest_surface_points(unit_points * scale, unit_surfaces * scale)
+        return closest / scale, distances / scale[0]
+
+    assert torch.autograd.gradcheck(scaled_projection, (points, surfaces), eps=1e-7, atol=1e-5)
+
+
 def test_surface_batch_chunks_preserve_values_and_gradients():
     points = torch.tensor([[[0.2, 0.4, 0.3]], [[1.2, 0.4, 0.3]], [[0.1, 0.8, -0.3]]], requires_grad=True)
     surfaces = plane_grid().expand(3, -1, -1, -1).clone().requires_grad_()
@@ -123,6 +176,19 @@ def test_degenerate_polyline_and_projection_gradients():
     for gradient in (points.grad, line.grad):
         assert gradient.isfinite().all()
         assert gradient.abs().sum() > 0
+
+
+@pytest.mark.parametrize("length", [1e-13, 1e-18])
+def test_tiny_segment_endpoint_clamps_have_finite_backward(length):
+    points = torch.tensor([[[-0.5, 0.2, 0.1], [0.5, 0.2, 0.1]]], requires_grad=True)
+    line = torch.tensor([[[0.0, 0.0, 0.0], [length, 0.0, 0.0]]], requires_grad=True)
+    closest, _, fractions = closest_polyline_points(points, line)
+    torch.testing.assert_close(closest, line.detach(), atol=0, rtol=0)
+    torch.testing.assert_close(fractions, torch.tensor([[0.0, 1.0]]))
+    torch.linalg.vector_norm(points - closest, dim=-1).sum().backward()
+    assert points.grad.isfinite().all()
+    assert line.grad.isfinite().all()
+    assert (line.grad.abs().sum(dim=-1) > 0).all()
 
 
 @pytest.mark.parametrize("device", ["cpu", pytest.param("cuda", marks=pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA unavailable"))])
