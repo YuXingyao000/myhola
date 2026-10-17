@@ -1,0 +1,7 @@
+{
+  "path": "/mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt",
+  "source_sha256": "8b714943d24c3f3f18f3a1e64222b1f3577323ddbf42e4b90d603186ab7e917a",
+  "target_sha256": "8b714943d24c3f3f18f3a1e64222b1f3577323ddbf42e4b90d603186ab7e917a",
+  "equal": true,
+  "elapsed_seconds": 9.480570917017758
+}

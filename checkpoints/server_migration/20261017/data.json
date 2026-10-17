@@ -1,0 +1,470 @@
+{
+  "inventory_date_local": "2026-10-17",
+  "status": "complete_inventory_with_explicit_sampled_estimates_for_large_cache_trees",
+  "selected": [
+    {
+      "path": "/mnt/d/data/deepcad_v7",
+      "apparent_bytes": 3905528534,
+      "allocated_bytes": 4255899648,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "当前 VAE 输入、GT 几何及 diffusion topology 原始输入；原样保留。",
+      "top_level_directories": 53225,
+      "priority": 0
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7_cond",
+      "apparent_bytes": 84081983325,
+      "allocated_bytes": 85019701248,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "当前灰模/FLUX照片条件，以及已有 text/point-cloud/DINO 条件；完整迁移保留同等实验能力。",
+      "top_level_directories": 52556,
+      "file_count": 315336,
+      "priority": 0,
+      "validated": "逐目录文件名/大小元数据，六种文件各52556份；未逐文件解压或认证几何配对。",
+      "file_symlinks": 0
+    },
+    {
+      "path": "/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24",
+      "apparent_bytes": null,
+      "allocated_bytes": null,
+      "size_basis": "2048个固定seed均匀随机目录的stat抽样；文件payload与目录/块分配分别估计；不是全量精确值。",
+      "reason": "当前 diffusion 和快速反复训练使用的 identity-first cube24 latent stats。",
+      "selection": "仅 */features.npy 及其父目录；data.npz 单独列 optional",
+      "top_level_directories": 1261344,
+      "priority": 0,
+      "validated": "完整目录名检查确认52556个split CAD均有0..23共24个目录且无额外model/非法rotation；2048份抽样features存在，但未完整stat全部features，未读NPY数组。",
+      "estimated_file_payload_bytes": 4237327500,
+      "estimated_apparent_bytes": 9439378572,
+      "estimated_allocated_bytes": 11554179456,
+      "estimated_file_count": 1261344,
+      "directory_count": 1261345,
+      "sample": {
+        "seed": 20261017,
+        "sample_size": 2048,
+        "population": 1261344,
+        "sample_files_present": 2048,
+        "sample_missing_or_error": 0,
+        "approximate_95pct_payload_sampling_half_width": 67722313
+      }
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v7_visibility",
+      "apparent_bytes": null,
+      "allocated_bytes": null,
+      "size_basis": "128个固定seed随机CAD完整子树元数据抽样外推52553个CAD；root/debug/reports精确stat/du单独加回。不是全量精确值。",
+      "reason": "已预计算可见性，避免重新运行几何渲染；保持 model/view/face-order 合同。",
+      "top_level_directories": 52555,
+      "priority": 1,
+      "estimated_apparent_bytes": 59689721857,
+      "estimated_allocated_bytes": 62239019584,
+      "actual_model_directories": 52553,
+      "extra_directories": [
+        "debug",
+        "reports"
+      ],
+      "missing_condition_ids": [
+        "00221518",
+        "00447887",
+        "00579276"
+      ],
+      "estimated_file_count": 1261272,
+      "estimated_directory_count": 1313826,
+      "sample": {
+        "seed": 20261017,
+        "sample_size": 128,
+        "population": 52553,
+        "sample_views_per_cad": 24,
+        "approximate_95pct_allocated_sampling_half_width": 4478135940
+      },
+      "validated": "现有52553 CAD目录，比当前52556条件库少3个ID；抽到128 CAD均24份visibility.npz，不据此保证其余目录完整。"
+    },
+    {
+      "path": "/mnt/d/data/data_step",
+      "apparent_bytes": 970694401810,
+      "allocated_bytes": 972758659072,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "用户明确要求的 ABC 原始 STEP 库；仅统计文件元数据，未查看几何/结果。",
+      "top_level_directories": 1000000,
+      "priority": 0
+    },
+    {
+      "path": "/mnt/d/data/abc_v2_new_imgs",
+      "apparent_bytes": 12129072607,
+      "allocated_bytes": 12504829952,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "ABC 已准备的 new_imgs.npz 图像资产；不是几何NPZ或当前v7条件合同。",
+      "top_level_directories": 183635,
+      "priority": 0
+    },
+    {
+      "path": "/mnt/d/data/abc_v2_cond/abc_v2_natural_AA",
+      "apparent_bytes": 114399678811,
+      "allocated_bytes": 114775134208,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "ABC 已解包 natural.png 条件，保留现有数据和来源目录。",
+      "top_level_directories": 183636,
+      "priority": 0
+    },
+    {
+      "path": "/mnt/d/data/abc_v2_cond/abc_v2_sketch_AA",
+      "apparent_bytes": 27165128256,
+      "allocated_bytes": 27212959744,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "ABC 已解包 sketch.png 条件；当前仅23326目录，不能宣称完整覆盖。",
+      "top_level_directories": 23326,
+      "priority": 0
+    },
+    {
+      "path": "/mnt/d/data/abc_v2_cond/cad_sketch_data",
+      "apparent_bytes": 102999147697,
+      "allocated_bytes": 103374962688,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "ABC 已解包 CAD sketch 条件（内部文件历史名为natural.png）。",
+      "top_level_directories": 183636,
+      "priority": 0
+    },
+    {
+      "path": "/mnt/d/data/deepcad_stl_total",
+      "apparent_bytes": 1972387609,
+      "allocated_bytes": 2194497536,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "102904件预转换STL、manifest、原split、精确重复组及转换脚本快照；当前cad_scene_factory直接使用。",
+      "top_level_entries": 102912,
+      "priority": 0
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v6",
+      "apparent_bytes": 53771598187,
+      "allocated_bytes": 55439974400,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "更大102904件DeepCAD源几何；cad_scene_factory STL来源与旧datagen默认model_root，保留源STEP以便扩图和核验。",
+      "top_level_directories": 102904,
+      "priority": 1
+    },
+    {
+      "path": "/mnt/d/data/cad_scene_assets",
+      "apparent_bytes": 73222787,
+      "allocated_bytes": 73322496,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "当前场景工厂素材与来源记录",
+      "priority": 1
+    },
+    {
+      "path": "/mnt/d/data/cad_scene_references",
+      "apparent_bytes": 4705478004,
+      "allocated_bytes": 4706488320,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "当前图像生成场景参考资产",
+      "priority": 1
+    },
+    {
+      "path": "/mnt/d/data/cad_scene_templates",
+      "apparent_bytes": 516779381,
+      "allocated_bytes": 517464064,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "已建立Blender场景模板",
+      "priority": 1
+    },
+    {
+      "path": "/mnt/d/data/cad_scene_workflow_validation",
+      "apparent_bytes": 280288257,
+      "allocated_bytes": 280756224,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "已建立场景工作流验证产物，可快速重放",
+      "priority": 1
+    },
+    {
+      "path": "/mnt/d/data/deepcad_inventory",
+      "apparent_bytes": 209222860,
+      "allocated_bytes": 209235968,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "已有数据manifest和文本描述来源目录（catalog涉及另一项目，非当前训练依赖）",
+      "priority": 1
+    },
+    {
+      "path": "/mnt/d/data/deepcad_lists",
+      "apparent_bytes": 930232,
+      "allocated_bytes": 954368,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "已有计算分片清单，非替代研究split",
+      "priority": 1
+    },
+    {
+      "path": "/mnt/d/data/deepcad_lists_1000",
+      "apparent_bytes": 13096,
+      "allocated_bytes": 36864,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "已有快速实验计算分片清单",
+      "priority": 1
+    },
+    {
+      "path": "/mnt/d/data/deepcad_splits_1000",
+      "apparent_bytes": 13096,
+      "allocated_bytes": 20480,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "已有1000对象实验split",
+      "priority": 1
+    },
+    {
+      "path": "/mnt/d/data/gt_photo",
+      "apparent_bytes": 9327541,
+      "allocated_bytes": 9338880,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "已有少量真实照片输入",
+      "priority": 1
+    },
+    {
+      "path": "/mnt/d/data/my_6_demo",
+      "apparent_bytes": 11455971,
+      "allocated_bytes": 11579392,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "已有少量demo及test list",
+      "priority": 1
+    },
+    {
+      "path": "/mnt/d/data/procad_flux_single_view",
+      "apparent_bytes": 479346085,
+      "allocated_bytes": 483266560,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "已有图像生成样本/manifest/reports",
+      "priority": 1
+    }
+  ],
+  "optional": [
+    {
+      "path": "/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24",
+      "apparent_bytes": null,
+      "allocated_bytes": null,
+      "size_basis": "2048目录随机stat估算data.npz文件总量；父目录已在selected features项计入，这里不重复计算。",
+      "reason": "迁移脚本保留的旧解码data.npz；未找到当前配置/工具使用此目录data.npz，current archived_latents来自experiments/baseline而非本目录。",
+      "selection": "仅 */data.npz（父目录与selected共享，不能重复加目录开销）",
+      "estimated_apparent_bytes": 128244329805,
+      "estimated_allocated_bytes": 130947688704,
+      "sample": {
+        "seed": 20261017,
+        "sample_size": 2048,
+        "population": 1261344,
+        "sample_files_present": 2048,
+        "sample_missing_or_error": 0,
+        "approximate_95pct_payload_sampling_half_width": 2172443325
+      }
+    },
+    {
+      "path": "/mnt/d/data/ae_cache/1119_deepcad_aug1_11k",
+      "apparent_bytes": null,
+      "allocated_bytes": null,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "旧Euler64缓存（3471808目录）；仍被旧learned_topology配置及condition_debug引用，当前逐层条件配置不依赖；复现历史时再迁。",
+      "top_level_directories": 3471808,
+      "status": "仅目录计数已完成；完整冷缓存扫描已停止以避免长时间HDD负荷，大小未知。"
+    },
+    {
+      "path": "/mnt/d/data/ae_cache/1225_abc_aug1",
+      "apparent_bytes": 4096,
+      "allocated_bytes": 4096,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "当前为空目录，不能当作现成ABC latent缓存。",
+      "top_level_entries": 0
+    },
+    {
+      "path": "/mnt/d/data/data_step.tar",
+      "apparent_bytes": 967865057280,
+      "allocated_bytes": 967865155584,
+      "size_basis": "单文件 stat st_size / st_blocks*512",
+      "reason": "原始STEP归档候选，与解包data_step同源关系尚未全量核验；为避免首批很可能重复迁移近1TB，另列待按需。",
+      "file_count": 1
+    },
+    {
+      "path": "/mnt/d/data/abc_v2_cond",
+      "apparent_bytes": 323382269467,
+      "allocated_bytes": 323382390784,
+      "size_basis": "20个压缩文件 stat st_size / st_blocks*512 之和",
+      "reason": "20个ABC压缩包；已有解包条件另外选中，但archive可能含额外材质/未解包内容，不声称与解包完全重复。",
+      "selection": "仅 *.tar.gz（20文件）；不含selected的三个目录",
+      "file_count": 20
+    },
+    {
+      "path": "/mnt/d/data/processed_deepcad",
+      "apparent_bytes": 467317039142,
+      "allocated_bytes": 468200542208,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "另一研究管线的uv grids/point clouds/back-projections/latents/mesh，未发现当前仓库消费路径；大体积历史预处理单列"
+    },
+    {
+      "path": "/mnt/d/data/DeepCAD",
+      "apparent_bytes": 81460941683,
+      "allocated_bytes": 82497540096,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "另一organized_data快照，未发现当前入口消费路径"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_official",
+      "apparent_bytes": 4631697425,
+      "allocated_bytes": 5290418176,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "官方CAD程序向量/JSON、原split及压缩副本；非当前B-Rep训练直接输入"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v6_cond",
+      "apparent_bytes": null,
+      "allocated_bytes": 373860986880,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "旧条件库，当前v7_cond已齐全；仅历史复现按需"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v6_cond_combined",
+      "apparent_bytes": null,
+      "allocated_bytes": 14529187840,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "旧条件组合副本"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v6_cond_cube24",
+      "apparent_bytes": null,
+      "allocated_bytes": 38715940864,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "旧cube24条件流水线资产"
+    },
+    {
+      "path": "/mnt/d/data/output_single_view",
+      "apparent_bytes": null,
+      "allocated_bytes": 24204750848,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "旧单图生成输出"
+    },
+    {
+      "path": "/mnt/d/data/ae_eval",
+      "apparent_bytes": null,
+      "allocated_bytes": 336244736,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "历史VAE评估输出"
+    },
+    {
+      "path": "/mnt/d/data/latent_sensitivity",
+      "apparent_bytes": null,
+      "allocated_bytes": 443944960,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "历史latent敏感性结果"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v6_cond_fidelity",
+      "apparent_bytes": null,
+      "allocated_bytes": 2949120,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "历史条件质量评价"
+    },
+    {
+      "path": "/mnt/d/data/deepcad_v6_cond_natural_fidelity",
+      "apparent_bytes": null,
+      "allocated_bytes": 3989504,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "历史natural质量评价"
+    },
+    {
+      "path": "/mnt/d/data/d",
+      "apparent_bytes": null,
+      "allocated_bytes": 12749303808,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "嵌套旧deepcad_730与new_cond_results"
+    },
+    {
+      "path": "/mnt/d/data/new_cond_results",
+      "apparent_bytes": null,
+      "allocated_bytes": 8694751232,
+      "size_basis": "GNU du -s -B1 (apparent includes directory inode st_size; allocated counts filesystem blocks; symlinks not followed)",
+      "reason": "旧条件推理输出"
+    }
+  ],
+  "root_rules": [
+    "代码/配置/checkpoints文档保持/mnt/d/python；所有选中数据保持/mnt/d/data原绝对路径。",
+    "selected/optional是互斥选择规则，不能把包含子集的父目录full-du容量再加一遍。",
+    "当前ABC legacy提取脚本含/mnt/e/yilin/data_step和/mnt/d/img2brep/abc_v2失效路径；未找到现成ABC几何NPZ或非空latent cache。迁移不等于ABC当前训练接口已可用。",
+    "不根据ABC结果、样例内容调整任何研究方案，本清点仅访问文件路径/类型/大小。",
+    "原始split与accepted/rejected清单、metadata、rotation映射全部随代码/运行资产迁移；不改split、不过滤缺失对象。",
+    "已有visibility缺失IDs为00221518、00447887、00579276；迁移保留现状，不静默补造或改split；启用visibility加权的实验需按既有检查处理。"
+  ],
+  "hot_cache": {
+    "path": "/dev/shm/hola-svr-20261016",
+    "transfer": false,
+    "action": "从选中磁盘资产在新机重建；重启后也必须重建；不移动或扰动活跃缓存",
+    "allocated_bytes": 4061446144,
+    "payload_file_bytes_excluding_manifest": 3845664374,
+    "manifest_bytes": 29388335,
+    "file_count_excluding_manifest": 100266,
+    "cad_count": 50132,
+    "train_count": 46627,
+    "validation_count": 3505,
+    "limitation": "仅train/validation identity rotation0 imgs.npz+features.npy；无test、real_photo或其他23视角。",
+    "rebuild_command": "python checkpoints/diffusion/stage_svr_inputs.py --train-split src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt --val-split src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt --condition-root /mnt/d/data/deepcad_v7_cond --latent-root /mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24 --dst-root /dev/shm/hola-svr-20261016 --workers 4",
+    "tool_contract": "原字节复制并记录SHA256；目标必须未存在，完成后INCOMPLETE消失且manifest.json存在。"
+  },
+  "additional_repository_artifacts": [
+    "/mnt/d/python/experiments/baseline/diffusion_baseline_real_v7_cube24/test_outputs（当前archived_latents研究真实输入，含data.npz，不能因experiments历史分类整体漏掉）",
+    "/mnt/d/python/checkpoints/joint_boundary/comparison_20261011/raw_predictions（当前多项重放研究使用）；metadata/inference/*/protocol.json仍需保留。",
+    "/mnt/d/python/src/brepnet/data/list和/mnt/d/python/checkpoints/joint_boundary/validation/{train,val,test}_contract_audit中的accepted/rejected/summary。"
+  ],
+  "validation_limits": [
+    "此表为文件元数据清点，不宣称所有NPZ可解压、图像与CAD配对准确、ABC直接训练可用。",
+    "du apparent包含目录st_size，文件传输payload会略小；目标分配块/inode开销依文件系统不同。",
+    "顶层目录计数已观测；全树inode数未全量统计，两个cache/visibility均有百万级目录，需预留数百万inode。",
+    "全部全量冷cache/visibility扫描已停止；仅剩小规模固定seed元数据抽样且现已完成，无后台大扫描。"
+  ],
+  "sampling_artifact": "sampling.json",
+  "directory_contract_artifact": "directory_contract.json",
+  "directory_contract": {
+    "splits": {
+      "training": {
+        "path": "/mnt/d/python/src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt",
+        "count": 46627,
+        "unique": 46627,
+        "sha256": "bfd0f90428a40600c6f9f72658544c018e75f5576ad6f0af00dbe29224ac9417"
+      },
+      "validation": {
+        "path": "/mnt/d/python/src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt",
+        "count": 3505,
+        "unique": 3505,
+        "sha256": "b6403d9b235db7ebeaac76ba3a9d076440f149863ac692ae938129e20404ee32"
+      },
+      "testing": {
+        "path": "/mnt/d/python/src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt",
+        "count": 2424,
+        "unique": 2424,
+        "sha256": "16352426a1878ee6836c3ddb306080a65313e92a5204a519e1386bdc59fc643a"
+      }
+    },
+    "split_union_count": 52556,
+    "condition_directory_count": 52556,
+    "condition_missing_from_source_split": [],
+    "condition_extra_to_source_split": [],
+    "visibility_directory_count": 52555,
+    "visibility_missing_condition_ids": [
+      "00221518",
+      "00447887",
+      "00579276"
+    ],
+    "latent_directory_count": 1261344,
+    "latent_model_count": 52556,
+    "latent_missing_source_split_ids": [],
+    "latent_extra_source_split_ids": [],
+    "latent_non_full24_model_ids": [],
+    "latent_invalid_directory_names": [],
+    "warning": "directory coverage only, not features file existence/integrity or array/rotation semantic verification",
+    "visibility_extra_condition_ids": [
+      "debug",
+      "reports"
+    ],
+    "visibility_actual_model_count": 52553
+  },
+  "totals": {
+    "scope": "仅本清单selected数据资产；不含仓库/checkpoints/环境/模型权重，由root另统计。hot tmpfs重建空间单列，不计传输。",
+    "exact_known_apparent_subtotal_bytes": 1377405004146,
+    "exact_known_allocated_subtotal_bytes": 1383829082112,
+    "estimated_remaining_apparent_bytes": 69129100429,
+    "estimated_remaining_allocated_bytes": 73793199040,
+    "estimated_combined_apparent_bytes": 1446534104575,
+    "estimated_combined_allocated_bytes": 1457622281152,
+    "recommended_description": "约1.45 TB数据（十进制），包含约60 GB visibility估计；此数字不是精确全量校验结果。",
+    "sampling_uncertainty_note": "visibility抽样约95%均值误差±4.47GB，features约±0.068GB；不包含文件缺失/额外未观察文件等系统性不确定性，容量预留不能只按统计误差。",
+    "inode_note": "仅选中24-view features父目录+文件约2522689个inode，visibility约2575098个inode；再加ABC百万目录与源文件、条件图、其他数据，至少数百万，预留>=1000万空闲inode较稳妥。这是规划估计，非全树精确计数。"
+  }
+}

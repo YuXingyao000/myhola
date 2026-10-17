@@ -1,0 +1,4 @@
+interface:
+  display_name: "Research Data Code Spec"
+  short_description: "Freeze research data tasks into coding specs"
+  default_prompt: "Use $spec-research-data-code to turn this research data task into a precise coding spec before implementation."

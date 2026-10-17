@@ -1,0 +1,6 @@
+# Project defaults retained when opening this repository on another host.
+model = "gpt-6-astra"
+model_reasoning_effort = "ultra"
+personality = "pragmatic"
+# Nested research/data guides together exceed the default 32 KiB.
+project_doc_max_bytes = 65536

@@ -1,0 +1,30 @@
+[
+  {
+    "root": "/mnt/d/python_curve_eval",
+    "selection": "Git tracked and nonignored untracked regular files/symlinks; excludes shared .git storage already counted at main repo",
+    "file_count": 2377,
+    "logical_bytes": 369860027,
+    "allocated_file_bytes": 375787520,
+    "untracked_paths": []
+  },
+  {
+    "root": "/mnt/d/python_legacy_post_main",
+    "selection": "Git tracked and nonignored untracked regular files/symlinks; excludes shared .git storage already counted at main repo",
+    "file_count": 2792,
+    "logical_bytes": 117183408,
+    "allocated_file_bytes": 124190720,
+    "untracked_paths": []
+  },
+  {
+    "root": "/root/.codex/worktrees/data-generation/python",
+    "selection": "Git tracked and nonignored untracked regular files/symlinks; excludes shared .git storage already counted at main repo",
+    "file_count": 1851,
+    "logical_bytes": 339568354,
+    "allocated_file_bytes": 343973888,
+    "untracked_paths": [
+      "checkpoints/image_generation/codex_scene_factory/BLENDER_BUILD.md",
+      "packages/cad_scene_factory/src/cad_scene_factory/blender/build.py",
+      "packages/cad_scene_factory/tests/blender/test_build.py"
+    ]
+  }
+]
