@@ -22,10 +22,11 @@
 | 标题、UI | Jost | 正体/斜体可变字体 |
 | 正文、内容 | Archivo | 正体/斜体可变字体 |
 | 中文 | 思源黑体 | Source Han Sans SC Regular / Bold |
+| 代码 | Commit Mono（CommitMono） | 1.143 Regular / Italic / Bold / Bold Italic |
 
-字体及许可证放在 `/usr/local/share/fonts/hola/`，Fontconfig 已识别三族，供容器生成网页、图片、报告时显式选择。没有强制修改全局 sans-serif/monospace 回退或现有报告的字体路径。
+字体及许可证放在 `/usr/local/share/fonts/hola/`，Fontconfig 已识别四族，供容器生成网页、图片、报告时显式选择。没有强制修改全局 sans-serif/monospace 回退或现有报告的字体路径。
 
-SSH 终端中的字形由客户端字体决定，容器安装字体不会改变本机终端外观。上述拉丁字体为比例字体，不默认用作代码终端的等宽字体；若后续需要 P10k 图标，需在本机终端选择具备相应字形的字体。用户本地的终端字体、字号、配色和排版留待后续指定。
+SSH 终端中的字形由客户端字体决定，容器安装字体不会改变本机终端外观。Jost、Archivo 为比例字体；Commit Mono 为代码等宽字体。用户已在 Windows Cursor 中选择 Commit Mono，Codex 界面／正文选 Archivo、代码选 Commit Mono；Geist Mono 仅为备选。中文实际回退由客户端决定。若后续需要 P10k 图标，需在本机终端选择具备相应字形的字体。命令行配色和排版留待后续指定。
 
 ## 验证
 
@@ -35,3 +36,7 @@ SSH 终端中的字形由客户端字体决定，容器安装字体不会改变�
 - 字体文件对照官方仓库 Git blob SHA1 验证，并额外记录 SHA256；Fontconfig 能匹配 Archivo、Jost 和 Source Han Sans SC。
 
 来源：[Oh My Zsh](https://github.com/ohmyzsh/ohmyzsh)、[Powerlevel10k](https://github.com/romkatv/powerlevel10k)、[命令建议](https://github.com/zsh-users/zsh-autosuggestions)、[语法高亮](https://github.com/zsh-users/zsh-syntax-highlighting)、[Archivo](https://github.com/google/fonts/tree/main/ofl/archivo)、[Jost](https://github.com/google/fonts/tree/main/ofl/jost)、[思源黑体](https://github.com/adobe-fonts/source-han-sans)。
+
+## Commit Mono 补充安装（2026-10-17）
+
+从 [官方 v1.143 release](https://github.com/eigilnikolajsen/commit-mono/releases/tag/v1.143) 安装四款 OTF 与许可证到 `/usr/local/share/fonts/hola/CommitMono/`，运行 `fc-cache -f /usr/local/share/fonts/hola/CommitMono`。归档及安装文件的 SHA256 见 [记录](commitmono-installation.json)；远端文件哈希逐一匹配，`fc-match CommitMono` 和 Bold 匹配均返回对应字体。保留现有 P10k ASCII 配置，不设置全局字体回退，也不修改报告生成代码。
