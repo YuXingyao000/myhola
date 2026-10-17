@@ -19,6 +19,8 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 
 报告与界面的字体偏好：代码首选 Commit Mono（字体家族名 CommitMono），Geist Mono 为备选；标题／设计 UI 用 Jost，正文／内容用 Archivo，中文用思源黑体。用户当前 Windows Cursor 代码已选 Commit Mono，Codex 界面／正文用 Archivo、代码用 Commit Mono。远程客户端字体由 Windows 本地配置决定，服务器字体用于生成产物；命令行配色和布局等待用户另行指定，P10k 保持 ASCII 模式。
 
+本项目主工作区 `/mnt/d/python` 已启用源机→5090服务器的提交后后台同步，使用 Git 增量推送且只允许目标当前同名分支快进；详情见 [同步记录](checkpoints/server_migration/deployment_20261016/code_sync/README.md)。提交完成不等于同步成功，报告同步结果前检查 `.git/hola-sync/status.json` 的 commit 与 HEAD 是否一致。目标有修改、分叉或分支不一致时保留并处理原因，不 force push/reset，不再整目录覆盖 `.git`。其他项目与关联实验工作树不自动同步；数据、权重仍走独立迁移。
+
 ## 从哪里恢复上下文
 
 - 第二台 RTX 5090 服务器的环境、数据迁移进度和已知缺口见 [部署记录](checkpoints/server_migration/deployment_20261016/README.md)。目标仍使用 `/mnt/d/python`；新环境采用 PyTorch 2.8/cu128、PythonOCC 7.8.1 API 系列，不能把这些版本反套到源机。实际完成状态以记录中的验收结果为准，暂缓迁移的 diffusion 权重不能假定已存在。

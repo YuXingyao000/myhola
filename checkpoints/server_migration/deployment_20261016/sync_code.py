@@ -26,6 +26,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--skip-thirdparty', action='store_true')
     args = parser.parse_args()
+    if (ROOT / '.git/hola-sync/config.json').exists():
+        raise SystemExit('Project Git auto-sync is installed. Use code_sync/sender.py; '
+                         'do not overwrite live target worktrees or .git metadata.')
     RUNTIME.mkdir(parents=True, exist_ok=True)
     records = []
     listing = subprocess.check_output(['git', 'worktree', 'list', '--porcelain'], cwd=ROOT)

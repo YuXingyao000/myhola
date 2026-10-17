@@ -8,7 +8,7 @@
 
 执行：
 1. 确认35组资产真实状态及退出码，不能用rsync增量列表99%当整库完成。仅补失败/遗漏项，不重传已完成的大库。先前124个科学链接与104份开发数据哈希已通过，报告里有边界，除新错误不重复全盘检查。
-2. 检查代码同步结果 /mnt/d/migration-transfer-logs/code/ 与 source Git 最新状态。不同会话可能继续修改，保留未知工作，不代提交其半成品。只提交本迁移已经审阅的自身修复/文档/紧凑报告。sync_code.py --skip-thirdparty 可增量同步4个worktree和共享.git；已修复空gitlink目录创建。此前并发提交造成目标Git短暂缺tree，必须最终核对四个HEAD/分支/工作区与 git fsck --connectivity-only。不要在.git拷贝中同时写source Git。
+2. 检查代码同步结果 /mnt/d/migration-transfer-logs/code/ 与 source Git 最新状态。不同会话可能继续修改，保留未知工作，不代提交其半成品。只提交本迁移已经审阅的自身修复/文档/紧凑报告。现在已安装项目专用 Git 自动同步，见 code_sync/README.md；禁止再运行旧 sync_code.py 或复制整个 .git，以免覆盖两端机器专属配置、hook 或目标工作。主目录用 code_sync/sender.py enqueue /mnt/d/python 触发安全增量推送，读取 .git/hola-sync/status.json 确认；两侧分支不一致、工作区有修改或历史分叉时先报告并保留。其他3个历史工作树只核对现状，不自动更新。最终核对四个HEAD/分支/工作区与 git fsck --connectivity-only。
 3. 新 Anaconda、torch/generate、PyTorch2.8cu128、PythonOCC7.8.1.1/OCCT7.8.1、8张5090/NCCL已验证。项目实际diffusion/AE前后向已通过；Torchvision自带JPEG与OCC的SONAME冲突由environment记录给出最小修复及备份。FLUX完整Q8加载与2步推理已通过，但验收脚本BF16转NumPy处曾失败，脚本已修正。按交接仅重跑未完成的项目验证，勿重新安装或无故重复全部基础检查。不做正式研究。
 4. Codex0.160.1、Node24.22.0/npm11.19.1、账号真实请求、项目AGENTS上下文已通过；目标登录shell和Codex launcher使用源机已有局域网代理，配置在 /etc/profile.d/hola-network.sh。无需再读取或打印auth.json。项目技能在 .agents/skills，项目配置在 .codex/config.toml。
 5. 把最终结果/剩余缺口写入 checkpoints/server_migration/deployment_20261016/README.md；提交本次完成的迁移记录并最终增量同步，核对两端。最终答复用中文，区分已完成与缺口，提醒暂缓的diffusion权重。ABC只有原始资产和显式提取入口，尚无完整HoLa训练包，不能称其已完整预处理。
