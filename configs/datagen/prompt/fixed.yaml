@@ -1,3 +1,4 @@
+# @package prompt
 mode: fixed
 pre_encode_text: true
 positive: >-

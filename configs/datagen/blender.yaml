@@ -1,3 +1,4 @@
+# @package blender
 blender_bin: blender
 num_gpus: 8
 samples: 32

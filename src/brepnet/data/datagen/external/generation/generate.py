@@ -9,12 +9,12 @@ from math import ceil
 from pathlib import Path
 
 import numpy as np
-import ray
-import torch
 from PIL import Image
 
 from .config import PHOTOREAL_POS_PROMPT, Img2BrepConfig
-from .pipeline import Img2BrepPipeline
+from src.brepnet.data.datagen.prompts import (
+    build_prompt, decode_prompt_config, get_negative, should_pre_encode,
+)
 
 # -----------------------------
 # Legacy Ray + sketch.png layout from the original Img2Brep generation package.
@@ -66,13 +66,14 @@ def load_img(img_folder: Path) -> np.ndarray:
     return img_data
 
 
-@ray.remote(num_gpus=1)
 def generate(config_dict: dict, folder_chunk: list[str], chunk_id: int):
     """
     Pass strings/paths as strings to reduce serialization surprises.
     Build config inside worker to avoid pickling issues.
     """
     try:
+        from .pipeline import Img2BrepPipeline
+
         config = Img2BrepConfig()
         for k, v in config_dict.items():
             setattr(config, k, v)
@@ -220,15 +221,23 @@ def main_blender_batch(args: argparse.Namespace) -> None:
     if args.model_list_dir is not None:
         LOGGER.info("stage=start model_list_dir=%s rank=%s", args.model_list_dir, args.rank)
 
+    prompt_cfg = decode_prompt_config(args.prompt_config_json)
     pos_prompt = args.prompt or PHOTOREAL_POS_PROMPT
+    neg_prompt = args.neg_prompt if args.neg_prompt is not None else Img2BrepConfig.neg_prompt
+    pre_encode = args.pre_encode_text
+    if prompt_cfg is not None:
+        pos_prompt = build_prompt(prompt_cfg, "00000000", args.seed)
+        neg_prompt = get_negative(prompt_cfg)
+        pre_encode = should_pre_encode(prompt_cfg)
     config = Img2BrepConfig(
         transformer_path=args.transformer_path,
         base_model_path=args.base_model_path,
         pos_prompt=pos_prompt,
+        neg_prompt=neg_prompt,
         num_steps=args.num_steps,
         guidance_scale=args.guidance_scale,
         true_cfg_scale=args.true_cfg_scale,
-        pre_encode_text=True,
+        pre_encode_text=pre_encode,
     )
     LOGGER.info(
         "stage=config base_model_path=%s transformer_path=%s num_steps=%d guidance_scale=%.2f",
@@ -238,16 +247,21 @@ def main_blender_batch(args: argparse.Namespace) -> None:
         config.guidance_scale,
     )
 
-    init_start = time.perf_counter()
-    pipe = Img2BrepPipeline(config)
-    LOGGER.info("stage=init_pipeline_done elapsed=%.2fs", time.perf_counter() - init_start)
-
     model_ids = get_model_ids_for_blender(args)
     if args.max_models is not None:
         if args.max_models <= 0:
             raise ValueError("--max-models must be a positive integer.")
         model_ids = model_ids[: args.max_models]
         LOGGER.info("stage=limit_models max_models=%d selected=%d", args.max_models, len(model_ids))
+
+    if not model_ids:
+        LOGGER.info("stage=done models_total=0")
+        return
+    from .pipeline import Img2BrepPipeline
+
+    init_start = time.perf_counter()
+    pipe = Img2BrepPipeline(config)
+    LOGGER.info("stage=init_pipeline_done elapsed=%.2fs", time.perf_counter() - init_start)
 
     total_start = time.perf_counter()
     rendered_images = 0
@@ -257,6 +271,9 @@ def main_blender_batch(args: argparse.Namespace) -> None:
 
     for model_id in model_ids:
         model_start = time.perf_counter()
+        if prompt_cfg is not None:
+            pipe.config.pos_prompt = build_prompt(prompt_cfg, model_id, args.seed)
+        LOGGER.info("model=%s stage=prompt_text prompt=%s", model_id, pipe.config.pos_prompt)
         input_dir = args.render_root / model_id / str(args.view_index)
         if not input_dir.is_dir():
             LOGGER.error("model=%s stage=check_input error=missing input dir %s", model_id, input_dir)
@@ -342,6 +359,9 @@ def main_blender_batch(args: argparse.Namespace) -> None:
 
 
 def main_legacy_sketch_ray() -> None:
+    import ray
+    import torch
+
     num_gpus = torch.cuda.device_count() if torch.cuda.is_available() else 0
     assert num_gpus > 0, "No CUDA GPUs visible."
     ray.init(num_gpus=num_gpus)
@@ -353,7 +373,8 @@ def main_legacy_sketch_ray() -> None:
     chunks = chunk_list(server_folders, num_gpus)
     chunks = [[p.as_posix() for p in chunk] for chunk in chunks]
 
-    refs = [generate.remote(config_dict, chunks[i], i) for i in range(len(chunks))]
+    generate_remote = ray.remote(num_gpus=1)(generate)
+    refs = [generate_remote.remote(config_dict, chunks[i], i) for i in range(len(chunks))]
     outs = ray.get(refs)
 
     for ok, chunk_id, err in outs:
@@ -388,7 +409,10 @@ def build_top_level_parser() -> argparse.ArgumentParser:
     parser.add_argument("--num-steps", type=int, default=28)
     parser.add_argument("--guidance-scale", type=float, default=3.5)
     parser.add_argument("--true-cfg-scale", type=float, default=1.0)
-    parser.add_argument("--prompt", type=str, default=None)
+    parser.add_argument("--prompt", "--prompt-base", dest="prompt", type=str, default=None)
+    parser.add_argument("--neg-prompt", type=str, default=None)
+    parser.add_argument("--prompt-config-json", type=str, default=None)
+    parser.add_argument("--pre-encode-text", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--transformer-path", type=Path, default=None)
     parser.add_argument("--base-model-path", type=Path, default=None)
     parser.add_argument("--skip-existing", action="store_true")
@@ -414,6 +438,8 @@ def main(argv: list[str] | None = None) -> None:
         or args.transformer_path is not None
         or args.base_model_path is not None
         or args.prompt is not None
+        or args.neg_prompt is not None
+        or args.prompt_config_json is not None
         or args.max_models is not None
     )
     if blender_only:

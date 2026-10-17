@@ -8,20 +8,23 @@ Usage:
 from __future__ import annotations
 
 import sys
+import json
 from pathlib import Path
 
 import hydra
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
 from .config import DATAGEN_ROOT, PROJECT_ROOT, resolve_path
 from .launcher import rank_env, run_parallel_ranked
-from .prompts import build_prompt, get_negative, should_pre_encode
+from .prompts import decode_prompt_config, get_negative, should_pre_encode
 from .utils import load_model_ids, split_for_gpus
 
 
 @hydra.main(version_base="1.3", config_path="../../../../configs", config_name="datagen")
 def main(cfg: DictConfig) -> None:
     mode = cfg.mode  # "cube24" or "single-view"
+    if mode not in {"cube24", "single-view"}:
+        raise ValueError("mode must be cube24 or single-view")
     num_gpus = cfg.flux.num_gpus
 
     # Resolve paths
@@ -46,6 +49,8 @@ def main(cfg: DictConfig) -> None:
 
     # Prompt config
     prompt_cfg = cfg.prompt
+    serialized_prompt = json.dumps(OmegaConf.to_container(prompt_cfg, resolve=True))
+    decode_prompt_config(serialized_prompt)
     neg_prompt = get_negative(prompt_cfg)
     pre_encode = should_pre_encode(prompt_cfg)
 
@@ -83,6 +88,9 @@ def main(cfg: DictConfig) -> None:
             base_prompt,
             "--neg-prompt",
             neg_prompt,
+            "--prompt-config-json",
+            serialized_prompt,
+            "--pre-encode-text" if pre_encode else "--no-pre-encode-text",
         ]
         if cfg.flux.skip_existing:
             cmd.append("--skip-existing")

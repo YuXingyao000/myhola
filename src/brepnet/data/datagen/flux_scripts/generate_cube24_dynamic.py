@@ -45,7 +45,9 @@ if not (_EXTERNAL_ROOT / "generation").is_dir():
 sys.path.insert(0, str(_EXTERNAL_ROOT))
 
 from generation.config import PHOTOREAL_POS_PROMPT, Img2BrepConfig  # noqa: E402
-from generation.pipeline import Img2BrepPipeline  # noqa: E402
+from src.brepnet.data.datagen.prompts import (
+    build_prompt, decode_prompt_config, get_negative, should_pre_encode,
+)
 
 # Import shared utilities (works because this is run as -m src.brepnet.data.datagen.flux_scripts.generate_cube24_dynamic)
 from src.brepnet.data.datagen.utils import (  # noqa: E402
@@ -97,6 +99,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--base-model-path", type=Path, default=None)
     parser.add_argument("--prompt-base", type=str, default=DEFAULT_BASE_PROMPT)
     parser.add_argument("--neg-prompt", type=str, default=DEFAULT_NEG_PROMPT)
+    parser.add_argument("--prompt-config-json", type=str, default=None)
+    parser.add_argument("--pre-encode-text", action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument("--skip-existing", action="store_true")
     return parser.parse_args(argv)
 
@@ -193,6 +197,13 @@ def main(argv: list[str] | None = None) -> None:
 
     configure_logging()
     args = parse_args(argv)
+    prompt_cfg = decode_prompt_config(args.prompt_config_json)
+    if prompt_cfg is not None:
+        args.prompt_base = build_prompt(prompt_cfg, "00000000", args.seed)
+        args.neg_prompt = get_negative(prompt_cfg)
+        args.pre_encode_text = should_pre_encode(prompt_cfg)
+    elif args.pre_encode_text:
+        raise ValueError("Pre-encoding requires a fixed --prompt-config-json; legacy prompts are dynamic.")
 
     args.render_root = args.render_root.resolve()
     args.output_root = args.output_root.resolve()
@@ -223,7 +234,7 @@ def main(argv: list[str] | None = None) -> None:
         num_steps=args.num_steps,
         guidance_scale=args.guidance_scale,
         true_cfg_scale=args.true_cfg_scale,
-        pre_encode_text=False,
+        pre_encode_text=args.pre_encode_text,
         seed=args.seed,
     )
     LOGGER.info(
@@ -236,16 +247,21 @@ def main(argv: list[str] | None = None) -> None:
         config.pre_encode_text,
     )
 
-    init_start = time.perf_counter()
-    pipe = Img2BrepPipeline(config)
-    LOGGER.info("stage=init_pipeline_done elapsed=%.2fs", time.perf_counter() - init_start)
-
     model_ids = get_model_ids(args)
     if args.max_models is not None:
         if args.max_models <= 0:
             raise ValueError("--max-models must be a positive integer.")
         model_ids = model_ids[: args.max_models]
         LOGGER.info("stage=limit_models max_models=%d selected=%d", args.max_models, len(model_ids))
+
+    if not model_ids:
+        LOGGER.info("stage=done models_total=0")
+        return
+    from generation.pipeline import Img2BrepPipeline
+
+    init_start = time.perf_counter()
+    pipe = Img2BrepPipeline(config)
+    LOGGER.info("stage=init_pipeline_done elapsed=%.2fs", time.perf_counter() - init_start)
 
     total_start = time.perf_counter()
     rendered_images = 0
@@ -281,16 +297,18 @@ def main(argv: list[str] | None = None) -> None:
                 )
                 continue
 
-        material_profile_idx, material_profile = choose_material_profile(args.seed, model_id)
-        dynamic_prompt = build_dynamic_prompt(args.prompt_base, material_profile)
+        if prompt_cfg is not None:
+            dynamic_prompt = build_prompt(prompt_cfg, model_id, args.seed)
+            LOGGER.info("model=%s stage=prompt_selected mode=%s", model_id, prompt_cfg.mode)
+        else:
+            material_profile_idx, material_profile = choose_material_profile(args.seed, model_id)
+            dynamic_prompt = build_dynamic_prompt(args.prompt_base, material_profile)
+            LOGGER.info(
+                "model=%s stage=prompt_selected material_profile_idx=%d material_profile=%s",
+                model_id, material_profile_idx, material_profile,
+            )
         pipe.config.pos_prompt = dynamic_prompt
         pipe.config.neg_prompt = args.neg_prompt
-        LOGGER.info(
-            "model=%s stage=prompt_selected material_profile_idx=%d material_profile=%s",
-            model_id,
-            material_profile_idx,
-            material_profile,
-        )
         LOGGER.info(
             "model=%s stage=prompt_text prompt=%s",
             model_id,

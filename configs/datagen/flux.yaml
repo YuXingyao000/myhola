@@ -1,3 +1,4 @@
+# @package flux
 num_gpus: 8
 num_steps: 40
 guidance_scale: 3.5

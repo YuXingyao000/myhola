@@ -1,3 +1,4 @@
+# @package paths
 model_root: /mnt/d/data/deepcad_v6
 mesh_name: mesh.stl
 

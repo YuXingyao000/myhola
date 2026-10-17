@@ -1,3 +1,4 @@
+# @package prompt
 mode: dynamic
 pre_encode_text: false
 base_positive: >-

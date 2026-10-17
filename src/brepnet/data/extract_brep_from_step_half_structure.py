@@ -50,31 +50,14 @@ from src.brepnet.post.utils import Shape
 
 # from src.brepnet.post.utils import construct_solid
 
-debug_id = None
-# debug_id = "00000003"
-
 write_debug_data = False
 check_post_processing = False
-data_root = Path(r"/mnt/e/yilin/data_step")
-output_root = Path(r"/mnt/d/img2brep/abc_v2/")
-data_split = r"src/brepnet/data/list/abc_total.txt"
-
-exception_files = [
-    r"src/brepnet/bak/list_bak/abc_cube_ids.txt",
-    r"src/brepnet/bak/list_bak/abc_with_others_ids.txt",
-]
 
 num_max_primitives = 100000
 sample_resolution = 16
 
 face_scale_threshold = 1e-3
 edge_scale_threshold = 1e-3
-
-def check_dir(v_path):
-    if os.path.exists(v_path):
-        shutil.rmtree(v_path)
-    os.makedirs(v_path)
-
 
 def safe_check_dir(v_path):
     if not os.path.exists(v_path):
@@ -321,35 +304,6 @@ def get_brep(v_root, output_root, v_folder):
 get_brep_ray = ray.remote(get_brep)
 
 if __name__ == '__main__':
-    total_ids = [item.strip() for item in open(data_split, "r").readlines()]
+    from src.brepnet.data.extract_brep import main
 
-    exception_ids = []
-    for file in exception_files:
-        exception_ids += [item.strip() for item in open(file, "r").readlines()]
-    exception_ids = list(set(exception_ids))
-
-    num_original = len(total_ids)
-    total_ids = list(set(total_ids) - set(exception_ids))
-    total_ids.sort()
-    # total_ids = total_ids[:100]
-    print("Total ids: {} -> {}".format(num_original, len(total_ids)))
-    check_dir(output_root)
-
-    # single process
-    if debug_id is not None:
-        total_ids = [debug_id]
-        get_brep(data_root, output_root, total_ids)
-    else:
-        ray.init(
-                dashboard_host="0.0.0.0",
-                dashboard_port=15000,
-                #num_cpus=1,
-                #local_mode=True
-        )
-        tasks = []
-        for i in range(len(total_ids)):
-            tasks.append(get_brep_ray.remote(data_root, output_root, total_ids[i]))
-        results = []
-        for i in tqdm(range(len(total_ids))):
-            results.append(ray.get(tasks[i]))
-        print("Processed {}/{} files".format(sum(results), len(total_ids)))
+    main()
