@@ -100,6 +100,8 @@ VAE 同时支持标准与旧字段名，但矛盾配置必须报错；新配置�
 
 ## 当前生成方向与已核对的合同问题
 
+2026-10-17 迁移时已修复 Hydra 配置组 package、FLUX 完整 prompt / 负提示 / 预编码参数转发与单视图 CLI 接口，并新增显式路径、清单和输出保护的 `python -m src.brepnet.data.extract_brep`。修复及验证边界见 [记录](../../../checkpoints/server_migration/deployment_20261016/data_entrypoints/README.md)。这些入口修复不代表 ABC 全库预处理完成，也不代表下列打包、旋转映射和来源记录问题均已解决。
+
 当前设计从网格渲染 RGB，再以 Kontext 和文字描述编辑为桌面上的工业零件照片，最后打包成条件输入。
 虽然 README 使用“白模”表述，Blender 默认配置实际指定 `Metal010_1K-JPG` PBR 材质；不能假定现有输入都是纯灰模。
 当前 FLUX 调用没有显式传入 CAD、深度、法线或拓扑约束；几何保持依赖编辑模型行为，需用数据验证。
@@ -109,12 +111,12 @@ VAE 同时支持标准与旧字段名，但矛盾配置必须报错；新配置�
 - `run_pack.py` 的 cube24 分支仍产出 `natural.npz`，与当前 loader 契约不一致。
 - 单视图 pack 默认要求 `blender`、`flux`、`flux_masked` 三种输入；`run_pipeline.py` 未包含 mask 阶段。
 - `run_pipeline.py` 只转发 mode 与四个路径，train list、输出位置、prompt 和生成参数不能假定完整传入子进程。
-- `run_flux.py` 读取但未转发 `pre_encode_text`，也未调用导入的 `build_prompt`；cube24 worker 使用自身 prompt 逻辑，材质 profile 实际只有 aluminum alloy，且不替换 YAML 中的 `{material}`。
-- 单视图 worker 委派给 `external/generation/generate.py`；上游传 `--prompt-base`／`--neg-prompt`，下游 CLI 接受 `--prompt` 且无对应负提示参数，调用不兼容。
+- `run_flux.py` 已完整转发 prompt 配置；动态 prompt 按 CAD / seed 生成，固定模式可预编码，动态模式配合预编码明确报错。直接调用 worker 且不传完整配置时仍保留历史行为，不能与新 launcher 配置混为一谈。
+- 单视图 worker 委派给 `external/generation/generate.py`，现已接受 `--prompt-base`／`--neg-prompt` 及完整 prompt 配置；实际权重加载和目标 GPU 验证单独记录。
 - Blender cube24 使用自身枚举顺序，raw identity 为 `18.png`；不能直接用 PNG 序号索引运行时 identity-first latent／条件图。旧 cube24 pack 没有完成这项映射。
 - Blender 相机与归一化定义在源码中，但没有随每件 PNG 保存相机／归一化／旋转 sidecar；FLUX 有 prompt 和 seed 日志，但缺完整逐图版本记录。launcher 重跑会覆盖同路径日志，`skip_existing` 仅检查文件存在，不能保证同一生成版本。
 - datagen 默认配置仍含 v6 路径；现有 v7 资产不能由这些默认值推断可直接再生。
-- Hydra defaults 的 package 层级与入口读取的 `cfg.paths`／`cfg.blender` 等存在静态疑点；本轮未完成运行时 compose 核验，不能将它写成已运行确认的问题。
+- Hydra defaults 的 package 层级已显式对齐 `cfg.paths`／`cfg.blender`／`cfg.flux`／`cfg.prompt`，并通过真实 compose 与入口 fixture 检查；这不证明底层 pack 已可运行。
 
 底层 GGUF 加载和推理参数有版本敏感性，变更应记录版本并验证调用链；历史 README 的“不可修改”不构成研究架构限制。
 

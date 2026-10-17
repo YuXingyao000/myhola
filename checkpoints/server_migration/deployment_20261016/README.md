@@ -29,6 +29,22 @@
 - Node 采用官方 Node.js 24 LTS 二进制，固定 v24.22.0，下载核对官方 SHA-256；Codex 固定与源机一致的 0.160.1。脚本见 [setup_codex.sh](setup_codex.sh)。
 - 项目 `.codex/config.toml` 保留当前模型 / 推理默认值，并允许完整读取嵌套指南；自定义数据研究技能放在 `.agents/skills`，随仓库迁移。
 
-尚未完成的步骤不能据此视为成功；后续会填入实际传输状态、目标环境验证、代码 commit 对应关系及剩余事项。
+## 2026-10-17 交接：本地完成 hook
+
+用户要求长传输期间不持续调用模型监督。当前已改为本地一次性 hook，每60秒只读状态文件；等待期间不调用模型。35组传完、队列异常退出或同一资产重复失败时，启动一次**独立的项目 Codex 后台验收**，使用下方交接文件接管。显式暂停队列不会触发自动恢复。此能力不保证原桌面聊天自动弹出消息。
+
+- hook：`transfer/completion_hook.py`；任务说明：`transfer/acceptance_prompt.md`。
+- 运行状态：源机 `/mnt/d/migration-transfer-logs/acceptance-hook/status.json`；最后答复将保存为同目录 `result.md`，详细日志在该目录内，不纳入Git。
+- 等待中的hook用进程锁避免重复，并在调用Codex前记录一次性标记；进程重启不会重复启动已经触发的验收。
+- 7项合成状态检查通过，确认传输中不触发、完成/重复失败/异常退出会触发、显式暂停不触发；检查没有调用模型。
+- 全部资产尚未完成，最近一次人工验收是30/35组完成、约398.53GB已完成组内容，ABC STEP继续传输；实时数据以外部状态JSON为准。详细检查见 [资产验收](transfer/ACCEPTANCE.md)。
+
+**已完成运行验证**：8卡基础计算/NCCL、原AE权重、真实DeepCAD小批次diffusion/AE梯度和解码、scene工具入口、Blender两版本及8卡OptiX。OCC与torchvision的JPEG动态库冲突已在目标两环境最小修复并通过多种导入顺序/IGES/STEP验证。FLUX完整Q8权重加载与两步计算已通过，验收图片导出脚本的BF16转换已修。
+
+**留给完成hook**：重跑约34秒的项目training验证和约196秒的FLUX验证，取得整体成功报告；完成代码增量同步及Git/worktree最终核对，更新状态后提交与同步迁移记录。首轮代码复制恰逢另一个用户会话提交，曾短暂缺tree；代码同步脚本也已补上空gitlink目录保留，不能跳过最终fsck。具体结果见 [项目验证交接](project_validation/README.md) 和 [代码验收](code_validation/README.md)。
+
+Codex真实请求与项目指南加载已通过，目标也已配置源机使用的局域网代理；见 [Codex配置](codex/README.md)。只迁项目指南、技能和必要登录设置，没有整包复制其他项目会话。
+
+**diffusion提醒**：人工检查时源机旧运行已到100000 step并停止；另一个用户研究会话随后提交 `7bb75c7c`，将总预算改为10000000。本迁移不干预该训练，仍按用户要求暂缓其运行目录与权重，后续单独补同步。
 
 参考：[Codex CLI](https://learn.chatgpt.com/docs/codex/cli)、[无界面服务器认证](https://learn.chatgpt.com/docs/auth)、[Node.js 官方发行目录](https://nodejs.org/dist/v24.22.0/)。

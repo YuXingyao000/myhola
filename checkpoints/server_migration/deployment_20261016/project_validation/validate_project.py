@@ -12,6 +12,7 @@ import subprocess
 import sys
 import time
 import traceback
+from types import SimpleNamespace
 
 import numpy as np
 import torch
@@ -127,6 +128,11 @@ def validate_training(report):
     report['vae_batch_shapes'] = shapes(vae_batch)
     ae_cfg['mode'] = 'train'
     vae = build_autoencoder(ae_cfg).cuda().train()
+    # Exercise the real trainer's trusted Lightning-init path under PyTorch 2.8.
+    init_cfg = OmegaConf.create({'trainer': {'init_from_checkpoint': ae_cfg['checkpoint'],
+                                           'resume_from_checkpoint': None}})
+    UnifiedTrainer._init_model_from_checkpoint(SimpleNamespace(cfg=init_cfg, model=vae, stage='vae'))
+    report['trainer_init_trusted_checkpoint'] = True
     with torch.autocast('cuda', dtype=torch.bfloat16):
         vae_losses, _ = vae(vae_batch)
     assert torch.isfinite(vae_losses['total_loss'])
@@ -167,10 +173,10 @@ def validate_flux(report):
     with torch.inference_mode():
         output = wrapper.pipeline(image=image, prompt=cfg.pos_prompt, num_inference_steps=2,
                                   guidance_scale=3.5, true_cfg_scale=1.0, width=256, height=256,
-                                  max_sequence_length=128, generator=generator, output_type='pt')
+                                  max_sequence_length=128, max_area=256 * 256, generator=generator, output_type='pt')
     values = output.images[0]
     assert torch.isfinite(values).all(), 'Nonfinite FLUX output'
-    out = (values.clamp(0, 1).permute(1, 2, 0).cpu().numpy() * 255).round().astype(np.uint8)
+    out = (values.clamp(0, 1).permute(1, 2, 0) * 255).round().to(torch.uint8).cpu().numpy()
     Image.fromarray(out).save(OUT / 'flux_training_smoke.png')
     report.update(output_shape=list(out.shape), output_finite=True,
                   output_path=str(OUT / 'flux_training_smoke.png'), seed=42, steps=2,
@@ -189,8 +195,11 @@ def main():
     torch.set_num_threads(4)
     torch.manual_seed(42)
     np.random.seed(42)
+    git = subprocess.run(['git', 'rev-parse', 'HEAD'], text=True, capture_output=True)
     report = dict(phase=args.phase, torch=torch.__version__, device=torch.cuda.get_device_name(0), seed=42,
-                  git_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip())
+                  git_commit=git.stdout.strip() if git.returncode == 0 else None,
+                  git_metadata_ready=git.returncode == 0,
+                  validation_script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
     started = time.monotonic()
     try:
         (validate_training if args.phase == 'training' else validate_flux)(report)

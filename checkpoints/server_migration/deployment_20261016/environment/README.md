@@ -51,6 +51,18 @@ cd /mnt/d/python
 
 本报告交付时目标研究源码还在准备上传，因此未宣称仓库入口、完整 FLUX 权重加载或实际研究批次已验证；这些检查需在源码/模型到齐后进行。没有启动正式训练或评估 ABC 最终子集。
 
+### 后续项目验收发现的 JPEG 动态库冲突
+
+2026-10-17 的实际项目验收中，训练批次前向/反向完成后，后处理入口导入 `OCC.Core.IGESControl` 失败：`libtiff.so.6` 找不到 `jpeg12_write_raw_data@LIBJPEG_8.0`。独立复现显示 `torchvision → IGESControl` 失败，`torch → IGESControl`、`open3d → IGESControl` 成功。原基础 box/STEP 验证没有覆盖这个导入顺序，因此此前通过不能代表此入口可用。
+
+实际装载路径表明，torchvision 0.23.0+cu128 自带的 `torchvision.libs/libjpeg.bd6b9199.so.8` 仍使用通用 SONAME `libjpeg.so.8`，先导入后被 Conda 的新 libtiff 当作目标 JPEG 库；它没有 libjpeg-turbo 3.2.0 提供的 12-bit 符号。`torchvision/image.so` 的依赖名称已经是带 hash 的文件名。
+
+已在 `torch` 和 `generate` 仅将这份 bundled library 的 SONAME 改成其带 hash 的文件名，使它与 Conda libjpeg 独立装载。没有改研究源码、OCC 版本或全局 `LD_PRELOAD`，无需规定导入顺序。原文件与 wheel RECORD 保存在 `/mnt/d/migration/backups/torchvision-jpeg/{torch,generate}/`，补丁同时更新安装记录里的文件哈希。复现入口是 `fix_torchvision_jpeg_soname.py`，依赖系统 `patchelf`；重装同版本 torchvision 后须重跑该脚本。仅从 pip/Conda 包清单重建环境不会自动包含此 ELF 修复。
+
+修复与验证证据见本目录 `*-jpeg-soname-patch.json`、`*-jpeg-occ-validation.json`。`validate_jpeg_occ.py` 使用独立进程验证 torchvision/OCC 两种顺序、项目训练模块后导入 post/eval/extract_brep、FLUX 依赖后导入 OCC，并执行 torchvision JPEG 编解码和 OCC IGES/STEP 写入读回；两环境全部四种顺序均通过，进程映射确认两份 JPEG 库各自装载。完整真实批次及完整 FLUX 验收以相邻 `project_validation/` 报告为准；不在这里重复运行正式训练。
+
+项目验收阶段已为两个研究环境安装 `/mnt/d/python` editable 包，base 新增 `trimesh==5.1.1` 供数据准备调用。本目录包清单在此后重新导出。
+
 ## 官方依据
 
 - [PyTorch 2.7 Blackwell / CUDA 12.8 支持](https://pytorch.org/blog/pytorch-2-7/)
@@ -59,3 +71,4 @@ cd /mnt/d/python
 - [NVIDIA Blackwell 兼容性指南](https://docs.nvidia.com/cuda/blackwell-compatibility-guide/)
 - [Anaconda 安装包与 SHA256](https://repo.anaconda.com/archive/)
 - [chamferdist 源码](https://github.com/krrish94/chamferdist)
+- [PatchELF 官方 SONAME 修改接口](https://github.com/NixOS/patchelf#patchelf)

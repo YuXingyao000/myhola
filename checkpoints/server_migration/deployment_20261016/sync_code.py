@@ -34,11 +34,14 @@ def main():
         root = Path(fields['worktree'])
         entries = subprocess.check_output(['git', 'ls-files', '--stage', '-z'], cwd=root)
         files = []
+        gitlinks = []
         for entry in entries.split(b'\0'):
             if not entry:
                 continue
             metadata, name = entry.split(b'\t', 1)
-            if metadata.split()[0] != b'160000':
+            if metadata.split()[0] == b'160000':
+                gitlinks.append(root / name.decode())
+            else:
                 if not (root / name.decode()).exists() and not (root / name.decode()).is_symlink():
                     raise RuntimeError(f'Tracked file missing: {root}/{name!r}')
                 files.append(name)
@@ -47,6 +50,10 @@ def main():
         manifest = RUNTIME / f'{len(records)}.files.nul'
         manifest.write_bytes(b'\0'.join(files) + b'\0')
         run(SSH + ['mkdir -p -- ' + shlex.quote(str(root))])
+        # Uninitialized submodules still need their empty working directories;
+        # otherwise Git reports deletions although their index entries exist.
+        if gitlinks:
+            run(SSH + ['mkdir -p -- ' + shlex.join(map(str, gitlinks))])
         run(RSYNC + ['--from0', '--files-from=' + str(manifest), str(root) + '/',
                      'root@172.31.224.142:' + str(root) + '/'])
         records.append({**fields, 'tracked_files': len(files)})

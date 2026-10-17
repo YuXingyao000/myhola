@@ -1,0 +1,77 @@
+{
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:16:10) [GCC 11.2.0]",
+  "executed_interpreter": "/mnt/d/anaconda3/bin/python",
+  "commands": [
+    {
+      "command": [
+        "/mnt/d/anaconda3/bin/python",
+        "/mnt/d/python/packages/cad_scene_factory/workflow.py",
+        "--help"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/mnt/d/anaconda3/bin/python",
+        "/mnt/d/python/packages/cad_scene_factory/call_llm.py",
+        "--help"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/mnt/d/anaconda3/bin/python",
+        "/mnt/d/python/packages/cad_scene_factory/preview.py",
+        "--help"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/mnt/d/anaconda3/bin/python",
+        "/mnt/d/python/packages/cad_scene_factory/prepare_stl.py",
+        "--help"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/mnt/d/anaconda3/bin/python",
+        "/mnt/d/python/packages/cad_scene_factory/assets.py",
+        "--help"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/mnt/d/natural/blender-4.2.0-linux-x64/blender",
+        "--background",
+        "--factory-startup",
+        "--python-exit-code",
+        "1",
+        "--python-expr",
+        "import bpy; print(\"BLENDER_RUNTIME\", bpy.app.version_string); print(\"SCENE_COUNT\", len(bpy.data.scenes))"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/mnt/d/natural/blender-5.2.2-linux-x64/blender",
+        "--background",
+        "--factory-startup",
+        "--python-exit-code",
+        "1",
+        "--python-expr",
+        "import bpy; print(\"BLENDER_RUNTIME\", bpy.app.version_string); print(\"SCENE_COUNT\", len(bpy.data.scenes))"
+      ],
+      "returncode": 0
+    }
+  ],
+  "numpy": "2.3.5",
+  "Pillow": "12.0.0",
+  "rich": "14.2.0",
+  "trimesh": "5.1.1",
+  "data_generation_worktree_core_imports": true,
+  "status": "passed",
+  "scope": "只检查帮助、纯 Python 核心导入和 Blender 后台启动；未运行 Codex/模型制作/实际渲染。主机 base 无 PythonOCC，STEP 回退使用 torch 环境。"
+}

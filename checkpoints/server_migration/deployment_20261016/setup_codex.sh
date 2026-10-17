@@ -31,8 +31,17 @@ for executable in node npm npx; do
 done
 export PATH="$tools_root/node/bin:$PATH"
 npm install --global "@openai/codex@${codex_version}"
-ln -sfn "$tools_root/node/bin/codex" /usr/local/bin/codex
+cat > "$download_root/codex-launcher" <<'SH'
+#!/bin/sh
+if [ -r /etc/profile.d/hola-network.sh ]; then
+    . /etc/profile.d/hola-network.sh
+fi
+exec /mnt/d/tools/node/bin/codex "$@"
+SH
+# Replace the launcher symlink itself rather than following it into npm's JS file.
+rm -f /usr/local/bin/codex
+install -m 755 "$download_root/codex-launcher" /usr/local/bin/codex
 node --version
 npm --version
-codex --version
-codex --help >/mnt/d/migration/logs/codex-help.txt
+/usr/local/bin/codex --version
+/usr/local/bin/codex --help >/mnt/d/migration/logs/codex-help.txt

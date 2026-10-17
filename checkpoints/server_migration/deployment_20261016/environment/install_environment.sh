@@ -11,7 +11,7 @@ mkdir -p /mnt/d/migration/logs /mnt/d/migration/installers
 exec > >(tee -a /mnt/d/migration/logs/environment-install.log) 2>&1
 trap 'printf "Environment installation failed at line %s\n" "$LINENO"' ERR
 apt-get update
-apt-get install -y --no-install-recommends build-essential cmake ninja-build git rsync tmux zsh curl wget ca-certificates unzip zip p7zip-full libgl1 libegl1 libglib2.0-0 libxrender1 libxext6 libsm6 libxi6 libxkbcommon0 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 ffmpeg libgomp1
+apt-get install -y --no-install-recommends build-essential cmake ninja-build git rsync tmux zsh curl wget ca-certificates unzip zip p7zip-full libgl1 libegl1 libglib2.0-0 libxrender1 libxext6 libsm6 libxi6 libxkbcommon0 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 ffmpeg libgomp1 patchelf
 if [[ ! -x /mnt/d/anaconda3/bin/conda ]]; then
   if ! printf '%s  %s\n' 57b2b48cc5b8665e25fce7011f0389d47c1288288007844b3b1ba482d4f39029 /mnt/d/migration/installers/Anaconda3-2025.12-2-Linux-x86_64.sh | sha256sum -c -; then
     flock /mnt/d/migration/installers/anaconda.lock curl -fL --retry 5 --retry-delay 3 -C - https://repo.anaconda.com/archive/Anaconda3-2025.12-2-Linux-x86_64.sh -o /mnt/d/migration/installers/Anaconda3-2025.12-2-Linux-x86_64.sh

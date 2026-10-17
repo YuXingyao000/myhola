@@ -19,6 +19,7 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 
 ## 从哪里恢复上下文
 
+- 第二台 RTX 5090 服务器的环境、数据迁移进度和已知缺口见 [部署记录](checkpoints/server_migration/deployment_20261016/README.md)。目标仍使用 `/mnt/d/python`；新环境采用 PyTorch 2.8/cu128、PythonOCC 7.8.1 API 系列，不能把这些版本反套到源机。实际完成状态以记录中的验收结果为准，暂缓迁移的 diffusion 权重不能假定已存在。
 - 原论文：[HoLa: B-Rep Generation using a Holistic Latent Representation](https://arxiv.org/abs/2504.14257)。论文的 surface-only holistic latent 与仓库历史 condition fuser / alignment、当前逐层 image cross-attention 及可选 topology bias 分开描述。
 - 实验历史：[ROADMAP](experiments/ROADMAP.md)、[REFERENCES](experiments/REFERENCES.md)、日期目录中的 `NOTE.md`。其中“当前主线／下一步”截至六月，**重启后不自动代表当前计划**。
 - 恢复状态不能只读笔记：核对 checkpoint 元数据、实际输出及评估报告，区分“已实现、已训练、已评估”。

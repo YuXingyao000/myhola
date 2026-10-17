@@ -1,0 +1,31 @@
+{
+  "prefix": "/mnt/d/anaconda3/envs/generate",
+  "torchvision": "0.23.0+cu128",
+  "library": "/mnt/d/anaconda3/envs/generate/lib/python3.10/site-packages/torchvision.libs/libjpeg.bd6b9199.so.8",
+  "image_needed": [
+    "libpng16.0481ee11.so.16",
+    "libjpeg.bd6b9199.so.8",
+    "libwebp.58a855fe.so.7",
+    "libnvjpeg.8dd2b5e6.so.12",
+    "libc10.so",
+    "libtorch.so",
+    "libtorch_cpu.so",
+    "libtorch_python.so",
+    "libcudart.e8e8b82a.so.12",
+    "libc10_cuda.so",
+    "libtorch_cuda.so",
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libpthread.so.0",
+    "libc.so.6"
+  ],
+  "soname_before": "libjpeg.so.8",
+  "sha256_before": "e20d3ffa71d6f4eee6c6ff5b5cbcc5a4e484faa87a47ea77baf964e3a5df269f",
+  "action": "patched_soname",
+  "soname_after": "libjpeg.bd6b9199.so.8",
+  "sha256_after": "a59d1350db44713d6c27469318f99986369a936dcf106a074a441e8ad2ff5fbb",
+  "original_backup": "/mnt/d/migration/backups/torchvision-jpeg/generate/libjpeg.bd6b9199.so.8",
+  "original_record": "/mnt/d/migration/backups/torchvision-jpeg/generate/RECORD.original",
+  "record_updated": true
+}

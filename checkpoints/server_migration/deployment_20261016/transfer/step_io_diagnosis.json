@@ -1,0 +1,44 @@
+{
+  "recorded_at_utc": "2026-10-17T03:59:41.526077+00:00",
+  "source_sample_approx_utc": "2026-10-17T03:58",
+  "method": "Read-only /proc process counters and diskstats, 60 process-state samples every 0.5 seconds; no added disk workload during source sample. Device counters cover all workloads on the shared source disk.",
+  "source": {
+    "mount": "/mnt/d",
+    "device": "/dev/sda",
+    "rotational": true,
+    "sample_seconds": 30.020061190996785,
+    "rsync_pid": 2456946,
+    "rsync_cpu_percent_one_core": 17.088572762598236,
+    "rsync_read_MiB_per_second": 30.583,
+    "rsync_compressed_output_MiB_per_second": 4.697,
+    "rsync_states": {
+      "D_wait_on_page_bit_common": 48,
+      "D_other": 1,
+      "R": 11
+    },
+    "ssh_master_cpu_percent_one_core": 1.9986634810056414,
+    "disk_read_MiB_per_second": 36.06611673312348,
+    "disk_write_MiB_per_second": 0.4288798719657939,
+    "disk_read_iops": 162.52465206377542,
+    "disk_read_await_ms": 12.765730682516908,
+    "disk_util_percent": 98.14770134058371,
+    "disk_weighted_queue": 3.8976602764251354
+  },
+  "destination": {
+    "sample_seconds": 15.026325657963753,
+    "rsync_receiver_pid": 8917,
+    "rsync_cpu_percent_one_core": 8.651482934625587,
+    "rsync_write_MiB_per_second": 27.345,
+    "rsync_states": {
+      "S_do_select": 26,
+      "D_do_get_write_access": 1,
+      "R": 3
+    },
+    "ssh_receive_MiB_per_second": 4.1,
+    "disk_read_MiB_per_second": 19.858896765081667,
+    "disk_write_MiB_per_second": 23.75180412523846,
+    "disk_util_percent": 86.18873498948922
+  },
+  "interpretation": "At this observation window, STEP migration is predominantly waiting for source rotational-disk reads, not saturating compression/encryption CPU or the SSH link. The cumulative rsync progress speed reports uncompressed file bytes, not wire throughput. Network capacity needs a separate measurement.",
+  "whole_file_note": "No existing destination basis exists for newly copied files; --whole-file does not avoid the dominant source directory/file reads on this initial transfer. No queue interruption was performed."
+}

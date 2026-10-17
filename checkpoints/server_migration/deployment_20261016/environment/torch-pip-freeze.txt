@@ -40,6 +40,7 @@ grpcio==1.84.0
 h11==0.16.0
 h5py==3.16.0
 hf-xet==1.7.0
+-e git+ssh://git@github.com/YuXingyao000/myhola.git@7bb75c7cf9eb9146d8dbf37df51989dfcfd93062#egg=hola_brep
 httpcore==1.0.9
 httpx==0.28.1
 huggingface_hub==0.36.2
