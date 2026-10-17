@@ -31,3 +31,9 @@ codex
 桌面端仍需在使用者自己的客户端添加目标 SSH 连接并打开 `/mnt/d/python`；服务器安装不会自动改变客户端的连接列表。本次没有将源机其他项目的聊天转移到目标。
 
 依据：[官方 Codex CLI](https://learn.chatgpt.com/docs/codex/cli)、[认证说明](https://learn.chatgpt.com/docs/auth)、[项目配置](https://learn.chatgpt.com/docs/config-file/config-basic)、[项目指令](https://learn.chatgpt.com/docs/agent-configuration/agents-md)、[技能目录](https://learn.chatgpt.com/docs/build-skills)。
+
+## 源机到目标的普通 SSH 免密登录（2026-10-17）
+
+按用户明确要求，将源机已有 `/root/.ssh/id_ed25519.pub` 公钥追加到目标 root 的 `authorized_keys`，保留原有条目。私钥只留在源机，未复制到目标或提交仓库。目标 `.ssh` / `authorized_keys` 权限分别为 0700 / 0600。
+
+源机可直接执行 `ssh -p 12222 root@172.31.224.142`，无需依赖迁移临时 SSH master。已用禁用连接复用、`BatchMode=yes`、仅公钥认证的新连接运行 `hostname` 和 `id -un`，返回目标主机与 root。该普通管理登录与代码自动同步的受限专用 key 分开；后者仍只允许 Git 推送。此授权不自动使 Windows 或其他服务器免密登录。
