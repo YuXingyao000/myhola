@@ -1,0 +1,33 @@
+{
+  "checked_utc": "2026-10-18T08:03:13.894159+00:00",
+  "host": "172.31.224.142",
+  "workspace": "/mnt/d/python",
+  "commit": "2ec687bc623bd961220e58b520e17efdcef3085d",
+  "branch": "codex/vae-uv-boundary",
+  "gpu_count": 8,
+  "gpu_model": "RTX 5090",
+  "gpus_idle_at_check": true,
+  "initial_checkpoint": "/mnt/d/python/checkpoints/intersection_refinement/curve_conditioning/20261013T083729.740439Z/weights/epoch=0157-step=00057354-val_loss=0.038204.ckpt",
+  "checkpoint_exists": true,
+  "checkpoint_bytes": 1594316448,
+  "config": "train_vae_uv_boundary",
+  "resolved_on_target_without_training": true,
+  "devices": 8,
+  "batch_size_per_device": 16,
+  "global_train_batch_size": 128,
+  "precision": "bf16-mixed",
+  "learning_rate": 2e-05,
+  "max_steps": 100000,
+  "seed": 42,
+  "wandb": {
+    "version": "0.30.0",
+    "online_api_authenticated": true,
+    "project": "hola-brep",
+    "run_name": "vae-uv-boundary-v1",
+    "mode_env_override": "online",
+    "credential_values_recorded": false,
+    "run_created": false
+  },
+  "training_started": false,
+  "scope": "Read-only target/config/auth checks; real FP32/BF16 minibatch validation is recorded separately in remote_smoke.json. No full-dataset GPU run or optimizer step."
+}

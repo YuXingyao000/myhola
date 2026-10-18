@@ -1,0 +1,295 @@
+{
+  "audited_at_utc": "2026-10-18T08:03:45.207124+00:00",
+  "check_counts": {
+    "digest_format_errors": 0,
+    "manifest_duplicate_ids": 0,
+    "manifest_missing_ids": 0,
+    "manifest_unknown_ids": 0,
+    "membership_errors": 0,
+    "numeric_errors": 0,
+    "status_errors": 0
+  },
+  "checks": {
+    "all_sidecar_files_present_nonempty": true,
+    "contract_input_total_matches": true,
+    "contract_only_train_validation": true,
+    "expected_roots_and_parameters": true,
+    "generator_code_matches_generation": true,
+    "generator_remote_matches_local": true,
+    "manifest_exact_expected_membership": true,
+    "manifest_ids_unique": true,
+    "manifest_record_numbers_consistent": true,
+    "manifest_split_memberships_match": true,
+    "manifest_statuses_consistent": true,
+    "no_pending_or_source_failed": true,
+    "remote_git_matches_local": true,
+    "schema_code_matches_generation": true,
+    "schema_remote_matches_local": true,
+    "schema_version_matches": true,
+    "source_step_digest_formats_valid": true,
+    "summary_counts_match_manifest": true,
+    "summary_residuals_match_manifest": true,
+    "train_contract_matches": true,
+    "train_count_matches": true,
+    "train_ids_unique": true,
+    "train_validation_disjoint": true,
+    "validation_contract_matches": true,
+    "validation_count_matches": true,
+    "validation_ids_unique": true
+  },
+  "code_contract": {
+    "generator": {
+      "current_sha256": "5c048e5b8b3e0c78270dcb90625ef2a07b81eb1aaf9c497873d5728ad46c18d6",
+      "generation_sha256": "5c048e5b8b3e0c78270dcb90625ef2a07b81eb1aaf9c497873d5728ad46c18d6",
+      "local_sha256": "5c048e5b8b3e0c78270dcb90625ef2a07b81eb1aaf9c497873d5728ad46c18d6",
+      "matches": true,
+      "matches_local": true,
+      "path": "/mnt/d/python/src/brepnet/data/extract_edge_uv.py"
+    },
+    "schema": {
+      "current_sha256": "d912bd8e438bad80c1d245018e007b9a32ec61ccc14c5dc8454e560e6f933b75",
+      "generation_sha256": "d912bd8e438bad80c1d245018e007b9a32ec61ccc14c5dc8454e560e6f933b75",
+      "local_sha256": "d912bd8e438bad80c1d245018e007b9a32ec61ccc14c5dc8454e560e6f933b75",
+      "matches": true,
+      "matches_local": true,
+      "path": "/mnt/d/python/src/brepnet/data/edge_uv.py"
+    }
+  },
+  "completed_at_utc": "2026-10-18T08:03:45.364368+00:00",
+  "execution_spec": {
+    "Assumptions": "Manifest is generator-produced evidence, not an independent reread of every NPZ payload. Invalid UV masks retain original geometry training samples.",
+    "Decision Rule": "Ready for training if expected train+validation membership and hashes agree, all sidecars exist, no pending/source_failed, recorded code contract matches current generator/schema, and manifest/summary are consistent; partial/all-invalid UV labels are retained explicitly.",
+    "Deliverables": "JSON acceptance report and concise trainability/limitations statement.",
+    "Edge Cases": "Missing/corrupt metadata, duplicate/unknown/missing IDs, changed contracts, nonfinite/negative aggregates or missing files fail acceptance. Zero denominators produce null coverage. No test split is read.",
+    "Implementation Constraints": "Read-only SSH and standard library; no geometry loading, label/source edits, training, test inspection or large object lists. Write only the requested local report.",
+    "Inputs": "Remote dataset.json, summary.json, manifest.jsonl; fixed train/validation accepted.txt; current generator/schema source files; sidecar path existence.",
+    "Metrics": "Object status counts, point coverage, native/projected/invalid point totals, valid residual mean/max, missing files, pending/source_failed and contract consistency.",
+    "Outputs": "One compact local JSON with provenance, checks, split aggregates and validation-only failure-reason counts; no object-ID lists.",
+    "Processing Protocol": "Verify lists/counts/hashes, contract/code hashes, exact manifest membership and unique IDs, summary arithmetic, per-record arithmetic, every expected sidecar file, and aggregate validation partial/invalid reasons.",
+    "Task": "Read-only acceptance of the completed 142 UV sidecar generation for the existing train and validation lists.",
+    "Validation / Sanity Checks": "Independent manifest aggregation must reproduce summary. Valid=native+projected, points=valid+invalid; counts and split memberships must match fixed lists."
+  },
+  "generation_contract": {
+    "data_root": "/mnt/d/data/deepcad_v7",
+    "generator_sha256": "5c048e5b8b3e0c78270dcb90625ef2a07b81eb1aaf9c497873d5728ad46c18d6",
+    "generator_version": "edge_uv_v1",
+    "input_total": 49975,
+    "occ_version": "7.8.1.1",
+    "parameters": {
+      "match_tolerance": 1e-05,
+      "projection_tolerance": 0.001
+    },
+    "schema_sha256": "d912bd8e438bad80c1d245018e007b9a32ec61ccc14c5dc8454e560e6f933b75",
+    "schema_version": 1,
+    "splits": [
+      {
+        "count": 46480,
+        "path": "/mnt/d/python/checkpoints/joint_boundary/validation/train_contract_audit/accepted.txt",
+        "sha256": "14a00585500f1c7996411caa1b3fba796a1c39c2b935a1153ec98e30c69dc097"
+      },
+      {
+        "count": 3495,
+        "path": "/mnt/d/python/checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt",
+        "sha256": "ae607bfe5499e919d1e68a5110c0c211daf1158aedbe57a4756eda99f6f3f0ed"
+      }
+    ],
+    "step_root": "/mnt/d/data/deepcad_v7"
+  },
+  "generation_created_utc": "2026-10-18T06:53:46.763599+00:00",
+  "generation_git_commit": "8a68f1f6a7414c4887902006600f5495bafa132c",
+  "generation_occ_version": "7.8.1.1",
+  "generation_summary_updated_utc": "2026-10-18T07:44:05.861319+00:00",
+  "host": "172.31.224.142",
+  "label_root": "/mnt/d/data/deepcad_v7_uv/v1",
+  "limitations": [
+    "No test split, test cases or test results were read.",
+    "Training split was inspected only through aggregate counts and integrity checks; failure-reason analysis is validation-only.",
+    "Every expected sidecar file was checked for existence and nonzero size, but compressed NPZ payloads were not reread in this audit.",
+    "Source NPZ/STEP digests in manifest were checked for format; all source geometry bytes were not rehashed. Loader verifies NPZ source digests on access.",
+    "Generation and current repository commits differ; unchanged generator/schema file SHA256, split hashes and recorded parameters establish the relevant label contract.",
+    "Partial and all-invalid UV labels remain in the prescribed denominator and retain existing geometry losses; complete UV coverage is not claimed.",
+    "This accepts data readiness, not GPU memory suitability, training convergence, reconstruction accuracy or solid validity.",
+    "Reason counts are object-level per reason token; an object may contribute to multiple reason tokens."
+  ],
+  "local_git_commit": "2ec687bc623bd961220e58b520e17efdcef3085d",
+  "overall": {
+    "expected_objects": 49975,
+    "invalid_points": 190675,
+    "native_fraction_of_valid": 0.9906678253758863,
+    "native_points": 91166592,
+    "pending": 0,
+    "points": 92216064,
+    "projected_fraction_of_valid": 0.009332174624113787,
+    "projected_points": 858797,
+    "recorded_objects": 49975,
+    "status_counts": {
+      "invalid": 45,
+      "ok": 45918,
+      "partial": 4012
+    },
+    "valid_point_fraction": 0.9979323016866128,
+    "valid_points": 92025389,
+    "valid_residual_max": 0.000909995345864445,
+    "valid_residual_mean": 5.727638950626873e-07
+  },
+  "ready_for_training": true,
+  "remote_git_branch": "codex/vae-uv-boundary",
+  "remote_git_commit": "2ec687bc623bd961220e58b520e17efdcef3085d",
+  "remote_tracked_changes": "",
+  "repo": "/mnt/d/python",
+  "sidecar_file_checks": {
+    "train": {
+      "empty": 0,
+      "expected": 46480,
+      "missing": 0,
+      "total_bytes": 372931278
+    },
+    "validation": {
+      "empty": 0,
+      "expected": 3495,
+      "missing": 0,
+      "total_bytes": 27805582
+    }
+  },
+  "source_metadata": {
+    "dataset.json": {
+      "bytes": 1099,
+      "path": "/mnt/d/data/deepcad_v7_uv/v1/dataset.json",
+      "sha256": "e277401045428669fc3697c6395990760eff02831e250f4412b0a58e82b8d901"
+    },
+    "manifest.jsonl": {
+      "bytes": 34955794,
+      "path": "/mnt/d/data/deepcad_v7_uv/v1/manifest.jsonl",
+      "sha256": "98da74a6265ef11c5939d0d476ed09483ae85facccc90eb39dbf9d71fcc12abc"
+    },
+    "summary.json": {
+      "bytes": 490,
+      "path": "/mnt/d/data/deepcad_v7_uv/v1/summary.json",
+      "sha256": "49752cd7d2d71d68b8144bd8cba03ef5a1927069c241a3b95d5f98ba70bd5303"
+    }
+  },
+  "split_aggregates": {
+    "train": {
+      "expected_objects": 46480,
+      "invalid_points": 181508,
+      "native_fraction_of_valid": 0.9906365377168547,
+      "native_points": 84861504,
+      "pending": 0,
+      "points": 85845120,
+      "projected_fraction_of_valid": 0.00936346228314538,
+      "projected_points": 802108,
+      "recorded_objects": 46480,
+      "status_counts": {
+        "invalid": 43,
+        "ok": 42680,
+        "partial": 3757
+      },
+      "valid_point_fraction": 0.9978856340348758,
+      "valid_points": 85663612,
+      "valid_residual_max": 0.000909995345864445,
+      "valid_residual_mean": 5.767759017550627e-07
+    },
+    "validation": {
+      "expected_objects": 3495,
+      "invalid_points": 9167,
+      "native_fraction_of_valid": 0.9910891249410345,
+      "native_points": 6305088,
+      "pending": 0,
+      "points": 6370944,
+      "projected_fraction_of_valid": 0.008910875058965442,
+      "projected_points": 56689,
+      "recorded_objects": 3495,
+      "status_counts": {
+        "invalid": 2,
+        "ok": 3238,
+        "partial": 255
+      },
+      "valid_point_fraction": 0.9985611237518334,
+      "valid_points": 6361777,
+      "valid_residual_max": 0.0007960873772390187,
+      "valid_residual_mean": 5.187407841242037e-07
+    }
+  },
+  "splits": {
+    "train": {
+      "contract_sha256": "14a00585500f1c7996411caa1b3fba796a1c39c2b935a1153ec98e30c69dc097",
+      "count": 46480,
+      "expected_count": 46480,
+      "path": "/mnt/d/python/checkpoints/joint_boundary/validation/train_contract_audit/accepted.txt",
+      "sha256": "14a00585500f1c7996411caa1b3fba796a1c39c2b935a1153ec98e30c69dc097",
+      "unique_count": 46480
+    },
+    "validation": {
+      "contract_sha256": "ae607bfe5499e919d1e68a5110c0c211daf1158aedbe57a4756eda99f6f3f0ed",
+      "count": 3495,
+      "expected_count": 3495,
+      "path": "/mnt/d/python/checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt",
+      "sha256": "ae607bfe5499e919d1e68a5110c0c211daf1158aedbe57a4756eda99f6f3f0ed",
+      "unique_count": 3495
+    }
+  },
+  "validation_failure_reasons": {
+    "invalid": {
+      "distinct_reason_groups": 1,
+      "distinct_reason_tokens": 1,
+      "objects": 2,
+      "reason_groups": [
+        {
+          "objects": 2,
+          "reason": "ValueError: face_match_not_unique: full ordered grids require a unique bijection"
+        }
+      ],
+      "reason_object_counts": [
+        {
+          "objects": 2,
+          "reason": "ValueError: face_match_not_unique: full ordered grids require a unique bijection"
+        }
+      ]
+    },
+    "partial": {
+      "distinct_reason_groups": 6,
+      "distinct_reason_tokens": 3,
+      "objects": 255,
+      "reason_groups": [
+        {
+          "objects": 151,
+          "reason": "native_pcurve; projected_native_path_unavailable; projection_residual_exceeded"
+        },
+        {
+          "objects": 77,
+          "reason": "native_pcurve; periodic_chart_branch_ambiguous_or_outside; projected_native_path_unavailable"
+        },
+        {
+          "objects": 18,
+          "reason": "native_pcurve; periodic_chart_branch_ambiguous_or_outside; projected_native_path_unavailable; projection_residual_exceeded"
+        },
+        {
+          "objects": 6,
+          "reason": "native_pcurve; projected_native_path_unavailable; projection_has_no_solution; projection_residual_exceeded"
+        },
+        {
+          "objects": 2,
+          "reason": "native_pcurve; periodic_chart_branch_ambiguous_or_outside; projected_native_path_unavailable; projection_has_no_solution"
+        },
+        {
+          "objects": 1,
+          "reason": "native_pcurve; periodic_chart_branch_ambiguous_or_outside; projected_native_path_unavailable; projection_has_no_solution; projection_residual_exceeded"
+        }
+      ],
+      "reason_object_counts": [
+        {
+          "objects": 176,
+          "reason": "projection_residual_exceeded"
+        },
+        {
+          "objects": 98,
+          "reason": "periodic_chart_branch_ambiguous_or_outside"
+        },
+        {
+          "objects": 9,
+          "reason": "projection_has_no_solution"
+        }
+      ]
+    }
+  }
+}

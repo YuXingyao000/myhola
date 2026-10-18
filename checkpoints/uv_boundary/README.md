@@ -79,13 +79,13 @@ python -u -m src.brepnet.data.extract_edge_uv \
 
 ## 在 172.31.224.142 直接运行：训练
 
-在标签生成并检查完成后启动。不要从上次 UV face encoder 的 last.ckpt resume。
+2026-10-18 全量 train/validation 标签验收通过，142 上初始化权重存在，W&B 在线 API 认证成功，下面的命令已在目标环境完成配置解析检查。由用户前台启动；不要从上次 UV face encoder 的 last.ckpt resume。
 
 ```bash
 cd /mnt/d/python
 conda activate torch
 
-python -u -m src.brepnet.train --config-name train_vae_uv_boundary \
+WANDB_MODE=online python -u -m src.brepnet.train --config-name train_vae_uv_boundary \
   dataset.raw_data_root=/mnt/d/data/deepcad_v7 \
   dataset.edge_uv_root=/mnt/d/data/deepcad_v7_uv/v1 \
   dataset.train_dataset=checkpoints/joint_boundary/validation/train_contract_audit/accepted.txt \
@@ -94,12 +94,15 @@ python -u -m src.brepnet.train --config-name train_vae_uv_boundary \
   'model.init_uv_boundary_checkpoint="/mnt/d/python/checkpoints/intersection_refinement/curve_conditioning/20261013T083729.740439Z/weights/epoch=0157-step=00057354-val_loss=0.038204.ckpt"' \
   trainer.devices=8 trainer.batch_size=16 trainer.seed=42 \
   trainer.learning_rate=2e-5 trainer.max_steps=100000 \
-  trainer.wandb.enabled=true trainer.wandb.offline=false
+  trainer.precision=bf16-mixed \
+  trainer.wandb.enabled=true trainer.wandb.offline=false \
+  trainer.wandb.project=hola-brep \
+  trainer.wandb.name=vae-uv-boundary-v1
 ```
 
-checkpoint 参数的内层双引号需保留，避免 Hydra 将文件名中的 `=` 当作配置语法。训练读取test清单配置但本命令不运行test；以后正式test需要另行构造冻结标签版本，或直接使用无GT的decode接口导出几何。
+checkpoint 参数的内层双引号需保留，避免 Hydra 将文件名中的 `=` 当作配置语法。命令提供test清单字段，但训练阶段只构造train/validation loader，不运行或分析test；以后正式test需要另行构造冻结标签版本，或直接使用无GT的decode接口导出几何。
 
-新 run 在 `checkpoints/uv_boundary/candidate/<UTC>/`，权重、日志、W&B、配置/Git记录沿用统一目录。终端显示实际 run 路径与 W&B URL。8卡×每卡16、bf16、学习率2e-5；100,000步为本次配置预算，可显式调整，不代表保证在一晚内结束。
+新 run 在 `checkpoints/uv_boundary/candidate/<UTC>/`，权重、日志、W&B、配置/Git记录沿用统一目录。终端显示实际 run 路径与 W&B URL；线上项目为 `hola-brep`，run 名称为 `vae-uv-boundary-v1`。8卡×每卡16（全局batch128）、bf16、学习率2e-5；100,000步为本次配置预算，可显式调整，不代表保证在一晚内结束。
 
 Ctrl+C 中断训练后先确认日志是否已保存 last.ckpt。续训使用同入口，增加 `trainer.resume_from_checkpoint=/绝对路径/weights/last.ckpt` 并设置 `model.init_uv_boundary_checkpoint=null`；保留原数据版本和训练配置，不能再次进行组件初始化。
 
@@ -107,7 +110,22 @@ Ctrl+C 中断训练后先确认日志是否已保存 last.ckpt。续训使用同
 
 ## 当前状态
 
-实现完成，正式数据集未生成、训练未启动。本次交付前台命令，由用户手动运行。
+实现完成，142 上正式 train/validation 标签已生成并验收；本轮检查没有启动训练，由用户手动运行上面的前台命令。
+
+2026-10-18 全量数据结果：
+
+| Split | 对象数 | 完整有效标签 | 部分有效标签 | 全无效标签 | 有效 UV 点比例 |
+|---|---:|---:|---:|---:|---:|
+| Train | 46,480 | 42,680 | 3,757 | 43 | 99.7886% |
+| Validation | 3,495 | 3,238 | 255 | 2 | 99.8561% |
+
+共49,975个sidecar全部存在且非空，无pending或source_failed；整体有效点覆盖率99.7932%，有效点平均回代残差5.73e-7、最大9.10e-4，低于标签阈值1e-3。这是标签构造质量，不是模型重建精度或训练收益。全无效标签的45件仍保留原几何监督；只有UV相关loss按有效点mask排除。
+
+validation两件全无效均无法唯一建立完整face网格对应。部分无效原因按对象计数（可重叠）：投影残差超阈176件、周期参数分支不明确或越界98件、投影无解9件。train只统计覆盖，未查看其失败个例；test未读取。
+
+验收核对了manifest、全部sidecar存在性、split名单及生成器/schema摘要；没有全量重新打开NPZ或重算几何。标签生成于`8a68f1f6`，与验收代码`2ec687bc`的生成器/schema文件摘要一致。具体见[全量验收报告](validation/full_generation_20261018.json)和[训练启动检查](validation/launch_check_20261018.json)。W&B只验证在线认证，未为检查创建run；模型参数和训练配置未改变。
+
+此前实现验证记录：
 
 - 相关数据、loader、模型、loss、迁移和导出共130个测试用例通过：初次联合运行127项，源文件错误处理修复后重跑数据/loader31项（其中新增3项）。
 - validation 前8件构造和断点恢复通过：17,152个有效标签位置，17,024个来自 native pcurve、128个来自投影；最大回代残差约5.36e-4。[数据验证记录](validation/labels.json)。这8件不代表全量标签覆盖率。
