@@ -1,0 +1,23 @@
+{
+  "scope": "Remove repeated model-side defensive checks, preserve valid-input computation.",
+  "base_commit": "7b7d23a334c4b01fa10a7c89d958174aafc0367f",
+  "tests": 223,
+  "passed": 222,
+  "skipped": [
+    {
+      "classname": "src.brepnet.test.test_diffusion_refactor",
+      "name": "test_real_cache_sample_shape_loss_and_gradient",
+      "time": "0.001"
+    }
+  ],
+  "failures": 0,
+  "errors": 0,
+  "seconds": 30.312,
+  "raises_in_vae_package": {
+    "before": 211,
+    "after": 30
+  },
+  "test_changes": "Retired shape/type/finite rejection cases and historical unagreed-combination restrictions; retained numerical, gradient, mapping and strict-loading tests.",
+  "architecture_change": false,
+  "training_started": false
+}

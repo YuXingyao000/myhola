@@ -37,8 +37,6 @@ class FacePairConditioning(nn.Module):
 
     def __init__(self, condition_dim: int, hidden_dim: int, point_channels: int, bbox_channels: int):
         super().__init__()
-        if min(condition_dim, hidden_dim, point_channels, bbox_channels) <= 0:
-            raise ValueError("Curve conditioning dimensions must be positive.")
         self.condition_dim = condition_dim
         self.projection = nn.Sequential(nn.Linear(condition_dim, hidden_dim), nn.SiLU())
         self.point_affine = nn.Linear(hidden_dim, 2 * point_channels)
@@ -48,8 +46,6 @@ class FacePairConditioning(nn.Module):
             nn.init.zeros_(head.bias)
 
     def forward(self, condition: Tensor) -> tuple[Tensor, Tensor, Tensor, Tensor]:
-        if condition.ndim != 2 or condition.shape[1] != self.condition_dim:
-            raise ValueError(f"Expected curve condition [P,{self.condition_dim}].")
         hidden = self.projection(condition)
         point_scale, point_shift = self.point_affine(hidden).chunk(2, dim=-1)
         bbox_scale, bbox_shift = self.bbox_affine(hidden).chunk(2, dim=-1)
@@ -75,19 +71,9 @@ class PrimitiveDecoder(nn.Module):
         self.point_channels = point_channels
         self.conditioning = None
         if condition_dim is not None:
-            if spatial_shape != (16,) or not isinstance(points_decoder, nn.Sequential):
-                raise ValueError("Curve conditioning requires the retained Sequential curve CNN.")
             indices = [i for i, layer in enumerate(points_decoder) if isinstance(layer, nn.Conv1d)]
-            if not indices:
-                raise ValueError("Curve conditioning requires a final Conv1d output layer.")
             self.point_condition_index = indices[-1]
             output_layer = points_decoder[self.point_condition_index]
-            if output_layer.out_channels != point_channels or output_layer.kernel_size != (1,):
-                raise ValueError("Curve conditioning expects the original final 1x1 Conv1d.")
-            if not isinstance(bbox_decoder, nn.Sequential) or not isinstance(bbox_decoder[-1], nn.Linear):
-                raise ValueError("Curve conditioning requires the retained Sequential bbox MLP.")
-            if bbox_decoder[-1].out_features != 4:
-                raise ValueError("The retained bbox head must output center 3 + scale 1.")
             self.bbox_condition_index = len(bbox_decoder) - 1
             self.conditioning = FacePairConditioning(
                 condition_dim, condition_hidden_dim, output_layer.in_channels,
@@ -114,19 +100,11 @@ class PrimitiveDecoder(nn.Module):
         return PrimitiveGeometry(local_points=local_points, center_scale=center_scale, points=points)
 
     def _local_output_layer_index(self) -> int:
-        if not isinstance(self.points_decoder, nn.Sequential):
-            raise ValueError("Local intersection requires a Sequential face points decoder.")
         indices = [
             index for index, module in enumerate(self.points_decoder)
             if isinstance(module, nn.Conv2d)
         ]
-        if not indices:
-            raise ValueError("Local intersection requires a final Conv2d face output layer.")
-        index = indices[-1]
-        layer = self.points_decoder[index]
-        if layer.out_channels != self.point_channels or layer.kernel_size != (1, 1):
-            raise ValueError("Expected a final 1x1 Conv2d projecting local face features to points.")
-        return index
+        return indices[-1]
 
     @property
     def local_feature_channels(self) -> int:
@@ -148,7 +126,6 @@ class PrimitiveDecoder(nn.Module):
             if index == output_index:
                 local_map = points
             points = module(points)
-        assert local_map is not None
         return self._with_global_points(features, points), local_map
 
     def forward(self, features: Tensor, condition: Tensor | None = None) -> PrimitiveGeometry:
@@ -158,9 +135,6 @@ class PrimitiveDecoder(nn.Module):
             # Coarse geometry and the encoder-edge teacher keep this path.
             local_points = self.points_decoder(features)
             return self._with_global_points(features, local_points)
-        if self.conditioning is None or condition.shape[0] != features.shape[0]:
-            raise ValueError("Curve conditioning must be enabled and match the edge batch.")
-
         point_scale, point_shift, bbox_scale, bbox_shift = self.conditioning(condition)
         local_points = features
         for index, layer in enumerate(self.points_decoder):
@@ -189,10 +163,6 @@ class UVPathHead(nn.Module):
         dropout: float = 0.0, candidate_chunk_size: int = 256,
     ):
         super().__init__()
-        if min(face_dim, edge_dim, hidden_dim, num_layers, nhead, dim_feedforward, candidate_chunk_size) <= 0:
-            raise ValueError("UV path dimensions, layers and chunk size must be positive")
-        if hidden_dim % nhead or not 0 <= dropout < 1:
-            raise ValueError("UV hidden_dim must be divisible by nhead and dropout must be in [0,1)")
         self.face_dim, self.edge_dim = face_dim, edge_dim
         self.chunk_size = candidate_chunk_size
         self.context = nn.Sequential(nn.Linear(edge_dim + 2 * face_dim, hidden_dim), nn.SiLU())
@@ -208,10 +178,7 @@ class UVPathHead(nn.Module):
         self.register_buffer("sample_t", torch.linspace(0, 1, 16).reshape(16, 1), persistent=False)
 
     def forward(self, edges: Tensor, faces: Tensor, owners: Tensor) -> Tensor:
-        if edges.ndim != 2 or edges.shape[1] != self.edge_dim:
-            raise ValueError(f"UV edges must have shape [P,{self.edge_dim}]")
-        if faces.ndim != 2 or faces.shape[1] != self.face_dim or owners.shape != (len(edges), 2):
-            raise ValueError("UV faces or owner pair shape is invalid")
+        # [P, edge_dim] + two [face_dim] owners -> two [16, 2] UV paths.
         if not len(edges):
             zero = edges.sum() * 0 + faces.sum() * 0
             for parameter in self.parameters():

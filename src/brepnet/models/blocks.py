@@ -266,7 +266,6 @@ _LEGACY_VAE_EXPORTS = {
     "PrimitiveGeometry": "src.brepnet.models.vae.state",
     "DecoderStage": "src.brepnet.models.vae.state",
     "RefinementOutput": "src.brepnet.models.vae.state",
-    "_validate_geometry_pair": "src.brepnet.models.vae.geometry",
     "_project_to_segments": "src.brepnet.models.vae.geometry",
     "_project_to_triangles": "src.brepnet.models.vae.geometry",
     "_surface_triangle_indices": "src.brepnet.models.vae.geometry",

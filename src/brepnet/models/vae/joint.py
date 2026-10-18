@@ -85,16 +85,6 @@ class AutoEncoder_joint(AutoEncoder):
         self.loss_weights = dict(conf["joint_loss_weights"])
         self.match_weights = dict(conf["joint_match_weights"])
         self.no_boundary_weight = float(conf["joint_no_boundary_weight"])
-        if not 0 <= self.existence_threshold <= 1:
-            raise ValueError("joint_existence_threshold must be in [0, 1]")
-        if set(self.loss_weights) != {"face", "curve", "existence", "ownership", "consistency"}:
-            raise ValueError("joint_loss_weights must explicitly contain face/curve/existence/ownership/consistency")
-        if set(self.match_weights) != {"curve", "ownership"}:
-            raise ValueError("joint_match_weights must explicitly contain curve/ownership")
-        if any(not np.isfinite(value) or value < 0 for value in [*self.loss_weights.values(), *self.match_weights.values()]):
-            raise ValueError("Joint loss and matching weights must be finite and nonnegative")
-        if not 0 < self.no_boundary_weight <= 1:
-            raise ValueError("joint_no_boundary_weight must be in (0, 1]")
         checkpoint, encoder_checkpoint = conf["checkpoint"], conf["init_encoder_checkpoint"]
         if checkpoint is not None and encoder_checkpoint is not None:
             raise ValueError("checkpoint (strict new model) and init_encoder_checkpoint (legacy migration) are mutually exclusive")
@@ -168,11 +158,6 @@ class AutoEncoder_joint(AutoEncoder):
         return self.export_items(state, face_latents)[0]
 
     def forward(self, v_data, v_test=False):
-        counts = v_data["face_counts"]
-        if counts.ndim != 1 or not len(counts) or (counts <= 0).any() or int(counts.sum()) != len(v_data["face_points"]):
-            raise ValueError("face_counts must partition encoder inputs into nonempty objects")
-        if not torch.isfinite(v_data["face_points"]).all() or not torch.isfinite(v_data["edge_points"]).all():
-            raise ValueError("Encoder geometry contains nonfinite values")
         encoding = self.encode(v_data, v_test)
         latents, kl_loss, stats = self.sample(encoding["face_features"], v_is_test=v_test)
         state = self.decode_state(latents, v_data["face_counts"])

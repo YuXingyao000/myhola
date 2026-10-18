@@ -218,46 +218,6 @@ def test_balanced_bce_equal_class_weight_and_one_or_no_class():
     assert zero == 0 and empty.grad is not None
 
 
-@pytest.mark.parametrize("fault,match", [
-    ("duplicate_pair", "Duplicate GT directed"),
-    ("duplicate_edge", "Duplicate GT edge"),
-    ("missing_reciprocal", "reciprocal"),
-    ("seam", "seam"),
-    ("outside_face", "outside"),
-    ("outside_edge", "outside"),
-    ("cross_object", "crosses object"),
-    ("missing_edge", "cover every"),
-    ("nonfinite", "nonfinite"),
-    ("wrong_shape", "shape"),
-])
-def test_invalid_targets_are_rejected(fault, match):
-    case = make_case(face_counts=(3, 2))
-    _, batch, _, _ = case
-    conn = batch["edge_face_connectivity"]
-    if fault == "duplicate_pair":
-        conn[1, 1:] = conn[0, 1:]
-    elif fault == "duplicate_edge":
-        conn[1, 0] = conn[0, 0]
-    elif fault == "missing_reciprocal":
-        conn[1, 1:] = torch.tensor([1, 2])
-    elif fault == "seam":
-        conn[0, 2] = conn[0, 1]
-    elif fault == "outside_face":
-        conn[0, 2] = 5
-    elif fault == "outside_edge":
-        conn[0, 0] = 2
-    elif fault == "cross_object":
-        conn[0, 2] = 3
-    elif fault == "missing_edge":
-        batch["edge_face_connectivity"] = conn[:1]
-    elif fault == "nonfinite":
-        batch["face_points"][0, 0, 0, 0] = float("nan")
-    elif fault == "wrong_shape":
-        batch["face_bbox"] = batch["face_bbox"][:, :1]
-    with pytest.raises(ValueError, match=match):
-        evaluate(case)
-
-
 @pytest.mark.parametrize("permutation", ["gt_rows", "gt_edges", "candidates"])
 def test_gt_and_candidate_storage_order_do_not_change_loss(permutation):
     case = make_case(face_counts=(3,))
@@ -289,15 +249,6 @@ def test_gt_and_candidate_storage_order_do_not_change_loss(permutation):
     result = evaluate(changed)
     for name in baseline:
         torch.testing.assert_close(result[name], baseline[name])
-
-
-def test_incomplete_or_duplicated_candidates_are_rejected_before_supervision():
-    case = make_case(face_counts=(3,))
-    case[0].pairs.indices = case[0].pairs.indices[:2]
-    case[0].pairs.reverse = torch.tensor([1, 0])
-    case[0].pairs.object_ids = torch.tensor([0, 0])
-    with pytest.raises(ValueError, match="all ordered"):
-        evaluate(case)
 
 
 def test_loss_supports_smaller_feature_widths_without_changing_geometry_contract():

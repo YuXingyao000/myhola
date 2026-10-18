@@ -86,10 +86,6 @@ class JointBoundaryDecoder(nn.Module):
         curve_resolution: int = 16,
     ):
         super().__init__()
-        if min(latent_dim, hidden_dim, num_queries, num_rounds, num_heads) < 1:
-            raise ValueError("Decoder dimensions, query capacity, and round count must be positive")
-        if hidden_dim % num_heads:
-            raise ValueError("joint_hidden_dim must be divisible by joint_num_heads")
         self.num_queries = num_queries
         self.face_resolution = face_resolution
         self.curve_resolution = curve_resolution
@@ -110,15 +106,8 @@ class JointBoundaryDecoder(nn.Module):
         )
 
     def forward(self, face_latents: Tensor, face_counts: Tensor) -> dict[str, Tensor]:
-        if face_latents.ndim != 2:
-            raise ValueError("face_latents must be a flat [sum_faces, latent_dim] tensor")
-        if face_counts.ndim != 1 or face_counts.dtype not in (torch.int32, torch.int64):
-            raise ValueError("face_counts must be a one-dimensional integer tensor")
+        # Pack [sum_faces, latent_dim] into padded per-object face sequences.
         counts = face_counts.detach().cpu().tolist()
-        if not counts or min(counts) < 1 or sum(counts) != len(face_latents):
-            raise ValueError("face_counts must partition the input into nonempty objects")
-        if not torch.isfinite(face_latents).all():
-            raise ValueError("face_latents contains nonfinite values")
         padded = pad_sequence(face_latents.split(counts), batch_first=True)
         counts_tensor = face_counts.to(face_latents.device)
         valid = torch.arange(padded.shape[1], device=padded.device)[None, :] < counts_tensor[:, None]

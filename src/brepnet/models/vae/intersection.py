@@ -29,16 +29,8 @@ class AutoEncoder_intersection(BaseVAE):
         self.freeze_encoder = bool(cfg["freeze_encoder"])
         self.runtime_mode = cfg["mode"]
         self.edge_threshold = float(cfg["edge_threshold"])
-        if not 0 < self.edge_threshold < 1:
-            raise ValueError("edge_threshold must be between zero and one")
         if self.runtime_mode not in {"train", "frozen_inference"}:
             raise ValueError(f"Unknown mode {self.runtime_mode!r}")
-        if cfg["trainable_scope"] != "all":
-            raise ValueError("Use freeze_encoder; intersection VAE requires trainable_scope=all")
-        if cfg["in_channels"] != 6 or cfg["loss"] != "l1":
-            raise ValueError("Intersection refinement currently requires six-channel L1 geometry")
-        if float(cfg.get("intersection_noise_std", 0.0)) != 0:
-            raise ValueError("This refinement experiment requires intersection_noise_std=0")
 
         legacy_path, full_path = cfg["init_legacy_checkpoint"], cfg["checkpoint"]
         refinement_path = cfg.get("init_refinement_checkpoint")
@@ -52,15 +44,8 @@ class AutoEncoder_intersection(BaseVAE):
         face_encoder_kind = face_encoder_cfg.pop("kind", "cnn")
         if face_encoder_kind not in {"cnn", "uv_attention"}:
             raise ValueError(f"Unknown face_encoder.kind {face_encoder_kind!r}")
-        allowed_face_options = {
-            "hidden_dim", "embedding_dim", "num_layers", "nhead",
-            "dim_feedforward", "dropout",
-        }
-        if face_encoder_cfg.keys() - allowed_face_options:
-            raise ValueError(f"Unknown face_encoder options: {sorted(face_encoder_cfg.keys() - allowed_face_options)}")
         uv_encoder_enabled = face_encoder_kind == "uv_attention"
         edge_value_cfg = cfg.get("encoder_edge_value") or {}
-        edge_value_enabled = bool(edge_value_cfg.get("enabled", False))
         restoring = bool(cfg.get("restoring_checkpoint", False))
         sources = (legacy_path, refinement_path, curve_feedback_path, edge_value_path,
                    face_encoder_path, uv_boundary_path, full_path)
@@ -83,73 +68,8 @@ class AutoEncoder_intersection(BaseVAE):
         curve_conditioning_cfg = cfg.get("curve_conditioning")
         curve_point_feedback_cfg = cfg.get("curve_point_feedback")
         conditioning_enabled = bool((curve_conditioning_cfg or {}).get("enabled", False))
-        curve_feedback_enabled = bool((curve_point_feedback_cfg or {}).get("enabled", False))
-        intersection_kind = (intersection_cfg or {}).get("kind", "legacy")
-        if uv_boundary_path and not uv_boundary_enabled:
-            raise ValueError("init_uv_boundary_checkpoint requires uv_boundary.enabled")
-        if uv_boundary_enabled and any((legacy_path, refinement_path, curve_feedback_path,
-                                        edge_value_path, face_encoder_path)):
-            raise ValueError("UV boundary requires init_uv_boundary_checkpoint, checkpoint or resume")
-        if uv_boundary_enabled and (
-            uv_encoder_enabled or edge_value_enabled or curve_feedback_enabled
-            or intersection_kind != "legacy" or not cfg["refinement"]["enabled"]
-            or not conditioning_enabled
-        ):
-            raise ValueError("UV boundary retains conditioned CNN legacy refinement without other experiment branches")
-        # Added 2026-10-17: replace only the local face encoder. Keep the accepted
-        # conditioned legacy-inter/refinement decoder and all original losses.
-        if face_encoder_path and not uv_encoder_enabled:
-            raise ValueError("init_face_encoder_checkpoint requires face_encoder.kind=uv_attention")
-        if uv_encoder_enabled and (legacy_path or refinement_path or curve_feedback_path or edge_value_path):
-            raise ValueError("UV face encoder requires init_face_encoder_checkpoint, checkpoint or resume")
-        if uv_encoder_enabled and (
-            intersection_kind != "legacy" or not cfg["refinement"]["enabled"]
-            or not conditioning_enabled or curve_feedback_enabled or edge_value_enabled
-        ):
-            raise ValueError(
-                "UV face encoder retains conditioned legacy refinement without point feedback or edge values"
-            )
-        if uv_encoder_enabled and self.freeze_encoder and self.runtime_mode == "train":
-            raise ValueError("UV face encoder training requires freeze_encoder=false")
-        if edge_value_path and not edge_value_enabled:
-            raise ValueError("init_encoder_edge_value_checkpoint requires encoder_edge_value.enabled")
-        if edge_value_enabled and (legacy_path or refinement_path or curve_feedback_path):
-            raise ValueError(
-                "Encoder edge values require init_encoder_edge_value_checkpoint, checkpoint or resume"
-            )
-        if edge_value_enabled and (
-            intersection_kind != "legacy" or not cfg["refinement"]["enabled"]
-            or not conditioning_enabled or curve_feedback_enabled
-        ):
-            raise ValueError(
-                "Encoder edge-value experiment retains conditioned legacy refinement without point feedback"
-            )
-        if edge_value_enabled and self.freeze_encoder and self.runtime_mode == "train":
-            raise ValueError("Encoder edge-value training requires freeze_encoder=false")
-        if curve_feedback_enabled and (
-            intersection_kind != "legacy" or not cfg["refinement"]["enabled"] or not conditioning_enabled
-        ):
-            raise ValueError(
-                "Curve point feedback requires legacy intersection with refinement "
-                "and curve_conditioning enabled"
-            )
-        if curve_feedback_path and not curve_feedback_enabled:
-            raise ValueError("init_curve_feedback_checkpoint requires enabled curve_point_feedback")
-        if curve_feedback_enabled and (legacy_path or refinement_path):
-            raise ValueError(
-                "Curve point feedback must retain trained conditioning: use "
-                "init_curve_feedback_checkpoint, checkpoint or resume"
-            )
-        if refinement_path and not (
-            intersection_kind == "local_attention" or conditioning_enabled
-        ):
-            raise ValueError(
-                "init_refinement_checkpoint requires local_attention or enabled curve_conditioning"
-            )
 
-        # Construct the original modules once, strictly load their full state,
-        # then transfer them to explicit owners. No duplicate legacy model is
-        # registered in this model, and all original geometry heads are reused.
+        # Reuse the original heads and parameter names; only register their final owners.
         legacy_cfg = {**cfg, "checkpoint": legacy_path, "mode": "train"}
         legacy = AutoEncoder_light(legacy_cfg)
         legacy_face_state = None
@@ -210,7 +130,6 @@ class AutoEncoder_intersection(BaseVAE):
 
     def encode(self, batch: Mapping[str, Tensor], v_test: bool = False) -> dict[str, Tensor]:
         # Keep the public encode/sample contract consumed by LatentProvider.
-        self._validate_encoder_batch(batch)
         with torch.no_grad() if self.freeze_encoder else nullcontext():
             return self.encoder(batch)
 
@@ -224,9 +143,12 @@ class AutoEncoder_intersection(BaseVAE):
         return self.decoder(latents, face_counts)
 
     def forward(self, batch: Mapping[str, Tensor], v_test: bool = False) -> tuple[dict, dict]:
-        encoding = self.encode(batch, v_test)
+        # Default widths: F packed faces, Egt edge samples, P candidate face pairs.
+        encoding = self.encode(batch, v_test)  # face [F,32], edge teacher [Egt,64]
+        # z [F,32], scalar KL, cached mean/std [F,64].
         latents, kl_loss, statistics = self.sample(encoding["face_features"], v_is_test=v_test)
-        prediction = self.decode_state(latents, batch["face_counts"])
+        prediction = self.decode(latents, batch["face_counts"])  # geometry + [P] logits
+        # Training-only edge reconstruction; decoder predictions never read GT edges.
         teacher_geometry = self.decoder.edge_geometry(encoding["edge_features"])
         losses = self.criterion(
             prediction, batch, encoding["edge_features"], teacher_geometry,
@@ -306,29 +228,3 @@ class AutoEncoder_intersection(BaseVAE):
     def decode_state(self, latents: Tensor, face_counts: Tensor | None = None) -> RefinementOutput:
         """Compatibility name for differentiable, prediction-only decoding."""
         return self.decode(latents, face_counts)
-
-    @staticmethod
-    def _validate_encoder_batch(batch: Mapping[str, Tensor]) -> None:
-        counts = batch["face_counts"]
-        faces, edges = batch["face_points"], batch["edge_points"]
-        if counts.dtype != torch.long or counts.ndim != 1 or not len(counts) or (counts <= 0).any():
-            raise ValueError("face_counts must contain positive integer object sizes")
-        if int(counts.sum()) != len(faces):
-            raise ValueError("face_counts does not partition face_points")
-        if faces.shape[1:] != (16, 16, 6) or edges.shape[1:] != (16, 6):
-            raise ValueError("Expected face_points [F,16,16,6] and edge_points [E,16,6]")
-        if not torch.isfinite(faces).all() or not torch.isfinite(edges).all():
-            raise ValueError("Encoder geometry contains nonfinite values")
-        conn = batch["edge_face_connectivity"]
-        if conn.dtype != torch.long or conn.ndim != 2 or conn.shape[1] != 3:
-            raise ValueError("edge_face_connectivity must be integer [E,3]")
-        if len(conn) != len(edges) or len(conn[:, 0].unique()) != len(edges):
-            raise ValueError("GT edge samples require one-to-one directed connectivity")
-        if len(conn) and ((conn < 0).any() or (conn[:, 0] >= len(edges)).any() or (conn[:, 1:] >= len(faces)).any()):
-            raise ValueError("GT connectivity index outside geometry arrays")
-        object_ids = torch.arange(len(counts), device=counts.device).repeat_interleave(counts)
-        expected_mask = object_ids[:, None] != object_ids[None, :]
-        if batch["attn_mask"].dtype != torch.bool or not torch.equal(batch["attn_mask"], expected_mask):
-            raise ValueError("attn_mask must isolate exactly the objects described by face_counts")
-        if len(conn) and ((conn[:, 1] == conn[:, 2]).any() or (object_ids[conn[:, 1]] != object_ids[conn[:, 2]]).any()):
-            raise ValueError("Seam or cross-object GT connectivity is unsupported")

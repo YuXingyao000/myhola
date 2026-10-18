@@ -150,26 +150,3 @@ def test_state_restore_is_strict_and_reproduces_output():
     incomplete.pop("query")
     with pytest.raises(RuntimeError, match="Missing key"):
         restored.load_state_dict(incomplete, strict=True)
-
-
-@pytest.mark.parametrize("options", [
-    {"in_channels": 3}, {"in_channels": 6.0}, {"in_channels": True},
-    {"out_channels": 0}, {"hidden_dim": 0}, {"hidden_dim": 31},
-    {"embedding_dim": -1}, {"num_layers": 0}, {"num_layers": 1.5},
-    {"nhead": 0}, {"nhead": True}, {"dim_feedforward": 0},
-    {"dropout": -0.1}, {"dropout": 1.0}, {"dropout": float("nan")},
-])
-def test_invalid_configuration_fails_explicitly(options):
-    with pytest.raises(ValueError):
-        small_encoder(**options)
-
-
-@pytest.mark.parametrize("faces", [
-    torch.zeros(1, 16, 16, 6), torch.zeros(1, 3, 16, 16),
-    torch.zeros(1, 6, 8, 8), torch.zeros(1, 256, 6),
-    torch.zeros(0, 6, 16, 16), torch.zeros(1, 6, 16, 16, dtype=torch.long),
-    None,
-])
-def test_invalid_input_fails_explicitly(faces):
-    with pytest.raises(ValueError, match="face_points"):
-        small_encoder()(faces)

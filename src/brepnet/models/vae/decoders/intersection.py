@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 import copy
 from typing import TYPE_CHECKING
 
@@ -123,16 +124,6 @@ class LocalPairIntersection(nn.Module):
         dropout = float(cfg.get("dropout", 0.1 if full_capacity else 0.0))
         self.chunk_size = int(cfg.get("candidate_chunk_size", 64))
         self.checkpoint_candidates = bool(cfg.get("checkpoint_candidates", True))
-        if min(
-            self.face_dim, self.edge_dim, self.local_channels, hidden_dim,
-            num_heads, num_layers, ffn_dim, self.chunk_size,
-        ) <= 0:
-            raise ValueError("Local intersection dimensions and chunk size must be positive.")
-        if hidden_dim % num_heads:
-            raise ValueError("Local intersection hidden_dim must be divisible by num_heads.")
-        if not 0.0 <= dropout < 1.0:
-            raise ValueError("Local intersection dropout must be in [0, 1).")
-
         self.query_projection = nn.Sequential(
             nn.Linear(2 * self.face_dim, hidden_dim), nn.GELU(),
             nn.Linear(hidden_dim, hidden_dim),
@@ -182,20 +173,6 @@ class LocalPairIntersection(nn.Module):
         pair_indices: Tensor,
     ) -> Tensor:
         """Read [F,C,H,W] maps and [F,H,W,3] XYZ for [P,2] ordered pairs."""
-        if face_features.ndim != 2 or face_features.shape[1] != self.face_dim:
-            raise ValueError(f"Expected face_features [F,{self.face_dim}].")
-        if (
-            local_features.ndim != 4
-            or local_features.shape[:2] != (face_features.shape[0], self.local_channels)
-        ):
-            raise ValueError(f"Expected local_features [F,{self.local_channels},H,W].")
-        expected_points = (face_features.shape[0], *local_features.shape[2:], 3)
-        if tuple(face_points.shape) != expected_points:
-            raise ValueError("face_points must match local feature positions as [F,H,W,3].")
-        if pair_indices.ndim != 2 or pair_indices.shape[1] != 2:
-            raise ValueError("pair_indices must have shape [P,2].")
-        if pair_indices.dtype not in (torch.int32, torch.int64):
-            raise ValueError("pair_indices must contain integers.")
         if pair_indices.shape[0] == 0:
             return face_features.new_empty((0, self.edge_dim))
 
@@ -218,12 +195,6 @@ class LocalPairIntersection(nn.Module):
 
 def enumerate_candidate_pairs(face_counts: Tensor) -> CandidatePairs:
     """Enumerate ordered i != j pairs inside each object, without GT inputs."""
-    if face_counts.ndim != 1 or face_counts.numel() == 0:
-        raise ValueError("face_counts must be a nonempty [B] tensor.")
-    if face_counts.dtype not in (torch.int32, torch.int64):
-        raise ValueError("face_counts must contain integers.")
-    if bool((face_counts <= 0).any()):
-        raise ValueError("Each object must contain at least one face.")
     device = face_counts.device
     all_pairs, all_reverse, all_objects = [], [], []
     face_offset = 0
@@ -291,11 +262,6 @@ class IntersectionDecoder(nn.Module):
             raise ValueError("Curve conditioning requires legacy intersection with refinement enabled.")
         if self.curve_point_feedback_enabled and not self.curve_conditioning_enabled:
             raise ValueError("Curve point feedback requires the retained curve conditioning path.")
-        if self.chunk_size <= 0 or int(cfg["geometry_chunk_size"]) <= 0:
-            raise ValueError("Candidate and geometry chunk sizes must be positive.")
-        if int(cfg["hidden_dim"]) <= 0 or int(cfg["geometry_dim"]) <= 0:
-            raise ValueError("Refinement feature dimensions must be positive.")
-
         self.face_features = FaceFeatureDecoder(
             legacy.face_attn_proj_in2, legacy.face_attn2, legacy.face_attn_proj_out2
         )
@@ -401,14 +367,9 @@ class IntersectionDecoder(nn.Module):
         )
 
     def forward(self, face_latents: Tensor, face_counts: Tensor) -> RefinementOutput:
-        if face_latents.ndim != 2 or face_latents.shape[1] != self.face_dim:
-            raise ValueError(f"Expected packed face_latents [F,{self.face_dim}].")
-        if not bool(torch.isfinite(face_latents).all()):
-            raise ValueError("face_latents must be finite.")
+        # Packed [sum_faces, face_dim] latents; candidate pairs stay within objects.
         face_counts = face_counts.to(device=face_latents.device)
         pairs = enumerate_candidate_pairs(face_counts)
-        if int(face_counts.sum()) != face_latents.shape[0]:
-            raise ValueError("Sum of face_counts must equal the packed latent count.")
 
         # The original Transformer runs once. No geometry/GT enters this stage.
         faces = self.face_features(face_latents, face_counts)

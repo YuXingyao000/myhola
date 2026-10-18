@@ -125,10 +125,10 @@ def test_migration_replaces_only_face_cnn_and_retains_every_other_tensor(tmp_pat
 
 
 @pytest.mark.parametrize("corruption", [
-    "missing_cnn", "cnn_shape", "cnn_nontensor", "missing_encoder",
+    "missing_cnn", "missing_encoder",
     "missing_posterior", "missing_decoder", "missing_conditioning", "retained_shape",
     "extra", "duplicate_prefix", "point_feedback", "edge_value", "local_inter",
-    "already_uv", "non_mapping", "state_non_mapping", "non_string_key",
+    "already_uv",
 ])
 def test_migration_rejects_incomplete_wrong_or_previously_modified_sources(tmp_path, corruption):
     path = tmp_path / "source.ckpt"
@@ -137,10 +137,6 @@ def test_migration_rejects_incomplete_wrong_or_previously_modified_sources(tmp_p
     state = checkpoint["state_dict"]
     if corruption == "missing_cnn":
         state.pop("model.encoder.face_coords.0.weight")
-    elif corruption == "cnn_shape":
-        state["model.encoder.face_coords.0.weight"] = torch.zeros(1)
-    elif corruption == "cnn_nontensor":
-        state["model.encoder.face_coords.0.weight"] = "not a tensor"
     elif corruption.startswith("missing_"):
         prefix = {
             "missing_encoder": "model.encoder.edge_coords.",
@@ -155,12 +151,6 @@ def test_migration_rejects_incomplete_wrong_or_previously_modified_sources(tmp_p
         state["decoder.classifier.bias"] = state["model.decoder.classifier.bias"]
     elif corruption == "already_uv":
         checkpoint["state_dict"] = AutoEncoder_intersection(uv_config()).state_dict()
-    elif corruption == "non_mapping":
-        checkpoint = [state]
-    elif corruption == "state_non_mapping":
-        checkpoint["state_dict"] = list(state)
-    elif corruption == "non_string_key":
-        state[7] = torch.zeros(1)
     else:
         extra = {
             "extra": "model.unknown.weight",
@@ -170,7 +160,7 @@ def test_migration_rejects_incomplete_wrong_or_previously_modified_sources(tmp_p
         }[corruption]
         state[extra] = torch.zeros(1)
     torch.save(checkpoint, path)
-    with pytest.raises(ValueError, match="Face encoder|Ambiguous"):
+    with pytest.raises((ValueError, RuntimeError), match="Face encoder|Ambiguous|size mismatch"):
         AutoEncoder_intersection(uv_config(init_face_encoder_checkpoint=str(path)))
 
 
@@ -238,29 +228,16 @@ def test_full_checkpoint_and_adam_resume_preserve_trained_uv_and_inference(tmp_p
 
 
 @pytest.mark.parametrize("changes,match", [
-    ({"freeze_encoder": True, "init_face_encoder_checkpoint": "unused.ckpt"}, "freeze_encoder=false"),
     ({"checkpoint": "full.ckpt", "init_face_encoder_checkpoint": "unused.ckpt"}, "only one"),
     ({"restoring_checkpoint": True, "init_face_encoder_checkpoint": "unused.ckpt"}, "Resume"),
-    ({"intersection": {"kind": "local_attention"}}, "conditioned legacy refinement"),
-    ({"refinement": {"enabled": False}}, "conditioned legacy refinement"),
-    ({"curve_conditioning": {"enabled": False}}, "conditioned legacy refinement"),
-    ({"curve_point_feedback": {"enabled": True}}, "without point feedback"),
-    ({"encoder_edge_value": {"enabled": True}}, "without point feedback"),
-    ({"init_legacy_checkpoint": "unused.ckpt"}, "UV face encoder requires"),
-    ({"init_refinement_checkpoint": "unused.ckpt"}, "UV face encoder requires"),
-    ({"init_curve_feedback_checkpoint": "unused.ckpt"}, "UV face encoder requires"),
-    ({"init_encoder_edge_value_checkpoint": "unused.ckpt"}, "UV face encoder requires"),
     ({"face_encoder": {"kind": "unknown"}}, "Unknown face_encoder.kind"),
-    ({"face_encoder": {"kind": "uv_attention", "unknown": 1}}, "Unknown face_encoder options"),
 ])
-def test_uv_configuration_rejects_unagreed_combinations(changes, match):
+def test_uv_configuration_selects_unambiguous_model_and_weights(changes, match):
     with pytest.raises(ValueError, match=match):
         AutoEncoder_intersection(uv_config(**changes))
 
 
-def test_cnn_cannot_use_uv_migration_and_uv_frozen_inference_is_allowed(tmp_path):
-    with pytest.raises(ValueError, match="requires face_encoder.kind=uv_attention"):
-        AutoEncoder_intersection(curve_config(init_face_encoder_checkpoint="unused.ckpt"))
+def test_uv_frozen_inference_is_allowed(tmp_path):
     model = AutoEncoder_intersection(uv_config())
     path = tmp_path / "uv.pt"
     torch.save(model.state_dict(), path)

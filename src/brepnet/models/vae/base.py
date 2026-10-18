@@ -22,27 +22,22 @@ class BaseVAE(nn.Module, ABC):
     @abstractmethod
     def encode(self, *args: Any, **kwargs: Any) -> Any:
         """Convert the model's observed geometry/topology into features."""
-        raise NotImplementedError
 
     @abstractmethod
     def sample(self, *args: Any, **kwargs: Any) -> Any:
         """Reparameterize the posterior, or return its mean for evaluation."""
-        raise NotImplementedError
 
     @abstractmethod
     def decode(self, *args: Any, **kwargs: Any) -> Any:
         """Decode the representation required by this model variant."""
-        raise NotImplementedError
 
     @abstractmethod
     def forward(self, *args: Any, **kwargs: Any) -> Any:
         """Run the variant's encode → sample → decode and supervision flow."""
-        raise NotImplementedError
 
     @abstractmethod
     def decode_latents(self, *args: Any, **kwargs: Any) -> Any:
         """Decode latent inputs without ground-truth geometry/topology."""
-        raise NotImplementedError
 
     def inference(self, v_face_features):
         """Compatibility entry used by existing diffusion and evaluation code."""

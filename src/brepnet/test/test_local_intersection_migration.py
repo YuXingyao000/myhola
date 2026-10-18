@@ -111,13 +111,11 @@ def test_local_full_checkpoint_loads_strictly_and_is_not_a_migration_source(tmp_
         AutoEncoder_intersection(local_config(block_type=block_type, checkpoint=str(path)))
 
 
-def test_initialization_sources_are_exclusive_and_migration_is_local_only():
+def test_initialization_sources_are_exclusive():
     with pytest.raises(ValueError, match="only one"):
         AutoEncoder_intersection(local_config(checkpoint="full.ckpt", init_refinement_checkpoint="old.ckpt"))
     with pytest.raises(ValueError, match="Resume"):
         AutoEncoder_intersection(local_config(restoring_checkpoint=True, init_refinement_checkpoint="old.ckpt"))
-    with pytest.raises(ValueError, match="local_attention"):
-        AutoEncoder_intersection(tiny_config(init_refinement_checkpoint="old.ckpt"))
 
 
 def test_trainer_resume_clears_all_initialization_paths(tmp_path, monkeypatch):

@@ -30,7 +30,7 @@ models/
     └── profiling.py            旧计时工具的归属
 ```
 
-只看某一代模型的装配与训练过程，打开对应主文件即可。当前三个主文件约694、335、206行。新一代完整VAE可增加一个主文件并注册；复用的几何计算、网络组件或loss应放到各自目录，只有该类使用的校验则作为私有方法。
+只看某一代模型的装配与训练过程，打开对应主文件即可。新一代完整VAE可增加一个主文件并注册；复用的几何计算、网络组件或loss应放到各自目录，只有该类使用的计算则作为私有方法。
 
 ## 基类负责什么
 
@@ -46,13 +46,23 @@ models/
 
 ## 工具的边界
 
-模型主文件不再堆放全局loss和迁移函数。intersection输入校验成为类的私有静态方法；两类loss各自保留模块内部的私有helper，没有无实际复用价值的 `common.py` 或万能 `utils.py`。
+模型主文件不再堆放全局loss和迁移函数。两类loss各自保留模块内部的计算helper，没有无实际复用价值的 `common.py` 或万能 `utils.py`。
 
-checkpoint迁移由普通 `IntersectionCheckpointLoader`、`JointCheckpointLoader` 类承担，不注册为网络子模块。它们继续严格检查来源、缺失/额外key和shape；没有使用 `strict=False` 放宽加载。简单且仅由legacy使用的加载方法仍为该类的私有方法。
+checkpoint迁移由普通 `IntersectionCheckpointLoader`、`JointCheckpointLoader` 类承担，不注册为网络子模块。它们记录初始化来源和替换的参数集合；缺失/额外key、加载张量shape由 `load_state_dict(strict=True)` 处理，不再重复写Python类型和shape检查。简单且仅由legacy使用的加载方法仍为该类的私有方法。
 
 内部代码显式从定义模块导入。`models.vae` 和 `models.blocks` 的旧名称通过明确的兼容表解析，供现有trainer、diffusion、测试及旧pickle查找使用；不是第二套实现。包的 `__all__` 只公布基类、模型主类和工厂。
 
-## 验证与状态
+## 2026-10-18：研究代码可读性约定
+
+拆包之后按用户要求进一步删去模型内部重复的张量shape、dtype、device、有限值检查及历史实验组合限制。`forward` 直接读取既有pipeline的数据，显示编码、采样、解码、监督；空候选、实际mask、AMP精度转换和几何稳定计算保留。删除的validator及其旧private导出不再保留空壳。
+
+整体模型用 [UV boundary架构快照](../uv_boundary/ARCHITECTURE.md) 记录模块路径、配置、Git基准和ASCII张量图。它是独立设计文档，不是代码读取的协议文件；历史运行仍由各run的metadata追溯。
+
+下面是**第一次拆包**的验证，清理检查后的验证另记在 `validation/readability_*.json`，不覆盖原结果。
+
+本次清理后：相关测试222项通过，1项因缺少外部diffusion cache样本而跳过；8组模型的初始化、输出、loss及2,310组参数梯度与独立旧实现逐位一致。VAE包内手写 `raise` 从211处减至30处，剩余集中在架构选项、权重来源/迁移和匹配容量；没有张量shape/type/finite validator。见 [测试记录](validation/readability_tests.json)、[数值对照](validation/readability_equivalence.json)。本次不改变网络结构或训练目标。
+
+## 第一次拆包的验证与状态
 
 实现与本机验证完成：
 

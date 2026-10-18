@@ -92,7 +92,7 @@ def test_factories_keep_concrete_classes_and_checkpoint_names(name, anchors):
         "AutoEncoder", "AutoEncoder_light", "AutoEncoder_light_exp", "AutoEncoder_intersection",
         "AutoEncoder_joint", "HolisticEncoder", "FacePosterior", "DirectedTargets",
         "IntersectionLoss", "balanced_binary_cross_entropy", "boundary_costs",
-        "joint_boundary_loss", "match_boundaries", "validate_encoder_batch", "build_autoencoder",
+        "joint_boundary_loss", "match_boundaries", "build_autoencoder",
     )),
     ("src.brepnet.models.blocks", (
         "ResBlockXD", "UVFaceEncoder", "EdgeValueGATv2Conv", "AttnIntersection",

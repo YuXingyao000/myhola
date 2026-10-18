@@ -41,36 +41,12 @@ def boundary_costs(curves: Tensor, ownership_logits: Tensor, target: Mapping) ->
     return geometry, torch.minimum(direct_owner, swap_owner)
 
 
-def validate_boundary_target(target: Mapping, faces: int, capacity: int, resolution: int, name: str) -> None:
-    curves, pairs = target["curves"], target["face_pairs"]
-    if curves.ndim != 3 or curves.shape[1:] != (resolution, 3):
-        raise ValueError(f"{name}: boundary curves must have shape [K, {resolution}, 3]")
-    if pairs.shape != (len(curves), 2) or pairs.dtype != torch.long:
-        raise ValueError(f"{name}: face_pairs must be int64 [K, 2]")
-    if len(curves) > capacity:
-        raise ValueError(f"{name}: {len(curves)} target boundaries exceed query capacity {capacity}")
-    if not torch.isfinite(curves).all():
-        raise ValueError(f"{name}: nonfinite target boundary geometry")
-    if "is_closed" in target:
-        closed = target["is_closed"]
-        if closed.shape != (len(curves),) or closed.dtype != torch.bool:
-            raise ValueError(f"{name}: is_closed must be bool [K]")
-    if pairs.numel() and (pairs.min() < 0 or pairs.max() >= faces):
-        raise ValueError(f"{name}: boundary face indices outside [0, {faces})")
-    if pairs.numel() and (pairs[:, 0] == pairs[:, 1]).any():
-        raise ValueError(f"{name}: seam targets are unsupported by shared_boundary_v1")
-    if len(pairs) and len(torch.unique(pairs.sort(dim=-1).values, dim=0)) != len(pairs):
-        raise ValueError(f"{name}: multiple target boundaries for one face pair are unsupported")
-
-
 def _match_costs(
     geometry: Tensor, ownership: Tensor, curve_weight: float, ownership_weight: float
 ) -> tuple[Tensor, Tensor]:
     """Solve detached matching while retaining the original differentiable costs."""
     with torch.no_grad():
         cost = curve_weight * geometry + ownership_weight * ownership
-        if not torch.isfinite(cost).all():
-            raise ValueError("Nonfinite boundary matching cost")
         rows, columns = linear_sum_assignment(cost.detach().float().cpu().numpy())
     return (
         torch.as_tensor(rows, device=geometry.device, dtype=torch.long),
@@ -81,6 +57,7 @@ def _match_costs(
 def match_boundaries(
     curves: Tensor, ownership_logits: Tensor, target: Mapping, curve_weight: float, ownership_weight: float
 ) -> tuple[Tensor, Tensor]:
+    # Rectangular assignment would otherwise leave excess GT boundaries unused.
     if len(target["curves"]) > len(curves):
         raise ValueError("Target boundary count exceeds query capacity")
     with torch.no_grad():
@@ -113,13 +90,7 @@ def joint_boundary_loss(
     existence_threshold: float = 0.5,
     sample_names: Sequence[str] | None = None,
 ) -> dict[str, Tensor]:
-    batch = len(state["face_counts"])
-    if len(targets) != batch:
-        raise ValueError("boundary_targets must contain one dictionary per object")
-    if target_faces.shape != state["face_points"][state["face_valid"]].shape:
-        raise ValueError("Target faces must be flat [sum_faces, 16, 16, 3] in unchanged face order")
-    if not torch.isfinite(target_faces).all():
-        raise ValueError("Target face geometry contains nonfinite values")
+    # Packed GT faces [sum_faces,16,16,3]; one boundary target set per object.
     face_loss = F.l1_loss(state["face_points"][state["face_valid"]].float(), target_faces.float())
     zero = state["curves"].sum() * 0
     curve_losses, owner_losses, existence_losses, consistency_losses = [], [], [], []
@@ -128,8 +99,10 @@ def joint_boundary_loss(
         count = int(state["face_counts"][item])
         curves = state["curves"][item]
         ownership = state["ownership_logits"][item, :, :, :count]
-        name = str(sample_names[item]) if sample_names is not None else f"batch item {item}"
-        validate_boundary_target(target, count, len(curves), curves.shape[1], name)
+        # Keep every GT boundary in the assignment, even with a small decoder.
+        if len(target["curves"]) > len(curves):
+            name = str(sample_names[item]) if sample_names is not None else f"batch item {item}"
+            raise ValueError(f"{name}: {len(target['curves'])} target boundaries exceed query capacity {len(curves)}")
         geometry, owner = boundary_costs(curves, ownership, target)
         rows, columns = _match_costs(geometry, owner, **{
             "curve_weight": float(match_weights["curve"]),

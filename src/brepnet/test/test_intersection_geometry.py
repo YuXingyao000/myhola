@@ -205,14 +205,3 @@ def test_amp_geometry_is_float32_and_has_finite_gradients(device):
     (distances.sum() + line_closest.sum()).backward()
     assert points.grad.isfinite().all()
     assert surfaces.grad.isfinite().all()
-
-
-def test_invalid_geometry_contracts_are_explicit():
-    with pytest.raises(ValueError, match="U,V >= 2"):
-        closest_surface_points(torch.zeros(1, 2, 3), torch.zeros(1, 1, 2, 3))
-    with pytest.raises(ValueError, match="batch size"):
-        closest_surface_points(torch.zeros(2, 2, 3), plane_grid())
-    with pytest.raises(ValueError, match="positive integer"):
-        closest_surface_points(torch.zeros(1, 2, 3), plane_grid(), chunk_size=0)
-    with pytest.raises(ValueError, match="K >= 2"):
-        closest_polyline_points(torch.zeros(1, 2, 3), torch.zeros(1, 1, 3))

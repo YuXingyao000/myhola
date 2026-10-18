@@ -98,8 +98,6 @@ class CurvePointFeedback(nn.Module):
         feature_dim: int = 64, geometry_chunk_size: int = 32,
     ):
         super().__init__()
-        if min(face_dim, edge_dim, hidden_dim, feature_dim, geometry_chunk_size) <= 0:
-            raise ValueError("Curve feedback dimensions and chunk size must be positive.")
         self.geometry_chunk_size = geometry_chunk_size
         self.point_encoder = nn.Sequential(
             nn.Linear(17 + edge_dim + 2 * face_dim, hidden_dim), nn.SiLU(),
@@ -121,8 +119,6 @@ class CurvePointFeedback(nn.Module):
         # geometry/bbox supervision still updates the original decoder. This
         # is an exact degeneracy mask, never an epsilon clamp on small curves.
         scale = edge_geometry.center_scale[:, None, 3:].float()
-        if not bool(torch.isfinite(scale).all()):
-            raise ValueError("Curve feedback requires finite predicted bbox scales.")
         invertible = scale != 0
         denominator = torch.where(invertible, scale, torch.ones_like(scale))
         deltas = []

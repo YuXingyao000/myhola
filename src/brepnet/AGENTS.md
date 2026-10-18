@@ -14,7 +14,9 @@
 
 ## VAE：表示与解码
 
-2026-10-18起使用 `models/vae/` 包，具体结构见 [说明](../../checkpoints/vae_structure/README.md)。`BaseVAE`约定编码、采样、解码与forward接口，但允许各版本不同的参数和返回结构；主类在legacy/intersection/joint三个文件。组件在encoders/decoders、监督在losses、权重迁移在checkpoints、投影在geometry；模型内部校验优先私有方法。旧模块导入仍兼容，旧日期记录中的 `vae.py`／`blocks.py` 为历史位置，不据此继续往旧文件堆代码。
+2026-10-18起使用 `models/vae/` 包，具体结构见 [说明](../../checkpoints/vae_structure/README.md)。`BaseVAE`约定编码、采样、解码与forward接口，但允许各版本不同的参数和返回结构；主类在legacy/intersection/joint三个文件。组件在encoders/decoders、监督在losses、权重迁移在checkpoints、投影在geometry。旧模块导入仍兼容，旧日期记录中的 `vae.py`／`blocks.py` 为历史位置，不据此继续往旧文件堆代码。
+
+模型按根指南的“实验代码与架构记录”约定编写：不在各层重复 shape/type/device/finite 检查，不另建 validator 隐藏这些检查。`forward` 用简短形状注释展示真实计算；实际 mask、空候选、精度转换照常保留。实验整体的层级结构、张量职责、配置和实现 hash 放在主题 `ARCHITECTURE.md` 的 ASCII 图中，与代码执行解耦。当前 UV 实验见 [架构快照](../../checkpoints/uv_boundary/ARCHITECTURE.md)。
 
 `models/vae/legacy.py` 的 `AutoEncoder` / `AutoEncoder_light` 编码面 UV 采样点、半边采样点与 edge-face connectivity；图网络、注意力与全局聚合把几何／拓扑融合到每面 latent。常用 latent 维度是 `8 × 2 × 2 = 32`。这是包含全局信息的 holistic 表示，不能直接当作独立局部 surface code。
 

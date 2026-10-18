@@ -73,10 +73,6 @@ def test_all_ordered_pairs_reciprocal_and_object_partition():
     face_objects = torch.tensor([0, 1, 1, 1, 2, 2])
     assert (face_objects[pairs.indices[:, 0]] == pairs.object_ids).all()
     assert (face_objects[pairs.indices[:, 1]] == pairs.object_ids).all()
-    with pytest.raises(ValueError, match="integers"):
-        enumerate_candidate_pairs(torch.tensor([2.0]))
-    with pytest.raises(ValueError, match="at least one"):
-        enumerate_candidate_pairs(torch.tensor([0]))
 
 
 def test_zero_residual_preserves_legacy_geometry_and_directional_features():
@@ -202,16 +198,6 @@ def test_mixed_precision_keeps_geometric_operations_float32():
     assert output.refined.edge_geometry.points.dtype == torch.float32
     assert torch.isfinite(loss)
     assert all(torch.isfinite(param.grad).all() for param in model.parameters() if param.grad is not None)
-
-
-def test_bad_latent_contracts_rejected():
-    model = make_decoder()
-    with pytest.raises(ValueError, match="packed"):
-        model(torch.randn(2, 5), torch.tensor([2]))
-    with pytest.raises(ValueError, match="Sum"):
-        model(torch.randn(2, 4), torch.tensor([3]))
-    with pytest.raises(ValueError, match="finite"):
-        model(torch.full((2, 4), torch.nan), torch.tensor([2]))
 
 
 def make_conditioned_decoder(*, enabled=True, checkpoint_candidates=False, point_feedback=None):
@@ -560,13 +546,3 @@ def test_point_feedback_exact_zero_scale_preserves_geometry_without_clipping_oth
         assert value.grad is not None and torch.isfinite(value.grad).all()
     assert local.grad[0].abs().sum() > 0
     assert bbox.grad[0, 3].abs() > 0
-
-
-@pytest.mark.parametrize("scale", [float("nan"), float("inf"), -float("inf")])
-def test_point_feedback_rejects_nonfinite_coordinate_scale(scale):
-    block = CurvePointFeedback(4, 8, hidden_dim=16, feature_dim=8, geometry_chunk_size=2)
-    edge = point_feedback_geometry(torch.randn(2, 16, 3))
-    face = point_feedback_geometry(torch.randn(2, 3, 3, 3))
-    edge.center_scale[0, 3] = scale
-    with pytest.raises(ValueError, match="scale"):
-        block(edge, face, torch.randn(2, 8), torch.randn(2, 4), torch.tensor([[0, 1], [1, 0]]))

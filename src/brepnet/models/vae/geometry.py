@@ -6,15 +6,8 @@ import torch
 from torch import Tensor
 
 
-def _validate_geometry_pair(points: Tensor, geometry: Tensor) -> torch.dtype:
-    if points.ndim != 3 or points.shape[-1] != 3:
-        raise ValueError("points must have shape [B, L, 3].")
-    if points.shape[0] != geometry.shape[0]:
-        raise ValueError("points and geometry must have the same batch size.")
-    if points.device != geometry.device:
-        raise ValueError("points and geometry must be on the same device.")
-    if not points.is_floating_point() or not geometry.is_floating_point():
-        raise TypeError("Geometry coordinates must be floating point tensors.")
+def _geometry_dtype(points: Tensor, geometry: Tensor) -> torch.dtype:
+    """Keep double precision inputs; promote lower precision geometry to FP32."""
     return torch.float64 if torch.float64 in (points.dtype, geometry.dtype) else torch.float32
 
 
@@ -110,11 +103,7 @@ def closest_surface_points(
     Gradients propagate through the selected triangle to both inputs; discrete
     triangle changes are not differentiated. Zero distances have finite gradients.
     """
-    if surfaces.ndim != 4 or surfaces.shape[-1] != 3 or min(surfaces.shape[1:3]) < 2:
-        raise ValueError("surfaces must have shape [B, U, V, 3] with U,V >= 2.")
-    if not isinstance(chunk_size, int) or chunk_size <= 0:
-        raise ValueError("chunk_size must be a positive integer.")
-    dtype = _validate_geometry_pair(points, surfaces)
+    dtype = _geometry_dtype(points, surfaces)
     with torch.autocast(device_type=points.device.type, enabled=False):
         points = points.to(dtype=dtype)
         surfaces = surfaces.to(dtype=dtype)
@@ -154,9 +143,7 @@ def closest_polyline_points(points: Tensor, polylines: Tensor) -> tuple[Tensor, 
     automatically closed: a closed polyline must repeat its first endpoint.
     Precision and gradients follow ``closest_surface_points``.
     """
-    if polylines.ndim != 3 or polylines.shape[-1] != 3 or polylines.shape[1] < 2:
-        raise ValueError("polylines must have shape [B, K, 3] with K >= 2.")
-    dtype = _validate_geometry_pair(points, polylines)
+    dtype = _geometry_dtype(points, polylines)
     with torch.autocast(device_type=points.device.type, enabled=False):
         points = points.to(dtype=dtype)
         polylines = polylines.to(dtype=dtype)

@@ -1,6 +1,6 @@
 # UV 边界监督
 
-本轮保留已采用的 CNN encoder、8 层 512 维 legacy intersection、refinement、curve conditioning、classifier 和 XYZ 几何头。在最终 refined face/edge feature 后增加辅助 UVPathHead，使用原始 CAD 提取的边—面对应关系监督。设计与数据判定规则见 [PLAN.md](PLAN.md)。
+本轮保留已采用的 CNN encoder、8 层 512 维 legacy intersection、refinement、curve conditioning、classifier 和 XYZ 几何头。在最终 refined face/edge feature 后增加辅助 UVPathHead，使用原始 CAD 提取的边—面对应关系监督。设计与数据判定规则见 [PLAN.md](PLAN.md)，逐层结构、张量职责、配置和实现 hash 见 [ARCHITECTURE.md](ARCHITECTURE.md)（文档内 ASCII 图）。
 
 这不同于此前失败的 UV **面编码器**实验。新训练从 epoch 157 / step 57354 的 conditioned CNN checkpoint 初始化，冻结 encoder/posterior，创建新 optimizer/run。新 UV 头增加 **286,532 参数、34 个 state keys**，其余 736 个权重项严格保留；完整新 checkpoint 和 resume 仍严格匹配。
 
@@ -11,8 +11,8 @@
 | `src/brepnet/data/extract_edge_uv.py` | 从旧 NPZ 与对应 normalized STEP 构造 UV sidecar，前台进度、版本检查、可恢复运行 |
 | `src/brepnet/data/edge_uv.py` | 不依赖 OCC 的标签格式、摘要与对应关系检查 |
 | `src/brepnet/dataset.py` | 可选 `edge_uv_root`，连接行同步过滤与 batch 拼接；刚体旋转不改变 UV |
-| `src/brepnet/models/blocks.py` | 辅助 `UVPathHead` 与可选输出 |
-| `src/brepnet/models/vae.py` | UV 监督、固定对应几何监督、严格 checkpoint 初始化与可选 UV 导出 |
+| `src/brepnet/models/vae/decoders/primitives.py`、`state.py` | 辅助 `UVPathHead` 与可选输出 |
+| `src/brepnet/models/vae/` 中 `intersection.py`、`losses/intersection.py`、`checkpoints.py` | 总体模型、UV 与固定对应几何监督、checkpoint 初始化及导出 |
 | `src/brepnet/train.py` | resume 清空组件初始化路径，检查标签根目录配置 |
 | `configs/model/vae_intersection.yaml`、`configs/dataset/vae.yaml` | 默认关闭的新开关和标签路径 |
 | `configs/train_vae_uv_boundary.yaml` | 本次训练入口，仍使用统一 trainer |

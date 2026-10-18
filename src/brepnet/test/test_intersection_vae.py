@@ -131,7 +131,7 @@ def test_frozen_training_gradients_and_strict_new_checkpoint(tmp_path):
             assert a["pred_edge_face_connectivity"][:, 1:].max() < int(count)
 
 
-def test_decoder_input_has_no_gt_dependency_and_validates_batch():
+def test_decoder_input_has_no_gt_dependency():
     model = AutoEncoder_intersection(tiny_config()).eval()
     batch = encoder_batch()
     with torch.no_grad():
@@ -142,9 +142,6 @@ def test_decoder_input_has_no_gt_dependency_and_validates_batch():
         after = model.decode_latents(z[:2])
     for key in before:
         np.testing.assert_array_equal(before[key], after[key])
-    batch["attn_mask"].fill_(False)
-    with pytest.raises(ValueError, match="attn_mask"):
-        model.encode(batch)
     with pytest.raises(ValueError, match="random weights"):
         AutoEncoder_intersection(tiny_config(freeze_encoder=True))
 
