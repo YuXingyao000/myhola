@@ -1,0 +1,221 @@
+{
+  "purpose": "implementation_only_no_optimizer_steps",
+  "checkpoint": "/mnt/d/python/checkpoints/intersection_refinement/curve_conditioning/20261013T083729.740439Z/weights/epoch=0157-step=00057354-val_loss=0.038204.ckpt",
+  "initialization": {
+    "source": "/mnt/d/python/checkpoints/intersection_refinement/curve_conditioning/20261013T083729.740439Z/weights/epoch=0157-step=00057354-val_loss=0.038204.ckpt",
+    "source_epoch": 157,
+    "source_global_step": 57354,
+    "retained_state_keys": 736,
+    "initialized_uv_boundary_keys": [
+      "decoder.uv_boundary.context.0.bias",
+      "decoder.uv_boundary.context.0.weight",
+      "decoder.uv_boundary.layers.0.linear1.bias",
+      "decoder.uv_boundary.layers.0.linear1.weight",
+      "decoder.uv_boundary.layers.0.linear2.bias",
+      "decoder.uv_boundary.layers.0.linear2.weight",
+      "decoder.uv_boundary.layers.0.norm1.bias",
+      "decoder.uv_boundary.layers.0.norm1.weight",
+      "decoder.uv_boundary.layers.0.norm2.bias",
+      "decoder.uv_boundary.layers.0.norm2.weight",
+      "decoder.uv_boundary.layers.0.self_attn.in_proj_bias",
+      "decoder.uv_boundary.layers.0.self_attn.in_proj_weight",
+      "decoder.uv_boundary.layers.0.self_attn.out_proj.bias",
+      "decoder.uv_boundary.layers.0.self_attn.out_proj.weight",
+      "decoder.uv_boundary.layers.1.linear1.bias",
+      "decoder.uv_boundary.layers.1.linear1.weight",
+      "decoder.uv_boundary.layers.1.linear2.bias",
+      "decoder.uv_boundary.layers.1.linear2.weight",
+      "decoder.uv_boundary.layers.1.norm1.bias",
+      "decoder.uv_boundary.layers.1.norm1.weight",
+      "decoder.uv_boundary.layers.1.norm2.bias",
+      "decoder.uv_boundary.layers.1.norm2.weight",
+      "decoder.uv_boundary.layers.1.self_attn.in_proj_bias",
+      "decoder.uv_boundary.layers.1.self_attn.in_proj_weight",
+      "decoder.uv_boundary.layers.1.self_attn.out_proj.bias",
+      "decoder.uv_boundary.layers.1.self_attn.out_proj.weight",
+      "decoder.uv_boundary.output.0.bias",
+      "decoder.uv_boundary.output.0.weight",
+      "decoder.uv_boundary.output.1.bias",
+      "decoder.uv_boundary.output.1.weight",
+      "decoder.uv_boundary.position.0.bias",
+      "decoder.uv_boundary.position.0.weight",
+      "decoder.uv_boundary.position.2.bias",
+      "decoder.uv_boundary.position.2.weight"
+    ],
+    "initialized_uv_boundary_parameters": 286532
+  },
+  "dataset_root": "/mnt/d/data/deepcad_v7",
+  "sidecar_root": "/tmp/hola_uv_boundary_remote_smoke_20261018",
+  "validation_ids": [
+    "00000178",
+    "00000894",
+    "00003202",
+    "00003406",
+    "00003999",
+    "00005825",
+    "00006067",
+    "00006608"
+  ],
+  "loaded_samples": 8,
+  "label_summary": {
+    "input_total": 3495,
+    "invalid_points": 0,
+    "native_points": 17024,
+    "pending": 3487,
+    "points": 17152,
+    "projected_points": 128,
+    "recorded": 8,
+    "schema_version": 1,
+    "selected_this_invocation": 8,
+    "status_counts": {
+      "ok": 8
+    },
+    "updated_utc": "2026-10-18T06:44:14.892111+00:00",
+    "valid_points": 17152,
+    "valid_residual_max": 0.0005356810870580375,
+    "valid_residual_mean": 4.7154817470576946e-07
+  },
+  "torch": "2.8.0+cu128",
+  "gpu": "NVIDIA GeForce RTX 5090",
+  "checks": [
+    {
+      "precision": "float32",
+      "seconds": 1.5570258209481835,
+      "face_counts": [
+        7,
+        20
+      ],
+      "connection_rows": 124,
+      "losses": {
+        "total_loss": 0.044334776699543,
+        "uv": 0.5765924453735352,
+        "uv_anchor": 0.002572153229266405,
+        "weighted_uv": 0.005765924230217934,
+        "weighted_uv_anchor": 0.0002572153171058744,
+        "uv_valid_fraction": 1.0
+      },
+      "finite_gradient_tensors": 527,
+      "uv_gradient_l1": 6.93394258164335,
+      "refiner_gradient_l1": 16.227950339438394,
+      "peak_memory_bytes": 1500517888,
+      "encoder_posterior_frozen": true
+    },
+    {
+      "precision": "bf16-mixed",
+      "seconds": 1.3260327680036426,
+      "face_counts": [
+        7,
+        20
+      ],
+      "connection_rows": 124,
+      "losses": {
+        "total_loss": 0.046007972210645676,
+        "uv": 0.5757682919502258,
+        "uv_anchor": 0.0034773496445268393,
+        "weighted_uv": 0.005757682956755161,
+        "weighted_uv_anchor": 0.0003477349819149822,
+        "uv_valid_fraction": 1.0
+      },
+      "finite_gradient_tensors": 527,
+      "uv_gradient_l1": 6.902651691576466,
+      "refiner_gradient_l1": 13.547627448569983,
+      "peak_memory_bytes": 1667252736,
+      "encoder_posterior_frozen": true
+    }
+  ],
+  "inference_without_uv_targets": {
+    "shape": [
+      422,
+      2,
+      16,
+      2
+    ],
+    "exported_uv_shapes": [
+      [
+        20,
+        2,
+        16,
+        2
+      ],
+      [
+        104,
+        2,
+        16,
+        2
+      ]
+    ]
+  },
+  "verified_commit": "3d177c27d10f41b0c605cbea577a3a1be2eeee5a",
+  "remote_environment": {
+    "host": "172.31.224.142",
+    "port": 12222,
+    "workspace": "/mnt/d/python",
+    "branch": "codex/vae-uv-boundary",
+    "python_executable": "/mnt/d/anaconda3/envs/torch/bin/python",
+    "python": "3.10.22",
+    "torch": "2.8.0+cu128",
+    "cuda_build": "12.8",
+    "pythonocc": "7.8.1.1",
+    "tracked_clean": true,
+    "untracked_file_count": 32,
+    "gpu_compute_processes_after_smoke": ""
+  },
+  "source_label_manifest": {
+    "contract": {
+      "data_root": "/mnt/d/data/deepcad_v7",
+      "generator_sha256": "5c048e5b8b3e0c78270dcb90625ef2a07b81eb1aaf9c497873d5728ad46c18d6",
+      "generator_version": "edge_uv_v1",
+      "input_total": 3495,
+      "occ_version": "7.8.1.1",
+      "parameters": {
+        "match_tolerance": 1e-05,
+        "projection_tolerance": 0.001
+      },
+      "schema_sha256": "d912bd8e438bad80c1d245018e007b9a32ec61ccc14c5dc8454e560e6f933b75",
+      "schema_version": 1,
+      "splits": [
+        {
+          "count": 3495,
+          "path": "/mnt/d/python/checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt",
+          "sha256": "ae607bfe5499e919d1e68a5110c0c211daf1158aedbe57a4756eda99f6f3f0ed"
+        }
+      ],
+      "step_root": "/mnt/d/data/deepcad_v7"
+    },
+    "created_utc": "2026-10-18T06:43:46.846996+00:00",
+    "git_commit": "3d177c27d10f41b0c605cbea577a3a1be2eeee5a"
+  },
+  "deployment": {
+    "bundle_commit": "3d177c27d10f41b0c605cbea577a3a1be2eeee5a",
+    "untracked_files_preserved_by_sha256": 32,
+    "formal_generation_started": false,
+    "formal_training_started": false,
+    "optimizer_steps": 0
+  },
+  "remote_pytest": {
+    "passed": 58,
+    "warnings": 7,
+    "seconds": 8.87,
+    "files": [
+      "src/brepnet/test/test_edge_uv_data.py",
+      "src/brepnet/test/test_uv_boundary_dataset.py",
+      "src/brepnet/test/test_joint_boundary_dataset.py",
+      "src/brepnet/test/test_uv_boundary_model.py"
+    ],
+    "environment": {
+      "CUDA_VISIBLE_DEVICES": "",
+      "OMP_NUM_THREADS": "2",
+      "MKL_NUM_THREADS": "2"
+    }
+  },
+  "generation_resume": {
+    "generated_validation_objects": 8,
+    "resumed_validation_objects": 8,
+    "output_root": "/tmp/hola_uv_boundary_remote_smoke_20261018",
+    "source_failed": 0,
+    "return_codes": [
+      0,
+      0
+    ]
+  }
+}

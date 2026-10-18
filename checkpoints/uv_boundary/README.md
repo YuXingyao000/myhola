@@ -104,3 +104,4 @@ Ctrl+C 中断训练后先确认日志是否已保存 last.ckpt。续训使用同
 - validation 前8件构造和断点恢复通过：17,152个有效标签位置，17,024个来自 native pcurve、128个来自投影；最大回代残差约5.36e-4。[数据验证记录](validation/labels.json)。这8件不代表全量标签覆盖率。
 - 加载真实 adopted checkpoint，在7面和20面两个对象、124条GT连接上完成 FP32/BF16 前反向；loss及527个梯度张量有限，UV头和refiner梯度非零，encoder/posterior保持冻结。验证无GT UV输入的推理及导出。[GPU验证记录](validation/real_smoke.json)。无optimizer step，不代表训练收益。
 - 最后源文件错误处理修复只改变报错路径；用最终生成器重新构造8件，全部sidecar字段与GPU验证版本逐数组一致。
+- 2026-10-18，代码提交 `3d177c27` 已部署到142的 `/mnt/d/python`、`codex/vae-uv-boundary` 分支。在其 Python3.10.22 / PyTorch2.8.0+cu128 / PythonOCC7.8.1.1 / RTX5090 上，58项相关测试、相同8件生成与恢复、真实checkpoint的FP32/BF16前反向和无GT推理均通过。[远端验证记录](validation/remote_smoke.json)。原32个未跟踪文件逐个SHA核对保留；未启动正式生成或训练。
