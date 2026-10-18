@@ -576,6 +576,15 @@ class AutoEncoder_joint_dataset(AutoEncoder_dataset3):
         return result
 
 
+class Diffusion_geometry_dataset(AutoEncoder_dataset3):
+    """在线冻结 VAE 的几何输入；仅训练集扩展 epoch 长度。"""
+
+    def __init__(self, training_mode, config):
+        super().__init__(training_mode, config)
+        if training_mode != "training":
+            self.scale_factor = 1
+
+
 class Diffusion_dataset(torch.utils.data.Dataset):
     def __init__(self, training_mode, config):
         super(Diffusion_dataset, self).__init__()

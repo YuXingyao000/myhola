@@ -98,6 +98,9 @@ Depth Anything 选项仍只读取 ViT 特征，不产生深度预测或深度监
 
 ## 训练入口
 
+无条件入口为`configs/train_diffusion_uncond.yaml`：在线冻结原版AE、当前768维主干、linear DDPM，8卡×192、100万步。
+配置、真实batch/DDP检查与历史训练的差别见[无条件训练说明](uncond_training_20261018/README.md)；正式长训练待用户启动。
+
 当前先用灰模训练，入口为 `configs/train_diffusion_layerwise_svr.yaml`，实验名为 `diffusion_layerwise_svr`。
 默认 `trainer.max_steps=10000000`，按用户要求留出手动停止空间；这是包括已完成步数在内的总上限。此前命令的 100,000 steps 只是预算，未使用 loss early stopping。
 该入口已加入数据读取与 Lightning/DDP 吞吐优化；实测、暂存工具和本机命令见 [吞吐说明](throughput/README.md)。

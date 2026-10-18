@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "train_cads": 46627,
+  "validation_cads": 3505,
+  "batch_size": 192,
+  "latent_shape": [
+    192,
+    30,
+    32
+  ],
+  "loss": 1.145544409751892,
+  "gradient_norm_before_clip": 2.7867634296417236,
+  "step_seconds": 0.5212932209833525,
+  "peak_allocated_gib": 5.283745765686035,
+  "ae_tensors_equal": 704,
+  "ae_frozen_and_eval": true,
+  "all_trainable_gradients_finite": true,
+  "full_unconditional_sampling_finite": true,
+  "torch": "2.4.1+cu124",
+  "gpu": "NVIDIA GeForce RTX 4090"
+}
