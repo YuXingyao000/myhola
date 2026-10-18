@@ -1009,8 +1009,11 @@ def _map_directed_targets(output: RefinementOutput, batch: Mapping) -> DirectedT
 class IntersectionLoss(nn.Module):
     """Explicit raw losses, weighted training terms, and detached diagnostics."""
 
-    def __init__(self, cfg: dict):
+    def __init__(self, cfg: dict, uv_boundary_enabled: bool = False):
         super().__init__()
+        self.uv_boundary_enabled = uv_boundary_enabled
+        self.uv_weight = float(cfg.get("uv_weight", 0.01))
+        self.uv_anchor_weight = float(cfg.get("uv_anchor_weight", 0.1))
         self.coarse_weight          = float(cfg.get("coarse_weight", 0.25))
         self.classification_weight  = float(cfg.get("classification_weight", 0.1))
         self.feature_weight         = float(cfg.get("feature_weight", 1.0))
@@ -1023,6 +1026,7 @@ class IntersectionLoss(nn.Module):
         for name in (
             "coarse_weight", "classification_weight", "feature_weight", "encoder_edge_weight",
             "xyz_weight", "incidence_weight", "twin_weight", "geometry_tolerance",
+            "uv_weight", "uv_anchor_weight",
         ):
             value = getattr(self, name)
             if not math.isfinite(value) or value < 0:
@@ -1121,6 +1125,66 @@ class IntersectionLoss(nn.Module):
         # Every directed GT row participates, hence both correspondence directions.
         return F.relu(residuals - baseline.detach() - self.geometry_tolerance).mean()
 
+    def _uv_boundary(
+        self, output: RefinementOutput, batch: Mapping, targets: DirectedTargets,
+    ) -> dict[str, Tensor]:
+        """Anchor geometry at fixed GT UV; predicted UV cannot slide the anchor.
+
+        Sidecars follow connectivity ROW order, while edge_points use edge IDs.
+        Bilinear interpolation reads [v,u] grids with normalized (u,v) inputs.
+        The GT residual removes the exact same grid interpolation discrepancy.
+        """
+        labels = batch.get("edge_uv_targets")
+        if not isinstance(labels, Mapping) or any(
+            key not in labels for key in ("uv", "valid", "residual", "method")
+        ):
+            raise ValueError("Enabled UV boundary supervision requires edge_uv_targets")
+        rows = len(batch["edge_face_connectivity"])
+        shape = (rows, 2, 16)
+        uv, valid = labels["uv"], labels["valid"]
+        if uv.shape != (*shape, 2) or valid.shape != shape or valid.dtype != torch.bool:
+            raise ValueError("UV targets must be connectivity-row [R,2,16,2] with boolean [R,2,16] valid")
+        if labels["residual"].shape != shape or labels["method"].shape != shape:
+            raise ValueError("UV residual and method must have shape [R,2,16]")
+        if labels["method"].dtype not in (torch.uint8, torch.int8, torch.int16, torch.int32, torch.int64):
+            raise ValueError("UV method must be an integer tensor")
+        if not torch.isfinite(uv[valid]).all() or not torch.isfinite(labels["residual"][valid]).all():
+            raise ValueError("Valid UV supervision must be finite")
+        if (labels["residual"][valid] < 0).any() or ((labels["method"][valid] < 1) | (labels["method"][valid] > 2)).any():
+            raise ValueError("Valid UV supervision requires nonnegative residual and method 1 or 2")
+        if output.edge_uv is None:
+            raise ValueError("Enabled UV supervision requires the auxiliary edge_uv prediction")
+        _require_shape(output.edge_uv, (len(output.pairs.indices), 2, 16, 2), "edge_uv")
+        prediction = output.edge_uv[targets.candidate_rows].float()
+        geometry = output.refined
+        curves = geometry.edge_geometry.points[targets.candidate_rows].float()
+        surfaces = geometry.face_geometry.points.float()
+        coverage = valid.float().mean() if valid.numel() else prediction.detach().sum() * 0
+        if not valid.any():
+            zero = prediction.sum() * 0 + curves.sum() * 0 + surfaces.sum() * 0
+            return {"uv": zero, "uv_anchor": zero, "uv_valid_fraction": coverage.detach()}
+        # Invalid positions are sanitized before grid_sample, then excluded.
+        coordinates = torch.where(valid[..., None], uv.float(), 0.0).detach()
+        owners = output.pairs.indices[targets.candidate_rows]
+
+        def sample(grid: Tensor) -> Tensor:
+            values = grid[owners].reshape(rows * 2, *grid.shape[1:]).permute(0, 3, 1, 2)
+            locations = (coordinates * 2 - 1).reshape(rows * 2, 1, 16, 2)
+            sampled = F.grid_sample(values, locations, mode="bilinear", padding_mode="border", align_corners=True)
+            return sampled.squeeze(2).transpose(1, 2).reshape(rows, 2, 16, 3)
+
+        with torch.autocast(device_type=curves.device.type, enabled=False):
+            predicted_surface = sample(surfaces)
+            with torch.no_grad():
+                gt_curves = batch["edge_points"][targets.edge_ids, :, :3].float()
+                residual = gt_curves[:, None] - sample(batch["face_points"][..., :3].float())
+            discrepancy = curves[:, None] - predicted_surface - residual
+            return {
+                "uv": (prediction - coordinates).abs()[valid].mean(),
+                "uv_anchor": discrepancy.abs()[valid].mean(),
+                "uv_valid_fraction": coverage.detach(),
+            }
+
     @staticmethod
     def _diagnostics(output: RefinementOutput, targets: DirectedTargets) -> dict[str, Tensor]:
         result = {}
@@ -1184,6 +1248,9 @@ class IntersectionLoss(nn.Module):
             "twin": self.twin_weight,
             "kl_loss": 0.0 if encoder_frozen else 1.0,
         }
+        if self.uv_boundary_enabled:
+            losses.update(self._uv_boundary(output, batch, targets))
+            weights.update({"uv": self.uv_weight, "uv_anchor": self.uv_anchor_weight})
         weighted.update({f"weighted_{name}": weight * losses[name] for name, weight in weights.items()})
         losses.update(weighted)
         losses["total_loss"] = torch.stack(tuple(weighted.values())).sum()
@@ -1246,6 +1313,9 @@ class AutoEncoder_intersection(nn.Module):
         curve_feedback_path = cfg.get("init_curve_feedback_checkpoint")
         edge_value_path = cfg.get("init_encoder_edge_value_checkpoint")
         face_encoder_path = cfg.get("init_face_encoder_checkpoint")
+        uv_boundary_path = cfg.get("init_uv_boundary_checkpoint")
+        uv_boundary_cfg = dict(cfg.get("uv_boundary") or {})
+        uv_boundary_enabled = bool(uv_boundary_cfg.get("enabled", False))
         face_encoder_cfg = dict(cfg.get("face_encoder") or {})
         face_encoder_kind = face_encoder_cfg.pop("kind", "cnn")
         if face_encoder_kind not in {"cnn", "uv_attention"}:
@@ -1260,12 +1330,13 @@ class AutoEncoder_intersection(nn.Module):
         edge_value_cfg = cfg.get("encoder_edge_value") or {}
         edge_value_enabled = bool(edge_value_cfg.get("enabled", False))
         restoring = bool(cfg.get("restoring_checkpoint", False))
-        sources = (legacy_path, refinement_path, curve_feedback_path, edge_value_path, face_encoder_path, full_path)
+        sources = (legacy_path, refinement_path, curve_feedback_path, edge_value_path,
+                   face_encoder_path, uv_boundary_path, full_path)
         if sum(bool(path) for path in sources) > 1:
             raise ValueError(
                 "Choose only one of init_legacy_checkpoint, init_refinement_checkpoint, "
                 "init_curve_feedback_checkpoint, init_encoder_edge_value_checkpoint, "
-                "init_face_encoder_checkpoint or checkpoint"
+                "init_face_encoder_checkpoint, init_uv_boundary_checkpoint or checkpoint"
             )
         if restoring and any(sources):
             raise ValueError("Resume must restore the new checkpoint without a second initialization")
@@ -1273,7 +1344,8 @@ class AutoEncoder_intersection(nn.Module):
             raise ValueError(
                 "Refusing to freeze random weights: provide init_legacy_checkpoint, "
                 "init_refinement_checkpoint, init_curve_feedback_checkpoint, "
-                "init_encoder_edge_value_checkpoint, init_face_encoder_checkpoint or checkpoint"
+                "init_encoder_edge_value_checkpoint, init_face_encoder_checkpoint, "
+                "init_uv_boundary_checkpoint or checkpoint"
             )
         intersection_cfg = cfg.get("intersection")
         curve_conditioning_cfg = cfg.get("curve_conditioning")
@@ -1281,6 +1353,17 @@ class AutoEncoder_intersection(nn.Module):
         conditioning_enabled = bool((curve_conditioning_cfg or {}).get("enabled", False))
         curve_feedback_enabled = bool((curve_point_feedback_cfg or {}).get("enabled", False))
         intersection_kind = (intersection_cfg or {}).get("kind", "legacy")
+        if uv_boundary_path and not uv_boundary_enabled:
+            raise ValueError("init_uv_boundary_checkpoint requires uv_boundary.enabled")
+        if uv_boundary_enabled and any((legacy_path, refinement_path, curve_feedback_path,
+                                        edge_value_path, face_encoder_path)):
+            raise ValueError("UV boundary requires init_uv_boundary_checkpoint, checkpoint or resume")
+        if uv_boundary_enabled and (
+            uv_encoder_enabled or edge_value_enabled or curve_feedback_enabled
+            or intersection_kind != "legacy" or not cfg["refinement"]["enabled"]
+            or not conditioning_enabled
+        ):
+            raise ValueError("UV boundary retains conditioned CNN legacy refinement without other experiment branches")
         # Added 2026-10-17: replace only the local face encoder. Keep the accepted
         # conditioned legacy-inter/refinement decoder and all original losses.
         if face_encoder_path and not uv_encoder_enabled:
@@ -1355,8 +1438,9 @@ class AutoEncoder_intersection(nn.Module):
             legacy, cfg["refinement"], intersection_cfg,
             curve_conditioning_cfg=curve_conditioning_cfg,
             curve_point_feedback_cfg=curve_point_feedback_cfg,
+            uv_boundary_cfg=uv_boundary_cfg,
         )
-        self.criterion = IntersectionLoss(cfg["loss_weights"])
+        self.criterion = IntersectionLoss(cfg["loss_weights"], uv_boundary_enabled=uv_boundary_enabled)
         self.initialization_report: dict = {}
         if refinement_path:
             if conditioning_enabled:
@@ -1369,6 +1453,8 @@ class AutoEncoder_intersection(nn.Module):
             self._init_encoder_edge_value(edge_value_path)
         if face_encoder_path:
             self._init_face_encoder(face_encoder_path, legacy_face_state)
+        if uv_boundary_path:
+            self._init_uv_boundary(uv_boundary_path)
         if full_path:
             checkpoint = torch.load(str(full_path), map_location="cpu", weights_only=False)
             state = checkpoint.get("state_dict", checkpoint)
@@ -1380,6 +1466,46 @@ class AutoEncoder_intersection(nn.Module):
         if self.runtime_mode == "frozen_inference":
             self.requires_grad_(False)
         self.train(self.runtime_mode == "train")
+
+    def _init_uv_boundary(self, path: str) -> None:
+        """Add only an auxiliary UV head to the complete adopted conditioned VAE."""
+        checkpoint = torch.load(str(path), map_location="cpu", weights_only=False)
+        if not isinstance(checkpoint, Mapping):
+            raise ValueError("UV boundary source must contain a state_dict mapping")
+        raw_state = checkpoint.get("state_dict", checkpoint)
+        if not isinstance(raw_state, Mapping):
+            raise ValueError("UV boundary source state_dict must be a mapping")
+        source = {}
+        for key, value in raw_state.items():
+            if not isinstance(key, str):
+                raise ValueError("UV boundary source state keys must be strings")
+            normalized = key.removeprefix("model.")
+            if normalized in source:
+                raise ValueError(f"Ambiguous checkpoint key after removing model prefix: {normalized}")
+            source[normalized] = value
+        prefix = "decoder.uv_boundary."
+        current = self.state_dict()
+        fresh = {key: value for key, value in current.items() if key.startswith(prefix)}
+        if not fresh:
+            raise ValueError("UV boundary migration requires enabled UV head parameters")
+        expected = set(current) - set(fresh)
+        missing = sorted(expected - source.keys())
+        unexpected = sorted(source.keys() - expected)
+        mismatched = sorted(key for key in expected & source.keys()
+                            if not isinstance(source[key], Tensor) or source[key].shape != current[key].shape)
+        if missing or unexpected or mismatched:
+            raise ValueError(
+                "UV boundary migration requires the complete conditioned CNN refinement model; "
+                f"missing={missing}, unexpected={unexpected}, shape_mismatch={mismatched}"
+            )
+        self.load_state_dict({**source, **fresh}, strict=True)
+        self.initialization_report = {
+            "source": str(path), "source_epoch": checkpoint.get("epoch"),
+            "source_global_step": checkpoint.get("global_step"),
+            "retained_state_keys": len(source), "initialized_uv_boundary_keys": sorted(fresh),
+            "initialized_uv_boundary_parameters": sum(value.numel() for value in fresh.values()),
+        }
+        logger.info("UV boundary initialization: %s", self.initialization_report)
 
     def _init_face_encoder(self, path: str, legacy_face_state: Mapping[str, Tensor]) -> None:
         """Replace exactly the CNN; strictly retain the complete conditioned VAE.
@@ -1697,6 +1823,8 @@ class AutoEncoder_intersection(nn.Module):
                 "all_candidate_prob": probability,
                 "coarse_candidate_prob": prediction.coarse.edge_logits[object_mask].float().sigmoid(),
             }
+            if prediction.edge_uv is not None:
+                arrays["pred_edge_uv"] = prediction.edge_uv[object_mask][active].float()
             item = {key: value.detach().cpu().numpy() for key, value in arrays.items()}
             item["representation"] = np.asarray("legacy_half_edges")
             items.append(item)
@@ -1709,7 +1837,8 @@ class AutoEncoder_intersection(nn.Module):
         connectivity = batch["edge_face_connectivity"]
         for item, count_tensor in zip(items, batch["face_counts"]):
             count = int(count_tensor)
-            rows = connectivity[(connectivity[:, 1] >= offset) & (connectivity[:, 1] < offset + count)]
+            row_mask = (connectivity[:, 1] >= offset) & (connectivity[:, 1] < offset + count)
+            rows = connectivity[row_mask]
             edge_ids = rows[:, 0]
             local_pairs = rows[:, 1:] - offset
             local_ids = torch.arange(len(rows), device=rows.device)[:, None]
@@ -1722,6 +1851,9 @@ class AutoEncoder_intersection(nn.Module):
                 "gt_edge_face_connectivity": torch.cat((local_ids, local_pairs), dim=-1),
                 "gt_face_adj": adjacency,
             }
+            if prediction.edge_uv is not None and "edge_uv_targets" in batch:
+                arrays["gt_edge_uv"] = batch["edge_uv_targets"]["uv"][row_mask].float()
+                arrays["gt_edge_uv_valid"] = batch["edge_uv_targets"]["valid"][row_mask]
             item.update({key: value.detach().cpu().numpy() for key, value in arrays.items()})
             offset += count
         return {"items": items}

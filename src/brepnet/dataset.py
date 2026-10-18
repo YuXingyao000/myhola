@@ -27,6 +27,7 @@ from PIL import Image
 
 from src.brepnet.data.rotations import NUM_CUBE24_VIEWS, cube24_rotation_matrix
 from src.brepnet.data.shared_boundaries import build_shared_boundary_targets, validate_legacy_geometry
+from src.brepnet.data.edge_uv import load_edge_uv_sidecar
 from src.brepnet.diffusion.image_loading import load_image_view
 
 
@@ -294,6 +295,9 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
 
         self.data_folders = [item.strip() for item in Path(listfile).read_text().splitlines() if item.strip()]
         self.root = Path(_vae_config_field(v_conf, "raw_data_root", "data_root"))
+        # Optional UV supervision is keyed by the original CAD ID, before rotation.
+        edge_uv_root = v_conf.get("edge_uv_root")
+        self.edge_uv_root = Path(edge_uv_root) if edge_uv_root is not None else None
 
         # Cond related
         self.is_aug = v_conf["is_aug"]
@@ -315,6 +319,12 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
             elif self.strict_sample_loading:
                 raise FileNotFoundError(f"VAE sample {item!r}: missing {self.root / item / 'data.npz'}")
         self.data_folders = data_folders
+
+        if self.edge_uv_root is not None:
+            for item in self.data_folders:
+                sidecar = self.edge_uv_root / item / "edge_uv.npz"
+                if not sidecar.is_file():
+                    raise FileNotFoundError(f"VAE sample {item!r}: missing UV sidecar {sidecar}")
 
         # Check cond data
         if len(self.condition) > 0:
@@ -363,6 +373,25 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
         folder_path = self.data_folders[idx % len(self.data_folders)]
         output_prefix = folder_path
         data_npz = self._load_sample_arrays(folder_path)
+        uv_targets = None
+        if self.edge_uv_root is not None:
+            uv_data = load_edge_uv_sidecar(
+                self.edge_uv_root / folder_path / "edge_uv.npz",
+                source_path=self.root / folder_path / "data.npz",
+                connectivity=data_npz["edge_face_connectivity"],
+                num_faces=len(data_npz["sample_points_faces"]),
+            )
+            # Connection rows and sample_points_lines indices are different axes.
+            # Apply exactly the same row filter as the geometry loader below.
+            connections = data_npz["edge_face_connectivity"]
+            keep = connections[:, 1] != connections[:, 2]
+            uv_targets = {
+                key: torch.from_numpy(uv_data[field][keep].copy())
+                for key, field in (
+                    ("uv", "edge_uv"), ("valid", "edge_uv_valid"),
+                    ("residual", "edge_uv_residual"), ("method", "edge_uv_method"),
+                )
+            }
         face_points = torch.from_numpy(data_npz['sample_points_faces'])
         edge_points = torch.from_numpy(data_npz['sample_points_lines'])
 
@@ -430,7 +459,7 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
         condition = prepare_condition(self.condition, self.conditional_data_root, folder_path, condition_rotation_id,
                                       self.cached_condition, self.transform, self.conf["num_points"])
 
-        return (
+        item = (
             output_prefix,
             face_points, edge_points,
             face_norm, edge_norm,
@@ -438,9 +467,18 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
             edge_face_connectivity, zero_positions, face_adj,
             condition
         )
+        # Rigid XYZ augmentation preserves the source surface parameter chart.
+        return item if uv_targets is None else item + (uv_targets,)
 
     @staticmethod
     def collate_fn(batch):
+        if not batch or any(len(item) not in (11, 12) for item in batch):
+            raise ValueError("VAE batch requires eleven legacy fields and optional UV targets")
+        has_uv = [len(item) == 12 for item in batch]
+        if any(has_uv) and not all(has_uv):
+            raise ValueError("Cannot mix VAE samples with and without UV supervision")
+        uv_targets = [item[11] for item in batch] if all(has_uv) else None
+        batch = [item[:11] for item in batch]
         (
             prefix,
             face_points, edge_points,
@@ -496,7 +534,7 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
             condition_out[key] = torch.stack(condition_out[key], dim=0) if isinstance(condition_out[key][0], torch.Tensor) else \
                 condition_out[key]
 
-        return {
+        result = {
             "v_prefix"              : prefix,
             "face_points"           : torch.cat(face_points, dim=0).to(dtype),
             "face_norm"             : torch.cat(face_norm, dim=0).to(dtype),
@@ -514,6 +552,12 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
             "valid_mask"            : valid_mask,
             "conditions"            : condition_out
         }
+        if uv_targets is not None:
+            result["edge_uv_targets"] = {
+                key: torch.cat([item[key] for item in uv_targets], dim=0)
+                for key in ("uv", "valid", "residual", "method")
+            }
+        return result
 
 
 class AutoEncoder_joint_dataset(AutoEncoder_dataset3):

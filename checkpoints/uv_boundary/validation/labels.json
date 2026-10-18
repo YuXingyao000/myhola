@@ -1,0 +1,224 @@
+{
+  "purpose": "implementation_only_validation_first_8_no_test",
+  "dataset": {
+    "contract": {
+      "data_root": "/mnt/d/data/deepcad_v7",
+      "generator_sha256": "5c048e5b8b3e0c78270dcb90625ef2a07b81eb1aaf9c497873d5728ad46c18d6",
+      "generator_version": "edge_uv_v1",
+      "input_total": 3495,
+      "occ_version": "7.8.1.1",
+      "parameters": {
+        "match_tolerance": 1e-05,
+        "projection_tolerance": 0.001
+      },
+      "schema_sha256": "d912bd8e438bad80c1d245018e007b9a32ec61ccc14c5dc8454e560e6f933b75",
+      "schema_version": 1,
+      "splits": [
+        {
+          "count": 3495,
+          "path": "/mnt/d/python_curve_eval/checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt",
+          "sha256": "ae607bfe5499e919d1e68a5110c0c211daf1158aedbe57a4756eda99f6f3f0ed"
+        }
+      ],
+      "step_root": "/mnt/d/data/deepcad_v7"
+    },
+    "created_utc": "2026-10-18T06:41:15.336005+00:00",
+    "git_commit": "e0f30faa7782c53f3ef182762366e32b2d7a292c"
+  },
+  "summary": {
+    "input_total": 3495,
+    "invalid_points": 0,
+    "native_points": 17024,
+    "pending": 3487,
+    "points": 17152,
+    "projected_points": 128,
+    "recorded": 8,
+    "schema_version": 1,
+    "selected_this_invocation": 8,
+    "status_counts": {
+      "ok": 8
+    },
+    "updated_utc": "2026-10-18T06:41:37.943740+00:00",
+    "valid_points": 17152,
+    "valid_residual_max": 0.0005356810870580375,
+    "valid_residual_mean": 4.7154817470576946e-07
+  },
+  "records": [
+    {
+      "action": "resumed",
+      "elapsed_seconds": 0.005773355020210147,
+      "face_match_error_max": 4.0166906002675474e-08,
+      "generation_seconds": 0.6516583579941653,
+      "invalid_points": 0,
+      "model_id": "00000178",
+      "native_points": 640,
+      "points": 640,
+      "projected_points": 0,
+      "reason": "native_pcurve",
+      "source_sha256": "bf80778df9d502af77d219a8399c37dcfd2fbe93510cf2d5bcaa43bdb6bd3500",
+      "source_splits": [
+        "/mnt/d/python_curve_eval/checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt"
+      ],
+      "status": "ok",
+      "step_sha256": "786b12d197c867bf679a5ec6325e8e7aa89d48af7d75e8be4bb639a39d2e0e04",
+      "valid_points": 640,
+      "valid_residual_max": 3.031547279874758e-08,
+      "valid_residual_sum": 4.239084047341635e-06
+    },
+    {
+      "action": "resumed",
+      "elapsed_seconds": 0.006197597016580403,
+      "face_match_error_max": 3.950893806379281e-08,
+      "generation_seconds": 0.08950131299206987,
+      "invalid_points": 0,
+      "model_id": "00000894",
+      "native_points": 3264,
+      "points": 3328,
+      "projected_points": 64,
+      "reason": "native_pcurve; projected_native_path_unavailable",
+      "source_sha256": "f4103ac226e902ba1af7a553593b4b1385dc213b8bafc62665bf4bf8e0cca57a",
+      "source_splits": [
+        "/mnt/d/python_curve_eval/checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt"
+      ],
+      "status": "ok",
+      "step_sha256": "fddc997807226d4df066ea0f197ff383054f4fdcfad83d03787757ac68c69501",
+      "valid_points": 3328,
+      "valid_residual_max": 0.0005356810870580375,
+      "valid_residual_sum": 0.005608717917709338
+    },
+    {
+      "action": "resumed",
+      "elapsed_seconds": 0.004032205033581704,
+      "face_match_error_max": 3.5367852538938744e-08,
+      "generation_seconds": 0.03042814804939553,
+      "invalid_points": 0,
+      "model_id": "00003202",
+      "native_points": 960,
+      "points": 1024,
+      "projected_points": 64,
+      "reason": "native_pcurve; projected_native_path_unavailable",
+      "source_sha256": "eb7f7671d89f9d58e6ab59c6734e98a63b8547d41fe4c01a2162ba3e8a3b1248",
+      "source_splits": [
+        "/mnt/d/python_curve_eval/checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt"
+      ],
+      "status": "ok",
+      "step_sha256": "35cc6c4c5a05a860b19cc3d1bf3601e3c870a9a689f8eb7bb6c2f71fd02f56c3",
+      "valid_points": 1024,
+      "valid_residual_max": 0.00017208549252245575,
+      "valid_residual_sum": 0.0021994390477386716
+    },
+    {
+      "action": "resumed",
+      "elapsed_seconds": 0.005165540962480009,
+      "face_match_error_max": 4.236244324974349e-08,
+      "generation_seconds": 0.08289458800572902,
+      "invalid_points": 0,
+      "model_id": "00003406",
+      "native_points": 3584,
+      "points": 3584,
+      "projected_points": 0,
+      "reason": "native_pcurve",
+      "source_sha256": "a26e2fe25ca3fb801f2862419f6b183ecf47a679253d2fe1cbbcc6b8f0fe66bb",
+      "source_splits": [
+        "/mnt/d/python_curve_eval/checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt"
+      ],
+      "status": "ok",
+      "step_sha256": "47693e1d1bcef59f55d8f4cda9b1cfe025122810670cd4f4145c2f65dd9c7e3a",
+      "valid_points": 3584,
+      "valid_residual_max": 4.03323134889888e-08,
+      "valid_residual_sum": 7.741210859002479e-05
+    },
+    {
+      "action": "resumed",
+      "elapsed_seconds": 0.0059944550157524645,
+      "face_match_error_max": 4.245509470396983e-08,
+      "generation_seconds": 0.11107666895259172,
+      "invalid_points": 0,
+      "model_id": "00003999",
+      "native_points": 4736,
+      "points": 4736,
+      "projected_points": 0,
+      "reason": "native_pcurve",
+      "source_sha256": "b7f07e369c5ee16b1d11d5ac1d496c066d3cc8aa79ef668046446c0bfeedbc7b",
+      "source_splits": [
+        "/mnt/d/python_curve_eval/checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt"
+      ],
+      "status": "ok",
+      "step_sha256": "8fb673d9145f60ad7ce16885b3341c634c915ac82345563983fa54abcc6e3a8c",
+      "valid_points": 4736,
+      "valid_residual_max": 4.203912951084021e-08,
+      "valid_residual_sum": 9.979328596676496e-05
+    },
+    {
+      "action": "resumed",
+      "elapsed_seconds": 0.004071497009135783,
+      "face_match_error_max": 4.849655920167975e-08,
+      "generation_seconds": 0.03538682998623699,
+      "invalid_points": 0,
+      "model_id": "00005825",
+      "native_points": 1536,
+      "points": 1536,
+      "projected_points": 0,
+      "reason": "native_pcurve",
+      "source_sha256": "8870eebbe7e66508f1222e9e4ee7a84ebbe4e6d49e852aeb88c9426e1c774411",
+      "source_splits": [
+        "/mnt/d/python_curve_eval/checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt"
+      ],
+      "status": "ok",
+      "step_sha256": "147bb6698995812ed5512db4bfb85fe3bc4eb0b5165f64afd869d922eeec7a1e",
+      "valid_points": 1536,
+      "valid_residual_max": 4.8496559656996396e-08,
+      "valid_residual_sum": 4.9648700382931565e-05
+    },
+    {
+      "action": "resumed",
+      "elapsed_seconds": 0.004118506039958447,
+      "face_match_error_max": 3.9431048579758635e-08,
+      "generation_seconds": 0.033770113019272685,
+      "invalid_points": 0,
+      "model_id": "00006067",
+      "native_points": 1280,
+      "points": 1280,
+      "projected_points": 0,
+      "reason": "native_pcurve",
+      "source_sha256": "0fa6e66eb2673754e349ad55da2f703017636566efcd6bad5d20830096ef5675",
+      "source_splits": [
+        "/mnt/d/python_curve_eval/checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt"
+      ],
+      "status": "ok",
+      "step_sha256": "96392fe6e871b7449702893c5599d24270b56097ffa99e6188c0799e4422662a",
+      "valid_points": 1280,
+      "valid_residual_max": 3.9078738467424046e-08,
+      "valid_residual_sum": 3.484265296194167e-05
+    },
+    {
+      "action": "resumed",
+      "elapsed_seconds": 0.003911583044100553,
+      "face_match_error_max": 3.100813550772765e-08,
+      "generation_seconds": 0.028249604045413435,
+      "invalid_points": 0,
+      "model_id": "00006608",
+      "native_points": 1024,
+      "points": 1024,
+      "projected_points": 0,
+      "reason": "native_pcurve",
+      "source_sha256": "f62dfffc831411b9f0258eaa6ec3f8ce6492fd91ae1d571f4eb031cd9407f02b",
+      "source_splits": [
+        "/mnt/d/python_curve_eval/checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt"
+      ],
+      "status": "ok",
+      "step_sha256": "499a36f4e6d0f000a783752d61d0eb40a4f3326bec170d7fe77f4c2a00e37761",
+      "valid_points": 1024,
+      "valid_residual_max": 2.5846146556318672e-08,
+      "valid_residual_sum": 1.3901495156343202e-05
+    }
+  ],
+  "resume_checked": true,
+  "same_label_arrays_as_gpu_smoke_root": "/tmp/hola_uv_boundary_validation_20261018_v3",
+  "final_source_error_handling_change_does_not_change_labels": true,
+  "validation_tests": {
+    "initial_related_suite": 127,
+    "after_source_error_fix_data_and_loader_suite": 31,
+    "distinct_cases": 130
+  }
+}

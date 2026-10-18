@@ -614,6 +614,8 @@ class RefinementOutput:
     refined: DecoderStage
     delta_face: Tensor
     delta_edge: Tensor
+    # Auxiliary parameter-space paths; disabled models retain no new state.
+    edge_uv: Tensor | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -1405,6 +1407,61 @@ class PrimitiveDecoder(nn.Module):
         return self._with_global_points(features, local_points, center_scale)
 
 
+class UVPathHead(nn.Module):
+    """Predict two owner UV paths without changing the retained XYZ decoder.
+
+    Each ordered pair has one sequence of 16 curve-parameter tokens. The four
+    outputs at each token are (u_i, v_i, u_j, v_j); they are not clamped because
+    supervision uses an explicitly selected CAD parameter-chart branch.
+    """
+
+    def __init__(
+        self, face_dim: int, edge_dim: int, hidden_dim: int = 128,
+        num_layers: int = 2, nhead: int = 4, dim_feedforward: int = 256,
+        dropout: float = 0.0, candidate_chunk_size: int = 256,
+    ):
+        super().__init__()
+        if min(face_dim, edge_dim, hidden_dim, num_layers, nhead, dim_feedforward, candidate_chunk_size) <= 0:
+            raise ValueError("UV path dimensions, layers and chunk size must be positive")
+        if hidden_dim % nhead or not 0 <= dropout < 1:
+            raise ValueError("UV hidden_dim must be divisible by nhead and dropout must be in [0,1)")
+        self.face_dim, self.edge_dim = face_dim, edge_dim
+        self.chunk_size = candidate_chunk_size
+        self.context = nn.Sequential(nn.Linear(edge_dim + 2 * face_dim, hidden_dim), nn.SiLU())
+        self.position = nn.Sequential(nn.Linear(1, 32), nn.SiLU(), nn.Linear(32, hidden_dim))
+        # Construct layers independently, rather than copying identical initial weights.
+        self.layers = nn.ModuleList([
+            nn.TransformerEncoderLayer(
+                hidden_dim, nhead, dim_feedforward=dim_feedforward, dropout=dropout,
+                activation="gelu", batch_first=True, norm_first=True,
+            ) for _ in range(num_layers)
+        ])
+        self.output = nn.Sequential(nn.LayerNorm(hidden_dim), nn.Linear(hidden_dim, 4))
+        self.register_buffer("sample_t", torch.linspace(0, 1, 16).reshape(16, 1), persistent=False)
+
+    def forward(self, edges: Tensor, faces: Tensor, owners: Tensor) -> Tensor:
+        if edges.ndim != 2 or edges.shape[1] != self.edge_dim:
+            raise ValueError(f"UV edges must have shape [P,{self.edge_dim}]")
+        if faces.ndim != 2 or faces.shape[1] != self.face_dim or owners.shape != (len(edges), 2):
+            raise ValueError("UV faces or owner pair shape is invalid")
+        if not len(edges):
+            zero = edges.sum() * 0 + faces.sum() * 0
+            for parameter in self.parameters():
+                zero = zero + parameter.sum() * 0
+            return edges.new_empty((0, 2, 16, 2)) + zero
+        position = self.position(self.sample_t.to(dtype=edges.dtype))
+        chunks = []
+        for start in range(0, len(edges), self.chunk_size):
+            stop = start + self.chunk_size
+            condition = torch.cat((edges[start:stop], faces[owners[start:stop]].flatten(1)), dim=-1)
+            tokens = self.context(condition)[:, None, :] + position[None]
+            for layer in self.layers:
+                tokens = layer(tokens)
+            paths = self.output(tokens).reshape(-1, 16, 2, 2).permute(0, 2, 1, 3)
+            chunks.append(paths)
+        return torch.cat(chunks)
+
+
 class IntersectionDecoder(nn.Module):
     """Decode coarse geometry, then apply one read/exchange/write refinement.
 
@@ -1421,6 +1478,7 @@ class IntersectionDecoder(nn.Module):
         self, legacy: AutoEncoder_light, cfg: dict, intersection_cfg: dict | None = None,
         curve_conditioning_cfg: dict | None = None,
         curve_point_feedback_cfg: dict | None = None,
+        uv_boundary_cfg: dict | None = None,
     ):
         super().__init__()
         self.face_dim = legacy.face_feature_dim
@@ -1482,6 +1540,13 @@ class IntersectionDecoder(nn.Module):
             )
             if self.curve_point_feedback_enabled else None
         )
+        uv_options = dict(uv_boundary_cfg or {})
+        uv_enabled = bool(uv_options.pop("enabled", False))
+        self.uv_boundary = None
+        if uv_enabled:
+            # Auxiliary initialization must not perturb retained-model RNG/state.
+            with torch.random.fork_rng(devices=[]):
+                self.uv_boundary = UVPathHead(self.face_dim, self.edge_dim, **uv_options)
 
     def _run_candidates(self, feature_pairs: Tensor) -> Tensor:
         if feature_pairs.shape[0] == 0:
@@ -1581,6 +1646,8 @@ class IntersectionDecoder(nn.Module):
         return RefinementOutput(
             pairs=pairs, coarse=coarse, refined=refined,
             delta_face=delta_face, delta_edge=delta_edge,
+            edge_uv=(self.uv_boundary(refined.edge_features, refined.face_features, pairs.indices)
+                     if self.uv_boundary is not None else None),
         )
 
 
