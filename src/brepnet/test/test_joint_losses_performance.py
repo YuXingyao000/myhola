@@ -11,7 +11,7 @@ import torch
 from scipy.optimize import linear_sum_assignment
 from torch.nn import functional as F
 
-from src.brepnet.models import vae as joint_losses
+from src.brepnet.models.vae.losses import joint as joint_losses
 
 
 WEIGHTS = dict(face=1.0, curve=1.0, ownership=0.1, existence=0.1, consistency=0.1)

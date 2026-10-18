@@ -39,8 +39,8 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 |---|---|
 | `src/brepnet/train.py` | Hydra + Lightning 统一 VAE / diffusion 入口 |
 | `src/brepnet/dataset.py` | 当前 `Diffusion_dataset`，以及仍有旧字段的 VAE / legacy 数据路径 |
-| `src/brepnet/models/vae.py` | 原 AutoEncoder／Light，HolisticEncoder／FacePosterior，AutoEncoder_intersection／AutoEncoder_joint 的装配、权重迁移、损失与导出 |
-| `src/brepnet/models/blocks.py` | 原网络 block，IntersectionDecoder／IntersectionRefiner／LocalPairIntersection、几何投影与状态结构、JointBoundaryDecoder；新增 FacePairConditioning 仅用于可选的最终边几何头调制 |
+| `src/brepnet/models/vae/` | `BaseVAE`；legacy/intersection/joint 各自主类，encoder、decoder、loss、checkpoint与几何工具按职责分类 |
+| `src/brepnet/models/blocks.py` | 通用残差层与位置编码；旧VAE block名称仅兼容导出，实际定义在 `models/vae/` |
 | `src/brepnet/run_management.py`、`prediction_export.py` | 独立 run 目录、配置／Git 溯源、逐对象原始预测导出 |
 | `src/brepnet/diffusion/model.py`、`sampling.py`、`losses.py` | diffusion 装配、训练损失、DDPM 采样与 VAE 接口 |
 | `src/brepnet/diffusion/latents.py`、`padding.py` | cached mean/std 或 VAE 编码，face token 打包、筛选与去重 |
@@ -58,6 +58,8 @@ Diffusion 新代码从 `src/brepnet/diffusion/` 导入；保留的旧路径导�
 细节见 [源码指南](src/brepnet/AGENTS.md)、[数据指南](src/brepnet/data/AGENTS.md)、[评估指南](src/brepnet/eval/AGENTS.md)。
 
 2026-10-13 按原文件组织归并 VAE 实验代码：移除 `models/` 下原 `intersection_*` 六个文件、`joint_*` 三个文件及 `holistic_encoder.py`、`local_intersection.py`，实现集中到 `vae.py`／`blocks.py`。已有模型名称、模块属性层级和旧 checkpoint state key 保留，trainer 继续共用 config 装配。历史 PLAN／NOTE 的旧路径保留为当时记录，当前入口以本地图及主题 README 为准。
+
+2026-10-18 按用户新的组织要求，将2298行 `models/vae.py` 拆为 `models/vae/` 包，并将VAE专属block迁入同一包。主类在 `legacy.py`／`intersection.py`／`joint.py`，共享 `BaseVAE` 抽象接口；网络组件、loss、checkpoint加载、几何投影分别归类。旧 `from ...models.vae import ...`、模型config名称、state_dict层级保持兼容。后续在对应主类及组件模块中扩展，不再重建单个巨型 `vae.py`。详细边界和验证见 [结构说明](checkpoints/vae_structure/README.md)。下面的日期条目保留历史路径，实际定义以新包为准。
 
 可选最终 curve 条件调制见 [配置与迁移说明](checkpoints/intersection_refinement/curve_conditioning/README.md)：`model.curve_conditioning.enabled` 默认 `false`、`hidden_dim=128`；启用后仅在 refined edge CNN 与 center/scale MLP 的最终输出层前调制。`init_refinement_checkpoint` 对 local 分支只替换旧 inter，对此条件分支保留所有旧参数、仅初始化新增 conditioning；两者均为新 run 初始化，完整模型加载／resume 仍严格匹配。
 

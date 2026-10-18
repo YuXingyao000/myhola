@@ -1,0 +1,148 @@
+{
+  "purpose": "implementation_only_no_optimizer_steps",
+  "checkpoint": "/mnt/d/python/checkpoints/intersection_refinement/curve_conditioning/20261013T083729.740439Z/weights/epoch=0157-step=00057354-val_loss=0.038204.ckpt",
+  "initialization": {
+    "source": "/mnt/d/python/checkpoints/intersection_refinement/curve_conditioning/20261013T083729.740439Z/weights/epoch=0157-step=00057354-val_loss=0.038204.ckpt",
+    "source_epoch": 157,
+    "source_global_step": 57354,
+    "retained_state_keys": 736,
+    "initialized_uv_boundary_keys": [
+      "decoder.uv_boundary.context.0.bias",
+      "decoder.uv_boundary.context.0.weight",
+      "decoder.uv_boundary.layers.0.linear1.bias",
+      "decoder.uv_boundary.layers.0.linear1.weight",
+      "decoder.uv_boundary.layers.0.linear2.bias",
+      "decoder.uv_boundary.layers.0.linear2.weight",
+      "decoder.uv_boundary.layers.0.norm1.bias",
+      "decoder.uv_boundary.layers.0.norm1.weight",
+      "decoder.uv_boundary.layers.0.norm2.bias",
+      "decoder.uv_boundary.layers.0.norm2.weight",
+      "decoder.uv_boundary.layers.0.self_attn.in_proj_bias",
+      "decoder.uv_boundary.layers.0.self_attn.in_proj_weight",
+      "decoder.uv_boundary.layers.0.self_attn.out_proj.bias",
+      "decoder.uv_boundary.layers.0.self_attn.out_proj.weight",
+      "decoder.uv_boundary.layers.1.linear1.bias",
+      "decoder.uv_boundary.layers.1.linear1.weight",
+      "decoder.uv_boundary.layers.1.linear2.bias",
+      "decoder.uv_boundary.layers.1.linear2.weight",
+      "decoder.uv_boundary.layers.1.norm1.bias",
+      "decoder.uv_boundary.layers.1.norm1.weight",
+      "decoder.uv_boundary.layers.1.norm2.bias",
+      "decoder.uv_boundary.layers.1.norm2.weight",
+      "decoder.uv_boundary.layers.1.self_attn.in_proj_bias",
+      "decoder.uv_boundary.layers.1.self_attn.in_proj_weight",
+      "decoder.uv_boundary.layers.1.self_attn.out_proj.bias",
+      "decoder.uv_boundary.layers.1.self_attn.out_proj.weight",
+      "decoder.uv_boundary.output.0.bias",
+      "decoder.uv_boundary.output.0.weight",
+      "decoder.uv_boundary.output.1.bias",
+      "decoder.uv_boundary.output.1.weight",
+      "decoder.uv_boundary.position.0.bias",
+      "decoder.uv_boundary.position.0.weight",
+      "decoder.uv_boundary.position.2.bias",
+      "decoder.uv_boundary.position.2.weight"
+    ],
+    "initialized_uv_boundary_parameters": 286532
+  },
+  "dataset_root": "/mnt/d/data/deepcad_v7",
+  "sidecar_root": "/tmp/hola_uv_boundary_validation_20261018_v4",
+  "validation_ids": [
+    "00000178",
+    "00000894",
+    "00003202",
+    "00003406",
+    "00003999",
+    "00005825",
+    "00006067",
+    "00006608"
+  ],
+  "loaded_samples": 8,
+  "label_summary": {
+    "input_total": 3495,
+    "invalid_points": 0,
+    "native_points": 17024,
+    "pending": 3487,
+    "points": 17152,
+    "projected_points": 128,
+    "recorded": 8,
+    "schema_version": 1,
+    "selected_this_invocation": 8,
+    "status_counts": {
+      "ok": 8
+    },
+    "updated_utc": "2026-10-18T06:41:37.943740+00:00",
+    "valid_points": 17152,
+    "valid_residual_max": 0.0005356810870580375,
+    "valid_residual_mean": 4.7154817470576946e-07
+  },
+  "torch": "2.4.1+cu124",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "checks": [
+    {
+      "precision": "float32",
+      "seconds": 0.8132755259866826,
+      "face_counts": [
+        7,
+        20
+      ],
+      "connection_rows": 124,
+      "losses": {
+        "total_loss": 0.044324442744255066,
+        "uv": 0.5765946507453918,
+        "uv_anchor": 0.0025717916432768106,
+        "weighted_uv": 0.005765946581959724,
+        "weighted_uv_anchor": 0.00025717917014844716,
+        "uv_valid_fraction": 1.0
+      },
+      "finite_gradient_tensors": 527,
+      "uv_gradient_l1": 6.933947107638232,
+      "refiner_gradient_l1": 16.28200886072591,
+      "peak_memory_bytes": 1500767232,
+      "encoder_posterior_frozen": true
+    },
+    {
+      "precision": "bf16-mixed",
+      "seconds": 0.5286603560089134,
+      "face_counts": [
+        7,
+        20
+      ],
+      "connection_rows": 124,
+      "losses": {
+        "total_loss": 0.0509742796421051,
+        "uv": 0.5750287771224976,
+        "uv_anchor": 0.003326110541820526,
+        "weighted_uv": 0.005750287789851427,
+        "weighted_uv_anchor": 0.0003326110600028187,
+        "uv_valid_fraction": 1.0
+      },
+      "finite_gradient_tensors": 527,
+      "uv_gradient_l1": 6.919585580239072,
+      "refiner_gradient_l1": 8.519467215519398,
+      "peak_memory_bytes": 1667215872,
+      "encoder_posterior_frozen": true
+    }
+  ],
+  "inference_without_uv_targets": {
+    "shape": [
+      422,
+      2,
+      16,
+      2
+    ],
+    "exported_uv_shapes": [
+      [
+        20,
+        2,
+        16,
+        2
+      ],
+      [
+        104,
+        2,
+        16,
+        2
+      ]
+    ]
+  }
+}

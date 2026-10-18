@@ -7,22 +7,24 @@
 - `train.py`：`python -m src.brepnet.train`，`UnifiedTrainer` 根据 `model.stage` 分派 VAE / diffusion，数据类通过 `dataset.name` 查找。
 - 多卡由 `trainer.devices` 启用，W&B 仅记录；`batch_size`／`num_workers` 按卡计。joint-boundary frozen 默认 8 卡 × batch 32，joint 每卡 batch 4；改变全局 batch 后要重新核对样本曝光预算。正式测试／NPZ 导出暂要求 `trainer.devices=1`，避免 distributed sampler 补齐产生重复输出。变长 packed geometry 配置关闭 `trainer.cudnn_benchmark`，其他配置保留原行为。
 - 所有训练入口默认使用 `checkpoints/<exp_name>/<UTC 时间戳>`。`trainer.run_dir` 指定完整路径；续训／测试显式提供 `trainer.resume_from_checkpoint`，恢复原 run。`trainer.output_dir` 始终表示输出根，不被 Hydra 改写成 run。运行目录和逐对象 NPZ 合同分别由 `run_management.py`、`prediction_export.py` 管理。
-- `models/__init__.py`：`build_model`；主模型在 `models/vae.py` 与 `diffusion/model.py`。旧 `models/diffusion*.py` 保留兼容导出。
+- `models/__init__.py`：`build_model`；主模型在 `models/vae/` 与 `diffusion/model.py`。旧 `models/diffusion*.py` 保留兼容导出。
 - `inference.py`：独立推理工具，手工配置已切到逐层 image cross-attention，单图输入为 `[B,3,224,224]`。权重通过 `load_diffusion_state_dict` 加载，保留独立指定的 VAE，严格检查其余 key；仍需核对训练时的完整配置，不能认为手写默认值完整复现任意 run。
 - `eval/run.py`：`python -m src.brepnet.eval.run`；`post/` 完成 OCC B-Rep 构造。
 - 行为配置归属 `configs/model/`、`dataset/`、`condition/`、`trainer/`、`datagen/`；不要复活已移除的 `model.py`、`diffusion_model.py`、`train_diffusion.py` 入口。
 
 ## VAE：表示与解码
 
-`models/vae.py` 的 `AutoEncoder` / `AutoEncoder_light` 编码面 UV 采样点、半边采样点与 edge-face connectivity；图网络、注意力与全局聚合把几何／拓扑融合到每面 latent。常用 latent 维度是 `8 × 2 × 2 = 32`。这是包含全局信息的 holistic 表示，不能直接当作独立局部 surface code。
+2026-10-18起使用 `models/vae/` 包，具体结构见 [说明](../../checkpoints/vae_structure/README.md)。`BaseVAE`约定编码、采样、解码与forward接口，但允许各版本不同的参数和返回结构；主类在legacy/intersection/joint三个文件。组件在encoders/decoders、监督在losses、权重迁移在checkpoints、投影在geometry；模型内部校验优先私有方法。旧模块导入仍兼容，旧日期记录中的 `vae.py`／`blocks.py` 为历史位置，不据此继续往旧文件堆代码。
+
+`models/vae/legacy.py` 的 `AutoEncoder` / `AutoEncoder_light` 编码面 UV 采样点、半边采样点与 edge-face connectivity；图网络、注意力与全局聚合把几何／拓扑融合到每面 latent。常用 latent 维度是 `8 × 2 × 2 = 32`。这是包含全局信息的 holistic 表示，不能直接当作独立局部 surface code。
 
 `sample()` 内部参数化 mean/logvar，但返回的缓存统计量是拼接的 **mean/std**。解码器恢复面几何，并通过有序 face pair 的 neural intersection 预测连接和有向半边几何。每个 pair 只产生一个候选半边；多重公共边、复杂裁剪和全局闭合不能由 adjacency 分类保证。最终合法 solid 仍依赖 `post/` 的拟合、优化、裁剪与缝合。
 
 改变 VAE 或归一化时说明旧 latent cache、AE checkpoint 与 diffusion checkpoint 是否兼容；不能复用名称相同但定义不同的缓存。正式 diffusion run 确认冻结 AE 加载了正确 checkpoint，并与 cache 同源。
 
-`vae.py:AutoEncoder_joint` 是独立的 shared-boundary decoder 变体，解码 block 在 `blocks.py:JointBoundaryDecoder`，匹配与损失在 `vae.py:joint_boundary_loss`。训练合同在 [PLAN](../../checkpoints/joint_boundary/PLAN.md)。使用 `AutoEncoder_joint_dataset`，encoder 保持旧 face／half-edge 输入；shared-boundary target 只用于匹配与监督，不作为 decoder 输入。`freeze_encoder` 由模型同时控制梯度与 train/eval 模式；trainer 的 `trainable_scope` 保持 `all`。
+`vae/joint.py:AutoEncoder_joint` 是独立的 shared-boundary decoder 变体，解码 block 在 `vae/decoders/joint.py:JointBoundaryDecoder`，匹配与损失在 `vae/losses/joint.py:joint_boundary_loss`。训练合同在 [PLAN](../../checkpoints/joint_boundary/PLAN.md)。使用 `AutoEncoder_joint_dataset`，encoder 保持旧 face／half-edge 输入；shared-boundary target 只用于匹配与监督，不作为 decoder 输入。`freeze_encoder` 由模型同时控制梯度与 train/eval 模式；trainer 的 `trainable_scope` 保持 `all`。
 
-`AutoEncoder_intersection` 是原 light VAE 的一轮反馈变体，协议与命令见 [README](../../checkpoints/intersection_refinement/README.md)。使用相同严格 dataset/accepted split 校验互反半边，输出仍为 `legacy_half_edges`。`vae.py:HolisticEncoder/FacePosterior` 保留原 encoder/posterior，`blocks.py:IntersectionDecoder` 枚举全部对象内有向非 self 面对，`blocks.py:IntersectionRefiner` 从预测几何与预测概率生成 ΔF/ΔE，原几何头与线性 classifier 复用。只对 logits 双向平均。GT 不筛 decoder 候选；`vae.py:IntersectionLoss` 集中处理原目标、global XYZ、连续网格贴合与 GT 对应 twin 一致性；投影计算与 tensor 状态结构位于 `blocks.py`。`model.init_legacy_checkpoint` 严格迁移整个旧模型；`model.checkpoint` 严格加载完整模型；resume 跳过所有组件初始化。默认冻结 encoder/posterior；latent cache 兼容还要求实际 encoder checkpoint、输入与 posterior 同源。没有额外 decode face 去重，也没有显式 loop/vertex 预测。保留原 `inter`/classifier，独立拓扑 head 不属于本轮范围。
+`AutoEncoder_intersection` 是原 light VAE 的一轮反馈变体，协议与命令见 [README](../../checkpoints/intersection_refinement/README.md)。使用相同严格 dataset/accepted split 校验互反半边，输出仍为 `legacy_half_edges`。`vae/encoders.py:HolisticEncoder/FacePosterior` 保留原 encoder/posterior，`vae/decoders/intersection.py:IntersectionDecoder` 枚举全部对象内有向非 self 面对，`vae/decoders/refinement.py:IntersectionRefiner` 从预测几何与预测概率生成 ΔF/ΔE，原几何头与线性 classifier 复用。只对 logits 双向平均。GT 不筛 decoder 候选；`vae/losses/intersection.py:IntersectionLoss` 集中处理原目标、global XYZ、连续网格贴合与 GT 对应 twin 一致性；投影计算与 tensor 状态结构分别位于 `vae/geometry.py` 和 `vae/state.py`。`model.init_legacy_checkpoint` 严格迁移整个旧模型；`model.checkpoint` 严格加载完整模型；resume 跳过所有组件初始化。默认冻结 encoder/posterior；latent cache 兼容还要求实际 encoder checkpoint、输入与 posterior 同源。没有额外 decode face 去重，也没有显式 loop/vertex 预测。保留原 `inter`/classifier，独立拓扑 head 不属于本轮范围。
 
 `train_vae_intersection_local` 是可选的局部注意力 inter 实验，见 [协议](../../checkpoints/intersection_local/README.md)。`model.intersection.kind=local_attention` 用面 pair 的单 Query 读取两面 CNN 局部特征与预测 XYZ；保留有向 E、classifier、refiner 和原损失，不引入 H/P。local 分支的 `model.init_refinement_checkpoint` 仅替换旧 `decoder.inter.*`，严格保留全部其他权重，创建新 run／optimizer；完整 local checkpoint 仍严格加载／resume。新分支的 candidate 分块独立于 refiner 分块，不能混用。旧配置默认 legacy，不改变旧 checkpoint 架构。
 

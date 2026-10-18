@@ -1,0 +1,56 @@
+{
+  "purpose": "structural_refactor_compatibility",
+  "baseline_commit": "8a68f1f6a7414c4887902006600f5495bafa132c",
+  "environment": {
+    "python_executable": "/mnt/d/anaconda3/envs/torch/bin/python",
+    "torch": "2.4.1+cu124",
+    "omp_threads": 2,
+    "mkl_threads": 2
+  },
+  "distinct_collected": 288,
+  "distinct_passed": 287,
+  "distinct_skipped": 1,
+  "groups": [
+    {
+      "name": "decoder_geometry_and_encoders",
+      "passed": 158,
+      "skipped": 0
+    },
+    {
+      "name": "losses_and_uv_boundary",
+      "passed": 69,
+      "skipped": 1
+    },
+    {
+      "name": "migration_and_diffusion_interface",
+      "passed": 87,
+      "skipped": 1
+    },
+    {
+      "name": "package_contract",
+      "passed": 10,
+      "skipped": 0
+    }
+  ],
+  "group_counts_overlap": true,
+  "skip_notes": [
+    "The CUDA joint decoder test skipped in the CPU-only loss group passed in the decoder group.",
+    "The only distinct unexecuted case requires HOLABREP_DIFFUSION_CACHE_SAMPLE, which was not supplied."
+  ],
+  "test_files": [
+    "test_intersection_geometry.py",
+    "test_intersection_decoder.py",
+    "test_uv_face_encoder.py",
+    "test_joint_decoder.py",
+    "test_encoder_edge_value.py",
+    "test_uv_boundary_model.py",
+    "test_local_intersection.py",
+    "test_intersection_losses.py",
+    "test_joint_losses_performance.py",
+    "test_intersection_vae.py",
+    "test_local_intersection_migration.py",
+    "test_uv_face_encoder_migration.py",
+    "test_diffusion_refactor.py",
+    "test_vae_package.py"
+  ]
+}
