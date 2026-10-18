@@ -14,6 +14,10 @@
 
 状态依据为 [README](README.md) 和 [远端实现验证](validation/remote_smoke.json)，不是对服务器当前进程的实时查询，也不是模型收益结论。包拆分的旧新等价性见 [结构验证](../vae_structure/validation/equivalence.json)。本轮新增 UV 辅助头，不是重启此前的 UV face encoder 实验。
 
+阅读入口：[完整网络](#2-全模型主图) · [原 inter](#41-一个有向面对如何产生一条候选边) · [refinement](#51-intersectionrefiner先读取偏差再交换信息) · [新增 UV 层](#61-uvpathhead-的每层与输出职责) · [dataset 改动](#11-dataset如何读取和打包uv监督) · [UV loss](#63-两个新增-loss-的梯度路径)。
+
+注意代码的两层命名：`AttnIntersection` 是原面对注意力 block，输入 `[P,2,32]`、输出 `[P,64]`，本次没有替换它；`IntersectionDecoder` 装配原 inter、几何头、refiner、conditioning 和新增 UVPathHead。最新 UV 改动要从后者的 `forward` 往下读。
+
 ## 1. 输入、符号与坐标
 
 下面是 packed batch：不同对象的面直接拼接，不先补齐成 30 个 token。
@@ -37,6 +41,53 @@
 loader 的几何张量为 float32，面/边 ID 与 counts 为整数，mask 为 bool；网络可在 bf16 autocast 下运行，下面形状图不表示所有中间值均为 float32。UV 标签的 `method` 为 0=无效、1=native pcurve、2=投影；有效性由 `valid` 明确控制。
 
 `face_points` 的空间轴按 `[v_index,u_index]` 存储；UV 标签按 `(u,v)` 保存。标签是原 CAD 参数图范围归一化后的坐标，不是 XYZ，也不是中心/尺度。闭环两端可能分别在 0 和 1，不能无条件取模合并。数据刚体旋转同时作用于 XYZ 和方向，不改变 UV 标签。所有几何距离使用当前对象归一化坐标的单位，不直接等于毫米。
+
+### 1.1 dataset如何读取和打包UV监督
+
+没有另建 UV dataset，也没有把 UV 塞进原 `data.npz`。两个数据根目录按同一个原始 CAD ID 配对：
+
+```text
+dataset.raw_data_root/{id}/data.npz
+  face/edge samples + connectivity[R,3]
+                 |
+                 +---- AutoEncoder_dataset3.__getitem__ ----+
+                 |                                         |
+dataset.edge_uv_root/{id}/edge_uv.npz                        |
+  edge_uv[R,2,16,2], valid/residual/method[R,2,16]             |
+                 |                                         |
+                 v                                         |
+  load_edge_uv_sidecar: source NPZ digest + row correspondence
+                 |                                         |
+  keep = connectivity[:,1] != connectivity[:,2]              |
+  same keep mask on connectivity rows AND UV label rows      |
+                 |                                         |
+  XYZ / normals / tangents rotate; UV coordinates unchanged  |
+                 |                                         |
+  sample: original fields + uv_targets dictionary <---------+
+                 |
+  AutoEncoder_dataset3.collate_fn
+    connectivity edge_id += preceding objects' edge count
+    connectivity face_i/j += preceding objects' face count
+    UV arrays: concatenate by object/row order, no ID offset
+                 |
+  batch['edge_uv_targets']
+    uv       [sum_R,2,16,2]  float32
+    valid    [sum_R,2,16]    bool
+    residual [sum_R,2,16]    float32
+    method   [sum_R,2,16]    uint8
+                 |
+  IntersectionLoss._uv_boundary
+    predictions: gather P candidates with candidate_rows[r]
+    UV target:   uv[r]               (connectivity row)
+    XYZ target:  edge_points[edge_id] (explicit edge ID)
+    -> uv L1 + fixed-UV geometry anchor
+```
+
+实际入口继承了 `dataset: vae_joint`，因此运行类名仍是 `AutoEncoder_joint_dataset(AutoEncoder_dataset3)`。它调用父类完成上面的 UV 读取/打包，再保留既有 `boundary_targets`；当前 `AutoEncoder_intersection` 的损失不消费该 shared-boundary 字段。这只是沿用既有数据路径，不表示切换到了 joint decoder。
+
+具体修改在 `src/brepnet/dataset.py` 的 `AutoEncoder_dataset3.__init__`（保存可选根目录）、`__getitem__`（配对读取与同步过滤）、`collate_fn`（新增 batch 字段）。标签文件的读取和来源核对在 `src/brepnet/data/edge_uv.py:load_edge_uv_sidecar`；离线 OCC 提取在 `src/brepnet/data/extract_edge_uv.py:extract_edge_uv`。训练读取的是已有标签，不在每个 batch 中调用 OCC。
+
+基础 `configs/dataset/vae.yaml` 的 `edge_uv_root: null` 保留旧数据行为。`train_vae_uv_boundary` 开启 `model.uv_boundary.enabled`，要求显式提供 `dataset.edge_uv_root`；142 上约定为 `/mnt/d/data/deepcad_v7_uv/v1`。指定目录后缺失标签文件会在读取前报出；文件中个别点的 `valid=false` 则仅屏蔽这些点的 UV/anchor loss，原几何监督仍参与训练。`residual` 和 `method` 用于标签质量/来源核对，不是额外网络输入或额外 loss。
 
 ## 2. 全模型主图
 

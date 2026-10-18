@@ -4,6 +4,15 @@
 
 这不同于此前失败的 UV **面编码器**实验。新训练从 epoch 157 / step 57354 的 conditioned CNN checkpoint 初始化，冻结 encoder/posterior，创建新 optimizer/run。新 UV 头增加 **286,532 参数、34 个 state keys**，其余 736 个权重项严格保留；完整新 checkpoint 和 resume 仍严格匹配。
 
+## 先看哪里
+
+- **最新完整架构**：[ARCHITECTURE.md：全模型主图](ARCHITECTURE.md#2-全模型主图)。原 `AttnIntersection` 仍为8层；本次 UV 支路接在 refinement 后，属于 `IntersectionDecoder` 的输出扩展。
+- **UV 新增层级**：[UVPathHead 的每层与输出职责](ARCHITECTURE.md#61-uvpathhead-的每层与输出职责)；源码为 `models/vae/decoders/primitives.py:UVPathHead`，接入点在 `models/vae/decoders/intersection.py:IntersectionDecoder.forward`。
+- **dataset 的实际改动**：[从标签文件到训练 batch](ARCHITECTURE.md#11-dataset如何读取和打包uv监督)，包括继承关系、连接行过滤、旋转和 collate。
+- **标签如何参与训练**：[候选与 GT 映射](ARCHITECTURE.md#62-p-个候选与-r-行-gt-的映射)、[两个新增 loss](ARCHITECTURE.md#63-两个新增-loss-的梯度路径)；源码为 `models/vae/losses/intersection.py:IntersectionLoss._uv_boundary`。
+
+上面的源码路径均相对 `src/brepnet/`。当前 VAE 工作树是源机 `/mnt/d/python_curve_eval`，142 上的部署目录是 `/mnt/d/python`，分支为 `codex/vae-uv-boundary`。
+
 ## 本次新增的位置
 
 | 文件 | 改动 |
