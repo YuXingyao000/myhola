@@ -245,13 +245,19 @@ def results(output: Path, summary: dict, rows: list[dict], fonts: dict) -> None:
     histogram(grid[1, 1], "raw_num_directed_edges", "原始有向半边数", "有向半边数", "#9d8bb8")
     histogram(grid[2, 0], "inference_seconds", "完整 DDPM + AE 推理耗时", "秒 / 件（包含首件）", "#7eaf98")
     ax = fig.add_subplot(grid[2, 1])
-    states = summary["post_status_counts"]
-    labels, values = list(states), list(states.values())
-    ax.barh(labels, values, color="#d2a36b")
+    labels = ["合法实体", "检查未通过", "尚未判定"]
+    values = [0, 0, 0]
+    for row in rows:
+        value = str(row.get("native_valid_solid", "")).strip().lower()
+        # 未完成的检查保留 unknown，不能合并进检查未通过。
+        group = 0 if value in {"true", "1"} else (1 if value in {"false", "0"} else 2)
+        values[group] += 1
+    ax.barh(labels, values, color=["#7eaf98", "#d2a36b", "#b3beca"])
     for y, value in enumerate(values):
         ax.text(value + 8, y, str(value), va="center", fontsize=10, fontproperties=fonts["mono"])
-    ax.set_xlim(0, max(values, default=1)*1.14)
-    ax.set_title("后处理状态 · 固定分母保留所有失败", fontproperties=fonts["bold"], fontsize=13, loc="left")
+    ax.invert_yaxis()
+    ax.set_xlim(0, 1000)
+    ax.set_title("原生精度实体判定 · 全部 1000 件", fontproperties=fonts["bold"], fontsize=13, loc="left")
     ax.set_xlabel("样本数"); ax.spines[["top", "right"]].set_visible(False)
     fig.text(0.055, 0.057, "面边数量与图库描述生成复杂程度，不代表形状覆盖率或新颖性；本轮未计算 COV / MMD / LFD。",
              fontsize=10.5, fontproperties=fonts["body"], color=MUTED)
@@ -350,7 +356,7 @@ def draw_mesh(ax, vertices: np.ndarray, triangles: np.ndarray, curves: list[np.n
 def gallery(root: Path, output: Path, rows: list[dict], fonts: dict, *, stage: str, complete: bool) -> None:
     """图库只取冻结清单前24项；缺失或失败保留原位置。"""
     first_rows = rows[:24]
-    title = "原始 VAE 曲面与曲线" if stage == "raw" else "OCC 后处理 STEP"
+    title = "原始面网格（未裁剪）与曲线" if stage == "raw" else "OCC 后处理 STEP"
     fig = plt.figure(figsize=(21, 14), facecolor="#f7f9fc")
     fig.subplots_adjust(left=0.015, right=0.985, top=0.86, bottom=0.075, wspace=0.025, hspace=0.20)
     fig.text(0.025, 0.953, f"无条件生成 · {title} · 预定前 24 件", fontsize=23, fontproperties=fonts["bold"])
@@ -363,9 +369,16 @@ def gallery(root: Path, output: Path, rows: list[dict], fonts: dict, *, stage: s
         ax = fig.add_subplot(4, 6, index+1, projection="3d")
         ax.set_facecolor("#f7f9fc"); ax.set_axis_off()
         sample_id = row["sample_id"]
-        valid = flag(row.get("native_valid_solid"))
-        subtitle = (f"Nf={row.get('raw_num_faces') or '—'} · Nh={row.get('raw_num_directed_edges') or '—'}"
-                    if stage == "raw" else ("原生合法 solid" if valid else f"非合法 solid · {row.get('post_status', 'missing')}"))
+        valid_value = str(row.get("native_valid_solid", "")).strip().lower()
+        valid = flag(valid_value)
+        if stage == "raw":
+            subtitle = f"Nf={row.get('raw_num_faces') or '—'} · Nh={row.get('raw_num_directed_edges') or '—'}"
+        elif valid:
+            subtitle = "原生合法 solid"
+        elif valid_value in {"false", "0"}:
+            subtitle = "非合法 solid（已检查）"
+        else:
+            subtitle = f"有效性未判定 · {row.get('post_status', 'missing')}"
         ax.set_title(sample_id + "\n" + subtitle, fontsize=10.5, y=1.01,
                      fontproperties=fonts["body"], color="#237154" if stage == "post" and valid else INK)
         path = (root / "raw_predictions" / sample_id / "data.npz" if stage == "raw"
@@ -377,7 +390,13 @@ def gallery(root: Path, output: Path, rows: list[dict], fonts: dict, *, stage: s
             draw_mesh(ax, vertices, triangles, curves)
         except Exception as exc:
             # 绘图异常也不替换样本，并保留可审查的简短失败原因。
-            ax.text2D(0.5, 0.5, f"未能展示\n{type(exc).__name__}\n{str(exc)[:50]}",
+            if stage == "post":
+                validity_note = "实体检查合法" if valid else ("实体检查：非合法 solid" if valid_value in {"false", "0"} else "实体检查未判定")
+                failure_note = "预览三角化失败" if "triangulation" in str(exc) else "STEP 预览失败"
+                message = f"{validity_note}；\n{failure_note}\n{str(exc)[:50]}"
+            else:
+                message = f"原始网格未能展示\n{type(exc).__name__}\n{str(exc)[:50]}"
+            ax.text2D(0.5, 0.5, message,
                       transform=ax.transAxes, ha="center", va="center", fontsize=9,
                       fontproperties=fonts["body"], color="#a15b47")
     note = ("原始规则 face patch 尚未按边界裁剪，可能覆盖孔洞；深色线是预测半边，不能据此判定 STEP 有效性。"

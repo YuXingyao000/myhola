@@ -1,0 +1,257 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-10-18T08:30:48.441638+00:00",
+  "root": "/mnt/d/python/checkpoints/diffusion/uncond_baseline_20261018",
+  "intended_count": 1000,
+  "complete": true,
+  "status": "complete",
+  "interval_interpretation": "Wilson 95%; unfinished samples remain in the 1000 denominator; partial rates are not final performance",
+  "counts": {
+    "raw_exists": 1000,
+    "raw_usable": 1000,
+    "step_exists": 1000,
+    "step_readable": 1000,
+    "native_valid_solid": 734,
+    "compat_valid_solid": 733,
+    "inference_ok": 1000,
+    "inference_terminal": 1000,
+    "post_terminal": 1000,
+    "timeout": 0,
+    "pending": 0,
+    "provenance_errors": 0
+  },
+  "rates": {
+    "inference_ok": {
+      "count": 1000,
+      "denominator": 1000,
+      "rate": 1.0,
+      "wilson95": [
+        0.996173241514445,
+        1.0
+      ]
+    },
+    "raw_exists": {
+      "count": 1000,
+      "denominator": 1000,
+      "rate": 1.0,
+      "wilson95": [
+        0.996173241514445,
+        1.0
+      ]
+    },
+    "raw_usable": {
+      "count": 1000,
+      "denominator": 1000,
+      "rate": 1.0,
+      "wilson95": [
+        0.996173241514445,
+        1.0
+      ]
+    },
+    "step_exists": {
+      "count": 1000,
+      "denominator": 1000,
+      "rate": 1.0,
+      "wilson95": [
+        0.996173241514445,
+        1.0
+      ]
+    },
+    "step_readable": {
+      "count": 1000,
+      "denominator": 1000,
+      "rate": 1.0,
+      "wilson95": [
+        0.996173241514445,
+        1.0
+      ]
+    },
+    "native_valid_solid": {
+      "count": 734,
+      "denominator": 1000,
+      "rate": 0.734,
+      "wilson95": [
+        0.7057558002431918,
+        0.7604532767855683
+      ]
+    },
+    "compat_valid_solid": {
+      "count": 733,
+      "denominator": 1000,
+      "rate": 0.733,
+      "wilson95": [
+        0.7047270990046101,
+        0.7594896315411211
+      ]
+    }
+  },
+  "inference_status_counts": {
+    "ok": 1000
+  },
+  "post_status_counts": {
+    "ok": 1000
+  },
+  "error_counts": {},
+  "statistics": {
+    "raw_num_faces": {
+      "n": 1000,
+      "mean": 12.506,
+      "min": 6.0,
+      "p05": 7.0,
+      "p25": 9.0,
+      "median": 11.0,
+      "p75": 15.0,
+      "p95": 22.0,
+      "max": 29.0
+    },
+    "raw_num_directed_edges": {
+      "n": 1000,
+      "mean": 57.524,
+      "min": 12.0,
+      "p05": 28.0,
+      "p25": 36.0,
+      "median": 48.0,
+      "p75": 72.0,
+      "p95": 110.04999999999995,
+      "max": 158.0
+    },
+    "step_num_faces": {
+      "n": 1000,
+      "mean": 12.484,
+      "min": 6.0,
+      "p05": 7.0,
+      "p25": 9.0,
+      "median": 11.0,
+      "p75": 15.0,
+      "p95": 22.0,
+      "max": 28.0
+    },
+    "step_num_edges": {
+      "n": 1000,
+      "mean": 32.919,
+      "min": 9.0,
+      "p05": 15.0,
+      "p25": 21.0,
+      "median": 27.0,
+      "p75": 42.0,
+      "p95": 66.04999999999995,
+      "max": 106.0
+    },
+    "step_num_vertices": {
+      "n": 1000,
+      "mean": 22.54,
+      "min": 6.0,
+      "p05": 10.0,
+      "p25": 14.0,
+      "median": 18.0,
+      "p75": 28.0,
+      "p95": 51.0,
+      "max": 88.0
+    },
+    "inference_seconds": {
+      "n": 1000,
+      "mean": 5.02235281710088,
+      "min": 4.862820298993029,
+      "p05": 4.911176365430583,
+      "p25": 4.965037478497834,
+      "median": 5.017919228499522,
+      "p75": 5.066985790006584,
+      "p95": 5.138753743926645,
+      "max": 5.68283053196501
+    },
+    "post_wall_seconds": {
+      "n": 1000,
+      "mean": 4.206663919008453,
+      "min": 1.731825552007649,
+      "p05": 2.3989682278945113,
+      "p25": 2.9500422234850703,
+      "median": 3.6131994659954216,
+      "p75": 4.652992666495265,
+      "p95": 8.139236549806082,
+      "max": 38.088656149979215
+    },
+    "post_algorithm_seconds": {
+      "n": 1000,
+      "mean": 4.024995643939241,
+      "min": 1.6431068319943734,
+      "p05": 2.25888625603111,
+      "p25": 2.7953995909920195,
+      "median": 3.438241118506994,
+      "p75": 4.443296129014925,
+      "p95": 7.90395340519899,
+      "max": 37.888563428015914
+    }
+  },
+  "raw_face_bands": {
+    "measurable_count": 1000,
+    "missing_count": 0,
+    "counts": {
+      "lt7": 1,
+      "7_to_30": 999,
+      "gt30": 0
+    },
+    "rates_over_1000": {
+      "lt7": 0.001,
+      "7_to_30": 0.999,
+      "gt30": 0.0
+    }
+  },
+  "metrics_not_computed": [
+    "COV",
+    "MMD",
+    "LFD",
+    "GT reconstruction CD",
+    "GT face-count error"
+  ],
+  "post_protocol": {
+    "schema_version": 1,
+    "version": "hola_uncond_post_20261018_v1",
+    "manifest_sha256": "0736b8951171fd063e573d84a8e8c4d6c07116d8590f0eaacddd7888ec5d383f",
+    "intended_count": 1000,
+    "post_policy": "legacy",
+    "drop_num": 0,
+    "optimize_geometry": true,
+    "max_optimize_iter": 200,
+    "adaptive_max_optimize_iter": 600,
+    "workers": 16,
+    "timeout_seconds": 180.0,
+    "timeout_scope": "whole per-object subprocess, including adaptation and OCC checks",
+    "use_cuda": false,
+    "threads_per_worker": 1,
+    "algorithm_retries": 0,
+    "seed": "same per-sample seed as inference; torch/NumPy/Python reset in worker",
+    "native_validity": "fresh read mode=0; TopAbs_SOLID and BRepCheck before any mutation",
+    "compatibility_validity": "separate read mode=1, precision=.1; SetTolerance(.1); TopAbs_SOLID and BRepCheck",
+    "post_source_sha256": {
+      "shared/common_utils.py": "6c05e69cc782f1ec99b4e29a460f0256b5ddb728a02f50a2e16c82905647dc63",
+      "shared/occ_utils.py": "045cd8a21448d4f5be75f58b1e993b8be450daa33d2c94acce2f617a0f3c78aa",
+      "src/brepnet/data/shared_boundaries.py": "f0a740bf6050439613d0c113ab69ff7a506790741818fc03d998e4c0b2d7f1aa",
+      "src/brepnet/eval/metrics/validity.py": "8d8fb3ddde7a1281675b8341921fcdde1a2931c8034ce8c8b05ef68caabad92f",
+      "src/brepnet/post/chamferdist_torch.py": "fbc787a1530525b7eeeb18142ec2c53094193bbb2cc97069e70caa392bc3afa7",
+      "src/brepnet/post/constants.py": "76312fc450b073ef6ef475bb154fb9eba982146e14f0ba1c4919d939c227399b",
+      "src/brepnet/post/construct_brep.py": "718947c5bd3be8e435411f7a81a74936f8df7dea11c77a64af785e930c459d5c",
+      "src/brepnet/post/debug.py": "65ecf432f00b8dd5ab01e305d1eba18b508a06cdaf72abf98ebc59e2b157f4fe",
+      "src/brepnet/post/distance.py": "2156ebd91b647da54d505b4f2a1f4c0ce6fd50c551a9ec2e2ea2e8d96e6cbafc",
+      "src/brepnet/post/geometry_optimization.py": "46e660a3fd4997794ed10eacbeaee3d96bf1306178001473c2f54dddd0d46850",
+      "src/brepnet/post/mesh.py": "a66d843b06a460aefa2aae5ad2afc485b7e4d5573465a5eb3828e37a1de676ff",
+      "src/brepnet/post/occ_fit.py": "a8db8365a31ac0c5378a7f62a7c4459cac189ae9c40f3fd86c173224c05f8be4",
+      "src/brepnet/post/occ_topology.py": "9765a2329754b2b49aba4c3b4e28bf0f5b1a04a91a5ea2400cdd9372bcde089f",
+      "src/brepnet/post/shape.py": "4594df3cbb46b96251c3b6d6e160be70214abe07cfedaced9a0d26bce2aa3f59",
+      "src/brepnet/post/utils.py": "7a9656d1c942d2035867026600a601be34ec95420631e1c8cfe03cecd742edb2",
+      "tools/vae_compare_post.py": "a3a222d183147c85f9d8bf526f691ac66bdff0ac60acca0ce896d4ddf42bf407"
+    },
+    "runner_sha256": "940ede3a5435c1e0629f05f44f559b6c0347046084f3fc286ad029f1ef6d69bc",
+    "environment": {
+      "python": "3.10.13 | packaged by conda-forge | (main, Dec 23 2023, 15:36:39) [GCC 12.3.0]",
+      "executable": "/mnt/d/anaconda3/envs/torch/bin/python",
+      "packages": {
+        "numpy": "2.1.2",
+        "torch": "2.4.1+cu124",
+        "scipy": "1.15.3",
+        "trimesh": "4.5.3",
+        "pythonocc-core": null,
+        "OCC": "7.8.1.1"
+      }
+    }
+  }
+}

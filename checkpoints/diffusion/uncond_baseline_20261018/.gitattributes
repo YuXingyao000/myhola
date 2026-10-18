@@ -1,0 +1,2 @@
+# Python csv writes standard CRLF records; preserve their recorded bytes.
+report/*.csv -text whitespace=cr-at-eol
