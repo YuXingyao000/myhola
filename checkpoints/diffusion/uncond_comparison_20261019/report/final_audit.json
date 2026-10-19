@@ -1,0 +1,59 @@
+{
+  "status": "passed",
+  "reference_n": 1000,
+  "methods": {
+    "old": {
+      "inference_count": 1000,
+      "post_count": 1000,
+      "native_valid": 734,
+      "meshable": 962,
+      "complexity_n": 733,
+      "pointcloud_error_types": {
+        "ValueError": 38
+      },
+      "shape_type_counts": {
+        "3": 37,
+        "2": 734,
+        "0": 229
+      },
+      "checkpoint_sha256_verified": true,
+      "initial_noise_matches_old": true,
+      "all_distance_rows_covered_and_finite": true
+    },
+    "new_last": {
+      "inference_count": 1000,
+      "post_count": 1000,
+      "native_valid": 0,
+      "meshable": 284,
+      "complexity_n": 0,
+      "pointcloud_error_types": {
+        "ValueError": 715,
+        "MetricTimeout": 1
+      },
+      "shape_type_counts": {
+        "0": 1000
+      },
+      "checkpoint_sha256_verified": true,
+      "initial_noise_matches_old": true,
+      "all_distance_rows_covered_and_finite": true
+    },
+    "new_best": {
+      "inference_count": 1000,
+      "post_count": 1000,
+      "native_valid": 0,
+      "meshable": 281,
+      "complexity_n": 0,
+      "pointcloud_error_types": {
+        "ValueError": 715,
+        "MetricInterrupted": 2,
+        "MetricTimeout": 2
+      },
+      "shape_type_counts": {
+        "0": 1000
+      },
+      "checkpoint_sha256_verified": true,
+      "initial_noise_matches_old": true,
+      "all_distance_rows_covered_and_finite": true
+    }
+  }
+}

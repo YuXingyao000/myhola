@@ -1,0 +1,6 @@
+method,shape_type,count,denominator
+old,Shell,37,1000
+old,Solid,734,1000
+old,Compound,229,1000
+new_last,Compound,1000,1000
+new_best,Compound,1000,1000
