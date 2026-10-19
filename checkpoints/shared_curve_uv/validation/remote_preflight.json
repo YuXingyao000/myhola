@@ -1,0 +1,19 @@
+{
+  "implementation_commit": "be8397b9d896bf2358ba399cea827baa293cfc07",
+  "source_hashes_match": true,
+  "remote_tests": {
+    "passed": 65,
+    "failed": 0,
+    "warnings": 36,
+    "seconds": 15.49
+  },
+  "remote_checkpoint_sha256": "f7b550689440afb36ffbc16df3ed0adbc2394ecbd59f00d47f337e24f43adfdf",
+  "wandb_authenticated": true,
+  "production_splits": {
+    "train": 46480,
+    "validation": 3495,
+    "test": 2417
+  },
+  "formal_training_started": false,
+  "optimizer_steps": 0
+}

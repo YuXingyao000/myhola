@@ -44,6 +44,8 @@
 
 2026-10-17 新增可选 [UV面编码器](../../checkpoints/uv_face_encoder/README.md)。`blocks.py:UVFaceEncoder` 接收`[M,6,16,16]`，几何MLP与归一化UV索引MLP相加，六层512维／8heads／FFN2048的PreNorm attention保留全部256 tokens，单query汇聚后输出`[M,32]`，再进入原面间attention／GAT／global／posterior。`model.face_encoder.kind`默认`cnn`，`uv_attention`只替换`encoder.face_coords`；旧默认参数、state与RNG行为不变。新模块22,219,040参数，比旧CNN增加171,000；不增加最终latent维度。`init_face_encoder_checkpoint`严格验证完整conditioned来源（包括被弃用的旧CNN），仅初始化UV、保留其余689项；新run解冻全模型，旧loss及KL不变。完整UV加载须同配置并清空组件初始化，resume自动清空；strict state加载不替代对nhead等无shape变化配置的核对。入口`train_vae_uv_encoder`，不混用local-inter、point-feedback或edge-value。仅实现与CPU合同验证已完成，未正式训练、未验证OCC收益；旧cache／diffusion不能默认兼容。
 
+2026-10-19 新增可选共享曲线/逐侧UV实验，见 [架构快照](../../checkpoints/shared_curve_uv/ARCHITECTURE.md)。`train_vae_shared_curve_uv` 保留CNN encoder冻结、原8层512维inter及refiner；只在final用`SharedCurveFusion`将互反h融合为共享g，经原曲线头解码一次，再反序展开为两条半边。`CurveConditionedUVPathHead`读取实际预测XYZ、g、该侧h和owner F；数据/sidecar不变，loss内部采用同一GT参数化。`init_shared_curve_checkpoint`从已训练UV-boundary来源显式迁移，新增45,630参数。实现/两机小批量验证完成，正式训练及合法率收益未验证；任意face重排的严格等变性与曲面UV回代相等不作保证。新结构默认关闭。
+
 ## Diffusion：实际数据流
 
 1. `dataset.py:Diffusion_dataset` 读取 cache 并完成 padding；`diffusion/latents.py:LatentProvider` 取 mean，或用 std 采样。非 cache 分支调用冻结 VAE 再由 padder 打包。

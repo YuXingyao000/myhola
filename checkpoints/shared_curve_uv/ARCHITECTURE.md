@@ -1,6 +1,6 @@
 # Shared curve + owner UV：架构快照
 
-日期：2026-10-19。代码基准：`580bec89b378796c144476771cdce6c396cc1215`；本轮实现提交见本目录README。配置：`configs/train_vae_shared_curve_uv.yaml`。
+日期：2026-10-19。实现提交：`be8397b9d896bf2358ba399cea827baa293cfc07`，代码基准：`580bec89b378796c144476771cdce6c396cc1215`。配置：`configs/train_vae_shared_curve_uv.yaml`。此后只补充记录与验证报告，架构代码未变。
 
 这是已实现、未正式训练的实验。初始化采用CNN encoder的UV-boundary best，非UV attention encoder。保持半边输出，不把半边拓扑删除。改动只发生在refinement之后的最终曲线和UV路径。
 

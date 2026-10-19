@@ -1,8 +1,8 @@
 # 共享曲线 + 逐侧 UV
 
-状态：已实现，65项相关测试通过；真实validation小批量FP32/BF16前后向通过；尚未正式训练或评估合法率。代码基准`580bec89b378796c144476771cdce6c396cc1215`，实现hash和142同步状态在提交后补录。
+状态：已实现；本机与142各65项相关测试通过，两端真实validation小批量FP32/BF16前后向通过；尚未正式训练或评估合法率。实现提交`be8397b9d896bf2358ba399cea827baa293cfc07`，基于`580bec89b378796c144476771cdce6c396cc1215`。
 
-[研究问题/范围](PLAN.md) · [逐层ASCII架构与张量形状](ARCHITECTURE.md) · [真实小批量报告](validation/real_smoke.json)
+[研究问题/范围](PLAN.md) · [逐层ASCII架构与张量形状](ARCHITECTURE.md) · [本机报告](validation/real_smoke.json) · [142报告](validation/remote_real_smoke.json)
 
 ## 本次新增与调整
 
@@ -62,3 +62,7 @@ python checkpoints/shared_curve_uv/validate_implementation.py \
 小批量从固定validation清单前8个读取生产sidecar，前2个对象（7+20面、124条GT连接行）执行GPU前后向，不更新optimizer。验证严格共享XYZ/UV反序、767项旧权重保留、初始代表曲线保留、encoder冻结、UV到XYZ梯度、纯latent推理、strict full/resume、旧开关关闭兼容、空候选和标签参数化。
 
 本机检查：初始代表曲线最大坐标差8.35e-7（CUDA计算次序差异），FP32总loss约0.0389，BF16约0.0429，均有限；UV loss回传C的梯度非零。两对象初始edge CD²旧2.08e-5、新1.93e-5，仅说明没有初始化精度崩塌，不是有效性收益证据。全量合法率和失败分析等待正式训练完成。
+
+142使用PyTorch2.8/cu128、RTX5090；相同65项测试通过（15.49秒），生产sidecar及真实旧checkpoint的迁移/FP32/BF16前后向通过，W&B API认证可用，完整训练命令的Hydra解析通过。源checkpoint SHA256一致。没有执行optimizer step或启动正式训练。
+
+本工作树不在自动post-commit同步范围，本次使用同分支Git快进推送并直接读取142的HEAD核验；不能将主工作区的hook状态当作本次同步证据。服务器旧实验的6个未跟踪路径曾触发保护，已完整暂存、快进后恢复；没有覆盖或删除旧实验产物。
