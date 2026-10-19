@@ -31,6 +31,50 @@ class IntersectionCheckpointLoader:
     def __init__(self, model):
         self.model = model
 
+    def init_shared_curve(self, path: str) -> None:
+        """Initialize from the complete trained two-owner UV auxiliary model.
+
+        Retain the original geometry/encoder/refiner and UV Transformer. Map
+        the old first-owner UV output onto the new per-owner shared head.
+        """
+        checkpoint, source = _read_checkpoint(path)
+        current = self.model.state_dict()
+        fresh_prefixes = ("decoder.shared_curve.", "decoder.uv_boundary.curve_embedding.")
+        fresh = {key: value for key, value in current.items() if key.startswith(fresh_prefixes)}
+        expected = set(current) - fresh.keys()
+        if not fresh or source.keys() != expected:
+            raise ValueError(
+                "Shared curve initialization requires the complete previous UV-boundary model; "
+                f"missing={sorted(expected - source.keys())}, unexpected={sorted(source.keys() - expected)}"
+            )
+        prefix = "decoder.uv_boundary."
+        edge_dim, face_dim = self.model.decoder.edge_dim, self.model.decoder.face_dim
+        context_key, output_key, bias_key = (prefix + name for name in (
+            "context.0.weight", "output.1.weight", "output.1.bias",
+        ))
+        old_context, old_output = source[context_key], source[output_key]
+        hidden = current[context_key].shape[0]
+        if old_context.shape != (hidden, edge_dim + 2 * face_dim) or old_output.shape != (4, hidden) or source[bias_key].shape != (4,):
+            raise ValueError("Shared curve source must use the original two-owner UV head with matching backbone width")
+        mapped_context = torch.zeros_like(current[context_key])
+        mapped_context[:, :edge_dim] = old_context[:, :edge_dim]
+        mapped_context[:, 2 * edge_dim:] = old_context[:, edge_dim:edge_dim + face_dim]
+        mapped = {
+            context_key: mapped_context,
+            output_key: old_output[:2].clone(),
+            bias_key: source[bias_key][:2].clone(),
+        }
+        self.model.load_state_dict({**source, **fresh, **mapped}, strict=True)
+        self.model.initialization_report = {
+            "source": str(path), "source_epoch": checkpoint.get("epoch"),
+            "source_global_step": checkpoint.get("global_step"),
+            "retained_state_keys": len(source) - len(mapped),
+            "mapped_uv_keys": sorted(mapped), "initialized_keys": sorted(fresh),
+            "initialized_parameters": sum(value.numel() for value in fresh.values()),
+            "mapping": "context [h,F_i,F_j] -> [h,g,F_owner], g columns zero; output keeps old owner-i channels",
+        }
+        logger.info("Shared curve initialization: %s", self.model.initialization_report)
+
     def init_uv_boundary(self, path: str) -> None:
         """Add only an auxiliary UV head to the complete adopted conditioned VAE."""
         checkpoint, source = _read_checkpoint(path)

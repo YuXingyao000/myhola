@@ -1,0 +1,12 @@
+{
+  "purpose": "implementation_validation_not_research_evaluation",
+  "base_commit": "580bec89b378796c144476771cdce6c396cc1215",
+  "implementation_status": "uncommitted_at_test_time",
+  "command": "python -m pytest -q src/brepnet/test/test_shared_curve_uv.py src/brepnet/test/test_uv_boundary_model.py src/brepnet/test/test_intersection_vae.py src/brepnet/test/test_intersection_losses.py",
+  "python": "/mnt/d/anaconda3/envs/torch/bin/python",
+  "passed": 65,
+  "failed": 0,
+  "warnings": 43,
+  "seconds": 16.27,
+  "warnings_detail": "Existing Transformer nested_tensor and torch.cpu.amp.autocast deprecation warnings."
+}

@@ -128,7 +128,9 @@ class PrimitiveDecoder(nn.Module):
             points = module(points)
         return self._with_global_points(features, points), local_map
 
-    def forward(self, features: Tensor, condition: Tensor | None = None) -> PrimitiveGeometry:
+    def forward(
+        self, features: Tensor, condition: Tensor | None = None,
+    ) -> PrimitiveGeometry:
         if features.shape[0] == 0:
             return self._empty_geometry(features)
         if condition is None:
@@ -194,4 +196,62 @@ class UVPathHead(nn.Module):
                 tokens = layer(tokens)
             paths = self.output(tokens).reshape(-1, 16, 2, 2).permute(0, 2, 1, 3)
             chunks.append(paths)
+        return torch.cat(chunks)
+
+
+class SharedCurveFusion(nn.Module):
+    """Retain a canonical directed feature and learn from its reciprocal.
+
+    The zero residual starts at the trained curve, avoiding cancellation of
+    direction-dependent information. The caller chooses the i < j direction.
+    """
+
+    def __init__(self, edge_dim: int, hidden_dim: int = 128):
+        super().__init__()
+        self.residual = nn.Sequential(
+            nn.Linear(2 * edge_dim, hidden_dim), nn.SiLU(), nn.Linear(hidden_dim, edge_dim),
+        )
+        nn.init.zeros_(self.residual[-1].weight)
+        nn.init.zeros_(self.residual[-1].bias)
+
+    def forward(self, first: Tensor, second: Tensor) -> Tensor:
+        return first + self.residual(torch.cat((first, second), dim=-1))
+
+
+class CurveConditionedUVPathHead(UVPathHead):
+    """One owner UV path per half-edge, conditioned on the decoded XYZ samples.
+
+    Keeps the original position MLP and Transformer dimensions. Opposite-owner
+    paths are assembled by the caller using the reciprocal row and reversed t.
+    """
+
+    def __init__(self, face_dim: int, edge_dim: int, **options):
+        super().__init__(face_dim, edge_dim, **options)
+        hidden_dim = self.context[0].out_features
+        self.context = nn.Sequential(nn.Linear(2 * edge_dim + face_dim, hidden_dim), nn.SiLU())
+        self.curve_embedding = nn.Sequential(
+            nn.Linear(3, hidden_dim), nn.SiLU(), nn.Linear(hidden_dim, hidden_dim),
+        )
+        self.output = nn.Sequential(nn.LayerNorm(hidden_dim), nn.Linear(hidden_dim, 2))
+
+    def forward(
+        self, edges: Tensor, shared: Tensor, faces: Tensor, owners: Tensor, curves: Tensor,
+    ) -> Tensor:
+        # [h:64, g:64, owner F:32] + each decoded XYZ -> [P,16,2].
+        if not len(edges):
+            zero = (edges.sum() + shared.sum() + faces.sum() + curves.sum()) * 0
+            for parameter in self.parameters():
+                zero = zero + parameter.sum() * 0
+            return edges.new_empty((0, 16, 2)) + zero
+        position = self.position(self.sample_t.to(dtype=edges.dtype))
+        chunks = []
+        for start in range(0, len(edges), self.chunk_size):
+            stop = start + self.chunk_size
+            context = torch.cat((edges[start:stop], shared[start:stop], faces[owners[start:stop, 0]]), dim=-1)
+            # Keep the C -> UV gradient: this is predicted geometry, never GT.
+            xyz = curves[start:stop].to(dtype=edges.dtype)
+            tokens = self.context(context)[:, None] + position[None] + self.curve_embedding(xyz)
+            for layer in self.layers:
+                tokens = layer(tokens)
+            chunks.append(self.output(tokens))
         return torch.cat(chunks)

@@ -171,6 +171,7 @@ class UnifiedTrainer(pl.LightningModule):
                     "model.init_encoder_edge_value_checkpoint to add GAT edge messages, "
                     "model.init_face_encoder_checkpoint to replace only the face CNN, "
                     "model.init_uv_boundary_checkpoint to add supervised UV paths, "
+                    "model.init_shared_curve_checkpoint to initialize shared-curve UV decoding, "
                     "model.checkpoint for new-model initialization, or trainer.resume_from_checkpoint."
                 )
             if has_resume:
@@ -180,6 +181,7 @@ class UnifiedTrainer(pl.LightningModule):
                 OmegaConf.update(model_cfg, "init_encoder_edge_value_checkpoint", None, force_add=True)
                 OmegaConf.update(model_cfg, "init_face_encoder_checkpoint", None, force_add=True)
                 OmegaConf.update(model_cfg, "init_uv_boundary_checkpoint", None, force_add=True)
+                OmegaConf.update(model_cfg, "init_shared_curve_checkpoint", None, force_add=True)
                 model_cfg.checkpoint = None
                 OmegaConf.update(model_cfg, "restoring_checkpoint", True, force_add=True)
             if model_cfg.get("uv_boundary", {}).get("enabled", False) and not cfg.dataset.get("edge_uv_root"):

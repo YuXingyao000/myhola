@@ -15,6 +15,7 @@ init_curve_feedback_checkpoint: null
 init_encoder_edge_value_checkpoint: null
 init_face_encoder_checkpoint: null
 init_uv_boundary_checkpoint: null
+init_shared_curve_checkpoint: null
 checkpoint: null
 trainable_scope: all
 edge_threshold: 0.5
@@ -66,6 +67,12 @@ uv_boundary:
   dim_feedforward: 256
   dropout: 0.0
   candidate_chunk_size: 256
+
+# Added 2026-10-19: one final XYZ curve per reciprocal pair, then per-owner UV.
+# Keeps all early directed features and the exported half-edge rows.
+shared_curve:
+  enabled: false
+  hidden_dim: 128
 
 # One pass: the original face Transformer is called only before refinement.
 refinement:

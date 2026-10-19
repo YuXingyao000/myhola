@@ -75,9 +75,10 @@ def _map_directed_targets(output: RefinementOutput, batch: Mapping) -> DirectedT
 class IntersectionLoss(nn.Module):
     """Explicit raw losses, weighted training terms, and detached diagnostics."""
 
-    def __init__(self, cfg: dict, uv_boundary_enabled: bool = False):
+    def __init__(self, cfg: dict, uv_boundary_enabled: bool = False, shared_curve_enabled: bool = False):
         super().__init__()
         self.uv_boundary_enabled = uv_boundary_enabled
+        self.shared_curve_enabled = shared_curve_enabled
         self.uv_weight = float(cfg.get("uv_weight", 0.01))
         self.uv_anchor_weight = float(cfg.get("uv_anchor_weight", 0.1))
         self.coarse_weight          = float(cfg.get("coarse_weight", 0.25))
@@ -89,6 +90,37 @@ class IntersectionLoss(nn.Module):
         self.twin_weight            = float(cfg.get("twin_weight", 0.1))
         self.geometry_tolerance     = float(cfg.get("geometry_tolerance", 1e-5))
         self.geometry_chunk_size    = int(cfg.get("geometry_chunk_size", 32))
+
+    @staticmethod
+    def _shared_curve_batch(output: RefinementOutput, batch: Mapping, targets: DirectedTargets) -> dict:
+        """One GT parameterization per pair, preserving its two UV chart branches.
+
+        Only final-head targets change. Original directed targets still train
+        the coarse decoder and encoder teacher. No GT enters the decoder.
+        """
+        rows = targets.candidate_rows
+        owners = output.pairs.indices[rows]
+        reversed_rows = owners[:, 0] > owners[:, 1]
+        representatives = torch.where(reversed_rows, output.pairs.reverse[rows], rows)
+        row_lookup = torch.full_like(output.pairs.reverse, -1)
+        row_lookup[rows] = torch.arange(len(rows), device=rows.device)
+        source_rows = row_lookup[representatives]
+        source_edges = targets.edge_ids[source_rows]
+        aligned = dict(batch)
+        for name in ("edge_points", "edge_norm", "edge_bbox"):
+            values = batch[name][source_edges]
+            if name != "edge_bbox":
+                values = torch.where(reversed_rows[:, None, None], values.flip(1), values)
+            aligned[name] = batch[name].clone()
+            aligned[name][targets.edge_ids] = values
+        if "edge_uv_targets" in batch:
+            aligned_uv = {}
+            for name, values in batch["edge_uv_targets"].items():
+                selected = values[source_rows]
+                mask = reversed_rows.reshape(-1, *([1] * (selected.ndim - 1)))
+                aligned_uv[name] = torch.where(mask, selected.flip((1, 2)), selected)
+            aligned["edge_uv_targets"] = aligned_uv
+        return aligned
 
     def _reconstruction(self, stage: DecoderStage, batch: Mapping, targets: DirectedTargets) -> dict[str, Tensor]:
         return {
@@ -209,12 +241,14 @@ class IntersectionLoss(nn.Module):
         encoder_frozen: bool,
     ) -> dict[str, Tensor]:
         targets = _map_directed_targets(output, batch)
+        refined_batch = self._shared_curve_batch(output, batch, targets) if self.shared_curve_enabled else batch
         losses, weighted = {}, {}
         for name, stage, stage_weight in (
             ("coarse", output.coarse, self.coarse_weight),
             ("refined", output.refined, 1.0),
         ):
-            for term, value in self._reconstruction(stage, batch, targets).items():
+            stage_batch = batch if name == "coarse" else refined_batch
+            for term, value in self._reconstruction(stage, stage_batch, targets).items():
                 key = f"{name}_{term}"
                 weight = stage_weight * (self.classification_weight if term == "classification" else 1.0)
                 losses[key] = value
@@ -225,9 +259,9 @@ class IntersectionLoss(nn.Module):
             "encoder_edge_local": _mean_l1(teacher_geometry.local_points, batch["edge_norm"]),
             "encoder_edge_bbox": _mean_l1(teacher_geometry.center_scale, batch["edge_bbox"]),
             "face_xyz": _mean_l1(output.refined.face_geometry.points, batch["face_points"][..., :3]),
-            "edge_xyz": _mean_l1(output.refined.edge_geometry.points[targets.candidate_rows], batch["edge_points"][targets.edge_ids, :, :3]),
-            "incidence": self._incidence(output, batch, targets),
-            "twin": self._twin(output, batch, targets),
+            "edge_xyz": _mean_l1(output.refined.edge_geometry.points[targets.candidate_rows], refined_batch["edge_points"][targets.edge_ids, :, :3]),
+            "incidence": self._incidence(output, refined_batch, targets),
+            "twin": self._twin(output, refined_batch, targets),
             "kl_loss": kl_loss.detach() if encoder_frozen else kl_loss,
         })
         weights = {
@@ -241,7 +275,7 @@ class IntersectionLoss(nn.Module):
             "kl_loss": 0.0 if encoder_frozen else 1.0,
         }
         if self.uv_boundary_enabled:
-            losses.update(self._uv_boundary(output, batch, targets))
+            losses.update(self._uv_boundary(output, refined_batch, targets))
             weights.update({"uv": self.uv_weight, "uv_anchor": self.uv_anchor_weight})
         weighted.update({f"weighted_{name}": weight * losses[name] for name, weight in weights.items()})
         losses.update(weighted)
