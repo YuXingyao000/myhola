@@ -46,6 +46,15 @@
 
 2026-10-19 新增可选共享曲线/逐侧UV实验，见 [架构快照](../../checkpoints/shared_curve_uv/ARCHITECTURE.md)。`train_vae_shared_curve_uv` 保留CNN encoder冻结、原8层512维inter及refiner；只在final用`SharedCurveFusion`将互反h融合为共享g，经原曲线头解码一次，再反序展开为两条半边。`CurveConditionedUVPathHead`读取实际预测XYZ、g、该侧h和owner F；数据/sidecar不变，loss内部采用同一GT参数化。`init_shared_curve_checkpoint`从已训练UV-boundary来源显式迁移，新增45,630参数。实现/两机小批量验证完成，正式训练及合法率收益未验证；任意face重排的严格等变性与曲面UV回代相等不作保证。新结构默认关闭。
 
+2026-10-20 新增 [latent容量扩展](../../checkpoints/latent_expansion/README.md)；
+`train_vae_latent_expansion` 将 `latent_channels` 8→16，面/latent32→64、边64→128，
+原CNN与attention主干的层数/隐藏宽度不变。`init_latent_expansion_checkpoint`
+在已有checkpoint模块按语义段扩展完整同结构权重；新run解冻全部VAE，不能resume旧32维。
+mean初始化近等价，随机重参数采样分布不等价。sum KL系数5e-7，32维解冻对照1e-6，
+其余loss权重相同；对照入口 `train_vae_latent_expansion_control`。
+旧32维latent缓存和diffusion不兼容，后续评估必须各自Encoder编码。完整层级与验证边界见
+[ASCII架构](../../checkpoints/latent_expansion/ARCHITECTURE.md)，未训练的实现不算有效性证据。
+
 ## Diffusion：实际数据流
 
 1. `dataset.py:Diffusion_dataset` 读取 cache 并完成 padding；`diffusion/latents.py:LatentProvider` 取 mean，或用 std 采样。非 cache 分支调用冻结 VAE 再由 padder 打包。

@@ -39,6 +39,7 @@ class AutoEncoder_intersection(BaseVAE):
         face_encoder_path = cfg.get("init_face_encoder_checkpoint")
         uv_boundary_path = cfg.get("init_uv_boundary_checkpoint")
         shared_curve_path = cfg.get("init_shared_curve_checkpoint")
+        latent_expansion_path = cfg.get("init_latent_expansion_checkpoint")
         shared_curve_cfg = dict(cfg.get("shared_curve") or {})
         shared_curve_enabled = bool(shared_curve_cfg.get("enabled", False))
         uv_boundary_cfg = dict(cfg.get("uv_boundary") or {})
@@ -51,12 +52,14 @@ class AutoEncoder_intersection(BaseVAE):
         edge_value_cfg = cfg.get("encoder_edge_value") or {}
         restoring = bool(cfg.get("restoring_checkpoint", False))
         sources = (legacy_path, refinement_path, curve_feedback_path, edge_value_path,
-                   face_encoder_path, uv_boundary_path, shared_curve_path, full_path)
+                   face_encoder_path, uv_boundary_path, shared_curve_path,
+                   latent_expansion_path, full_path)
         if sum(bool(path) for path in sources) > 1:
             raise ValueError(
                 "Choose only one of init_legacy_checkpoint, init_refinement_checkpoint, "
                 "init_curve_feedback_checkpoint, init_encoder_edge_value_checkpoint, "
-                "init_face_encoder_checkpoint, init_uv_boundary_checkpoint, init_shared_curve_checkpoint or checkpoint"
+                "init_face_encoder_checkpoint, init_uv_boundary_checkpoint, init_shared_curve_checkpoint, "
+                "init_latent_expansion_checkpoint or checkpoint"
             )
         if restoring and any(sources):
             raise ValueError("Resume must restore the new checkpoint without a second initialization")
@@ -65,7 +68,8 @@ class AutoEncoder_intersection(BaseVAE):
                 "Refusing to freeze random weights: provide init_legacy_checkpoint, "
                 "init_refinement_checkpoint, init_curve_feedback_checkpoint, "
                 "init_encoder_edge_value_checkpoint, init_face_encoder_checkpoint, "
-                "init_uv_boundary_checkpoint, init_shared_curve_checkpoint or checkpoint"
+                "init_uv_boundary_checkpoint, init_shared_curve_checkpoint, "
+                "init_latent_expansion_checkpoint or checkpoint"
             )
         intersection_cfg = cfg.get("intersection")
         curve_conditioning_cfg = cfg.get("curve_conditioning")
@@ -116,6 +120,8 @@ class AutoEncoder_intersection(BaseVAE):
             initializer.init_uv_boundary(uv_boundary_path)
         if shared_curve_path:
             initializer.init_shared_curve(shared_curve_path)
+        if latent_expansion_path:
+            initializer.init_latent_expansion(latent_expansion_path)
         if full_path:
             checkpoint = torch.load(str(full_path), map_location="cpu", weights_only=False)
             state = checkpoint.get("state_dict", checkpoint)
@@ -151,9 +157,9 @@ class AutoEncoder_intersection(BaseVAE):
         return self.decoder(latents, face_counts)
 
     def forward(self, batch: Mapping[str, Tensor], v_test: bool = False) -> tuple[dict, dict]:
-        # Default widths: F packed faces, Egt edge samples, P candidate face pairs.
-        encoding = self.encode(batch, v_test)  # face [F,32], edge teacher [Egt,64]
-        # z [F,32], scalar KL, cached mean/std [F,64].
+        # D = face_feature_dim (32 or 64); F packed faces, P candidate pairs.
+        encoding = self.encode(batch, v_test)  # face [F,D], edge teacher [Egt,2D]
+        # z [F,D], scalar KL, cached mean/std [F,2D].
         latents, kl_loss, statistics = self.sample(encoding["face_features"], v_is_test=v_test)
         prediction = self.decode(latents, batch["face_counts"])  # geometry + [P] logits
         # Training-only edge reconstruction; decoder predictions never read GT edges.

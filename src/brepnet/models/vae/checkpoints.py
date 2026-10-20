@@ -31,6 +31,163 @@ class IntersectionCheckpointLoader:
     def __init__(self, model):
         self.model = model
 
+    @staticmethod
+    def _repeat_latent_parameter(value, *, segments=(), repeat_output=False, attention=False):
+        """Duplicate a feature axis while retaining its initial readout.
+
+        Slightly unequal input shares sum to one: identical channels give the
+        old output, but receive different gradients once joint training starts.
+        The GAT score itself uses equal shares because it sums over channels.
+        """
+        input_shares = (0.49, 0.51)
+        if attention:
+            return value.repeat(1, 1, 2) * 0.5
+        if segments:
+            chunks = value.split([width for _, width, _ in segments], dim=1)
+            value = torch.cat([
+                torch.cat([chunk * share for share in input_shares], dim=1)
+                if expand else chunk
+                for chunk, (_, _, expand) in zip(chunks, segments)
+            ], dim=1)
+        if repeat_output:
+            value = value.repeat(2, *([1] * (value.ndim - 1)))
+        return value
+
+    def _latent_expansion_layout(self, old_face_dim):
+        """Describe the feature segments read by each changing interface."""
+        face, edge = old_face_dim, 2 * old_face_dim
+        layout = {}
+
+        def linear(prefix, segments=(), repeat_output=False):
+            layout[prefix + ".weight"] = {
+                "segments": segments, "repeat_output": repeat_output,
+            }
+            if repeat_output:
+                layout[prefix + ".bias"] = {"repeat_output": True}
+
+        # Channel-major flatten: copying CNN channels yields [F,F] / [E,E].
+        for kind in ("face", "edge"):
+            encoder = getattr(self.model.encoder, kind + "_coords")
+            projection = next(
+                name for name, module in reversed(list(encoder.named_children()))
+                if isinstance(module, (torch.nn.Conv1d, torch.nn.Conv2d))
+            )
+            linear(f"encoder.{kind}_coords.{projection}", repeat_output=True)
+        linear("encoder.face_attn_proj_in", [("F", face, True)])
+        linear("encoder.face_attn_proj_out", repeat_output=True)
+        for index, layer in enumerate(self.model.encoder.graph_face_edge):
+            if not hasattr(layer, "lin_edge"):
+                continue
+            prefix = f"encoder.graph_face_edge.{index}"
+            layout[prefix + ".att"] = {"attention": True}
+            layout[prefix + ".bias"] = {"repeat_output": True}
+            linear(prefix + ".lin_l", [("F", face, True)], repeat_output=True)
+            linear(prefix + ".lin_r", [("F", face, True)], repeat_output=True)
+            # PyG's edge projection has no bias.
+            layout[prefix + ".lin_edge.weight"] = {
+                "segments": [("E", edge, True)], "repeat_output": True,
+            }
+        for branch in ("global_feature1", "global_feature2"):
+            for index in (0, 2):
+                segments = [("F", face, True)]
+                if branch == "global_feature2" and index == 0:
+                    segments.append(("global_F", face, True))
+                linear(f"encoder.{branch}.{index}", segments, repeat_output=True)
+        linear("posterior.projection.0", [("F", face, True)], repeat_output=True)
+        posterior_hidden = self.model.posterior.projection[2].in_features // 2
+        linear("posterior.projection.2", [("hidden", posterior_hidden, True)], repeat_output=True)
+        # The final posterior rows remain [mu0,logvar0,...,muD,logvarD].
+        # Repeating the complete row sequence repeats latent coordinates.
+        linear("decoder.face_features.input_projection", [("z", face, True)])
+        linear("decoder.face_features.output_projection", repeat_output=True)
+        for kind, channels, features in (("face", face // 4, face), ("edge", face, edge)):
+            prefix = f"decoder.{kind}_geometry"
+            for path in ("conv1", "downsample.0"):
+                linear(prefix + ".points_decoder.1." + path, [("channels", channels, True)])
+                linear(prefix + ".bbox_decoder.0." + path, [("feature", features, True)])
+        linear("decoder.inter.attn_proj_in", [("F", face, True)])
+        linear("decoder.inter.attn_proj_out", repeat_output=True)
+        linear("decoder.classifier", [("E", edge, True)])
+
+        decoder = self.model.decoder
+        if decoder.refiner is not None:
+            geometry = decoder.refiner.geometry_read.pool_projection.out_features
+            hidden = decoder.refiner.message_encoder[0].out_features
+            linear("decoder.refiner.message_encoder.0", [("E", edge, True), ("geometry", geometry, False)])
+            linear("decoder.refiner.relation_encoder.0", [
+                ("E", edge, True), ("geometry", geometry, False),
+                ("F_i", face, True), ("F_j", face, True),
+                ("context_i", hidden, False), ("context_j", hidden, False),
+            ])
+            linear("decoder.refiner.face_update.0", [("F", face, True), ("context", hidden, False)])
+            linear("decoder.refiner.edge_delta", repeat_output=True)
+            linear("decoder.refiner.face_delta", repeat_output=True)
+        if decoder.curve_conditioning_enabled:
+            linear("decoder.edge_geometry.conditioning.projection.0", [
+                ("E", edge, True), ("F_i", face, True), ("F_j", face, True),
+            ])
+        if decoder.shared_curve_enabled:
+            linear("decoder.shared_curve.residual.0", [("h_ij", edge, True), ("h_ji", edge, True)])
+            linear("decoder.shared_curve.residual.2", repeat_output=True)
+        if decoder.uv_boundary is not None:
+            segments = (
+                [("h", edge, True), ("g", edge, True), ("F_owner", face, True)]
+                if decoder.shared_curve_enabled
+                else [("E", edge, True), ("F_i", face, True), ("F_j", face, True)]
+            )
+            linear("decoder.uv_boundary.context.0", segments)
+        return layout
+
+    def init_latent_expansion(self, path: str) -> None:
+        """Warm-start a new run by doubling the current face/edge interfaces."""
+        checkpoint, source = _read_checkpoint(path)
+        current = self.model.state_dict()
+        if source.keys() != current.keys():
+            raise ValueError(
+                "Latent expansion requires a complete checkpoint of the same architecture; "
+                f"missing={sorted(current.keys() - source.keys())}, "
+                f"unexpected={sorted(source.keys() - current.keys())}"
+            )
+        old_face_dim = source["encoder.face_attn_proj_out.bias"].numel()
+        if self.model.face_feature_dim != old_face_dim * 2:
+            raise ValueError("Latent expansion doubles face/edge feature dimensions")
+        layout = self._latent_expansion_layout(old_face_dim)
+        expanded, retained, weights = {}, [], {}
+        for key, target in current.items():
+            value = source[key]
+            if key in layout:
+                rule = layout[key]
+                result = self._repeat_latent_parameter(value, **rule)
+                expanded[key] = {
+                    "source_shape": list(value.shape), "target_shape": list(target.shape),
+                    "rule": rule,
+                }
+            else:
+                result = value
+                retained.append(key)
+            if result.shape != target.shape:
+                raise ValueError(
+                    f"Unsupported latent expansion at {key}: "
+                    f"source={tuple(value.shape)}, mapped={tuple(result.shape)}, target={tuple(target.shape)}"
+                )
+            weights[key] = result
+        self.model.load_state_dict(weights, strict=True)
+        self.model.initialization_report = {
+            "source": str(path), "source_epoch": checkpoint.get("epoch"),
+            "source_global_step": checkpoint.get("global_step"),
+            "source_face_dim": old_face_dim, "target_face_dim": self.model.face_feature_dim,
+            "retained_state_keys": len(retained), "retained_keys": retained,
+            "expanded_state_keys": len(expanded), "expanded_keys": expanded,
+            "input_channel_shares": [0.49, 0.51], "gat_attention_shares": [0.5, 0.5],
+            "mapping": "Repeat feature channels; split duplicated input weights by semantic segment; retain every other tensor.",
+            "equivalence": "Posterior-mean evaluation only; independently sampled duplicated latents change training noise.",
+        }
+        logger.info(
+            "Latent expansion %s -> %s from %s (step %s): %s retained tensors, %s expanded interfaces.",
+            old_face_dim, self.model.face_feature_dim, path, checkpoint.get("global_step"),
+            len(retained), len(expanded),
+        )
+
     def init_shared_curve(self, path: str) -> None:
         """Initialize from the complete trained two-owner UV auxiliary model.
 
