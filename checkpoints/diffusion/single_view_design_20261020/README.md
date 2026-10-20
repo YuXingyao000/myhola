@@ -33,7 +33,7 @@
 ### 2. Assumptions
 
 - 已核对：旧 SVR 为 1024 维、24 层、图像全局 concat；现有主分支 layerwise 模型不能直接作为它的严格 resume 入口。
-- 建议默认：冻结旧 SVR 作为 reference，从相同权重初始化 trainable 副本；固定原版配套 VAE/cache，保留已有图像投影，不从无条件模型重新开始。
+- 建议默认：冻结旧 SVR 作为 reference，从相同权重初始化 trainable 副本；固定最初HoLa-BRep的配套VAE/cache，保留已有图像投影，不从无条件模型重新开始。用户明确指出当前VAE有多次迭代，不能仅凭模型名或32维shape假定latent兼容。
 - 建议默认：每图固定 `K=8`，同图不同 seed，先做一轮离线候选收集。没有合格 pair 的图片不追加采样。
 - 待定：训练 CAD 清单与规模、GT 几何质量门槛、允许退步的容差、LFD 近重复阈值、DPO 时间权重与损失权重、训练预算。
 - 待定：已有灰模相机与 renderer 是否能够逐像素对应。未经核实不能使用重投影指标作为标签。
@@ -42,7 +42,8 @@
 
 - 图片：train split、灰模 view 0 的 `imgs.npz["svr_imgs"]`，不混入生成照片。
 - 基础权重：`/mnt/d/ckpt/HoLa/Diffusion_svr_sq30_1500k.ckpt`，记录完整 hash。
-- 固定 decoder：与该 diffusion 对应的原版 AE；独立加载时检查参数与缓存来源，不同时换用 VAE 实验分支。
+- 固定 decoder：最初HoLa-BRep的原版AE，优先从旧SVR完整checkpoint中加载。已有[逐参数审计](../svr_comparison_20261017/report/provenance.md)确认其704个AE tensor与 `/mnt/d/ckpt/HoLa/AE_deepcad_1100k.ckpt` 完全一致；这是此前审计记录，不是对当前所有磁盘缓存的重新验收。训练cache仍需核对编码器、mean/std约定、rotation及对应关系。
+- 用户允许考虑最新UV改进VAE，但本轮旧SVR继续训练建议先采用上述原版组合。若改用改变encoder/posterior的UV版本，应重新编码数据并适配或重训diffusion，除非有独立证据证明latent保持兼容；不能把旧cache或旧diffusion输出直接送入新decoder就称为已完成迁移。
 - 训练 GT：对应 CAD、原始 face/half-edge 几何、latent cache；指标计算可使用 GT，不作为推理条件。
 - validation：用于规则、阈值与 checkpoint 选择；test 仅在方案冻结后作最终评估。不能从 validation/test 候选构造梯度训练对。
 - CAD identity、view、rotation、归一化坐标与 split 一致，不通过最优旋转、ICP 或预测独立缩放提高指标。
@@ -60,7 +61,7 @@
 1. 固定清单、split、模型/VAE、坐标、采样与后处理协议。
 2. 为 train 每图生成 K 个候选：建议沿用 1000 步原生 DDPM、FP32、无 CFG、无 GT 选样与无额外重试。保存完整采样 latent 和随机状态溯源。
 3. 使用原版去重与 VAE 解码，保存 raw 面、半边、连接；模型原始输出不被后处理覆盖。
-4. 使用统一后处理。建议沿用已完成对照的 legacy/drop=0、名义200步（原实现可扩至600）、180秒预算；任何改动单独版本化。
+4. 按用户修正，使用当前优化后的 `post_policy="recover_v1"`，不再使用旧对照的纯legacy策略。固定 optimized、drop=0、名义200步（原实现可扩至600）。建议沿用现有隔离runner每候选180秒的整子进程预算，包含后处理、有效性和几何测量；recover_v1最多四条内部路径共享预算，首次合格即停止且不读GT。策略见[后处理总览](../../postprocess_refinement/README.md)。生产函数默认仍是legacy，接入时必须显式传策略；不能仅沿用旧CLI就认定启用了recover_v1。
 5. 先记录状态与原生有效性，再计算 raw/post 几何和拓扑；不成功的候选也保留在清单。
 6. 按下述规则建立同图正负对。第一轮每图最多取一对；多个合格 pair 用固定 seed 均匀选取，不按最高总分挑选，避免候选多的图片获得更多权重。
 7. 用 pair 训练单图模型；保留原 GT DDPM 监督，旧 reference、DINO 与 VAE 冻结。可训练图像投影的冻结范围需在实现配置中明确。
@@ -74,7 +75,7 @@
 |---|---|---|---|---|
 | S1 | requested / inferred / decoded / STEP / measurable | 各阶段成功数除以预定 `M×K`；每图另列 K 次状态 | 分母和失败分析 | 已有固定分母包装，可扩展 |
 | V1 | native valid solid ↑ | 原容差读取 STEP，最外层类型为 SOLID 且 BRepCheck 通过；不放宽容差 | 正负配对核心 | 已有 `tools/vae_compare_post.py` 实现 |
-| V2 | compat valid at 0.1 ↑ | 独立重读、precision=0.1、SetTolerance(0.1) 后检查 | 历史对照，不选 pair | 已有；不是 V1 |
+| V2 | compat valid at 0.1 ↑ | 独立重读、precision=0.1、SetTolerance(0.1) 后检查；重设容差不保证总比原值宽松 | 历史对照，不选 pair | 已有；不是 V1 |
 | G1 | raw face CD² ↓ | 原始所有 face grid XYZ 合并后双向最近平方距离均值之和 | 配对质量保护 | 已计算过 |
 | G2 | raw edge CD² ↓ | 原始所有半边点合并；与 face 分开计算 | 配对质量保护 | 已计算过 |
 | G3 | raw face P/R/F1 ↑ | primitive 两两 CD² 代价、Hungarian；匹配代价<0.1为TP | 配对质量保护 | 已计算过 |
@@ -106,6 +107,8 @@ CD^2(P,Q)=\frac{1}{|P|}\sum_{p\in P}\min_{q\in Q}\|p-q\|^2
 
 **采样口径建议**：raw使用原网格；post沿用已完成100件对照的每面1024点（面内按三角面积随机采样）、每边128点（原生curve参数均匀，非弧长均匀），vertex取真实顶点。逐候选固定采样seed。统一 `condition.py` 默认的面积/长度自适应点数是另一套协议，不能混为同列。
 
+**0.1容差检查的含义**：容差是几何内核判断点、边、面是否吻合时允许的误差尺度。旧兼容检查先按0.1精度读取，再强制把形状子元素容差设为0.1；不是0.1%的错误率，不等于把几何修好了，也不能不核对坐标单位就称为0.1毫米。它可能增大或减小原容差。V1不在评价阶段重设容差，但仍使用STEP本身存储的容差，因此也不等于统一工程精度认证。V2只作历史对照，不进入训练标签。
+
 **观测与多样性限制**：现有 `visible_condition` 把全部预测面与GT中可见比例≥0.05的整张面比较，会处罚合理隐藏面，不充当O1–O3。D1变大不证明隐藏补全更合理；只有O1–O3可信后，才能另报观测合格子集的多样性及该子集占K的比例。第一轮D1明确叫“合法候选间差异”，不是“合理补全覆盖率”。LFD提取/归一化/对齐与网格质量固定，姿态/尺度误差另外报告。
 
 现有100件报告仅覆盖raw face/edge CD、raw face P/R/F1与面数、post face/edge CD、两种validity和状态/耗时；没有vertex、post primitive F1、FE/EV、重投影或同图LFD的既成结果。
@@ -121,7 +124,11 @@ CD^2(P,Q)=\frac{1}{|P|}\sum_{p\in P}\min_{q\in Q}\|p-q\|^2
 5. 所有τ/ε待validation校准并冻结。本轮没有虚构数值；未冻结前不构建正式训练标签。
 6. 两个都合法、两个都无效、质量互有优劣或任何必需指标缺失：第一轮不建pair，保留原因和全部候选记录。
 
+**K=8不保证能配对，也不要求每图都有正负样本。**八个都合法时不构造有效性pair；八个都无效时也不临时指定一个“较不坏”的正样本。这些图片仍参加原始GT DDPM训练。每图有效候选数、实际pair图片数/全部图片数，以及配对图片的面数分布都应报告，避免把只覆盖部分难度的结果泛化。若pair过少，应判断是失败稀少还是集中在少数图片；不无限加K、不人为破坏latent、不从另一张图片借负样本。新后处理可能救回旧失败，必须重算旧模型在recover_v1下的基线和候选标签，不能用旧74/100估计本轮pair产出。
+
 这比前面“两个合法结果也按完整GT距离排序”的提议更保守，避免直接把合法的不同背面当负样本。GT质量门槛仍可能偏好接近唯一GT的候选，不能据此保证隐藏多样性不受影响。
+
+若另行研究提高GT几何重建精度，两个合法候选也可形成相对优劣：例如post face/edge CD²均有明确改善且face F1不退步时才建立 `geometry_pair`。这里“负”表示相对较差，不要求无效。但这是独立的新训练目标，需规定改善幅度与保护阈值；会偏向完整GT的隐藏部分，不默认为第一轮有效性方案的一部分，也不因K=8全合法就临时启用。
 
 后续若启用 `observation_pair`，需先完成O1–O3的相机与参考提取核验：两个都合法时，仅在至少一个观测指标有超过噪声的改善、其余受保护观测指标没有明显退步时建立pair；仅隐藏部分不同的不强排。它不属于第一轮已定实现。
 
