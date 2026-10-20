@@ -4,6 +4,25 @@
 `Diffusion_svr_sq30_1500k.ckpt` 内的原始 VAE 和 DINO。
 只处理灰模 `svr_imgs[0]`。规则定义以 [PLAN.md](PLAN.md) 为准，旧v2提议不生效。
 
+## 本次运行
+
+2026-10-20 13:49:30 UTC启动正式数据生成：
+
+- 代码提交：`0c5ff7346d86bb3194b4ea222f7db60b2032dc63`。
+- GPU：4、5、6、7；CPU后处理worker 16，有界待处理队列32。
+- Run：`/mnt/d/python/checkpoints/diffusion/preference_data/20261020T134930Z`。
+- 日志：`/mnt/d/python/checkpoints/diffusion/preference_data/20261020T134930Z.log`。
+- tmux：`diffusion-preference-20261020T134930Z`。
+- 正式训练未启动；数据生成启动后不持续监看。
+
+启动检查确认四个worker均完成旧checkpoint加载，已产生候选；随后结束监看。
+本机提交成功，代码提交的后台同步被目标端同分支检查拒绝，两端分支不一致；
+未切换目标端分支，也未强推。本机生成不依赖该同步。
+
+实现验收：32项测试通过，2项可选GPU测试在普通测试命令中跳过，实际GPU检查另行执行并记录。
+多进程真实接口测试使用2个validation对象、1个train对象，K=8共24候选；阶段转换、
+两类pair、manifest及训练dataset只读加载均通过。这些小规模结果不用于推断全量pair率。
+
 ## 生成和训练的分工
 
 | 模块 | 职责 |
@@ -83,7 +102,7 @@ VAE不参与反传，OCC不进入训练step。reference连同policy、DINO一起
 
 ```bash
 # 示例预算与设备，启动前按实际计划填写。
-PREFERENCE_RUN=/absolute/path/to/completed/preference_run
+PREFERENCE_RUN=/mnt/d/python/checkpoints/diffusion/preference_data/20261020T134930Z
 TRAIN_STEPS=10000
 CUDA_VISIBLE_DEVICES=4,5,6,7 /mnt/d/anaconda3/envs/torch/bin/python -m src.brepnet.train \
   --config-name train_diffusion_preference \
