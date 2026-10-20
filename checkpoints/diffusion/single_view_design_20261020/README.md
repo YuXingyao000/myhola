@@ -1,0 +1,89 @@
+# 单视图 diffusion：从目标到公共主干
+
+状态：2026-10-20 讨论方案；未修改生产网络、未启动训练。本轮先确定单图与无条件共用的结构，再确定无条件验证。此前 768 维实验结果保留，不能由其 0/1000 合法 solid 单独推断宽度导致失败。
+
+## 已核对的事实
+
+- 旧无条件 checkpoint 的结构是 `32→768` 输入 MLP，拼接 256 维零条件，进入 1024 维、16 heads、24 层 TransformerEncoder，FFN 为 2048。时间嵌入与输出头均按 1024 维工作。
+- 旧单图分支使用冻结 DINOv2 ViT-L/14 with registers 的 CLS，再经 MLP 得到 256 维条件。256 维在输入端有条件语义，进入 Transformer 后与其余维度一起运算。
+- 前一轮新无条件配置继承当前 768 维、12 heads 的主干；同时训练数据、增强行为、冻结 AE 的运行模式和实际训练量也与旧 checkpoint 有差异。没有理论要求移除条件拼接时同步缩窄主干。
+- 旧无条件 checkpoint 已有固定 1000 次生成的评估资产；它是真正训练过的无条件模型。模型名称包含 `Diffusion_condition` 不改变这一事实。
+
+依据：[旧基线](../uncond_baseline_20261018/README.md)、[新训练协议](../uncond_training_20261018/PLAN.md)、[完整生成对比](../uncond_comparison_20261019/README.md)。
+
+## 要学习的随机变量
+
+设 CAD 为 \(G\)，冻结编码器输出的 mean latent 为 \(E_\mu(G)\in\mathbb R^{N\times32}\)。训练变量为：
+
+\[
+Z_0=\Pi\,\mathrm{Pad}_{30}(E_\mu(G)),\qquad
+Z_t=\sqrt{\bar\alpha_t}Z_0+\sqrt{1-\bar\alpha_t}\epsilon.
+\]
+
+Pad 随机复制已有面，\(\Pi\) 表示随机排列；\(\epsilon\) 是各元素独立的标准高斯噪声。网络联合预测全部 `[B,30,32]` 元素的噪声。slot 对应的是同一 CAD 的面集合，不具有固定面编号语义。
+
+同一真实面的多个副本在加噪后不同，模型需要学会恢复其共同干净目标。最终去重恢复变长面集合；这使重复关系也成为生成任务的一部分。30 个 slot 全部保留不直接证明去重实现错误。
+
+在固定相机、CAD 坐标和归一化约定下，省略相机条件，有：
+
+\[
+p(Z_0\mid I)\propto p(Z_0)p(I\mid Z_0).
+\]
+
+这是整组 latent 的联合分布。表示承载几何和拓扑，不意味着任意 latent 集合都能被 decoder 解成合法 solid。单图不能确定的隐藏结构应保留分布，而不是强制唯一的面数或背面形状。
+
+在噪声时刻 \(t>0\)，定义 \(s_t=\nabla_{Z_t}\log p_t\)，则：
+
+\[
+s_t(Z_t\mid I)=s_t(Z_t)+\nabla_{Z_t}\log p_t(I\mid Z_t),\quad
+p_t(I\mid Z_t)=\int p(I\mid Z_0)p(Z_0\mid Z_t)\,dZ_0.
+\]
+
+这个恒等式解释图片如何改变去噪方向，不指定网络必须分为两个模块，也不指定 concat、cross-attention、层数或宽度。条件残差层不能自动等同于右侧的 likelihood 梯度。高噪声单步均值的渲染也不等于这个积分。
+
+未知相机时需要讨论 \(p(Z_0,c\mid I)\) 或边缘化相机；这里的固定相机推导不能直接当作未知实拍相机协议。
+
+## 建议的第一版结构
+
+保留旧 1024 主干的完整计算结构，条件采用已有的全局拼接接口：
+
+\[
+g_\phi(I)=\mathrm{MLP}_\phi(\mathrm{DINO}_{CLS}(I))\in\mathbb R^{256},
+\quad
+h_0=\mathrm{Concat}(P_{32\to768}(Z_t),\mathrm{Repeat}_{30}(g))+T_{1024}(t).
+\]
+
+- 输入投影：Linear 32→768，LayerNorm，SiLU，Linear 768→768。
+- 图片投影：冻结原 DINO CLS 1024 维；Linear 1024→1024，LayerNorm，SiLU，Linear 1024→256。
+- 无条件输入：投影后的完整 256 维向量显式置零；不是将图片或 DINO 特征置零后再过带 bias 的 MLP。
+- 新图片投影末层的权重和 bias 建议零初始化；完整旧主干加载后，训练开始时条件与无条件输出均能复现旧 prior。上游图片投影通常从末层开始更新后才获得梯度。
+- 每层：pre-LN self-attention（16 heads×64）与残差；pre-LN FFN（1024→2048→1024，ReLU）与残差；共 24 层，参数不共享。
+- 最终 LayerNorm；输出 MLP 为 Linear 1024→1024，LayerNorm，SiLU，Linear 1024→32。
+- DDPM、latent 去重、冻结原版 VAE 和后处理使用同一接口。无固定 face-slot 位置编码；应满足 \(f(\Pi Z_t,t,g)=\Pi f(Z_t,t,g)\)（推理模式）。
+
+完整保留旧投影和时间注入；仅把当前 `hidden_dim` 改为 1024 不等同于上述结构。
+
+这条路径实际以 \(g(I)\) 为条件。要达到 \(p(Z_0\mid I)\)，图像特征必须保留任务需要的信息；维度 256 本身既不能证明充分，也不能证明不足。HoLa §5.6 已讨论全局一维条件向量和 padding/de-dup 的局限。
+
+保留 patch 并通过 cross-attention 读取是针对图像信息压缩的备选。它可以保留 face 排列等变性，也不需要预先将 patch 与 face 一一对应；但 attention 权重不自动成为几何对应。后续比较保持 1024 主干与相同数据/训练预算，仅改变条件读取接口。本轮不将其设为必需模块。
+
+## 训练与之后的无条件验证
+
+令 \(m\sim\mathrm{Bernoulli}(1-p_{\mathrm{drop}})\)，采用：
+
+\[
+\mathcal L=\mathbb E\|\epsilon-\epsilon_{\theta,\phi}(Z_t,t,m\,g_\phi(I))\|_F^2.
+\]
+
+先验证 \(g=0\) 的公共主干，再从该 prior 初始化条件阶段；条件阶段共同训练主干和图片投影，随机丢弃图片条件。保留原版 VAE。条件丢弃提供持续的无条件监督，不保证微调后无条件质量绝不退步，也不等同于必须启用额外的 CFG 强度放大。
+
+已经有无条件 checkpoint，首先应验证公共主干严格承接其权重和推理行为，不需要为证明已知旧能力重新从零训练。若研究问题是当前数据协议下的重新训练能力，再单独以这份完整 1024 结构运行，固定数据、预算和评估。旧/new 数据分布不同时，权重复用属于初始化或适应，不是等训练条件的宽度消融。
+
+评估沿用已有合法 solid、MMD-CD/COV/JSD、LFD 与复杂度等指标及逐件失败分母，同时记录去重后面数。之后条件阶段需分别检查关条件的生成能力、开条件的可见几何一致性及固定采样预算的多样性；单独的噪声 loss 不能代替这些证据。
+
+## 原始文献
+
+- [HoLa](https://arxiv.org/html/2504.14257v1)：§3–4.3 表示与生成，§5.4 单图多候选，§5.6 条件压缩和 padding 局限。网络精确宽度以 checkpoint 和源码审计为准。
+- [DDPM](https://arxiv.org/abs/2006.11239)：高斯加噪、噪声预测与反向采样。这里使用已审计代码的 epsilon 参数化；不把论文简写的 latent 重建损失当作 checkpoint 配置。
+- [Classifier-Free Diffusion Guidance](https://arxiv.org/html/2207.12598v1)：Algorithm 1 的有条件/无条件共同训练；条件丢弃与推理 guidance 强度是两个不同选择。
+- [Latent Diffusion Models](https://arxiv.org/abs/2112.10752)：cross-attention 是已有条件注入方式，不构成其必然适合当前 HoLa 训练的证据。
