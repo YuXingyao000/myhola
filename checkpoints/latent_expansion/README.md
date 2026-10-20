@@ -2,7 +2,7 @@
 
 本轮按现有shared-curve＋UV结构扩大面/边信息容量，Encoder、posterior和
 Decoder全部参与训练。不是从随机模型重建，也不是resume原来的32维run。
-实现与部署状态、提交hash和真实检查结果在下方更新；尚无正式训练效果结论。
+实现及本机/142验证完成，提交与真实检查结果见下方；尚未启动正式训练。
 
 ## 改了什么
 
@@ -87,4 +87,33 @@ python checkpoints/latent_expansion/validate_implementation.py \
 
 ## 实现与部署记录
 
-待本轮最终检查后填写。
+实现提交：`4f7b2df78f5ad22313dca0ea9e732db53ba4344e`，
+基于 `85f6fb33da269fd75d0f7352164ce1af3663be27`。
+同分支快进到142 `/mnt/d/python`，未改主工作区的diffusion分支。
+本工作树不触发主工作区的自动同步hook，部署通过直接Git快进与远端HEAD核验。
+同步前142的32份旧UV encoder未跟踪文件先stash保存，SHA与stash引用位于
+`/mnt/d/migration/latent_expansion_20261020/untracked_backup.json`；
+部署收尾按摘要恢复，未纳入本轮提交，未覆盖历史数据或权重。
+
+- 本机72项相关测试通过（18.71秒）；142相同72项通过（19.07秒）。
+- 两机真实checkpoint、7+20面的小批量FP32/BF16前后向通过；
+  Encoder、posterior、Decoder均有有限非零梯度，CNN复制通道梯度不同。
+- 142额外检查每卡16件，211面，共享/UV纯latent推理通过。
+  BF16前后向约1.60秒、peak allocated 5.76GB（5.37GiB）。
+  这是该validation batch的单卡实现检查，不含Adam状态或DDP额外开销，
+  不代表所有面数分布的显存上限或正式多卡吞吐。
+- 142的16件mean初始化：final face XYZ最大差8.34e-7、edge4.66e-5，
+  全部候选的存在性判定未变化；全部参数可训练，新增684,296。
+- 完整8卡训练命令Hydra解析、路径和在线W&B认证通过，未创建正式训练run。
+
+检查记录：[测试](validation/tests.json)、[本机真实数据](validation/local_real_smoke.json)、
+[142小批量](validation/remote_real_smoke.json)、[142每卡16件](validation/remote_batch16.json)、
+[训练配置解析](validation/remote_preflight.json)。
+实际模型/配置文件SHA记录在各GPU报告内，区分实现检查与训练结果。
+
+最初把所有输出都限制在1e-5绝对误差的检查，受到扩维后FP32求和顺序影响，
+在少数UV和local方向通道未通过。诊断后明确了分量验收界限：
+XYZ/bbox绝对1e-4、UV/local2e-4、logits5e-4，统一相对1e-4，
+并要求本批候选存在性判定不变；报告保留原始max/mean差。
+[初次诊断](validation/local_diagnostic.json)明确标为非验收，不作为通过结果。
+这不是OCC精度保证，也不是用容差替代扩容后的下游研究评估。

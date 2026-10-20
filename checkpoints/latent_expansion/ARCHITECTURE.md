@@ -1,10 +1,11 @@
 # Latent64：整体架构快照
 
-日期：2026-10-20。实现提交待本轮验证后记入 README 的部署记录。
+日期：2026-10-20。实现提交：`4f7b2df78f5ad22313dca0ea9e732db53ba4344e`。
+本文件的提交hash/验收状态在实现后的文档提交中补齐，网络代码未变。
 代码基准：`85f6fb33da269fd75d0f7352164ce1af3663be27`。
 配置：`configs/train_vae_latent_expansion.yaml`；
 32维解冻对照：`configs/train_vae_latent_expansion_control.yaml`。
-状态：实现中，未正式训练，不代表几何或合法率改善。
+状态：实现及本机/142验证完成，未正式训练，不代表几何或合法率改善。
 
 ## 输入、输出与模块
 

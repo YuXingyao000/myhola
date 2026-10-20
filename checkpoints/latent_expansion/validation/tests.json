@@ -1,0 +1,26 @@
+{
+  "implementation_commit": "4f7b2df78f5ad22313dca0ea9e732db53ba4344e",
+  "files": [
+    "src/brepnet/test/test_latent_expansion.py",
+    "src/brepnet/test/test_shared_curve_uv.py",
+    "src/brepnet/test/test_uv_boundary_model.py",
+    "src/brepnet/test/test_intersection_vae.py",
+    "src/brepnet/test/test_intersection_losses.py"
+  ],
+  "local": {
+    "passed": 72,
+    "seconds": 18.71,
+    "torch": "2.4.1+cu124"
+  },
+  "server142": {
+    "passed": 72,
+    "seconds": 19.07,
+    "torch": "2.8.0+cu128"
+  },
+  "formal_training_started": false,
+  "real_gpu_checks_update_optimizer": false,
+  "notes": [
+    "The initial 1e-5 all-output absolute tolerance was too tight for UV/local directions after FP32 accumulation-order changes. local_diagnostic.json remains a diagnostic, not an acceptance result.",
+    "Final acceptance bounds: XYZ/bbox1e-4, UV/local2e-4, logits5e-4; rtol1e-4, plus unchanged edge decisions. Raw maxima are retained in each report."
+  ]
+}

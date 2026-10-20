@@ -1,0 +1,1774 @@
+{
+  "purpose": "implementation_only_no_optimizer_steps",
+  "status": "passed",
+  "git_commit": "4f7b2df78f5ad22313dca0ea9e732db53ba4344e",
+  "git_dirty": false,
+  "checkpoint": "/mnt/d/python/checkpoints/shared_curve_uv/candidate/20261019T064906.049992Z/weights/epoch=0116-step=00042471-val_loss=0.036517.ckpt",
+  "checkpoint_sha256": "ce749416c1635dda1563161b971bd4260d064cfdb0c31f1fa9d06ad0e70961ff",
+  "source_epoch": 116,
+  "source_global_step": 42471,
+  "torch": "2.8.0+cu128",
+  "device": "cuda:0",
+  "gpu": "NVIDIA GeForce RTX 5090",
+  "batch_size": 2,
+  "checks": [
+    {
+      "precision": "float32",
+      "seconds": 0.48660032358020544,
+      "losses": {
+        "coarse_face_local": 0.0028739729896187782,
+        "coarse_face_bbox": 0.0012424556771293283,
+        "coarse_edge_local": 0.001188180292956531,
+        "coarse_edge_bbox": 0.0023637202102690935,
+        "coarse_classification": 0.0003423905582167208,
+        "refined_face_local": 0.0026654498651623726,
+        "refined_face_bbox": 0.0011978693073615432,
+        "refined_edge_local": 0.0011376099428161979,
+        "refined_edge_bbox": 0.0018259244970977306,
+        "refined_classification": 9.694371692603454e-05,
+        "edge_feature": 0.020282238721847534,
+        "encoder_edge_local": 0.0011424499098211527,
+        "encoder_edge_bbox": 0.0009384672739543021,
+        "face_xyz": 0.001456785132177174,
+        "edge_xyz": 0.0020680036395788193,
+        "incidence": 0.0017536119557917118,
+        "twin": 5.290341960062506e-07,
+        "kl_loss": 0.0009108083322644234,
+        "uv": 0.03971419855952263,
+        "uv_anchor": 0.0017300149193033576,
+        "uv_valid_fraction": 1.0,
+        "weighted_coarse_face_local": 0.0007184932474046946,
+        "weighted_coarse_face_bbox": 0.00031061391928233206,
+        "weighted_coarse_edge_local": 0.00029704507323913276,
+        "weighted_coarse_edge_bbox": 0.0005909300525672734,
+        "weighted_coarse_classification": 8.55976395541802e-06,
+        "weighted_refined_face_local": 0.0026654498651623726,
+        "weighted_refined_face_bbox": 0.0011978693073615432,
+        "weighted_refined_edge_local": 0.0011376099428161979,
+        "weighted_refined_edge_bbox": 0.0018259244970977306,
+        "weighted_refined_classification": 9.694372238300275e-06,
+        "weighted_edge_feature": 0.020282238721847534,
+        "weighted_encoder_edge_local": 0.0011424499098211527,
+        "weighted_encoder_edge_bbox": 0.0009384672739543021,
+        "weighted_face_xyz": 0.001456785132177174,
+        "weighted_edge_xyz": 0.0020680036395788193,
+        "weighted_incidence": 0.00017536120139993727,
+        "weighted_twin": 5.290342031116779e-08,
+        "weighted_kl_loss": 0.0009108083322644234,
+        "weighted_uv": 0.00039714196464046836,
+        "weighted_uv_anchor": 0.00017300149193033576,
+        "total_loss": 0.03630650043487549,
+        "coarse_precision": 1.0,
+        "coarse_recall": 1.0,
+        "coarse_positive_probability": 0.9995157718658447,
+        "refined_precision": 1.0,
+        "refined_recall": 1.0,
+        "refined_positive_probability": 0.9999053478240967,
+        "delta_face_mean": 0.012915496714413166,
+        "delta_edge_mean": 0.10489384084939957
+      },
+      "gradient_groups": {
+        "encoder": {
+          "gradient_tensors": 239,
+          "gradient_l1": 628.1866283697891
+        },
+        "posterior": {
+          "gradient_tensors": 4,
+          "gradient_l1": 283.8354463279247
+        },
+        "decoder": {
+          "gradient_tensors": 535,
+          "gradient_l1": 2034.96191104385
+        }
+      },
+      "duplicated_encoder_channel_gradients": {
+        "face": {
+          "first_half_gradient_l1": 10.176280975341797,
+          "second_half_gradient_l1": 10.591638565063477,
+          "max_abs_gradient_difference": 0.0013445951044559479,
+          "mean_abs_gradient_difference": 6.760382530046627e-05
+        },
+        "edge": {
+          "first_half_gradient_l1": 7.3425092697143555,
+          "second_half_gradient_l1": 7.642203330993652,
+          "max_abs_gradient_difference": 0.0008179266005754471,
+          "mean_abs_gradient_difference": 1.2194579539936967e-05
+        }
+      },
+      "peak_memory_bytes": 1579165184
+    },
+    {
+      "precision": "bf16-mixed",
+      "seconds": 1.9900406105443835,
+      "losses": {
+        "coarse_face_local": 0.0023221455048769712,
+        "coarse_face_bbox": 0.0015905217733234167,
+        "coarse_edge_local": 0.0012751774629577994,
+        "coarse_edge_bbox": 0.0024748817086219788,
+        "coarse_classification": 0.0002707837847992778,
+        "refined_face_local": 0.002223901217803359,
+        "refined_face_bbox": 0.0015647022519260645,
+        "refined_edge_local": 0.0014118178514763713,
+        "refined_edge_bbox": 0.0021285756956785917,
+        "refined_classification": 7.66525263315998e-05,
+        "edge_feature": 0.02112051285803318,
+        "encoder_edge_local": 0.0011828532442450523,
+        "encoder_edge_bbox": 0.0011598386336117983,
+        "face_xyz": 0.001914965221658349,
+        "edge_xyz": 0.0025148282293230295,
+        "incidence": 0.002454581670463085,
+        "twin": 1.9121048353554215e-06,
+        "kl_loss": 0.0008975831442512572,
+        "uv": 0.039590898901224136,
+        "uv_anchor": 0.002360099693760276,
+        "uv_valid_fraction": 1.0,
+        "weighted_coarse_face_local": 0.0005805363762192428,
+        "weighted_coarse_face_bbox": 0.0003976304433308542,
+        "weighted_coarse_edge_local": 0.00031879436573944986,
+        "weighted_coarse_edge_bbox": 0.0006187204271554947,
+        "weighted_coarse_classification": 6.7695946199819446e-06,
+        "weighted_refined_face_local": 0.002223901217803359,
+        "weighted_refined_face_bbox": 0.0015647022519260645,
+        "weighted_refined_edge_local": 0.0014118178514763713,
+        "weighted_refined_edge_bbox": 0.0021285756956785917,
+        "weighted_refined_classification": 7.665253178856801e-06,
+        "weighted_edge_feature": 0.02112051285803318,
+        "weighted_encoder_edge_local": 0.0011828532442450523,
+        "weighted_encoder_edge_bbox": 0.0011598386336117983,
+        "weighted_face_xyz": 0.001914965221658349,
+        "weighted_edge_xyz": 0.0025148282293230295,
+        "weighted_incidence": 0.0002454581845086068,
+        "weighted_twin": 1.9121048921988404e-07,
+        "weighted_kl_loss": 0.0008975831442512572,
+        "weighted_uv": 0.00039590898086316884,
+        "weighted_uv_anchor": 0.00023600997519679368,
+        "total_loss": 0.038927264511585236,
+        "coarse_precision": 1.0,
+        "coarse_recall": 1.0,
+        "coarse_positive_probability": 0.9994667768478394,
+        "refined_precision": 1.0,
+        "refined_recall": 1.0,
+        "refined_positive_probability": 0.9998534321784973,
+        "delta_face_mean": 0.013509710319340229,
+        "delta_edge_mean": 0.10311579704284668
+      },
+      "gradient_groups": {
+        "encoder": {
+          "gradient_tensors": 239,
+          "gradient_l1": 610.8448730821256
+        },
+        "posterior": {
+          "gradient_tensors": 4,
+          "gradient_l1": 197.54148550331593
+        },
+        "decoder": {
+          "gradient_tensors": 535,
+          "gradient_l1": 2325.289098789783
+        }
+      },
+      "duplicated_encoder_channel_gradients": {
+        "face": {
+          "first_half_gradient_l1": 8.80842399597168,
+          "second_half_gradient_l1": 9.160087585449219,
+          "max_abs_gradient_difference": 0.0009765625,
+          "mean_abs_gradient_difference": 5.7566576288081706e-05
+        },
+        "edge": {
+          "first_half_gradient_l1": 3.816030979156494,
+          "second_half_gradient_l1": 3.9765682220458984,
+          "max_abs_gradient_difference": 0.000335693359375,
+          "mean_abs_gradient_difference": 6.673948519164696e-06
+        }
+      },
+      "peak_memory_bytes": 1885388288
+    }
+  ],
+  "configuration": {
+    "candidate": "train_vae_latent_expansion",
+    "control": "train_vae_latent_expansion_control",
+    "candidate_gaussian_weight": 5e-07,
+    "control_gaussian_weight": 1e-06,
+    "reconstruction_loss_weights": {
+      "coarse_weight": 0.25,
+      "classification_weight": 0.1,
+      "feature_weight": 1.0,
+      "encoder_edge_weight": 1.0,
+      "xyz_weight": 1.0,
+      "incidence_weight": 0.1,
+      "twin_weight": 0.1,
+      "uv_weight": 0.01,
+      "uv_anchor_weight": 0.1,
+      "geometry_tolerance": 1e-05,
+      "geometry_chunk_size": 128
+    }
+  },
+  "validation": {
+    "split": "/mnt/d/python/checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt",
+    "split_sha256": "ae607bfe5499e919d1e68a5110c0c211daf1158aedbe57a4756eda99f6f3f0ed",
+    "loaded_ids": [
+      "00000178",
+      "00000894",
+      "00003202",
+      "00003406",
+      "00003999",
+      "00005825",
+      "00006067",
+      "00006608"
+    ],
+    "batch_ids": [
+      "00000178",
+      "00000894"
+    ],
+    "face_counts": [
+      7,
+      20
+    ],
+    "connection_rows": 124,
+    "raw_data_root": "/mnt/d/data/deepcad_v7",
+    "uv_root": "/mnt/d/data/deepcad_v7_uv/v1"
+  },
+  "initialization": {
+    "source": "/mnt/d/python/checkpoints/shared_curve_uv/candidate/20261019T064906.049992Z/weights/epoch=0116-step=00042471-val_loss=0.036517.ckpt",
+    "source_epoch": 116,
+    "source_global_step": 42471,
+    "source_face_dim": 32,
+    "target_face_dim": 64,
+    "retained_state_keys": 697,
+    "expanded_state_keys": 81,
+    "expanded_keys": {
+      "encoder.face_coords.10.weight": {
+        "source_shape": [
+          8,
+          768,
+          1,
+          1
+        ],
+        "target_shape": [
+          16,
+          768,
+          1,
+          1
+        ],
+        "rule": {
+          "segments": [],
+          "repeat_output": true
+        }
+      },
+      "encoder.face_coords.10.bias": {
+        "source_shape": [
+          8
+        ],
+        "target_shape": [
+          16
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.edge_coords.10.weight": {
+        "source_shape": [
+          32,
+          768,
+          1
+        ],
+        "target_shape": [
+          64,
+          768,
+          1
+        ],
+        "rule": {
+          "segments": [],
+          "repeat_output": true
+        }
+      },
+      "encoder.edge_coords.10.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.face_attn_proj_in.weight": {
+        "source_shape": [
+          768,
+          32
+        ],
+        "target_shape": [
+          768,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "encoder.face_attn_proj_out.weight": {
+        "source_shape": [
+          32,
+          768
+        ],
+        "target_shape": [
+          64,
+          768
+        ],
+        "rule": {
+          "segments": [],
+          "repeat_output": true
+        }
+      },
+      "encoder.face_attn_proj_out.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.0.att": {
+        "source_shape": [
+          1,
+          1,
+          32
+        ],
+        "target_shape": [
+          1,
+          1,
+          64
+        ],
+        "rule": {
+          "attention": true
+        }
+      },
+      "encoder.graph_face_edge.0.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.0.lin_l.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.0.lin_l.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.0.lin_r.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.0.lin_r.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.0.lin_edge.weight": {
+        "source_shape": [
+          32,
+          64
+        ],
+        "target_shape": [
+          64,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "E",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.2.att": {
+        "source_shape": [
+          1,
+          1,
+          32
+        ],
+        "target_shape": [
+          1,
+          1,
+          64
+        ],
+        "rule": {
+          "attention": true
+        }
+      },
+      "encoder.graph_face_edge.2.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.2.lin_l.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.2.lin_l.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.2.lin_r.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.2.lin_r.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.2.lin_edge.weight": {
+        "source_shape": [
+          32,
+          64
+        ],
+        "target_shape": [
+          64,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "E",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.4.att": {
+        "source_shape": [
+          1,
+          1,
+          32
+        ],
+        "target_shape": [
+          1,
+          1,
+          64
+        ],
+        "rule": {
+          "attention": true
+        }
+      },
+      "encoder.graph_face_edge.4.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.4.lin_l.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.4.lin_l.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.4.lin_r.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.4.lin_r.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.4.lin_edge.weight": {
+        "source_shape": [
+          32,
+          64
+        ],
+        "target_shape": [
+          64,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "E",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.6.att": {
+        "source_shape": [
+          1,
+          1,
+          32
+        ],
+        "target_shape": [
+          1,
+          1,
+          64
+        ],
+        "rule": {
+          "attention": true
+        }
+      },
+      "encoder.graph_face_edge.6.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.6.lin_l.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.6.lin_l.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.6.lin_r.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.6.lin_r.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.6.lin_edge.weight": {
+        "source_shape": [
+          32,
+          64
+        ],
+        "target_shape": [
+          64,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "E",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.8.att": {
+        "source_shape": [
+          1,
+          1,
+          32
+        ],
+        "target_shape": [
+          1,
+          1,
+          64
+        ],
+        "rule": {
+          "attention": true
+        }
+      },
+      "encoder.graph_face_edge.8.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.8.lin_l.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.8.lin_l.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.8.lin_r.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.8.lin_r.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.8.lin_edge.weight": {
+        "source_shape": [
+          32,
+          64
+        ],
+        "target_shape": [
+          64,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "E",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.global_feature1.0.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.global_feature1.0.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.global_feature1.2.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.global_feature1.2.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.global_feature2.0.weight": {
+        "source_shape": [
+          32,
+          64
+        ],
+        "target_shape": [
+          64,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ],
+            [
+              "global_F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.global_feature2.0.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.global_feature2.2.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.global_feature2.2.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "posterior.projection.0.weight": {
+        "source_shape": [
+          64,
+          32
+        ],
+        "target_shape": [
+          128,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "posterior.projection.0.bias": {
+        "source_shape": [
+          64
+        ],
+        "target_shape": [
+          128
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "posterior.projection.2.weight": {
+        "source_shape": [
+          64,
+          64
+        ],
+        "target_shape": [
+          128,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "hidden",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "posterior.projection.2.bias": {
+        "source_shape": [
+          64
+        ],
+        "target_shape": [
+          128
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "decoder.face_features.input_projection.weight": {
+        "source_shape": [
+          768,
+          32
+        ],
+        "target_shape": [
+          768,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "z",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.face_features.output_projection.weight": {
+        "source_shape": [
+          32,
+          768
+        ],
+        "target_shape": [
+          64,
+          768
+        ],
+        "rule": {
+          "segments": [],
+          "repeat_output": true
+        }
+      },
+      "decoder.face_features.output_projection.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "decoder.face_geometry.points_decoder.1.conv1.weight": {
+        "source_shape": [
+          768,
+          8,
+          3,
+          3
+        ],
+        "target_shape": [
+          768,
+          16,
+          3,
+          3
+        ],
+        "rule": {
+          "segments": [
+            [
+              "channels",
+              8,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.face_geometry.points_decoder.1.downsample.0.weight": {
+        "source_shape": [
+          768,
+          8,
+          1,
+          1
+        ],
+        "target_shape": [
+          768,
+          16,
+          1,
+          1
+        ],
+        "rule": {
+          "segments": [
+            [
+              "channels",
+              8,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.face_geometry.bbox_decoder.0.conv1.weight": {
+        "source_shape": [
+          768,
+          32
+        ],
+        "target_shape": [
+          768,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "feature",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.face_geometry.bbox_decoder.0.downsample.0.weight": {
+        "source_shape": [
+          768,
+          32
+        ],
+        "target_shape": [
+          768,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "feature",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.edge_geometry.points_decoder.1.conv1.weight": {
+        "source_shape": [
+          768,
+          32,
+          3
+        ],
+        "target_shape": [
+          768,
+          64,
+          3
+        ],
+        "rule": {
+          "segments": [
+            [
+              "channels",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.edge_geometry.points_decoder.1.downsample.0.weight": {
+        "source_shape": [
+          768,
+          32,
+          1
+        ],
+        "target_shape": [
+          768,
+          64,
+          1
+        ],
+        "rule": {
+          "segments": [
+            [
+              "channels",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.edge_geometry.bbox_decoder.0.conv1.weight": {
+        "source_shape": [
+          768,
+          64
+        ],
+        "target_shape": [
+          768,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "feature",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.edge_geometry.bbox_decoder.0.downsample.0.weight": {
+        "source_shape": [
+          768,
+          64
+        ],
+        "target_shape": [
+          768,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "feature",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.edge_geometry.conditioning.projection.0.weight": {
+        "source_shape": [
+          128,
+          128
+        ],
+        "target_shape": [
+          128,
+          256
+        ],
+        "rule": {
+          "segments": [
+            [
+              "E",
+              64,
+              true
+            ],
+            [
+              "F_i",
+              32,
+              true
+            ],
+            [
+              "F_j",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.inter.attn_proj_in.weight": {
+        "source_shape": [
+          512,
+          32
+        ],
+        "target_shape": [
+          512,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.inter.attn_proj_out.weight": {
+        "source_shape": [
+          64,
+          512
+        ],
+        "target_shape": [
+          128,
+          512
+        ],
+        "rule": {
+          "segments": [],
+          "repeat_output": true
+        }
+      },
+      "decoder.inter.attn_proj_out.bias": {
+        "source_shape": [
+          64
+        ],
+        "target_shape": [
+          128
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "decoder.classifier.weight": {
+        "source_shape": [
+          1,
+          64
+        ],
+        "target_shape": [
+          1,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "E",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.refiner.message_encoder.0.weight": {
+        "source_shape": [
+          128,
+          128
+        ],
+        "target_shape": [
+          128,
+          192
+        ],
+        "rule": {
+          "segments": [
+            [
+              "E",
+              64,
+              true
+            ],
+            [
+              "geometry",
+              64,
+              false
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.refiner.relation_encoder.0.weight": {
+        "source_shape": [
+          128,
+          448
+        ],
+        "target_shape": [
+          128,
+          576
+        ],
+        "rule": {
+          "segments": [
+            [
+              "E",
+              64,
+              true
+            ],
+            [
+              "geometry",
+              64,
+              false
+            ],
+            [
+              "F_i",
+              32,
+              true
+            ],
+            [
+              "F_j",
+              32,
+              true
+            ],
+            [
+              "context_i",
+              128,
+              false
+            ],
+            [
+              "context_j",
+              128,
+              false
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.refiner.face_update.0.weight": {
+        "source_shape": [
+          128,
+          160
+        ],
+        "target_shape": [
+          128,
+          192
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ],
+            [
+              "context",
+              128,
+              false
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.refiner.edge_delta.weight": {
+        "source_shape": [
+          64,
+          128
+        ],
+        "target_shape": [
+          128,
+          128
+        ],
+        "rule": {
+          "segments": [],
+          "repeat_output": true
+        }
+      },
+      "decoder.refiner.edge_delta.bias": {
+        "source_shape": [
+          64
+        ],
+        "target_shape": [
+          128
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "decoder.refiner.face_delta.weight": {
+        "source_shape": [
+          32,
+          128
+        ],
+        "target_shape": [
+          64,
+          128
+        ],
+        "rule": {
+          "segments": [],
+          "repeat_output": true
+        }
+      },
+      "decoder.refiner.face_delta.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "decoder.shared_curve.residual.0.weight": {
+        "source_shape": [
+          128,
+          128
+        ],
+        "target_shape": [
+          128,
+          256
+        ],
+        "rule": {
+          "segments": [
+            [
+              "h_ij",
+              64,
+              true
+            ],
+            [
+              "h_ji",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.shared_curve.residual.2.weight": {
+        "source_shape": [
+          64,
+          128
+        ],
+        "target_shape": [
+          128,
+          128
+        ],
+        "rule": {
+          "segments": [],
+          "repeat_output": true
+        }
+      },
+      "decoder.shared_curve.residual.2.bias": {
+        "source_shape": [
+          64
+        ],
+        "target_shape": [
+          128
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "decoder.uv_boundary.context.0.weight": {
+        "source_shape": [
+          128,
+          160
+        ],
+        "target_shape": [
+          128,
+          320
+        ],
+        "rule": {
+          "segments": [
+            [
+              "h",
+              64,
+              true
+            ],
+            [
+              "g",
+              64,
+              true
+            ],
+            [
+              "F_owner",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      }
+    },
+    "input_channel_shares": [
+      0.49,
+      0.51
+    ],
+    "gat_attention_shares": [
+      0.5,
+      0.5
+    ],
+    "mapping": "Repeat feature channels; split duplicated input weights by semantic segment; retain every other tensor.",
+    "equivalence": "Posterior-mean evaluation only; independently sampled duplicated latents change training noise."
+  },
+  "parameters": {
+    "control": 182298143,
+    "candidate": 182982439,
+    "added": 684296,
+    "trainable": 182982439
+  },
+  "initial_mean_evaluation": {
+    "face_features": {
+      "max_abs": 8.106231689453125e-06,
+      "mean_abs": 7.194811928457057e-07,
+      "atol": 1e-05,
+      "rtol": 0.0001
+    },
+    "edge_features": {
+      "max_abs": 0.0,
+      "mean_abs": 0.0,
+      "atol": 1e-05,
+      "rtol": 0.0001
+    },
+    "posterior_mean": {
+      "max_abs": 4.291534423828125e-06,
+      "mean_abs": 2.328039698795692e-07,
+      "atol": 1e-05,
+      "rtol": 0.0001
+    },
+    "posterior_mean_std": {
+      "max_abs": 4.291534423828125e-06,
+      "mean_abs": 1.425674014399192e-07,
+      "atol": 1e-05,
+      "rtol": 0.0001
+    },
+    "weighted_kl": {
+      "max_abs": 0.0,
+      "mean_abs": 0.0,
+      "atol": 1e-07,
+      "rtol": 0.0001
+    },
+    "uv": {
+      "max_abs": 6.186962127685547e-05,
+      "mean_abs": 8.955240105024131e-07,
+      "atol": 0.0002,
+      "rtol": 0.0001
+    },
+    "coarse.logits": {
+      "max_abs": 7.2479248046875e-05,
+      "mean_abs": 1.294014055019943e-05,
+      "atol": 0.0005,
+      "rtol": 0.0001
+    },
+    "coarse.face.local_points": {
+      "max_abs": 3.337860107421875e-06,
+      "mean_abs": 1.0715444176412348e-07,
+      "atol": 0.0002,
+      "rtol": 0.0001
+    },
+    "coarse.face.center_scale": {
+      "max_abs": 2.8870999813079834e-07,
+      "mean_abs": 3.845162410698322e-08,
+      "atol": 0.0001,
+      "rtol": 0.0001
+    },
+    "coarse.face.points": {
+      "max_abs": 1.8477439880371094e-06,
+      "mean_abs": 7.796968759521405e-08,
+      "atol": 0.0001,
+      "rtol": 0.0001
+    },
+    "coarse.edge.local_points": {
+      "max_abs": 3.388524055480957e-05,
+      "mean_abs": 3.2454133247483696e-07,
+      "atol": 0.0002,
+      "rtol": 0.0001
+    },
+    "coarse.edge.center_scale": {
+      "max_abs": 5.364418029785156e-06,
+      "mean_abs": 2.2455692771927716e-07,
+      "atol": 0.0001,
+      "rtol": 0.0001
+    },
+    "coarse.edge.points": {
+      "max_abs": 1.4424324035644531e-05,
+      "mean_abs": 2.8473391466832254e-07,
+      "atol": 0.0001,
+      "rtol": 0.0001
+    },
+    "refined.logits": {
+      "max_abs": 0.00038909912109375,
+      "mean_abs": 2.0334506189101376e-05,
+      "atol": 0.0005,
+      "rtol": 0.0001
+    },
+    "refined.face.local_points": {
+      "max_abs": 2.5033950805664062e-06,
+      "mean_abs": 1.0859213972480575e-07,
+      "atol": 0.0002,
+      "rtol": 0.0001
+    },
+    "refined.face.center_scale": {
+      "max_abs": 2.9243528842926025e-07,
+      "mean_abs": 3.2860793197642124e-08,
+      "atol": 0.0001,
+      "rtol": 0.0001
+    },
+    "refined.face.points": {
+      "max_abs": 1.6093254089355469e-06,
+      "mean_abs": 7.344237218376293e-08,
+      "atol": 0.0001,
+      "rtol": 0.0001
+    },
+    "refined.edge.local_points": {
+      "max_abs": 1.6957521438598633e-05,
+      "mean_abs": 3.186675598954025e-07,
+      "atol": 0.0002,
+      "rtol": 0.0001
+    },
+    "refined.edge.center_scale": {
+      "max_abs": 4.887580871582031e-06,
+      "mean_abs": 2.360139887969126e-07,
+      "atol": 0.0001,
+      "rtol": 0.0001
+    },
+    "refined.edge.points": {
+      "max_abs": 7.212162017822266e-06,
+      "mean_abs": 2.7566159133129986e-07,
+      "atol": 0.0001,
+      "rtol": 0.0001
+    }
+  },
+  "initial_changed_edge_decisions": 0,
+  "pure_latent_inference": {
+    "latent_shape": [
+      7,
+      64
+    ],
+    "candidate_pairs": 42,
+    "exported_faces": 7,
+    "exported_edges": 20,
+    "reciprocal_xyz_exact": true,
+    "reciprocal_uv_exact": true,
+    "gt_geometry_or_topology_supplied": false
+  },
+  "source_sha256": {
+    "src/brepnet/models/vae/checkpoints.py": "2d6e8d384e1ff942f89e1d5e37e348862dde1e8d1b9252740f8c1e4e7c654a20",
+    "src/brepnet/models/vae/intersection.py": "0f381d8bfffde75256d29e87e6a16f3f1865d568f60a4346badd97ea50eeab4e",
+    "src/brepnet/models/vae/legacy.py": "5e434137db59c776c237785ad6d2047682ed1a76ad345689844309d96fa82a5c",
+    "src/brepnet/models/vae/encoders.py": "ba6cddb5b18b9fd61bcd728e811e5797c1b851a693bbb63909d0665bd92d6892",
+    "src/brepnet/models/vae/decoders/intersection.py": "ac022b9964bc7c32dce22ca6a0ebb3d714049885ab96798c44e8624ce2b4db6e",
+    "src/brepnet/models/vae/decoders/primitives.py": "cc48b3eca8a59741fd076fc93ec83256be2ad156e2361512af78b41d78f11a58",
+    "src/brepnet/models/vae/losses/intersection.py": "e38bfb114d4be91a8d62dff5d67e57bcb23982bb81a14c9c03a65f8427be9963",
+    "configs/train_vae_latent_expansion.yaml": "69292afcc8881e56a26a5c69d0f9b6cfb252918af415eaac3f54af7e8e39a925",
+    "configs/train_vae_latent_expansion_control.yaml": "88f9bb72cc6355eb53ac64b13e369d1f06039bdf1b7932a0311a2d79c6004995",
+    "checkpoints/latent_expansion/validate_implementation.py": "21b0e97875b470af3de240309cd49bfd65af0f407c2c2d0ccec691a360ef7ffa"
+  },
+  "seconds_total": 10.270103414542973
+}
