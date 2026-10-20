@@ -103,6 +103,9 @@ def _load_dataset_class(cfg: DictConfig):
     Dataset classes are resolved by the stable ``dataset.name`` config field.
     """
     name = cfg.dataset.name
+    if "." in name:
+        module_path, class_name = name.rsplit(".", 1)
+        return getattr(importlib.import_module(module_path), class_name)
     dataset_mod = importlib.import_module("src.brepnet.dataset")
     if not hasattr(dataset_mod, name):
         raise AttributeError(
@@ -127,6 +130,13 @@ class UnifiedTrainer(pl.LightningModule):
     def __init__(self, cfg: DictConfig):
         super().__init__()
         self.cfg = cfg
+        if cfg.model.name == "PreferenceDiffusion":
+            from src.brepnet.data.preference_dataset import preference_data_provenance
+            provenance = preference_data_provenance(cfg.dataset)
+            expected = cfg.dataset.get("provenance")
+            if expected is not None and provenance != dict(expected):
+                raise ValueError("Preference data changed after prepare_run.")
+            OmegaConf.update(cfg.dataset, "provenance", provenance, force_add=True)
         self.save_hyperparameters(OmegaConf.to_container(cfg, resolve=True))
 
         # --- Core configuration ---
@@ -178,7 +188,29 @@ class UnifiedTrainer(pl.LightningModule):
                 OmegaConf.update(model_cfg, "init_encoder_edge_value_checkpoint", None, force_add=True)
                 model_cfg.checkpoint = None
                 OmegaConf.update(model_cfg, "restoring_checkpoint", True, force_add=True)
+        if cfg.model.name == "PreferenceDiffusion":
+            from src.brepnet.data.preference_dataset import sha256_file
+
+            if cfg.trainer.init_from_checkpoint:
+                raise ValueError("Use model.legacy_checkpoint to initialize preference training, or resume_from_checkpoint.")
+            if cfg.eval.enabled or cfg.trainer.evaluate or cfg.trainer.diffusion_validation_inference:
+                raise ValueError("Preference training exposes sample_latents(); STEP evaluation requires the explicit original VAE pipeline.")
+            if has_resume:
+                saved = torch.load(str(resume), map_location="cpu", mmap=True, weights_only=False)
+                if dict(cfg.dataset.provenance) != saved["hyper_parameters"]["dataset"]["provenance"]:
+                    raise ValueError("Cannot resume preference training with a changed pair pool/protocol.")
+                saved_model_cfg = saved["hyper_parameters"]["model"]
+                OmegaConf.update(
+                    model_cfg, "legacy_model_config", saved_model_cfg["legacy_model_config"], force_add=True,
+                )
+            elif sha256_file(Path(model_cfg.legacy_checkpoint)) != cfg.dataset.provenance.source_checkpoint_sha256:
+                raise ValueError("Initial SVR checkpoint differs from the preference generation checkpoint.")
+            OmegaConf.update(model_cfg, "restoring_checkpoint", bool(has_resume), force_add=True)
         self.model = build_model(model_cfg, cfg.condition)
+        if cfg.model.name == "PreferenceDiffusion":
+            # 恢复只依赖自身 checkpoint 的架构/权重，不重新读取旧 SVR 权重。
+            OmegaConf.update(cfg.model, "legacy_model_config", self.model.legacy_model_config, force_add=True)
+            self.save_hyperparameters(OmegaConf.to_container(cfg, resolve=True))
         self._init_model_from_checkpoint()
         self._apply_trainable_scope()
 
@@ -541,6 +573,11 @@ def main(cfg: DictConfig):
     if evaluating:
         OmegaConf.update(cfg, "eval.output_dir", str(predictions_directory(cfg, Path(log_dir))))
         logger.info("Raw predictions will be saved to %s", cfg.eval.output_dir)
+    if cfg.model.name == "PreferenceDiffusion":
+        from src.brepnet.data.preference_dataset import preference_data_provenance
+        OmegaConf.update(
+            cfg.dataset, "provenance", preference_data_provenance(cfg.dataset), force_add=True,
+        )
     run_record = prepare_run(cfg, Path(log_dir))
 
     # --- Logger ---

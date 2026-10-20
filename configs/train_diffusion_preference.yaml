@@ -1,0 +1,57 @@
+# 原版 1024/24-layer SVR 的偏好微调。此配置不会自动启动训练。
+defaults:
+  - trainer: default
+  - _self_
+
+model:
+  name: PreferenceDiffusion
+  stage: diffusion
+  legacy_checkpoint: /mnt/d/ckpt/HoLa/Diffusion_svr_sq30_1500k.ckpt
+  legacy_source_cache: null
+  dino_repo: null
+  # 与 Diffusion-DPO 官方实现一致：logit = -beta/2 * (policy_gap-reference_gap)。
+  beta_dpo: 20.0
+  preference_weight: 1.0
+
+condition: null
+
+dataset:
+  name: src.brepnet.data.preference_dataset.PreferenceDataset
+  pairs_manifest: ???
+  # 本轮生成器用原始 SVR 内置 VAE 重新编码的 run/gt_cache。
+  cached_latent_root: ???
+  condition_data_root: /mnt/d/data/deepcad_v7_cond
+  train_dataset: src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt
+  val_dataset: checkpoints/diffusion/svr_comparison_20261017/validation100.txt
+  test_dataset: src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt
+  epoch_scale_factor: 1
+
+trainer:
+  exp_name: diffusion_preference_svr
+  devices: 1
+  batch_size: 4
+  learning_rate: 1.0e-5
+  # 研究预算必须显式填写；训练不会沿用一个任意的正式步数。
+  max_steps: ???
+  precision: 32-true
+  num_threads: 4
+  num_workers: 4
+  ddp_find_unused_parameters: false
+  ddp_gradient_as_bucket_view: true
+  sync_train_step_loss: false
+  diffusion_validation_inference: false
+
+eval:
+  enabled: false
+  output_dir: null
+
+hydra:
+  run:
+    dir: ${brep_run_dir:${trainer.output_dir},${trainer.exp_name},${trainer.run_dir},${trainer.resume_from_checkpoint}}
+  output_subdir: metadata/hydra
+  job_logging:
+    handlers:
+      file:
+        filename: ${brep_log_file:${hydra.runtime.output_dir}}
+  job:
+    chdir: false

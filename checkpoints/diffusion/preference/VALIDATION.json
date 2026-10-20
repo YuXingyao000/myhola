@@ -1,0 +1,167 @@
+{
+  "scope": "implementation checks only; no training or research quality conclusion",
+  "integration": {
+    "status": "complete",
+    "validation": {
+      "images": 2,
+      "candidates": 16,
+      "pairs": 2,
+      "validity_valid": 12,
+      "status_ok": 13,
+      "status_evaluation_error": 3,
+      "validity_invalid": 4,
+      "pairs_geometry": 1,
+      "pairs_validity": 1,
+      "elapsed_seconds": 62.7344479750609
+    },
+    "train": {
+      "images": 1,
+      "candidates": 8,
+      "pairs": 1,
+      "validity_valid": 8,
+      "status_ok": 8,
+      "pairs_geometry": 1,
+      "elapsed_seconds": 53.1283143570181
+    }
+  },
+  "integration_run": "/mnt/d/python/checkpoints/diffusion/preference_data/integration_20261020",
+  "real_dataset_read": {
+    "train_images": 1,
+    "validation_images": 2,
+    "pair_type": "geometry",
+    "generated_latents_bitwise_preserved": true,
+    "train_validation_disjoint": true,
+    "shapes": {
+      "gt_latent": [
+        30,
+        32
+      ],
+      "gt_image": [
+        3,
+        224,
+        224
+      ],
+      "pair_image": [
+        3,
+        224,
+        224
+      ],
+      "winner_latent": [
+        30,
+        32
+      ],
+      "loser_latent": [
+        30,
+        32
+      ]
+    }
+  },
+  "legacy_sampling": {
+    "source_commit": "c2660c00c6a9c8f9f82bd5b9f4d3c774fa38d361",
+    "checkpoint": "/mnt/d/ckpt/HoLa/Diffusion_svr_sq30_1500k.ckpt",
+    "seed": 486731,
+    "image": "/mnt/d/data/deepcad_v7_cond/00938923/imgs.npz",
+    "latent_bitwise_equal": true,
+    "raw_bitwise_equal": true,
+    "caller_rng_preserved": true,
+    "native_seconds": 5.536075027077459,
+    "sample_seconds": 5.023681688006036,
+    "latent_keep_indices": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      7,
+      8,
+      9,
+      17,
+      28
+    ],
+    "geometry_keep_indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "raw_shapes": {
+      "face_features": [
+        10,
+        32
+      ],
+      "pred_face_adj": [
+        100
+      ],
+      "pred_face_adj_prob": [
+        144
+      ],
+      "pred_edge_face_connectivity": [
+        48,
+        3
+      ],
+      "pred_face": [
+        10,
+        16,
+        16,
+        3
+      ],
+      "pred_edge": [
+        48,
+        16,
+        3
+      ]
+    }
+  },
+  "old_cache_audit": {
+    "scope": "three train IDs; original embedded AE, FP32, raw v7 geometry, identity rotation",
+    "results": [
+      {
+        "id": "00000061",
+        "faces": 7,
+        "mean_max_abs": 0.0049410611391067505,
+        "std_max_abs": 0.002695798873901367,
+        "mean_mae": 0.0004942749510519207,
+        "cache_dtype": "float32",
+        "bf16_mean_max_abs": 0.06778816878795624,
+        "bf16_mean_mae": 0.005233455915004015
+      },
+      {
+        "id": "00000070",
+        "faces": 14,
+        "mean_max_abs": 0.005545139312744141,
+        "std_max_abs": 0.001466602087020874,
+        "mean_mae": 0.00036420259857550263,
+        "cache_dtype": "float32",
+        "bf16_mean_max_abs": 0.047220468521118164,
+        "bf16_mean_mae": 0.0036990719381719828
+      },
+      {
+        "id": "00000168",
+        "faces": 14,
+        "mean_max_abs": 0.007830023765563965,
+        "std_max_abs": 0.003102123737335205,
+        "mean_mae": 0.00043092455598525703,
+        "cache_dtype": "float32",
+        "bf16_mean_max_abs": 0.04677024483680725,
+        "bf16_mean_mae": 0.0042722187936306
+      }
+    ]
+  },
+  "seed_inventory": {
+    "images": 46727,
+    "distinct_seeds_per_image": 8
+  },
+  "generated_artifacts_excluded_from_git": true,
+  "unit_tests": {
+    "passed": 32,
+    "skipped": 2,
+    "seconds": 8.29,
+    "skipped_reason": "GPU integration tests are opt-in; actual old DDPM/AE GPU checks were executed separately and recorded."
+  }
+}
