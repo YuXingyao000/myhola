@@ -11,10 +11,11 @@ validation_limit: null
 
 seed: 42
 candidates: 8
-gpus: [4, 5, 6, 7]
+gpus: [0, 1, 2, 3, 4, 5, 6, 7]
+workers_per_gpu: 2
 gpu_cpu_threads: 2
-cpu_workers: 16
-queue_size: 32
+cpu_workers: 32
+queue_size: 64
 post:
   timeout_seconds: 180
   max_optimize_iter: 200

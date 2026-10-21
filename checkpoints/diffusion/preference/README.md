@@ -6,6 +6,12 @@
 
 ## 本次运行
 
+2026-10-21用户要求暂停并扩到8卡。新配置为GPU0–7、每卡2个独立采样进程，
+CPU后处理32个worker、队列64；原checkpoint、FP32、batch1、DDPM1000、K8及标签规则保持。
+暂停前已有5,336件完整训练图片、42,695个完成候选、4,842对。已排空CPU后处理队列；
+4个未完成GPU候选按原协议记unknown，不重抽。原输出和原始protocol保留。
+性能和恢复验证见[报告](performance_20261021/README.md)。
+
 2026-10-20 13:49:30 UTC启动正式数据生成：
 
 - 代码提交：`0c5ff7346d86bb3194b4ea222f7db60b2032dc63`。
@@ -47,10 +53,10 @@ post测量都通过。无合适pair就记录原因，不增加采样次数。完
 ## 数据生成
 
 ```bash
-# 最后四张卡；先validation100，再train46627。不会启动训练。
+# 当前八张卡，每卡两个独立进程；不会启动训练。
 /mnt/d/anaconda3/envs/torch/bin/python -u -m src.brepnet.data.preference_generate \
   --config configs/datagen/preference.yaml \
-  'gpus=[4,5,6,7]'
+  'gpus=[0,1,2,3,4,5,6,7]' workers_per_gpu=2 cpu_workers=32 queue_size=64
 ```
 
 默认每图K=8，共800个validation候选、373,016个train候选。
@@ -80,6 +86,11 @@ status.json               # 当前阶段、数量、完成/失败状态
 恢复必须显式指定原目录和 `--resume`，源码、权重、split、K、指标/预算保持一致。
 已完成候选直接复用；中断且未写完的候选保留为unknown，不额外抽样。
 运行错误、超时、缺失不当作negative。所有请求保留在分母里。
+
+2026-10-21只迁移调度实现；恢复命令额外显式传`--accept-scheduling-update`，
+记录在`metadata/runtime_revisions.json`及其源码快照目录。该选项仍拒绝模型、指标、
+阈值、预算与数据变化。新运行过程中创建run下的`PAUSE`文件，会让各worker完成当前
+图片的K个候选并排空后处理后退出；显式`--resume`清除此请求并继续。
 
 ## 训练代码：已实现，未启动
 

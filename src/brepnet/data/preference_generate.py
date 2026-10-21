@@ -48,12 +48,13 @@ def _check_files(directory: Path, hashes: dict) -> None:
             raise ValueError(f"Generated artifact changed: {directory / name}")
 
 
-def _gpu_worker(gpu: int, identities: list[str], split: str, config: dict,
+def _gpu_worker(gpu: int, worker_index: int, identities: list[str], split: str, config: dict,
                 run_string: str, jobs, events) -> None:
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
     os.environ["OMP_NUM_THREADS"] = str(config["gpu_cpu_threads"])
     run = Path(run_string)
-    log = _worker_log(run, f"{split}-gpu{gpu}")
+    worker_name = f"{split}-gpu{gpu}-worker{worker_index}"
+    log = _worker_log(run, worker_name)
     try:
         import numpy as np
         import torch
@@ -67,13 +68,17 @@ def _gpu_worker(gpu: int, identities: list[str], split: str, config: dict,
         torch.backends.cudnn.allow_tf32 = False
         model, provenance = load_legacy_svr(
             config["checkpoint"], "cuda:0", dino_repo=config["dino_repo"],
-            source_cache=run / f"metadata/legacy_source_gpu{gpu}")
-        atomic_json(run / f"metadata/{split}-gpu{gpu}.json", provenance)
+            source_cache=run / f"metadata/legacy_source_gpu{gpu}_worker{worker_index}")
+        atomic_json(run / f"metadata/{worker_name}.json", provenance)
         transform = transforms.Compose([
             transforms.ToPILImage(), transforms.Resize((224, 224)), transforms.ToTensor(),
             transforms.Normalize((.485, .456, .406), (.229, .224, .225)),
         ])
+        processed_images = 0
         for image_id in identities:
+            # Finish all K candidates of the current image before a requested pause.
+            if (run / "PAUSE").exists():
+                break
             image_root = run / "candidates" / split / image_id
             image_root.mkdir(parents=True, exist_ok=True)
             image_path = Path(config["condition_data_root"]) / image_id / "imgs.npz"
@@ -138,7 +143,8 @@ def _gpu_worker(gpu: int, identities: list[str], split: str, config: dict,
                     jobs.put((image_id, candidate_id, str(directory)))
                 else:
                     events.put(("candidate", generated))
-        events.put(("gpu_done", gpu))
+            processed_images += 1
+        events.put(("gpu_done", {"worker": worker_name, "images": processed_images}))
     except BaseException:
         events.put(("fatal", f"GPU {gpu}: {traceback.format_exc()}"))
         raise
@@ -205,28 +211,113 @@ def finish_image(run: Path, split: str, image_id: str, records: list[dict], conf
     return pair, report
 
 
+def worker_assignments(gpus: list[int], workers_per_gpu: int, identities: list[str]) -> list[tuple]:
+    """Disjoint image shards; use every GPU before adding a second worker."""
+    slots = [(gpu, slot) for slot in range(workers_per_gpu) for gpu in gpus][:len(identities)]
+    return [(gpu, slot, identities[index::len(slots)]) for index, (gpu, slot) in enumerate(slots)]
+
+
+def _completed_records(run: Path, split: str, image_id: str, config: dict) -> list[dict] | None:
+    """Reuse a complete image after the same input/output hash checks as before."""
+    root = run / "candidates" / split / image_id
+    rows, generated = [], []
+    for index in range(config["candidates"]):
+        directory = root / f"c{index:02d}"
+        inference = read_json(directory / "inference.json")
+        if not inference:
+            return None
+        row = read_json(directory / "evaluation/metrics.json") if inference["status"] == "ok" else inference
+        if not row or row["status"] == "running":
+            return None
+        rows.append(row)
+        generated.append((directory, inference))
+    sources = read_json(root / "sources.json")
+    if not sources:
+        raise ValueError(f"Missing source record: {root}")
+    _check_files(Path("/"), sources)
+    cache = run / "gt_cache" / f"{image_id}_0"
+    _check_files(cache, read_json(cache / "source.json")["output_sha256"])
+    gt = Path(config["raw_data_root"]) / image_id
+    for row, (directory, inference) in zip(rows, generated):
+        _check_files(directory, inference.get("output_sha256", {}))
+        if inference["status"] == "ok":
+            protocol = read_json(directory / "evaluation/protocol.json")
+            if (row["protocol_fingerprint"] != protocol["protocol_fingerprint"] or
+                    protocol["input_sha256"] != {
+                        "raw_path": inference["output_sha256"]["data.npz"],
+                        "gt_npz": sources[str(gt / "data.npz")],
+                        "gt_step": sources[str(gt / "normalized_shape.step")]}):
+                raise ValueError(f"Recorded evaluation inputs differ: {directory}")
+    return rows
+
+
 def run_phase(split: str, identities: list[str], config: dict, run: Path) -> dict:
     if not identities:
         return {"images": 0, "pairs": 0}
-    context = mp.get_context("spawn")
-    jobs = context.Queue(maxsize=config["queue_size"])
-    events = context.Queue()
-    gpu_ids = config["gpus"][:len(identities)]
-    workers = [context.Process(target=_cpu_worker, args=(i, config, str(run), jobs, events))
-               for i in range(config["cpu_workers"])]
-    workers += [context.Process(target=_gpu_worker,
-                                args=(gpu, identities[i::len(gpu_ids)], split, config, str(run), jobs, events))
-                for i, gpu in enumerate(gpu_ids)]
     manifest_name = "pairs" if split == "train" else "validation_pairs"
     partial = run / f"{manifest_name}.in_progress.jsonl"
     counts = Counter(images=0, candidates=0, pairs=0)
-    pending: dict[str, list[dict]] = {}
+    pending: dict[str, dict[str, dict]] = {}
+
+    def accept(record: dict, stream) -> None:
+        rows = pending.setdefault(record["image_id"], {})
+        if record["candidate_id"] in rows:
+            raise ValueError(f"Duplicate candidate event: {record['image_id']}/{record['candidate_id']}")
+        rows[record["candidate_id"]] = record
+        counts["candidates"] += 1
+        counts[f"validity_{record['validity']}"] += 1
+        counts[f"status_{record['status']}"] += 1
+        if len(rows) == config["candidates"]:
+            pair, _ = finish_image(run, split, record["image_id"], list(rows.values()), config)
+            counts["images"] += 1
+            if pair:
+                append_json(stream, pair)
+                counts["pairs"] += 1
+                counts[f"pairs_{pair['pair_type']}"] += 1
+            pending.pop(record["image_id"])
+
+    previous = read_json(run / "status.json")
+    old_summary = read_json(run / f"metadata/{split}_summary.json")
+    elapsed_before = (previous.get("elapsed_seconds", 0) if previous.get("phase") == split
+                      else old_summary.get("elapsed_seconds", 0))
+    remaining = []
+    # Restore counters and pairs without loading a GPU model or replaying OCC.
+    with partial.open("w") as stream:
+        for index, image_id in enumerate(identities):
+            rows = _completed_records(run, split, image_id, config)
+            if rows is None:
+                remaining.append(image_id)
+            else:
+                for row in rows:
+                    accept(row, stream)
+            if (index + 1) % 1000 == 0:
+                print(f"{split}: checked {index + 1}, restored {counts['images']} images", flush=True)
+    if not remaining:
+        os.replace(partial, run / f"{manifest_name}.jsonl")
+        summary = {**counts, "elapsed_seconds": elapsed_before}
+        atomic_json(run / f"metadata/{split}_summary.json", summary)
+        return summary
+
+    context = mp.get_context("spawn")
+    jobs = context.Queue(maxsize=config["queue_size"])
+    events = context.Queue()
+    assignments = worker_assignments(config["gpus"], config.get("workers_per_gpu", 1), remaining)
+    workers = [context.Process(target=_cpu_worker, args=(i, config, str(run), jobs, events))
+               for i in range(config["cpu_workers"])]
+    workers += [context.Process(target=_gpu_worker,
+                                args=(gpu, slot, ids, split, config, str(run), jobs, events))
+                for gpu, slot, ids in assignments]
+    restored_candidates = counts["candidates"]
+    done_workers, produced_images = 0, 0
     started = time.monotonic()
     for worker in workers:
         worker.start()
     try:
-        with partial.open("w") as stream:
+        with partial.open("a") as stream:
             while counts["candidates"] < len(identities) * config["candidates"]:
+                if (done_workers == len(assignments) and counts["candidates"] ==
+                        restored_candidates + produced_images * config["candidates"]):
+                    break  # A PAUSE request stopped producers at image boundaries.
                 try:
                     kind, value = events.get(timeout=10)
                 except queue.Empty:
@@ -236,27 +327,22 @@ def run_phase(split: str, identities: list[str], config: dict, run: Path) -> dic
                     continue
                 if kind == "fatal":
                     raise RuntimeError(value)
-                if kind != "candidate":
+                if kind == "gpu_done":
+                    done_workers += 1
+                    produced_images += value["images"]
                     continue
-                counts["candidates"] += 1
-                counts[f"validity_{value['validity']}"] += 1
-                counts[f"status_{value['status']}"] += 1
-                rows = pending.setdefault(value["image_id"], [])
-                rows.append(value)
-                if len(rows) == config["candidates"]:
-                    pair, report = finish_image(run, split, value["image_id"], rows, config)
-                    counts["images"] += 1
-                    if pair:
-                        append_json(stream, pair)
-                        counts["pairs"] += 1
-                        counts[f"pairs_{pair['pair_type']}"] += 1
-                    pending.pop(value["image_id"])
+                accept(value, stream)
+                current_elapsed = time.monotonic() - started
                 status = {"status": "running", "phase": split, "requested_images": len(identities),
-                          **counts, "elapsed_seconds": time.monotonic() - started}
+                          **counts, "elapsed_seconds": elapsed_before + current_elapsed,
+                          "resume_elapsed_seconds": current_elapsed,
+                          "resume_candidates": counts["candidates"] - restored_candidates}
                 atomic_json(run / "status.json", status)
                 if counts["candidates"] % 50 == 0:
                     print(status, flush=True)
-        os.replace(partial, run / f"{manifest_name}.jsonl")
+        complete = counts["images"] == len(identities)
+        if complete:
+            os.replace(partial, run / f"{manifest_name}.jsonl")
         for _ in range(config["cpu_workers"]):
             jobs.put(None)
         for worker in workers:
@@ -273,8 +359,12 @@ def run_phase(split: str, identities: list[str], config: dict, run: Path) -> dic
                 worker.kill()
         jobs.close()
         events.close()
-    summary = {**counts, "elapsed_seconds": time.monotonic() - started}
-    atomic_json(run / f"metadata/{split}_summary.json", summary)
+    summary = {**counts, "elapsed_seconds": elapsed_before + time.monotonic() - started}
+    if complete:
+        atomic_json(run / f"metadata/{split}_summary.json", summary)
+    else:
+        summary.update(status="paused", phase=split, requested_images=len(identities))
+        atomic_json(run / "status.json", summary)
     return summary
 
 
@@ -284,25 +374,35 @@ def main() -> None:
     parser.add_argument("--config", default="configs/datagen/preference.yaml")
     parser.add_argument("--run-dir")
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--accept-scheduling-update", action="store_true",
+                        help="Record an audited scheduling-only source migration; keep the original data protocol")
     parser.add_argument("overrides", nargs="*", help="Explicit YAML key=value overrides")
     args = parser.parse_args()
     config = OmegaConf.to_container(OmegaConf.merge(
         OmegaConf.load(args.config), OmegaConf.from_dotlist(args.overrides)), resolve=True)
     config["selection"] = asdict(SelectionConfig(**config["selection"]))
     if (not config["gpus"] or len(config["gpus"]) != len(set(config["gpus"])) or
-            min(config["cpu_workers"], config["queue_size"], config["candidates"]) < 1):
+            min(config["cpu_workers"], config["queue_size"], config["candidates"],
+                config.get("workers_per_gpu", 1)) < 1):
         raise ValueError("Require distinct GPUs, workers, queue capacity and positive K")
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run = Path(args.run_dir or Path(config["output_root"]) / timestamp).resolve()
-    protocol = prepare_run(config, run, args.resume)
+    if not args.resume:
+        protocol = prepare_run(config, run, False)
     # One producer per run; the lock does not disappear after an abrupt exit.
     with (run / "metadata/run.lock").open("w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        print(f"run={run} gpus={config['gpus']} protocol={protocol['fingerprint']}", flush=True)
+        if args.resume:
+            protocol = prepare_run(config, run, True, args.accept_scheduling_update)
+            (run / "PAUSE").unlink(missing_ok=True)
+        print(f"run={run} gpus={config['gpus']} workers_per_gpu={config.get('workers_per_gpu', 1)} "
+              f"protocol={protocol['fingerprint']}", flush=True)
         try:
             summaries = {}
             for split in ("validation", "train"):
                 summaries[split] = run_phase(split, protocol["splits"][split], config, run)
+                if summaries[split].get("status") == "paused":
+                    return
                 if split == "validation" and summaries[split]["images"] and not summaries[split]["pairs"]:
                     atomic_json(run / "status.json", {"status": "stopped_no_validation_pairs", **summaries})
                     return

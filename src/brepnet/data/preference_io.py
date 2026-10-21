@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import difflib
 from importlib.metadata import distributions
 import json
 from pathlib import Path
@@ -14,6 +15,10 @@ from tools.vae_compare_post import atomic_json, fingerprint, read_json, sha256_f
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+SCHEDULING_SOURCES = {
+    "src/brepnet/data/preference_generate.py",
+    "src/brepnet/data/preference_io.py",
+}
 
 
 def read_ids(path: str | Path) -> list[str]:
@@ -41,7 +46,54 @@ def source_hashes() -> dict[str, str]:
             for path in sorted(paths) if path.name != "preference_dataset.py"}
 
 
-def prepare_run(config: dict, run: Path, resume: bool) -> dict:
+def _record_runtime_revision(run: Path, config: dict, previous: dict, current: dict,
+                             accept_scheduling_update: bool) -> None:
+    """保留原始协议；恢复所用调度源码和资源另存为有序记录。"""
+    created = datetime.now(timezone.utc)
+    relative_root = Path("metadata/runtime") / created.strftime("%Y%m%dT%H%M%S.%fZ")
+    root = run / relative_root
+    root.mkdir(parents=True)
+    changes = {
+        name: {"before": previous["source_sha256"][name], "after": digest}
+        for name, digest in current["source_sha256"].items()
+        if previous["source_sha256"][name] != digest
+    }
+    diff = []
+    for name in sorted(SCHEDULING_SOURCES):
+        source = REPO_ROOT / name
+        target = root / "source" / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target)
+        original = run / "metadata/source" / name
+        diff.extend(difflib.unified_diff(
+            original.read_text().splitlines(keepends=True), source.read_text().splitlines(keepends=True),
+            fromfile=f"original/{name}", tofile=f"runtime/{name}"))
+    (root / "scheduling.diff").write_text("".join(diff))
+    git = lambda *args: subprocess.check_output(["git", *args], cwd=REPO_ROOT, text=True)
+    record = {
+        "created_utc": created.isoformat(),
+        "protocol_fingerprint": previous["fingerprint"],
+        "accept_scheduling_update": accept_scheduling_update,
+        "source_changes": changes,
+        "source_sha256": current["source_sha256"],
+        "runtime_directory": str(relative_root),
+        "git_commit": git("rev-parse", "HEAD").strip(),
+        "git_status": git("status", "--short"),
+        "command": [sys.executable, *sys.argv],
+        "resources": {key: config[key] for key in (
+            "gpus", "workers_per_gpu", "gpu_workers_per_gpu", "cpu_workers", "queue_size",
+            "gpu_cpu_threads") if key in config},
+        "config": config,
+    }
+    atomic_json(root / "runtime.json", record)
+    path = run / "metadata/runtime_revisions.json"
+    revisions = read_json(path) or {"version": "svr_preference_runtime_v1", "revisions": []}
+    revisions["revisions"].append(record)
+    atomic_json(path, revisions)
+
+
+def prepare_run(config: dict, run: Path, resume: bool,
+                accept_scheduling_update: bool = False) -> dict:
     from OCC import VERSION as occ_version
 
     splits = {name: read_ids(config[f"{name}_list"]) for name in ("validation", "train")}
@@ -81,9 +133,26 @@ def prepare_run(config: dict, run: Path, resume: bool) -> dict:
     path = run / "metadata/protocol.json"
     if resume:
         previous = read_json(path)
+        if not previous:
+            raise ValueError(f"Resume protocol is missing: {path}")
         if previous != protocol:
-            raise ValueError("Resume protocol, source files, checkpoint or splits differ")
-        return protocol
+            # 仅显式放行编排变更；模型、指标、预算和数据协议仍逐项严格相等。
+            unchanged_protocol = {
+                **protocol, "source_sha256": previous["source_sha256"],
+                "fingerprint": previous["fingerprint"],
+            }
+            changed_sources = {
+                name for name in previous["source_sha256"].keys() | protocol["source_sha256"].keys()
+                if previous["source_sha256"].get(name) != protocol["source_sha256"].get(name)
+            }
+            if (not accept_scheduling_update or unchanged_protocol != previous or
+                    previous["source_sha256"].keys() != protocol["source_sha256"].keys() or
+                    not changed_sources <= SCHEDULING_SOURCES or
+                    previous["fingerprint"] != fingerprint({
+                        key: value for key, value in previous.items() if key != "fingerprint"})):
+                raise ValueError("Resume protocol, source files, checkpoint or splits differ")
+        _record_runtime_revision(run, config, previous, protocol, accept_scheduling_update)
+        return previous
     if run.exists():
         raise FileExistsError(f"Existing run requires --resume: {run}")
     (run / "metadata").mkdir(parents=True)

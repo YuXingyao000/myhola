@@ -1,0 +1,31 @@
+{
+  "status_before_resume": {
+    "status": "paused",
+    "phase": "train",
+    "requested_images": 46627,
+    "images": 5336,
+    "candidates": 42695,
+    "pairs": 4842,
+    "validity_valid": 32701,
+    "status_evaluation_error": 1192,
+    "status_ok": 41474,
+    "validity_invalid": 9956,
+    "pairs_geometry": 2874,
+    "pairs_validity": 1968,
+    "validity_unknown": 38,
+    "status_timeout": 29,
+    "elapsed_seconds": 56222.70432823594,
+    "error": "KeyboardInterrupt: ",
+    "pause_reason": "User-requested GPU resource change; all active CPU evaluations drained.",
+    "paused_at_utc": "2026-10-21T05:51:54.023963+00:00"
+  },
+  "existing_pair_count": 4842,
+  "pairs_sha256": "dbe36962f400807581fa8f10075c9a8b86d7d7a3f5365df16c61c8209f8190fc",
+  "interrupted_generation_candidates": [
+    "candidates/train/00112206/c00",
+    "candidates/train/00118977/c00",
+    "candidates/train/00119621/c07",
+    "candidates/train/00113966/c00"
+  ],
+  "original_protocol_sha256": "2861064fe0e9714fbe37312879bf7fc7b17ebedfc019b98a0e30aa2c9d8614a0"
+}

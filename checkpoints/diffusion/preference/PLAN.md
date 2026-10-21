@@ -33,7 +33,7 @@
 1. CPU规则/指标测试、真实旧checkpoint采样等价检查、真实小规模生成→后处理→选对接口验证。
 2. 启动独立后台生成进程，先validation100×8，再train46627×8，阶段之间不改变规则。不持续监看长期运行。
 3. validation若没有任何合格pair，程序停止并记录原因，不继续大量生成；其他阈值不自动调节。
-4. 仅GPU4/5/6/7逐seed原生DDPM1000/FP32采样；候选完成后交给CPU后处理队列；有界队列避免无界产物积压。
+4. 初始仅GPU4/5/6/7；2026-10-21用户授权扩到GPU0–7，每卡2个独立进程。仍逐seed原生DDPM1000/FP32/batch1采样；候选完成后交给CPU后处理队列；有界队列避免无界产物积压。并行进程/跨GPU与原候选的逐位一致性及调度迁移见`performance_20261021/`。
 5. recover_v1，optimized/drop0、名义200步/自适应600，每候选180秒整隔离进程预算，内部修复共享预算且不读GT。
 6. 独立OCC子进程隔离崩溃/超时；指标原始值与失败原因保存。启动中断后只显式resume，不覆盖旧run。
 7. 数据生成可靠并启动后，完成偏好训练实现/验证，输出命令但不启动训练。
@@ -78,7 +78,7 @@ or face_f1(A) >= face_f1(B) + 0.02
 - 无边、NaN、不可采样：依赖该项的指标缺失；不填原点或无穷大。
 - validation/test不进入梯度；无pair训练图片仍参加GT DDPM。
 - 不将去重/后处理后几何重新编码或补齐成训练latent。
-- protocol/源码/输入改变时拒绝混用run；显式resume复用可核验已完成结果。
+- protocol/模型/指标/输入改变时拒绝混用run；显式resume复用可核验已完成结果。经验证且明确指定`--accept-scheduling-update`，仅允许生成编排与运行记录源码迁移；保留原protocol及fingerprint，另存每次runtime源码、diff、资源、Git和命令，不静默替换来源。
 
 ## 9. Validation / Sanity Checks
 
