@@ -12,6 +12,19 @@ CPU后处理32个worker、队列64；原checkpoint、FP32、batch1、DDPM1000、
 4个未完成GPU候选按原协议记unknown，不重抽。原输出和原始protocol保留。
 性能和恢复验证见[报告](performance_20261021/README.md)。
 
+八卡恢复于北京时间2026-10-21 13:53启动，继续使用原run目录；新tmux会话为
+`diffusion-preference-8gpu-20261021T055326Z`，日志为
+`/mnt/d/python/checkpoints/diffusion/preference_data/20261020T134930Z.resume_20261021T055326Z.log`。
+调度提交`ed26c20b`，八卡命令如下：
+
+```bash
+/mnt/d/anaconda3/envs/torch/bin/python -u -m src.brepnet.data.preference_generate \
+  --config configs/datagen/preference.yaml \
+  --run-dir checkpoints/diffusion/preference_data/20261020T134930Z \
+  --resume --accept-scheduling-update \
+  'gpus=[0,1,2,3,4,5,6,7]' workers_per_gpu=2 cpu_workers=32 queue_size=64
+```
+
 2026-10-20 13:49:30 UTC启动正式数据生成：
 
 - 代码提交：`0c5ff7346d86bb3194b4ea222f7db60b2032dc63`。
