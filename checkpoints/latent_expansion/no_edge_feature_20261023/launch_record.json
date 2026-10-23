@@ -1,0 +1,78 @@
+{
+  "status": "training_verified",
+  "launched_at_utc": "2026-10-23T03:50:06.732205+00:00",
+  "host": "142",
+  "repo_root": "/mnt/d/python",
+  "branch": "codex/vae-uv-boundary",
+  "code_commit": "7948c1b695d1160218c9ae82f15630d663ce6dbc",
+  "tmux_session": "vae64-no-edge-feature-30k",
+  "run_dir": "/mnt/d/python/checkpoints/latent_expansion/d64_no_edge_feature/20261023T034042Z",
+  "max_steps": 30000,
+  "devices": 8,
+  "batch_size_per_device": 16,
+  "feature_weight": 0.0,
+  "preflight_status": "passed",
+  "source_checkpoint_sha256": "ce749416c1635dda1563161b971bd4260d064cfdb0c31f1fa9d06ad0e70961ff",
+  "resolved_config_sha256": "67911fc728edbf41e8b34ce3e115d2aec9e9dd18a6026c98f9a4d6866e4fb385",
+  "deployment": "Verified Git bundle of six new experiment files, fetched and merged --ff-only; existing untracked artifacts preserved. Direct push rejected by sync hooks for pre-existing untracked artifacts and non-current ref.",
+  "verified_at_utc": "2026-10-23T03:53:12.783091+00:00",
+  "run_metadata": {
+    "created_at_utc": "2026-10-23T03:50:11.056789+00:00",
+    "experiment": "latent_expansion/d64_no_edge_feature",
+    "run_dir": "/mnt/d/python/checkpoints/latent_expansion/d64_no_edge_feature/20261023T034042Z",
+    "wandb_id": "8fd1dc1d1023",
+    "initial_invocation_id": "20261023T035011.031392Z"
+  },
+  "wandb_url": "https://wandb.ai/whatseven777/hola-brep/runs/8fd1dc1d1023",
+  "wandb_state": "running",
+  "wandb_initial_history": [
+    {
+      "_step": 1,
+      "trainer/global_step": 49,
+      "train/loss_step": 0.024598803371191025,
+      "_timestamp": 1792727534.839447
+    }
+  ],
+  "wandb_summary": {
+    "_step": 1,
+    "_timestamp": 1792727534.839447,
+    "train/loss_step": 0.024598803371191025,
+    "trainer/global_step": 49
+  },
+  "registered_ddp_ranks": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "observed_epoch": 0,
+  "observed_completed_train_batches": 83,
+  "observed_total_loss": 0.0235,
+  "gpu_compute_processes": [
+    "GPU-1e256409-2617-ff58-e7b2-daf07a0f8fb5, 1187433, 10820 MiB",
+    "GPU-dca54d4b-61e2-a601-3490-fac313ec2f76, 1188085, 11922 MiB",
+    "GPU-eb398019-e354-f342-6429-2e60f60dbf8d, 1188086, 10740 MiB",
+    "GPU-1e024727-22d2-c93e-5415-a0faa4250adf, 1188087, 10854 MiB",
+    "GPU-04a2a80e-f41a-c81b-f2b4-1fcf58c9a020, 1188088, 10552 MiB",
+    "GPU-36e168e0-669c-5059-7b57-76e44aa184b8, 1188089, 11304 MiB",
+    "GPU-54b3e540-2509-dcee-2b8d-57967a8e3525, 1188090, 10842 MiB",
+    "GPU-69c6f23f-56e2-1a9d-8e84-e74af1e75b8b, 1188091, 10948 MiB"
+  ],
+  "tmux_pane": "0 1187430 bash",
+  "actual_run_config_matches_preflight": true,
+  "weighted_edge_feature_evidence": {
+    "preflight_value": 0.0,
+    "preflight_gradient_l2": 0.0,
+    "actual_run_config_feature_weight": 0.0,
+    "logging": "Components log on epoch; no full-epoch feature metric available at launch verification."
+  },
+  "source_checkpoint_initialization": {
+    "retained_state_keys": 697,
+    "expanded_state_keys": 81
+  },
+  "research_result": "Training in progress; no effectiveness conclusion."
+}

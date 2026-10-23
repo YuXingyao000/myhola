@@ -1,0 +1,2286 @@
+{
+  "status": "passed",
+  "forward_passes": 1,
+  "optimizer_steps": 0,
+  "python": "3.10.22",
+  "torch": "2.8.0+cu128",
+  "cuda": "12.8",
+  "gpu": "NVIDIA GeForce RTX 5090",
+  "repo_root": "/mnt/d/python",
+  "seed": 42,
+  "precision": "bf16-mixed",
+  "source_checkpoint": {
+    "path": "/mnt/d/python/checkpoints/shared_curve_uv/candidate/20261019T064906.049992Z/weights/epoch=0116-step=00042471-val_loss=0.036517.ckpt",
+    "sha256": "ce749416c1635dda1563161b971bd4260d064cfdb0c31f1fa9d06ad0e70961ff"
+  },
+  "initialization": {
+    "source": "/mnt/d/python/checkpoints/shared_curve_uv/candidate/20261019T064906.049992Z/weights/epoch=0116-step=00042471-val_loss=0.036517.ckpt",
+    "source_epoch": 116,
+    "source_global_step": 42471,
+    "source_face_dim": 32,
+    "target_face_dim": 64,
+    "retained_state_keys": 697,
+    "retained_keys": [
+      "encoder.face_coords.0.weight",
+      "encoder.face_coords.0.bias",
+      "encoder.face_coords.1.weight",
+      "encoder.face_coords.1.bias",
+      "encoder.face_coords.3.conv1.weight",
+      "encoder.face_coords.3.conv1.bias",
+      "encoder.face_coords.3.norm1.weight",
+      "encoder.face_coords.3.norm1.bias",
+      "encoder.face_coords.3.conv2.weight",
+      "encoder.face_coords.3.conv2.bias",
+      "encoder.face_coords.3.norm2.weight",
+      "encoder.face_coords.3.norm2.bias",
+      "encoder.face_coords.3.downsample.0.weight",
+      "encoder.face_coords.3.downsample.1.weight",
+      "encoder.face_coords.3.downsample.1.bias",
+      "encoder.face_coords.5.conv1.weight",
+      "encoder.face_coords.5.conv1.bias",
+      "encoder.face_coords.5.norm1.weight",
+      "encoder.face_coords.5.norm1.bias",
+      "encoder.face_coords.5.conv2.weight",
+      "encoder.face_coords.5.conv2.bias",
+      "encoder.face_coords.5.norm2.weight",
+      "encoder.face_coords.5.norm2.bias",
+      "encoder.face_coords.5.downsample.0.weight",
+      "encoder.face_coords.5.downsample.1.weight",
+      "encoder.face_coords.5.downsample.1.bias",
+      "encoder.face_coords.7.conv1.weight",
+      "encoder.face_coords.7.conv1.bias",
+      "encoder.face_coords.7.norm1.weight",
+      "encoder.face_coords.7.norm1.bias",
+      "encoder.face_coords.7.conv2.weight",
+      "encoder.face_coords.7.conv2.bias",
+      "encoder.face_coords.7.norm2.weight",
+      "encoder.face_coords.7.norm2.bias",
+      "encoder.face_coords.7.downsample.0.weight",
+      "encoder.face_coords.7.downsample.1.weight",
+      "encoder.face_coords.7.downsample.1.bias",
+      "encoder.face_coords.9.conv1.weight",
+      "encoder.face_coords.9.conv1.bias",
+      "encoder.face_coords.9.norm1.weight",
+      "encoder.face_coords.9.norm1.bias",
+      "encoder.face_coords.9.conv2.weight",
+      "encoder.face_coords.9.conv2.bias",
+      "encoder.face_coords.9.norm2.weight",
+      "encoder.face_coords.9.norm2.bias",
+      "encoder.edge_coords.0.weight",
+      "encoder.edge_coords.0.bias",
+      "encoder.edge_coords.1.weight",
+      "encoder.edge_coords.1.bias",
+      "encoder.edge_coords.3.conv1.weight",
+      "encoder.edge_coords.3.conv1.bias",
+      "encoder.edge_coords.3.norm1.weight",
+      "encoder.edge_coords.3.norm1.bias",
+      "encoder.edge_coords.3.conv2.weight",
+      "encoder.edge_coords.3.conv2.bias",
+      "encoder.edge_coords.3.norm2.weight",
+      "encoder.edge_coords.3.norm2.bias",
+      "encoder.edge_coords.3.downsample.0.weight",
+      "encoder.edge_coords.3.downsample.1.weight",
+      "encoder.edge_coords.3.downsample.1.bias",
+      "encoder.edge_coords.5.conv1.weight",
+      "encoder.edge_coords.5.conv1.bias",
+      "encoder.edge_coords.5.norm1.weight",
+      "encoder.edge_coords.5.norm1.bias",
+      "encoder.edge_coords.5.conv2.weight",
+      "encoder.edge_coords.5.conv2.bias",
+      "encoder.edge_coords.5.norm2.weight",
+      "encoder.edge_coords.5.norm2.bias",
+      "encoder.edge_coords.5.downsample.0.weight",
+      "encoder.edge_coords.5.downsample.1.weight",
+      "encoder.edge_coords.5.downsample.1.bias",
+      "encoder.edge_coords.7.conv1.weight",
+      "encoder.edge_coords.7.conv1.bias",
+      "encoder.edge_coords.7.norm1.weight",
+      "encoder.edge_coords.7.norm1.bias",
+      "encoder.edge_coords.7.conv2.weight",
+      "encoder.edge_coords.7.conv2.bias",
+      "encoder.edge_coords.7.norm2.weight",
+      "encoder.edge_coords.7.norm2.bias",
+      "encoder.edge_coords.7.downsample.0.weight",
+      "encoder.edge_coords.7.downsample.1.weight",
+      "encoder.edge_coords.7.downsample.1.bias",
+      "encoder.edge_coords.9.conv1.weight",
+      "encoder.edge_coords.9.conv1.bias",
+      "encoder.edge_coords.9.norm1.weight",
+      "encoder.edge_coords.9.norm1.bias",
+      "encoder.edge_coords.9.conv2.weight",
+      "encoder.edge_coords.9.conv2.bias",
+      "encoder.edge_coords.9.norm2.weight",
+      "encoder.edge_coords.9.norm2.bias",
+      "encoder.face_attn_proj_in.bias",
+      "encoder.face_attn.layers.0.self_attn.in_proj_weight",
+      "encoder.face_attn.layers.0.self_attn.in_proj_bias",
+      "encoder.face_attn.layers.0.self_attn.out_proj.weight",
+      "encoder.face_attn.layers.0.self_attn.out_proj.bias",
+      "encoder.face_attn.layers.0.linear1.weight",
+      "encoder.face_attn.layers.0.linear1.bias",
+      "encoder.face_attn.layers.0.linear2.weight",
+      "encoder.face_attn.layers.0.linear2.bias",
+      "encoder.face_attn.layers.0.norm1.weight",
+      "encoder.face_attn.layers.0.norm1.bias",
+      "encoder.face_attn.layers.0.norm2.weight",
+      "encoder.face_attn.layers.0.norm2.bias",
+      "encoder.face_attn.layers.1.self_attn.in_proj_weight",
+      "encoder.face_attn.layers.1.self_attn.in_proj_bias",
+      "encoder.face_attn.layers.1.self_attn.out_proj.weight",
+      "encoder.face_attn.layers.1.self_attn.out_proj.bias",
+      "encoder.face_attn.layers.1.linear1.weight",
+      "encoder.face_attn.layers.1.linear1.bias",
+      "encoder.face_attn.layers.1.linear2.weight",
+      "encoder.face_attn.layers.1.linear2.bias",
+      "encoder.face_attn.layers.1.norm1.weight",
+      "encoder.face_attn.layers.1.norm1.bias",
+      "encoder.face_attn.layers.1.norm2.weight",
+      "encoder.face_attn.layers.1.norm2.bias",
+      "encoder.face_attn.layers.2.self_attn.in_proj_weight",
+      "encoder.face_attn.layers.2.self_attn.in_proj_bias",
+      "encoder.face_attn.layers.2.self_attn.out_proj.weight",
+      "encoder.face_attn.layers.2.self_attn.out_proj.bias",
+      "encoder.face_attn.layers.2.linear1.weight",
+      "encoder.face_attn.layers.2.linear1.bias",
+      "encoder.face_attn.layers.2.linear2.weight",
+      "encoder.face_attn.layers.2.linear2.bias",
+      "encoder.face_attn.layers.2.norm1.weight",
+      "encoder.face_attn.layers.2.norm1.bias",
+      "encoder.face_attn.layers.2.norm2.weight",
+      "encoder.face_attn.layers.2.norm2.bias",
+      "encoder.face_attn.layers.3.self_attn.in_proj_weight",
+      "encoder.face_attn.layers.3.self_attn.in_proj_bias",
+      "encoder.face_attn.layers.3.self_attn.out_proj.weight",
+      "encoder.face_attn.layers.3.self_attn.out_proj.bias",
+      "encoder.face_attn.layers.3.linear1.weight",
+      "encoder.face_attn.layers.3.linear1.bias",
+      "encoder.face_attn.layers.3.linear2.weight",
+      "encoder.face_attn.layers.3.linear2.bias",
+      "encoder.face_attn.layers.3.norm1.weight",
+      "encoder.face_attn.layers.3.norm1.bias",
+      "encoder.face_attn.layers.3.norm2.weight",
+      "encoder.face_attn.layers.3.norm2.bias",
+      "encoder.face_attn.layers.4.self_attn.in_proj_weight",
+      "encoder.face_attn.layers.4.self_attn.in_proj_bias",
+      "encoder.face_attn.layers.4.self_attn.out_proj.weight",
+      "encoder.face_attn.layers.4.self_attn.out_proj.bias",
+      "encoder.face_attn.layers.4.linear1.weight",
+      "encoder.face_attn.layers.4.linear1.bias",
+      "encoder.face_attn.layers.4.linear2.weight",
+      "encoder.face_attn.layers.4.linear2.bias",
+      "encoder.face_attn.layers.4.norm1.weight",
+      "encoder.face_attn.layers.4.norm1.bias",
+      "encoder.face_attn.layers.4.norm2.weight",
+      "encoder.face_attn.layers.4.norm2.bias",
+      "encoder.face_attn.layers.5.self_attn.in_proj_weight",
+      "encoder.face_attn.layers.5.self_attn.in_proj_bias",
+      "encoder.face_attn.layers.5.self_attn.out_proj.weight",
+      "encoder.face_attn.layers.5.self_attn.out_proj.bias",
+      "encoder.face_attn.layers.5.linear1.weight",
+      "encoder.face_attn.layers.5.linear1.bias",
+      "encoder.face_attn.layers.5.linear2.weight",
+      "encoder.face_attn.layers.5.linear2.bias",
+      "encoder.face_attn.layers.5.norm1.weight",
+      "encoder.face_attn.layers.5.norm1.bias",
+      "encoder.face_attn.layers.5.norm2.weight",
+      "encoder.face_attn.layers.5.norm2.bias",
+      "encoder.face_attn.layers.6.self_attn.in_proj_weight",
+      "encoder.face_attn.layers.6.self_attn.in_proj_bias",
+      "encoder.face_attn.layers.6.self_attn.out_proj.weight",
+      "encoder.face_attn.layers.6.self_attn.out_proj.bias",
+      "encoder.face_attn.layers.6.linear1.weight",
+      "encoder.face_attn.layers.6.linear1.bias",
+      "encoder.face_attn.layers.6.linear2.weight",
+      "encoder.face_attn.layers.6.linear2.bias",
+      "encoder.face_attn.layers.6.norm1.weight",
+      "encoder.face_attn.layers.6.norm1.bias",
+      "encoder.face_attn.layers.6.norm2.weight",
+      "encoder.face_attn.layers.6.norm2.bias",
+      "encoder.face_attn.layers.7.self_attn.in_proj_weight",
+      "encoder.face_attn.layers.7.self_attn.in_proj_bias",
+      "encoder.face_attn.layers.7.self_attn.out_proj.weight",
+      "encoder.face_attn.layers.7.self_attn.out_proj.bias",
+      "encoder.face_attn.layers.7.linear1.weight",
+      "encoder.face_attn.layers.7.linear1.bias",
+      "encoder.face_attn.layers.7.linear2.weight",
+      "encoder.face_attn.layers.7.linear2.bias",
+      "encoder.face_attn.layers.7.norm1.weight",
+      "encoder.face_attn.layers.7.norm1.bias",
+      "encoder.face_attn.layers.7.norm2.weight",
+      "encoder.face_attn.layers.7.norm2.bias",
+      "encoder.face_attn.norm.weight",
+      "encoder.face_attn.norm.bias",
+      "decoder.face_features.input_projection.bias",
+      "decoder.face_features.backbone.layers.0.self_attn.in_proj_weight",
+      "decoder.face_features.backbone.layers.0.self_attn.in_proj_bias",
+      "decoder.face_features.backbone.layers.0.self_attn.out_proj.weight",
+      "decoder.face_features.backbone.layers.0.self_attn.out_proj.bias",
+      "decoder.face_features.backbone.layers.0.linear1.weight",
+      "decoder.face_features.backbone.layers.0.linear1.bias",
+      "decoder.face_features.backbone.layers.0.linear2.weight",
+      "decoder.face_features.backbone.layers.0.linear2.bias",
+      "decoder.face_features.backbone.layers.0.norm1.weight",
+      "decoder.face_features.backbone.layers.0.norm1.bias",
+      "decoder.face_features.backbone.layers.0.norm2.weight",
+      "decoder.face_features.backbone.layers.0.norm2.bias",
+      "decoder.face_features.backbone.layers.1.self_attn.in_proj_weight",
+      "decoder.face_features.backbone.layers.1.self_attn.in_proj_bias",
+      "decoder.face_features.backbone.layers.1.self_attn.out_proj.weight",
+      "decoder.face_features.backbone.layers.1.self_attn.out_proj.bias",
+      "decoder.face_features.backbone.layers.1.linear1.weight",
+      "decoder.face_features.backbone.layers.1.linear1.bias",
+      "decoder.face_features.backbone.layers.1.linear2.weight",
+      "decoder.face_features.backbone.layers.1.linear2.bias",
+      "decoder.face_features.backbone.layers.1.norm1.weight",
+      "decoder.face_features.backbone.layers.1.norm1.bias",
+      "decoder.face_features.backbone.layers.1.norm2.weight",
+      "decoder.face_features.backbone.layers.1.norm2.bias",
+      "decoder.face_features.backbone.layers.2.self_attn.in_proj_weight",
+      "decoder.face_features.backbone.layers.2.self_attn.in_proj_bias",
+      "decoder.face_features.backbone.layers.2.self_attn.out_proj.weight",
+      "decoder.face_features.backbone.layers.2.self_attn.out_proj.bias",
+      "decoder.face_features.backbone.layers.2.linear1.weight",
+      "decoder.face_features.backbone.layers.2.linear1.bias",
+      "decoder.face_features.backbone.layers.2.linear2.weight",
+      "decoder.face_features.backbone.layers.2.linear2.bias",
+      "decoder.face_features.backbone.layers.2.norm1.weight",
+      "decoder.face_features.backbone.layers.2.norm1.bias",
+      "decoder.face_features.backbone.layers.2.norm2.weight",
+      "decoder.face_features.backbone.layers.2.norm2.bias",
+      "decoder.face_features.backbone.layers.3.self_attn.in_proj_weight",
+      "decoder.face_features.backbone.layers.3.self_attn.in_proj_bias",
+      "decoder.face_features.backbone.layers.3.self_attn.out_proj.weight",
+      "decoder.face_features.backbone.layers.3.self_attn.out_proj.bias",
+      "decoder.face_features.backbone.layers.3.linear1.weight",
+      "decoder.face_features.backbone.layers.3.linear1.bias",
+      "decoder.face_features.backbone.layers.3.linear2.weight",
+      "decoder.face_features.backbone.layers.3.linear2.bias",
+      "decoder.face_features.backbone.layers.3.norm1.weight",
+      "decoder.face_features.backbone.layers.3.norm1.bias",
+      "decoder.face_features.backbone.layers.3.norm2.weight",
+      "decoder.face_features.backbone.layers.3.norm2.bias",
+      "decoder.face_features.backbone.layers.4.self_attn.in_proj_weight",
+      "decoder.face_features.backbone.layers.4.self_attn.in_proj_bias",
+      "decoder.face_features.backbone.layers.4.self_attn.out_proj.weight",
+      "decoder.face_features.backbone.layers.4.self_attn.out_proj.bias",
+      "decoder.face_features.backbone.layers.4.linear1.weight",
+      "decoder.face_features.backbone.layers.4.linear1.bias",
+      "decoder.face_features.backbone.layers.4.linear2.weight",
+      "decoder.face_features.backbone.layers.4.linear2.bias",
+      "decoder.face_features.backbone.layers.4.norm1.weight",
+      "decoder.face_features.backbone.layers.4.norm1.bias",
+      "decoder.face_features.backbone.layers.4.norm2.weight",
+      "decoder.face_features.backbone.layers.4.norm2.bias",
+      "decoder.face_features.backbone.layers.5.self_attn.in_proj_weight",
+      "decoder.face_features.backbone.layers.5.self_attn.in_proj_bias",
+      "decoder.face_features.backbone.layers.5.self_attn.out_proj.weight",
+      "decoder.face_features.backbone.layers.5.self_attn.out_proj.bias",
+      "decoder.face_features.backbone.layers.5.linear1.weight",
+      "decoder.face_features.backbone.layers.5.linear1.bias",
+      "decoder.face_features.backbone.layers.5.linear2.weight",
+      "decoder.face_features.backbone.layers.5.linear2.bias",
+      "decoder.face_features.backbone.layers.5.norm1.weight",
+      "decoder.face_features.backbone.layers.5.norm1.bias",
+      "decoder.face_features.backbone.layers.5.norm2.weight",
+      "decoder.face_features.backbone.layers.5.norm2.bias",
+      "decoder.face_features.backbone.layers.6.self_attn.in_proj_weight",
+      "decoder.face_features.backbone.layers.6.self_attn.in_proj_bias",
+      "decoder.face_features.backbone.layers.6.self_attn.out_proj.weight",
+      "decoder.face_features.backbone.layers.6.self_attn.out_proj.bias",
+      "decoder.face_features.backbone.layers.6.linear1.weight",
+      "decoder.face_features.backbone.layers.6.linear1.bias",
+      "decoder.face_features.backbone.layers.6.linear2.weight",
+      "decoder.face_features.backbone.layers.6.linear2.bias",
+      "decoder.face_features.backbone.layers.6.norm1.weight",
+      "decoder.face_features.backbone.layers.6.norm1.bias",
+      "decoder.face_features.backbone.layers.6.norm2.weight",
+      "decoder.face_features.backbone.layers.6.norm2.bias",
+      "decoder.face_features.backbone.layers.7.self_attn.in_proj_weight",
+      "decoder.face_features.backbone.layers.7.self_attn.in_proj_bias",
+      "decoder.face_features.backbone.layers.7.self_attn.out_proj.weight",
+      "decoder.face_features.backbone.layers.7.self_attn.out_proj.bias",
+      "decoder.face_features.backbone.layers.7.linear1.weight",
+      "decoder.face_features.backbone.layers.7.linear1.bias",
+      "decoder.face_features.backbone.layers.7.linear2.weight",
+      "decoder.face_features.backbone.layers.7.linear2.bias",
+      "decoder.face_features.backbone.layers.7.norm1.weight",
+      "decoder.face_features.backbone.layers.7.norm1.bias",
+      "decoder.face_features.backbone.layers.7.norm2.weight",
+      "decoder.face_features.backbone.layers.7.norm2.bias",
+      "decoder.face_geometry.points_decoder.1.conv1.bias",
+      "decoder.face_geometry.points_decoder.1.norm1.weight",
+      "decoder.face_geometry.points_decoder.1.norm1.bias",
+      "decoder.face_geometry.points_decoder.1.conv2.weight",
+      "decoder.face_geometry.points_decoder.1.conv2.bias",
+      "decoder.face_geometry.points_decoder.1.norm2.weight",
+      "decoder.face_geometry.points_decoder.1.norm2.bias",
+      "decoder.face_geometry.points_decoder.1.downsample.1.weight",
+      "decoder.face_geometry.points_decoder.1.downsample.1.bias",
+      "decoder.face_geometry.points_decoder.2.weight",
+      "decoder.face_geometry.points_decoder.2.bias",
+      "decoder.face_geometry.points_decoder.3.conv1.weight",
+      "decoder.face_geometry.points_decoder.3.conv1.bias",
+      "decoder.face_geometry.points_decoder.3.norm1.weight",
+      "decoder.face_geometry.points_decoder.3.norm1.bias",
+      "decoder.face_geometry.points_decoder.3.conv2.weight",
+      "decoder.face_geometry.points_decoder.3.conv2.bias",
+      "decoder.face_geometry.points_decoder.3.norm2.weight",
+      "decoder.face_geometry.points_decoder.3.norm2.bias",
+      "decoder.face_geometry.points_decoder.4.weight",
+      "decoder.face_geometry.points_decoder.4.bias",
+      "decoder.face_geometry.points_decoder.5.conv1.weight",
+      "decoder.face_geometry.points_decoder.5.conv1.bias",
+      "decoder.face_geometry.points_decoder.5.norm1.weight",
+      "decoder.face_geometry.points_decoder.5.norm1.bias",
+      "decoder.face_geometry.points_decoder.5.conv2.weight",
+      "decoder.face_geometry.points_decoder.5.conv2.bias",
+      "decoder.face_geometry.points_decoder.5.norm2.weight",
+      "decoder.face_geometry.points_decoder.5.norm2.bias",
+      "decoder.face_geometry.points_decoder.6.weight",
+      "decoder.face_geometry.points_decoder.6.bias",
+      "decoder.face_geometry.points_decoder.7.conv1.weight",
+      "decoder.face_geometry.points_decoder.7.conv1.bias",
+      "decoder.face_geometry.points_decoder.7.norm1.weight",
+      "decoder.face_geometry.points_decoder.7.norm1.bias",
+      "decoder.face_geometry.points_decoder.7.conv2.weight",
+      "decoder.face_geometry.points_decoder.7.conv2.bias",
+      "decoder.face_geometry.points_decoder.7.norm2.weight",
+      "decoder.face_geometry.points_decoder.7.norm2.bias",
+      "decoder.face_geometry.points_decoder.8.weight",
+      "decoder.face_geometry.points_decoder.8.bias",
+      "decoder.face_geometry.bbox_decoder.0.conv1.bias",
+      "decoder.face_geometry.bbox_decoder.0.norm1.weight",
+      "decoder.face_geometry.bbox_decoder.0.norm1.bias",
+      "decoder.face_geometry.bbox_decoder.0.conv2.weight",
+      "decoder.face_geometry.bbox_decoder.0.conv2.bias",
+      "decoder.face_geometry.bbox_decoder.0.norm2.weight",
+      "decoder.face_geometry.bbox_decoder.0.norm2.bias",
+      "decoder.face_geometry.bbox_decoder.0.downsample.0.bias",
+      "decoder.face_geometry.bbox_decoder.0.downsample.1.weight",
+      "decoder.face_geometry.bbox_decoder.0.downsample.1.bias",
+      "decoder.face_geometry.bbox_decoder.1.conv1.weight",
+      "decoder.face_geometry.bbox_decoder.1.conv1.bias",
+      "decoder.face_geometry.bbox_decoder.1.norm1.weight",
+      "decoder.face_geometry.bbox_decoder.1.norm1.bias",
+      "decoder.face_geometry.bbox_decoder.1.conv2.weight",
+      "decoder.face_geometry.bbox_decoder.1.conv2.bias",
+      "decoder.face_geometry.bbox_decoder.1.norm2.weight",
+      "decoder.face_geometry.bbox_decoder.1.norm2.bias",
+      "decoder.face_geometry.bbox_decoder.2.conv1.weight",
+      "decoder.face_geometry.bbox_decoder.2.conv1.bias",
+      "decoder.face_geometry.bbox_decoder.2.norm1.weight",
+      "decoder.face_geometry.bbox_decoder.2.norm1.bias",
+      "decoder.face_geometry.bbox_decoder.2.conv2.weight",
+      "decoder.face_geometry.bbox_decoder.2.conv2.bias",
+      "decoder.face_geometry.bbox_decoder.2.norm2.weight",
+      "decoder.face_geometry.bbox_decoder.2.norm2.bias",
+      "decoder.face_geometry.bbox_decoder.3.conv1.weight",
+      "decoder.face_geometry.bbox_decoder.3.conv1.bias",
+      "decoder.face_geometry.bbox_decoder.3.norm1.weight",
+      "decoder.face_geometry.bbox_decoder.3.norm1.bias",
+      "decoder.face_geometry.bbox_decoder.3.conv2.weight",
+      "decoder.face_geometry.bbox_decoder.3.conv2.bias",
+      "decoder.face_geometry.bbox_decoder.3.norm2.weight",
+      "decoder.face_geometry.bbox_decoder.3.norm2.bias",
+      "decoder.face_geometry.bbox_decoder.4.conv1.weight",
+      "decoder.face_geometry.bbox_decoder.4.conv1.bias",
+      "decoder.face_geometry.bbox_decoder.4.norm1.weight",
+      "decoder.face_geometry.bbox_decoder.4.norm1.bias",
+      "decoder.face_geometry.bbox_decoder.4.conv2.weight",
+      "decoder.face_geometry.bbox_decoder.4.conv2.bias",
+      "decoder.face_geometry.bbox_decoder.4.norm2.weight",
+      "decoder.face_geometry.bbox_decoder.4.norm2.bias",
+      "decoder.face_geometry.bbox_decoder.5.conv1.weight",
+      "decoder.face_geometry.bbox_decoder.5.conv1.bias",
+      "decoder.face_geometry.bbox_decoder.5.norm1.weight",
+      "decoder.face_geometry.bbox_decoder.5.norm1.bias",
+      "decoder.face_geometry.bbox_decoder.5.conv2.weight",
+      "decoder.face_geometry.bbox_decoder.5.conv2.bias",
+      "decoder.face_geometry.bbox_decoder.5.norm2.weight",
+      "decoder.face_geometry.bbox_decoder.5.norm2.bias",
+      "decoder.face_geometry.bbox_decoder.6.conv1.weight",
+      "decoder.face_geometry.bbox_decoder.6.conv1.bias",
+      "decoder.face_geometry.bbox_decoder.6.norm1.weight",
+      "decoder.face_geometry.bbox_decoder.6.norm1.bias",
+      "decoder.face_geometry.bbox_decoder.6.conv2.weight",
+      "decoder.face_geometry.bbox_decoder.6.conv2.bias",
+      "decoder.face_geometry.bbox_decoder.6.norm2.weight",
+      "decoder.face_geometry.bbox_decoder.6.norm2.bias",
+      "decoder.face_geometry.bbox_decoder.7.weight",
+      "decoder.face_geometry.bbox_decoder.7.bias",
+      "decoder.edge_geometry.points_decoder.1.conv1.bias",
+      "decoder.edge_geometry.points_decoder.1.norm1.weight",
+      "decoder.edge_geometry.points_decoder.1.norm1.bias",
+      "decoder.edge_geometry.points_decoder.1.conv2.weight",
+      "decoder.edge_geometry.points_decoder.1.conv2.bias",
+      "decoder.edge_geometry.points_decoder.1.norm2.weight",
+      "decoder.edge_geometry.points_decoder.1.norm2.bias",
+      "decoder.edge_geometry.points_decoder.1.downsample.1.weight",
+      "decoder.edge_geometry.points_decoder.1.downsample.1.bias",
+      "decoder.edge_geometry.points_decoder.2.weight",
+      "decoder.edge_geometry.points_decoder.2.bias",
+      "decoder.edge_geometry.points_decoder.3.conv1.weight",
+      "decoder.edge_geometry.points_decoder.3.conv1.bias",
+      "decoder.edge_geometry.points_decoder.3.norm1.weight",
+      "decoder.edge_geometry.points_decoder.3.norm1.bias",
+      "decoder.edge_geometry.points_decoder.3.conv2.weight",
+      "decoder.edge_geometry.points_decoder.3.conv2.bias",
+      "decoder.edge_geometry.points_decoder.3.norm2.weight",
+      "decoder.edge_geometry.points_decoder.3.norm2.bias",
+      "decoder.edge_geometry.points_decoder.4.weight",
+      "decoder.edge_geometry.points_decoder.4.bias",
+      "decoder.edge_geometry.points_decoder.5.conv1.weight",
+      "decoder.edge_geometry.points_decoder.5.conv1.bias",
+      "decoder.edge_geometry.points_decoder.5.norm1.weight",
+      "decoder.edge_geometry.points_decoder.5.norm1.bias",
+      "decoder.edge_geometry.points_decoder.5.conv2.weight",
+      "decoder.edge_geometry.points_decoder.5.conv2.bias",
+      "decoder.edge_geometry.points_decoder.5.norm2.weight",
+      "decoder.edge_geometry.points_decoder.5.norm2.bias",
+      "decoder.edge_geometry.points_decoder.6.weight",
+      "decoder.edge_geometry.points_decoder.6.bias",
+      "decoder.edge_geometry.points_decoder.7.conv1.weight",
+      "decoder.edge_geometry.points_decoder.7.conv1.bias",
+      "decoder.edge_geometry.points_decoder.7.norm1.weight",
+      "decoder.edge_geometry.points_decoder.7.norm1.bias",
+      "decoder.edge_geometry.points_decoder.7.conv2.weight",
+      "decoder.edge_geometry.points_decoder.7.conv2.bias",
+      "decoder.edge_geometry.points_decoder.7.norm2.weight",
+      "decoder.edge_geometry.points_decoder.7.norm2.bias",
+      "decoder.edge_geometry.points_decoder.8.weight",
+      "decoder.edge_geometry.points_decoder.8.bias",
+      "decoder.edge_geometry.bbox_decoder.0.conv1.bias",
+      "decoder.edge_geometry.bbox_decoder.0.norm1.weight",
+      "decoder.edge_geometry.bbox_decoder.0.norm1.bias",
+      "decoder.edge_geometry.bbox_decoder.0.conv2.weight",
+      "decoder.edge_geometry.bbox_decoder.0.conv2.bias",
+      "decoder.edge_geometry.bbox_decoder.0.norm2.weight",
+      "decoder.edge_geometry.bbox_decoder.0.norm2.bias",
+      "decoder.edge_geometry.bbox_decoder.0.downsample.0.bias",
+      "decoder.edge_geometry.bbox_decoder.0.downsample.1.weight",
+      "decoder.edge_geometry.bbox_decoder.0.downsample.1.bias",
+      "decoder.edge_geometry.bbox_decoder.1.conv1.weight",
+      "decoder.edge_geometry.bbox_decoder.1.conv1.bias",
+      "decoder.edge_geometry.bbox_decoder.1.norm1.weight",
+      "decoder.edge_geometry.bbox_decoder.1.norm1.bias",
+      "decoder.edge_geometry.bbox_decoder.1.conv2.weight",
+      "decoder.edge_geometry.bbox_decoder.1.conv2.bias",
+      "decoder.edge_geometry.bbox_decoder.1.norm2.weight",
+      "decoder.edge_geometry.bbox_decoder.1.norm2.bias",
+      "decoder.edge_geometry.bbox_decoder.2.conv1.weight",
+      "decoder.edge_geometry.bbox_decoder.2.conv1.bias",
+      "decoder.edge_geometry.bbox_decoder.2.norm1.weight",
+      "decoder.edge_geometry.bbox_decoder.2.norm1.bias",
+      "decoder.edge_geometry.bbox_decoder.2.conv2.weight",
+      "decoder.edge_geometry.bbox_decoder.2.conv2.bias",
+      "decoder.edge_geometry.bbox_decoder.2.norm2.weight",
+      "decoder.edge_geometry.bbox_decoder.2.norm2.bias",
+      "decoder.edge_geometry.bbox_decoder.3.conv1.weight",
+      "decoder.edge_geometry.bbox_decoder.3.conv1.bias",
+      "decoder.edge_geometry.bbox_decoder.3.norm1.weight",
+      "decoder.edge_geometry.bbox_decoder.3.norm1.bias",
+      "decoder.edge_geometry.bbox_decoder.3.conv2.weight",
+      "decoder.edge_geometry.bbox_decoder.3.conv2.bias",
+      "decoder.edge_geometry.bbox_decoder.3.norm2.weight",
+      "decoder.edge_geometry.bbox_decoder.3.norm2.bias",
+      "decoder.edge_geometry.bbox_decoder.4.conv1.weight",
+      "decoder.edge_geometry.bbox_decoder.4.conv1.bias",
+      "decoder.edge_geometry.bbox_decoder.4.norm1.weight",
+      "decoder.edge_geometry.bbox_decoder.4.norm1.bias",
+      "decoder.edge_geometry.bbox_decoder.4.conv2.weight",
+      "decoder.edge_geometry.bbox_decoder.4.conv2.bias",
+      "decoder.edge_geometry.bbox_decoder.4.norm2.weight",
+      "decoder.edge_geometry.bbox_decoder.4.norm2.bias",
+      "decoder.edge_geometry.bbox_decoder.5.conv1.weight",
+      "decoder.edge_geometry.bbox_decoder.5.conv1.bias",
+      "decoder.edge_geometry.bbox_decoder.5.norm1.weight",
+      "decoder.edge_geometry.bbox_decoder.5.norm1.bias",
+      "decoder.edge_geometry.bbox_decoder.5.conv2.weight",
+      "decoder.edge_geometry.bbox_decoder.5.conv2.bias",
+      "decoder.edge_geometry.bbox_decoder.5.norm2.weight",
+      "decoder.edge_geometry.bbox_decoder.5.norm2.bias",
+      "decoder.edge_geometry.bbox_decoder.6.conv1.weight",
+      "decoder.edge_geometry.bbox_decoder.6.conv1.bias",
+      "decoder.edge_geometry.bbox_decoder.6.norm1.weight",
+      "decoder.edge_geometry.bbox_decoder.6.norm1.bias",
+      "decoder.edge_geometry.bbox_decoder.6.conv2.weight",
+      "decoder.edge_geometry.bbox_decoder.6.conv2.bias",
+      "decoder.edge_geometry.bbox_decoder.6.norm2.weight",
+      "decoder.edge_geometry.bbox_decoder.6.norm2.bias",
+      "decoder.edge_geometry.bbox_decoder.7.weight",
+      "decoder.edge_geometry.bbox_decoder.7.bias",
+      "decoder.edge_geometry.conditioning.projection.0.bias",
+      "decoder.edge_geometry.conditioning.point_affine.weight",
+      "decoder.edge_geometry.conditioning.point_affine.bias",
+      "decoder.edge_geometry.conditioning.bbox_affine.weight",
+      "decoder.edge_geometry.conditioning.bbox_affine.bias",
+      "decoder.inter.pos_encoding",
+      "decoder.inter.attn_proj_in.bias",
+      "decoder.inter.layers.0.self_attn.in_proj_weight",
+      "decoder.inter.layers.0.self_attn.in_proj_bias",
+      "decoder.inter.layers.0.self_attn.out_proj.weight",
+      "decoder.inter.layers.0.self_attn.out_proj.bias",
+      "decoder.inter.layers.0.multihead_attn.in_proj_weight",
+      "decoder.inter.layers.0.multihead_attn.in_proj_bias",
+      "decoder.inter.layers.0.multihead_attn.out_proj.weight",
+      "decoder.inter.layers.0.multihead_attn.out_proj.bias",
+      "decoder.inter.layers.0.linear1.weight",
+      "decoder.inter.layers.0.linear1.bias",
+      "decoder.inter.layers.0.linear2.weight",
+      "decoder.inter.layers.0.linear2.bias",
+      "decoder.inter.layers.0.norm1.weight",
+      "decoder.inter.layers.0.norm1.bias",
+      "decoder.inter.layers.0.norm2.weight",
+      "decoder.inter.layers.0.norm2.bias",
+      "decoder.inter.layers.0.norm3.weight",
+      "decoder.inter.layers.0.norm3.bias",
+      "decoder.inter.layers.1.self_attn.in_proj_weight",
+      "decoder.inter.layers.1.self_attn.in_proj_bias",
+      "decoder.inter.layers.1.self_attn.out_proj.weight",
+      "decoder.inter.layers.1.self_attn.out_proj.bias",
+      "decoder.inter.layers.1.multihead_attn.in_proj_weight",
+      "decoder.inter.layers.1.multihead_attn.in_proj_bias",
+      "decoder.inter.layers.1.multihead_attn.out_proj.weight",
+      "decoder.inter.layers.1.multihead_attn.out_proj.bias",
+      "decoder.inter.layers.1.linear1.weight",
+      "decoder.inter.layers.1.linear1.bias",
+      "decoder.inter.layers.1.linear2.weight",
+      "decoder.inter.layers.1.linear2.bias",
+      "decoder.inter.layers.1.norm1.weight",
+      "decoder.inter.layers.1.norm1.bias",
+      "decoder.inter.layers.1.norm2.weight",
+      "decoder.inter.layers.1.norm2.bias",
+      "decoder.inter.layers.1.norm3.weight",
+      "decoder.inter.layers.1.norm3.bias",
+      "decoder.inter.layers.2.self_attn.in_proj_weight",
+      "decoder.inter.layers.2.self_attn.in_proj_bias",
+      "decoder.inter.layers.2.self_attn.out_proj.weight",
+      "decoder.inter.layers.2.self_attn.out_proj.bias",
+      "decoder.inter.layers.2.multihead_attn.in_proj_weight",
+      "decoder.inter.layers.2.multihead_attn.in_proj_bias",
+      "decoder.inter.layers.2.multihead_attn.out_proj.weight",
+      "decoder.inter.layers.2.multihead_attn.out_proj.bias",
+      "decoder.inter.layers.2.linear1.weight",
+      "decoder.inter.layers.2.linear1.bias",
+      "decoder.inter.layers.2.linear2.weight",
+      "decoder.inter.layers.2.linear2.bias",
+      "decoder.inter.layers.2.norm1.weight",
+      "decoder.inter.layers.2.norm1.bias",
+      "decoder.inter.layers.2.norm2.weight",
+      "decoder.inter.layers.2.norm2.bias",
+      "decoder.inter.layers.2.norm3.weight",
+      "decoder.inter.layers.2.norm3.bias",
+      "decoder.inter.layers.3.self_attn.in_proj_weight",
+      "decoder.inter.layers.3.self_attn.in_proj_bias",
+      "decoder.inter.layers.3.self_attn.out_proj.weight",
+      "decoder.inter.layers.3.self_attn.out_proj.bias",
+      "decoder.inter.layers.3.multihead_attn.in_proj_weight",
+      "decoder.inter.layers.3.multihead_attn.in_proj_bias",
+      "decoder.inter.layers.3.multihead_attn.out_proj.weight",
+      "decoder.inter.layers.3.multihead_attn.out_proj.bias",
+      "decoder.inter.layers.3.linear1.weight",
+      "decoder.inter.layers.3.linear1.bias",
+      "decoder.inter.layers.3.linear2.weight",
+      "decoder.inter.layers.3.linear2.bias",
+      "decoder.inter.layers.3.norm1.weight",
+      "decoder.inter.layers.3.norm1.bias",
+      "decoder.inter.layers.3.norm2.weight",
+      "decoder.inter.layers.3.norm2.bias",
+      "decoder.inter.layers.3.norm3.weight",
+      "decoder.inter.layers.3.norm3.bias",
+      "decoder.inter.layers.4.self_attn.in_proj_weight",
+      "decoder.inter.layers.4.self_attn.in_proj_bias",
+      "decoder.inter.layers.4.self_attn.out_proj.weight",
+      "decoder.inter.layers.4.self_attn.out_proj.bias",
+      "decoder.inter.layers.4.multihead_attn.in_proj_weight",
+      "decoder.inter.layers.4.multihead_attn.in_proj_bias",
+      "decoder.inter.layers.4.multihead_attn.out_proj.weight",
+      "decoder.inter.layers.4.multihead_attn.out_proj.bias",
+      "decoder.inter.layers.4.linear1.weight",
+      "decoder.inter.layers.4.linear1.bias",
+      "decoder.inter.layers.4.linear2.weight",
+      "decoder.inter.layers.4.linear2.bias",
+      "decoder.inter.layers.4.norm1.weight",
+      "decoder.inter.layers.4.norm1.bias",
+      "decoder.inter.layers.4.norm2.weight",
+      "decoder.inter.layers.4.norm2.bias",
+      "decoder.inter.layers.4.norm3.weight",
+      "decoder.inter.layers.4.norm3.bias",
+      "decoder.inter.layers.5.self_attn.in_proj_weight",
+      "decoder.inter.layers.5.self_attn.in_proj_bias",
+      "decoder.inter.layers.5.self_attn.out_proj.weight",
+      "decoder.inter.layers.5.self_attn.out_proj.bias",
+      "decoder.inter.layers.5.multihead_attn.in_proj_weight",
+      "decoder.inter.layers.5.multihead_attn.in_proj_bias",
+      "decoder.inter.layers.5.multihead_attn.out_proj.weight",
+      "decoder.inter.layers.5.multihead_attn.out_proj.bias",
+      "decoder.inter.layers.5.linear1.weight",
+      "decoder.inter.layers.5.linear1.bias",
+      "decoder.inter.layers.5.linear2.weight",
+      "decoder.inter.layers.5.linear2.bias",
+      "decoder.inter.layers.5.norm1.weight",
+      "decoder.inter.layers.5.norm1.bias",
+      "decoder.inter.layers.5.norm2.weight",
+      "decoder.inter.layers.5.norm2.bias",
+      "decoder.inter.layers.5.norm3.weight",
+      "decoder.inter.layers.5.norm3.bias",
+      "decoder.inter.layers.6.self_attn.in_proj_weight",
+      "decoder.inter.layers.6.self_attn.in_proj_bias",
+      "decoder.inter.layers.6.self_attn.out_proj.weight",
+      "decoder.inter.layers.6.self_attn.out_proj.bias",
+      "decoder.inter.layers.6.multihead_attn.in_proj_weight",
+      "decoder.inter.layers.6.multihead_attn.in_proj_bias",
+      "decoder.inter.layers.6.multihead_attn.out_proj.weight",
+      "decoder.inter.layers.6.multihead_attn.out_proj.bias",
+      "decoder.inter.layers.6.linear1.weight",
+      "decoder.inter.layers.6.linear1.bias",
+      "decoder.inter.layers.6.linear2.weight",
+      "decoder.inter.layers.6.linear2.bias",
+      "decoder.inter.layers.6.norm1.weight",
+      "decoder.inter.layers.6.norm1.bias",
+      "decoder.inter.layers.6.norm2.weight",
+      "decoder.inter.layers.6.norm2.bias",
+      "decoder.inter.layers.6.norm3.weight",
+      "decoder.inter.layers.6.norm3.bias",
+      "decoder.inter.layers.7.self_attn.in_proj_weight",
+      "decoder.inter.layers.7.self_attn.in_proj_bias",
+      "decoder.inter.layers.7.self_attn.out_proj.weight",
+      "decoder.inter.layers.7.self_attn.out_proj.bias",
+      "decoder.inter.layers.7.multihead_attn.in_proj_weight",
+      "decoder.inter.layers.7.multihead_attn.in_proj_bias",
+      "decoder.inter.layers.7.multihead_attn.out_proj.weight",
+      "decoder.inter.layers.7.multihead_attn.out_proj.bias",
+      "decoder.inter.layers.7.linear1.weight",
+      "decoder.inter.layers.7.linear1.bias",
+      "decoder.inter.layers.7.linear2.weight",
+      "decoder.inter.layers.7.linear2.bias",
+      "decoder.inter.layers.7.norm1.weight",
+      "decoder.inter.layers.7.norm1.bias",
+      "decoder.inter.layers.7.norm2.weight",
+      "decoder.inter.layers.7.norm2.bias",
+      "decoder.inter.layers.7.norm3.weight",
+      "decoder.inter.layers.7.norm3.bias",
+      "decoder.classifier.bias",
+      "decoder.refiner.geometry_read.point_encoder.0.weight",
+      "decoder.refiner.geometry_read.point_encoder.0.bias",
+      "decoder.refiner.geometry_read.point_encoder.1.weight",
+      "decoder.refiner.geometry_read.point_encoder.1.bias",
+      "decoder.refiner.geometry_read.point_encoder.3.weight",
+      "decoder.refiner.geometry_read.point_encoder.3.bias",
+      "decoder.refiner.geometry_read.pool_projection.weight",
+      "decoder.refiner.geometry_read.pool_projection.bias",
+      "decoder.refiner.message_encoder.0.bias",
+      "decoder.refiner.message_encoder.1.weight",
+      "decoder.refiner.message_encoder.1.bias",
+      "decoder.refiner.relation_encoder.0.bias",
+      "decoder.refiner.relation_encoder.1.weight",
+      "decoder.refiner.relation_encoder.1.bias",
+      "decoder.refiner.relation_encoder.3.weight",
+      "decoder.refiner.relation_encoder.3.bias",
+      "decoder.refiner.face_update.0.bias",
+      "decoder.refiner.face_update.1.weight",
+      "decoder.refiner.face_update.1.bias",
+      "decoder.shared_curve.residual.0.bias",
+      "decoder.uv_boundary.context.0.bias",
+      "decoder.uv_boundary.position.0.weight",
+      "decoder.uv_boundary.position.0.bias",
+      "decoder.uv_boundary.position.2.weight",
+      "decoder.uv_boundary.position.2.bias",
+      "decoder.uv_boundary.layers.0.self_attn.in_proj_weight",
+      "decoder.uv_boundary.layers.0.self_attn.in_proj_bias",
+      "decoder.uv_boundary.layers.0.self_attn.out_proj.weight",
+      "decoder.uv_boundary.layers.0.self_attn.out_proj.bias",
+      "decoder.uv_boundary.layers.0.linear1.weight",
+      "decoder.uv_boundary.layers.0.linear1.bias",
+      "decoder.uv_boundary.layers.0.linear2.weight",
+      "decoder.uv_boundary.layers.0.linear2.bias",
+      "decoder.uv_boundary.layers.0.norm1.weight",
+      "decoder.uv_boundary.layers.0.norm1.bias",
+      "decoder.uv_boundary.layers.0.norm2.weight",
+      "decoder.uv_boundary.layers.0.norm2.bias",
+      "decoder.uv_boundary.layers.1.self_attn.in_proj_weight",
+      "decoder.uv_boundary.layers.1.self_attn.in_proj_bias",
+      "decoder.uv_boundary.layers.1.self_attn.out_proj.weight",
+      "decoder.uv_boundary.layers.1.self_attn.out_proj.bias",
+      "decoder.uv_boundary.layers.1.linear1.weight",
+      "decoder.uv_boundary.layers.1.linear1.bias",
+      "decoder.uv_boundary.layers.1.linear2.weight",
+      "decoder.uv_boundary.layers.1.linear2.bias",
+      "decoder.uv_boundary.layers.1.norm1.weight",
+      "decoder.uv_boundary.layers.1.norm1.bias",
+      "decoder.uv_boundary.layers.1.norm2.weight",
+      "decoder.uv_boundary.layers.1.norm2.bias",
+      "decoder.uv_boundary.output.0.weight",
+      "decoder.uv_boundary.output.0.bias",
+      "decoder.uv_boundary.output.1.weight",
+      "decoder.uv_boundary.output.1.bias",
+      "decoder.uv_boundary.curve_embedding.0.weight",
+      "decoder.uv_boundary.curve_embedding.0.bias",
+      "decoder.uv_boundary.curve_embedding.2.weight",
+      "decoder.uv_boundary.curve_embedding.2.bias"
+    ],
+    "expanded_state_keys": 81,
+    "expanded_keys": {
+      "encoder.face_coords.10.weight": {
+        "source_shape": [
+          8,
+          768,
+          1,
+          1
+        ],
+        "target_shape": [
+          16,
+          768,
+          1,
+          1
+        ],
+        "rule": {
+          "segments": [],
+          "repeat_output": true
+        }
+      },
+      "encoder.face_coords.10.bias": {
+        "source_shape": [
+          8
+        ],
+        "target_shape": [
+          16
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.edge_coords.10.weight": {
+        "source_shape": [
+          32,
+          768,
+          1
+        ],
+        "target_shape": [
+          64,
+          768,
+          1
+        ],
+        "rule": {
+          "segments": [],
+          "repeat_output": true
+        }
+      },
+      "encoder.edge_coords.10.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.face_attn_proj_in.weight": {
+        "source_shape": [
+          768,
+          32
+        ],
+        "target_shape": [
+          768,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "encoder.face_attn_proj_out.weight": {
+        "source_shape": [
+          32,
+          768
+        ],
+        "target_shape": [
+          64,
+          768
+        ],
+        "rule": {
+          "segments": [],
+          "repeat_output": true
+        }
+      },
+      "encoder.face_attn_proj_out.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.0.att": {
+        "source_shape": [
+          1,
+          1,
+          32
+        ],
+        "target_shape": [
+          1,
+          1,
+          64
+        ],
+        "rule": {
+          "attention": true
+        }
+      },
+      "encoder.graph_face_edge.0.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.0.lin_l.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.0.lin_l.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.0.lin_r.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.0.lin_r.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.0.lin_edge.weight": {
+        "source_shape": [
+          32,
+          64
+        ],
+        "target_shape": [
+          64,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "E",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.2.att": {
+        "source_shape": [
+          1,
+          1,
+          32
+        ],
+        "target_shape": [
+          1,
+          1,
+          64
+        ],
+        "rule": {
+          "attention": true
+        }
+      },
+      "encoder.graph_face_edge.2.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.2.lin_l.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.2.lin_l.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.2.lin_r.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.2.lin_r.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.2.lin_edge.weight": {
+        "source_shape": [
+          32,
+          64
+        ],
+        "target_shape": [
+          64,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "E",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.4.att": {
+        "source_shape": [
+          1,
+          1,
+          32
+        ],
+        "target_shape": [
+          1,
+          1,
+          64
+        ],
+        "rule": {
+          "attention": true
+        }
+      },
+      "encoder.graph_face_edge.4.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.4.lin_l.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.4.lin_l.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.4.lin_r.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.4.lin_r.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.4.lin_edge.weight": {
+        "source_shape": [
+          32,
+          64
+        ],
+        "target_shape": [
+          64,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "E",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.6.att": {
+        "source_shape": [
+          1,
+          1,
+          32
+        ],
+        "target_shape": [
+          1,
+          1,
+          64
+        ],
+        "rule": {
+          "attention": true
+        }
+      },
+      "encoder.graph_face_edge.6.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.6.lin_l.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.6.lin_l.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.6.lin_r.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.6.lin_r.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.6.lin_edge.weight": {
+        "source_shape": [
+          32,
+          64
+        ],
+        "target_shape": [
+          64,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "E",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.8.att": {
+        "source_shape": [
+          1,
+          1,
+          32
+        ],
+        "target_shape": [
+          1,
+          1,
+          64
+        ],
+        "rule": {
+          "attention": true
+        }
+      },
+      "encoder.graph_face_edge.8.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.8.lin_l.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.8.lin_l.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.8.lin_r.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.8.lin_r.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.graph_face_edge.8.lin_edge.weight": {
+        "source_shape": [
+          32,
+          64
+        ],
+        "target_shape": [
+          64,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "E",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.global_feature1.0.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.global_feature1.0.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.global_feature1.2.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.global_feature1.2.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.global_feature2.0.weight": {
+        "source_shape": [
+          32,
+          64
+        ],
+        "target_shape": [
+          64,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ],
+            [
+              "global_F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.global_feature2.0.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "encoder.global_feature2.2.weight": {
+        "source_shape": [
+          32,
+          32
+        ],
+        "target_shape": [
+          64,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "encoder.global_feature2.2.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "posterior.projection.0.weight": {
+        "source_shape": [
+          64,
+          32
+        ],
+        "target_shape": [
+          128,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "posterior.projection.0.bias": {
+        "source_shape": [
+          64
+        ],
+        "target_shape": [
+          128
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "posterior.projection.2.weight": {
+        "source_shape": [
+          64,
+          64
+        ],
+        "target_shape": [
+          128,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "hidden",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": true
+        }
+      },
+      "posterior.projection.2.bias": {
+        "source_shape": [
+          64
+        ],
+        "target_shape": [
+          128
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "decoder.face_features.input_projection.weight": {
+        "source_shape": [
+          768,
+          32
+        ],
+        "target_shape": [
+          768,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "z",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.face_features.output_projection.weight": {
+        "source_shape": [
+          32,
+          768
+        ],
+        "target_shape": [
+          64,
+          768
+        ],
+        "rule": {
+          "segments": [],
+          "repeat_output": true
+        }
+      },
+      "decoder.face_features.output_projection.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "decoder.face_geometry.points_decoder.1.conv1.weight": {
+        "source_shape": [
+          768,
+          8,
+          3,
+          3
+        ],
+        "target_shape": [
+          768,
+          16,
+          3,
+          3
+        ],
+        "rule": {
+          "segments": [
+            [
+              "channels",
+              8,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.face_geometry.points_decoder.1.downsample.0.weight": {
+        "source_shape": [
+          768,
+          8,
+          1,
+          1
+        ],
+        "target_shape": [
+          768,
+          16,
+          1,
+          1
+        ],
+        "rule": {
+          "segments": [
+            [
+              "channels",
+              8,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.face_geometry.bbox_decoder.0.conv1.weight": {
+        "source_shape": [
+          768,
+          32
+        ],
+        "target_shape": [
+          768,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "feature",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.face_geometry.bbox_decoder.0.downsample.0.weight": {
+        "source_shape": [
+          768,
+          32
+        ],
+        "target_shape": [
+          768,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "feature",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.edge_geometry.points_decoder.1.conv1.weight": {
+        "source_shape": [
+          768,
+          32,
+          3
+        ],
+        "target_shape": [
+          768,
+          64,
+          3
+        ],
+        "rule": {
+          "segments": [
+            [
+              "channels",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.edge_geometry.points_decoder.1.downsample.0.weight": {
+        "source_shape": [
+          768,
+          32,
+          1
+        ],
+        "target_shape": [
+          768,
+          64,
+          1
+        ],
+        "rule": {
+          "segments": [
+            [
+              "channels",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.edge_geometry.bbox_decoder.0.conv1.weight": {
+        "source_shape": [
+          768,
+          64
+        ],
+        "target_shape": [
+          768,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "feature",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.edge_geometry.bbox_decoder.0.downsample.0.weight": {
+        "source_shape": [
+          768,
+          64
+        ],
+        "target_shape": [
+          768,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "feature",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.edge_geometry.conditioning.projection.0.weight": {
+        "source_shape": [
+          128,
+          128
+        ],
+        "target_shape": [
+          128,
+          256
+        ],
+        "rule": {
+          "segments": [
+            [
+              "E",
+              64,
+              true
+            ],
+            [
+              "F_i",
+              32,
+              true
+            ],
+            [
+              "F_j",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.inter.attn_proj_in.weight": {
+        "source_shape": [
+          512,
+          32
+        ],
+        "target_shape": [
+          512,
+          64
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.inter.attn_proj_out.weight": {
+        "source_shape": [
+          64,
+          512
+        ],
+        "target_shape": [
+          128,
+          512
+        ],
+        "rule": {
+          "segments": [],
+          "repeat_output": true
+        }
+      },
+      "decoder.inter.attn_proj_out.bias": {
+        "source_shape": [
+          64
+        ],
+        "target_shape": [
+          128
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "decoder.classifier.weight": {
+        "source_shape": [
+          1,
+          64
+        ],
+        "target_shape": [
+          1,
+          128
+        ],
+        "rule": {
+          "segments": [
+            [
+              "E",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.refiner.message_encoder.0.weight": {
+        "source_shape": [
+          128,
+          128
+        ],
+        "target_shape": [
+          128,
+          192
+        ],
+        "rule": {
+          "segments": [
+            [
+              "E",
+              64,
+              true
+            ],
+            [
+              "geometry",
+              64,
+              false
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.refiner.relation_encoder.0.weight": {
+        "source_shape": [
+          128,
+          448
+        ],
+        "target_shape": [
+          128,
+          576
+        ],
+        "rule": {
+          "segments": [
+            [
+              "E",
+              64,
+              true
+            ],
+            [
+              "geometry",
+              64,
+              false
+            ],
+            [
+              "F_i",
+              32,
+              true
+            ],
+            [
+              "F_j",
+              32,
+              true
+            ],
+            [
+              "context_i",
+              128,
+              false
+            ],
+            [
+              "context_j",
+              128,
+              false
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.refiner.face_update.0.weight": {
+        "source_shape": [
+          128,
+          160
+        ],
+        "target_shape": [
+          128,
+          192
+        ],
+        "rule": {
+          "segments": [
+            [
+              "F",
+              32,
+              true
+            ],
+            [
+              "context",
+              128,
+              false
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.refiner.edge_delta.weight": {
+        "source_shape": [
+          64,
+          128
+        ],
+        "target_shape": [
+          128,
+          128
+        ],
+        "rule": {
+          "segments": [],
+          "repeat_output": true
+        }
+      },
+      "decoder.refiner.edge_delta.bias": {
+        "source_shape": [
+          64
+        ],
+        "target_shape": [
+          128
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "decoder.refiner.face_delta.weight": {
+        "source_shape": [
+          32,
+          128
+        ],
+        "target_shape": [
+          64,
+          128
+        ],
+        "rule": {
+          "segments": [],
+          "repeat_output": true
+        }
+      },
+      "decoder.refiner.face_delta.bias": {
+        "source_shape": [
+          32
+        ],
+        "target_shape": [
+          64
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "decoder.shared_curve.residual.0.weight": {
+        "source_shape": [
+          128,
+          128
+        ],
+        "target_shape": [
+          128,
+          256
+        ],
+        "rule": {
+          "segments": [
+            [
+              "h_ij",
+              64,
+              true
+            ],
+            [
+              "h_ji",
+              64,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      },
+      "decoder.shared_curve.residual.2.weight": {
+        "source_shape": [
+          64,
+          128
+        ],
+        "target_shape": [
+          128,
+          128
+        ],
+        "rule": {
+          "segments": [],
+          "repeat_output": true
+        }
+      },
+      "decoder.shared_curve.residual.2.bias": {
+        "source_shape": [
+          64
+        ],
+        "target_shape": [
+          128
+        ],
+        "rule": {
+          "repeat_output": true
+        }
+      },
+      "decoder.uv_boundary.context.0.weight": {
+        "source_shape": [
+          128,
+          160
+        ],
+        "target_shape": [
+          128,
+          320
+        ],
+        "rule": {
+          "segments": [
+            [
+              "h",
+              64,
+              true
+            ],
+            [
+              "g",
+              64,
+              true
+            ],
+            [
+              "F_owner",
+              32,
+              true
+            ]
+          ],
+          "repeat_output": false
+        }
+      }
+    },
+    "input_channel_shares": [
+      0.49,
+      0.51
+    ],
+    "gat_attention_shares": [
+      0.5,
+      0.5
+    ],
+    "mapping": "Repeat feature channels; split duplicated input weights by semantic segment; retain every other tensor.",
+    "equivalence": "Posterior-mean evaluation only; independently sampled duplicated latents change training noise."
+  },
+  "resolved_config_sha256": "67911fc728edbf41e8b34ce3e115d2aec9e9dd18a6026c98f9a4d6866e4fb385",
+  "old64_config_sha256": "067f1834624d2b309c4ff60696445473911f56f2c62b138fe9e43831e0752dda",
+  "config_differences_vs_64": {
+    "model.loss_weights.feature_weight": {
+      "old64": 1.0,
+      "no_edge_feature": 0.0
+    },
+    "trainer.exp_name": {
+      "old64": "latent_expansion/d64",
+      "no_edge_feature": "latent_expansion/d64_no_edge_feature"
+    },
+    "trainer.max_steps": {
+      "old64": 100000,
+      "no_edge_feature": 30000
+    },
+    "trainer.run_dir": {
+      "old64": null,
+      "no_edge_feature": "/mnt/d/python/checkpoints/latent_expansion/d64_no_edge_feature/20261023T034042Z"
+    },
+    "trainer.wandb.name": {
+      "old64": "vae-shared-curve-latent64",
+      "no_edge_feature": "vae-latent64-no-edge-feature-30k"
+    }
+  },
+  "splits": {
+    "train_dataset": {
+      "path": "/mnt/d/python/checkpoints/joint_boundary/validation/train_contract_audit/accepted.txt",
+      "sha256": "14a00585500f1c7996411caa1b3fba796a1c39c2b935a1153ec98e30c69dc097",
+      "count": 46480
+    },
+    "val_dataset": {
+      "path": "/mnt/d/python/checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt",
+      "sha256": "ae607bfe5499e919d1e68a5110c0c211daf1158aedbe57a4756eda99f6f3f0ed",
+      "count": 3495
+    }
+  },
+  "train_count": 46480,
+  "batch_size": 16,
+  "batch_ids": [
+    "00000061",
+    "00000070",
+    "00000168",
+    "00000329",
+    "00000348",
+    "00000356",
+    "00000413",
+    "00000418",
+    "00000559",
+    "00000633",
+    "00000638",
+    "00000711",
+    "00000712",
+    "00000714",
+    "00000802",
+    "00000842"
+  ],
+  "dimensions": {
+    "latents": [
+      235,
+      64
+    ],
+    "coarse_edge_features": [
+      3602,
+      128
+    ],
+    "teacher_edge_features": [
+      1178,
+      128
+    ]
+  },
+  "parameters": 182982439,
+  "trainable_parameters": 182982439,
+  "training": {
+    "encoder": true,
+    "posterior": true,
+    "decoder": true
+  },
+  "gradients": {
+    "encoder": {
+      "finite": true,
+      "l2_norm": 0.3144302626837136,
+      "tensor_count": 239
+    },
+    "posterior": {
+      "finite": true,
+      "l2_norm": 1.8987559610810867,
+      "tensor_count": 4
+    },
+    "decoder": {
+      "finite": true,
+      "l2_norm": 2.8824244897359033,
+      "tensor_count": 535
+    }
+  },
+  "feature_gradients": {
+    "weighted_to_coarse": {
+      "finite": true,
+      "l2_norm": 0.0,
+      "tensor_count": 1
+    },
+    "raw_to_coarse": {
+      "finite": true,
+      "l2_norm": 0.002340155975270935,
+      "tensor_count": 1
+    }
+  },
+  "total_without_feature": 0.023390356451272964,
+  "total_reconstruction_abs_error": 0.0,
+  "other_weighted_terms": [
+    "weighted_coarse_face_local",
+    "weighted_coarse_face_bbox",
+    "weighted_coarse_edge_local",
+    "weighted_coarse_edge_bbox",
+    "weighted_coarse_classification",
+    "weighted_refined_face_local",
+    "weighted_refined_face_bbox",
+    "weighted_refined_edge_local",
+    "weighted_refined_edge_bbox",
+    "weighted_refined_classification",
+    "weighted_encoder_edge_local",
+    "weighted_encoder_edge_bbox",
+    "weighted_face_xyz",
+    "weighted_edge_xyz",
+    "weighted_incidence",
+    "weighted_twin",
+    "weighted_kl_loss",
+    "weighted_uv",
+    "weighted_uv_anchor"
+  ],
+  "losses": {
+    "coarse_face_local": 0.0022171377204358578,
+    "coarse_face_bbox": 0.0013955212198197842,
+    "coarse_edge_local": 0.001478450489230454,
+    "coarse_edge_bbox": 0.0025707418099045753,
+    "coarse_classification": 0.00036026904126629233,
+    "refined_face_local": 0.002173258690163493,
+    "refined_face_bbox": 0.0013051492860540748,
+    "refined_edge_local": 0.0014879157533869147,
+    "refined_edge_bbox": 0.0022518804762512445,
+    "refined_classification": 0.00010104697139468044,
+    "edge_feature": 0.0208975151181221,
+    "encoder_edge_local": 0.001077911234460771,
+    "encoder_edge_bbox": 0.0011852437164634466,
+    "face_xyz": 0.0017109172185882926,
+    "edge_xyz": 0.002500547096133232,
+    "incidence": 0.002668036613613367,
+    "twin": 2.4047312763286754e-07,
+    "kl_loss": 0.007042445242404938,
+    "uv": 0.020959826186299324,
+    "uv_anchor": 0.002440870041027665,
+    "uv_valid_fraction": 1.0,
+    "weighted_coarse_face_local": 0.0005542844301089644,
+    "weighted_coarse_face_bbox": 0.00034888030495494604,
+    "weighted_coarse_edge_local": 0.0003696126223076135,
+    "weighted_coarse_edge_bbox": 0.0006426854524761438,
+    "weighted_coarse_classification": 9.006726031657308e-06,
+    "weighted_refined_face_local": 0.002173258690163493,
+    "weighted_refined_face_bbox": 0.0013051492860540748,
+    "weighted_refined_edge_local": 0.0014879157533869147,
+    "weighted_refined_edge_bbox": 0.0022518804762512445,
+    "weighted_refined_classification": 1.0104697139468044e-05,
+    "weighted_edge_feature": 0.0,
+    "weighted_encoder_edge_local": 0.001077911234460771,
+    "weighted_encoder_edge_bbox": 0.0011852437164634466,
+    "weighted_face_xyz": 0.0017109172185882926,
+    "weighted_edge_xyz": 0.002500547096133232,
+    "weighted_incidence": 0.0002668036613613367,
+    "weighted_twin": 2.404731347382949e-08,
+    "weighted_kl_loss": 0.007042445242404938,
+    "weighted_uv": 0.00020959826360922307,
+    "weighted_uv_anchor": 0.00024408700119238347,
+    "total_loss": 0.023390356451272964,
+    "coarse_precision": 1.0,
+    "coarse_recall": 1.0,
+    "coarse_positive_probability": 0.999291718006134,
+    "refined_precision": 1.0,
+    "refined_recall": 1.0,
+    "refined_positive_probability": 0.9997994899749756,
+    "delta_face_mean": 0.012840157374739647,
+    "delta_edge_mean": 0.10460245609283447
+  }
+}
