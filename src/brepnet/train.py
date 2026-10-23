@@ -87,6 +87,39 @@ def _build_strategy(cfg: DictConfig) -> DDPStrategy | str:
     )
 
 
+def _build_checkpoint_callbacks(cfg: DictConfig, run_dir: Path) -> list[ModelCheckpoint]:
+    """Keep validation-ranked weights and optional fixed-step snapshots separately."""
+    callbacks = [
+        ModelCheckpoint(
+            dirpath=str(run_dir / "weights"),
+            monitor="val/loss",
+            mode="min",
+            save_top_k=3,
+            save_last=True,
+            filename="epoch={epoch:04d}-step={step:08d}-val_loss={val/loss:.6f}",
+            auto_insert_metric_name=False,
+            enable_version_counter=cfg.trainer.checkpoint_enable_version_counter,
+        ),
+    ]
+    interval = cfg.trainer.get("checkpoint_every_n_train_steps")
+    if interval is not None:
+        if isinstance(interval, bool) or not isinstance(interval, int) or interval < 1:
+            raise ValueError("trainer.checkpoint_every_n_train_steps must be a positive integer or null.")
+        callbacks.append(ModelCheckpoint(
+            dirpath=str(run_dir / "weights" / "steps"),
+            every_n_train_steps=interval,
+            every_n_epochs=0,
+            save_top_k=-1,
+            save_last=True,
+            # Also retain the final state when max_steps ends between snapshots.
+            save_on_train_epoch_end=True,
+            filename="step={step:08d}",
+            auto_insert_metric_name=False,
+            enable_version_counter=cfg.trainer.checkpoint_enable_version_counter,
+        ))
+    return callbacks
+
+
 def _validate_evaluation_devices(cfg: DictConfig) -> None:
     """Avoid duplicated distributed test samples writing the same NPZ paths."""
     if (cfg.eval.enabled or cfg.trainer.evaluate) and cfg.trainer.devices > 1:
@@ -601,16 +634,7 @@ def main(cfg: DictConfig):
 
     # --- Callbacks ---
     callbacks = [
-        ModelCheckpoint(
-            dirpath=str(Path(log_dir) / "weights"),
-            monitor="val/loss",
-            mode="min",
-            save_top_k=3,
-            save_last=True,
-            filename="epoch={epoch:04d}-step={step:08d}-val_loss={val/loss:.6f}",
-            auto_insert_metric_name=False,
-            enable_version_counter=cfg.trainer.checkpoint_enable_version_counter,
-        ),
+        *_build_checkpoint_callbacks(cfg, Path(log_dir)),
         LearningRateMonitor(logging_interval="step"),
         ModelSummary(max_depth=2),
     ]

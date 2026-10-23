@@ -1,6 +1,6 @@
 # 单图 diffusion 偏好数据与训练实现协议
 
-状态：2026-10-20，用户已授权实现、测试并启动数据生成，启动后不持续监看；训练代码实现并验证，不启动正式训练。本文取代 `single_view_design_20261020/PAIR_SELECTION.md` 的早期v2规则。
+状态：2026-10-23，数据生成完成；用户已授权开始正式训练，训练后补全 validation 再比较下游指标。首轮配置见 [TRAINING_20261023.md](TRAINING_20261023.md)。本文取代 `single_view_design_20261020/PAIR_SELECTION.md` 的早期v2规则；下文步骤保留当时生成/实现阶段的记录。
 
 ## 1. Task
 

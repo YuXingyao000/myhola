@@ -40,6 +40,8 @@ trainer:
   ddp_gradient_as_bucket_view: true
   sync_train_step_loss: false
   diffusion_validation_inference: false
+  # 保留固定训练阶段，后续比较 STEP/几何指标，不仅按去噪 val loss 选模。
+  checkpoint_every_n_train_steps: 1000
 
 eval:
   enabled: false
