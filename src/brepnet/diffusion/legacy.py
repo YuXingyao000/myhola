@@ -222,6 +222,80 @@ def load_legacy_svr(
     return model, provenance
 
 
+def load_preference_svr(
+    original_checkpoint: str | Path,
+    preference_checkpoint: str | Path,
+    device: str | torch.device = "cpu",
+    *,
+    source_cache: str | Path | None = None,
+    dino_repo: str | Path | None = None,
+) -> tuple[torch.nn.Module, dict]:
+    """严格把 DPO policy 装回原生 SVR，保留原 AE、DINO 与完整采样行为。
+
+    reference 和冻结 DINO 必须逐 tensor 等于原 checkpoint；只替换实际
+    训练的五个模块。所有合同先检查，再更新权重，不宽松加载或重建新 VAE。
+    """
+    from src.brepnet.data.preference_dataset import sha256_file
+
+    original_path = Path(original_checkpoint).expanduser().resolve()
+    preference_path = Path(preference_checkpoint).expanduser().resolve()
+    model, provenance = load_legacy_svr(
+        original_path, "cpu", source_cache=source_cache, dino_repo=dino_repo,
+    )
+    checkpoint = torch.load(preference_path, map_location="cpu", mmap=True, weights_only=False)
+    hparams = checkpoint["hyper_parameters"]
+    if OmegaConf.is_config(hparams):
+        hparams = OmegaConf.to_container(hparams, resolve=False)
+    if hparams["model"]["name"] != "PreferenceDiffusion":
+        raise ValueError("Expected a complete PreferenceDiffusion checkpoint.")
+    if hparams["model"]["legacy_model_config"] != provenance["model_config"]:
+        raise ValueError("DPO legacy model configuration differs from the original SVR checkpoint.")
+    original_hash = sha256_file(original_path)
+    if hparams["dataset"]["provenance"]["source_checkpoint_sha256"] != original_hash:
+        raise ValueError("DPO source checkpoint hash differs from the original SVR checkpoint.")
+
+    module_names = ("p_embed", "time_embed", "net1", "fc_out", "img_fc")
+    original_policy = {
+        f"{name}.{key}": value
+        for name in module_names for key, value in getattr(model, name).state_dict().items()
+    }
+    original_dino = model.img_model.state_dict()
+    expected = {
+        **{f"model.policy.{key}": value for key, value in original_policy.items()},
+        **{f"model.reference.{key}": value for key, value in original_policy.items()},
+        **{f"model.image_encoder.{key}": value for key, value in original_dino.items()},
+    }
+    weights = checkpoint["state_dict"]
+    missing, unexpected = set(expected) - set(weights), set(weights) - set(expected)
+    if missing or unexpected:
+        raise ValueError(f"DPO state keys differ: missing={sorted(missing)}, unexpected={sorted(unexpected)}")
+    for key, original in expected.items():
+        value = weights[key]
+        if value.shape != original.shape or value.dtype != original.dtype:
+            raise ValueError(f"DPO tensor shape/dtype differs from the original SVR: {key}")
+        if not key.startswith("model.policy.") and not torch.equal(value, original):
+            raise ValueError(f"Frozen DPO reference/DINO differs from the original SVR: {key}")
+
+    # 仅替换 policy；原生模型中的其他模块和 scheduler 均保持原 checkpoint。
+    for name in module_names:
+        prefix = f"model.policy.{name}."
+        state = {key[len(prefix):]: value for key, value in weights.items() if key.startswith(prefix)}
+        getattr(model, name).load_state_dict(state, strict=True, assign=True)
+    model.to(device).eval()
+    provenance["checkpoint_sha256"] = original_hash
+    provenance["preference"] = {
+        "checkpoint": str(preference_path), "checkpoint_sha256": sha256_file(preference_path),
+        "global_step": checkpoint["global_step"], "epoch": checkpoint["epoch"],
+        "source_checkpoint_sha256": original_hash,
+        "strict_load": True, "model_config_equal": True,
+        "policy_modules": list(module_names), "policy_tensor_count": len(original_policy),
+        "reference_equal_original": True, "reference_tensor_count": len(original_policy),
+        "dino_equal_original": True, "dino_tensor_count": len(original_dino),
+        "autoencoder_weight_source": "unchanged original complete SVR checkpoint",
+    }
+    return model, provenance
+
+
 @torch.no_grad()
 def encode_original_gt(model: torch.nn.Module, gt_npz: str | Path) -> np.ndarray:
     """原版 AE 以 FP32 编码 identity GT，返回未 padding 的 [N,64]=mean/std。
