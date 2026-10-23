@@ -1,0 +1,29 @@
+{
+  "launched_utc": "2026-10-23T09:09:53.688301+00:00",
+  "pid": 3813894,
+  "run_dir": "/mnt/d/python/checkpoints/diffusion/preference_eval/20261023T090834Z",
+  "status": "generating",
+  "gpus": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "new_per_model": 3405,
+  "reused_per_model": 100,
+  "intended_per_model": 3505,
+  "code_commit": "33aeff0b15cdf54fddfb2ae56f42c24a27668527",
+  "checked_utc": "2026-10-23T09:11:38.451295+00:00",
+  "new_terminal_counts_at_check": {
+    "baseline": {
+      "ok": 66
+    },
+    "dpo_5000": {
+      "ok": 60
+    }
+  }
+}
