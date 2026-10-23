@@ -33,11 +33,24 @@ def finite_number(value) -> bool:
     return isinstance(value, (int, float)) and not isinstance(value, bool) and np.isfinite(value)
 
 
-def load_rows(run_dir: Path, expected_count: int = 100) -> tuple[list[str], dict[str, list[dict]]]:
+def load_rows(run_dir: Path, expected_count: int | None = None) -> tuple[list[str], dict[str, list[dict]]]:
     """Require every intended object to have reached an explicit terminal state."""
-    ids = [line.strip() for line in (run_dir / "validation100.txt").read_text().splitlines() if line.strip()]
-    if len(ids) != expected_count or len(set(ids)) != expected_count:
+    split_path = run_dir / "validation.txt"
+    legacy_path = run_dir / "validation100.txt"
+    if not split_path.is_file():
+        split_path = legacy_path
+    ids = [line.strip() for line in split_path.read_text().splitlines() if line.strip()]
+    if not ids or len(set(ids)) != len(ids):
+        raise ValueError("Frozen validation list must be nonempty and contain distinct IDs")
+    if expected_count is not None and len(ids) != expected_count:
         raise ValueError(f"Expected {expected_count} distinct validation IDs")
+    if split_path != legacy_path and legacy_path.is_file():
+        legacy_ids = [line.strip() for line in legacy_path.read_text().splitlines() if line.strip()]
+        if legacy_ids != ids:
+            raise ValueError("New and legacy frozen validation lists differ")
+    protocol_path = run_dir / "metadata/protocol.json"
+    if protocol_path.is_file() and read_json(protocol_path)["identities"] != ids:
+        raise ValueError("Frozen validation list differs from protocol identities")
     rows = {method: [] for method in METHODS}
     for method in METHODS:
         for image_id in ids:
@@ -113,8 +126,14 @@ def paired_statistics(left: dict[str, float], right: dict[str, float], *,
     dpo = np.array([right[image_id] for image_id in ids])
     differences = dpo - baseline
     rng = np.random.default_rng(seed)
-    samples = rng.integers(len(ids), size=(bootstrap_repeats, len(ids)))
-    interval = np.quantile(differences[samples].mean(axis=1), [.025, .975])
+    bootstrap_means = np.empty(bootstrap_repeats)
+    batch_size = max(1, 1_000_000 // len(ids))
+    # Consecutive draws preserve the original RNG sequence with bounded memory.
+    for start in range(0, bootstrap_repeats, batch_size):
+        stop = min(start + batch_size, bootstrap_repeats)
+        samples = rng.integers(len(ids), size=(stop - start, len(ids)))
+        bootstrap_means[start:stop] = differences[samples].mean(axis=1)
+    interval = np.quantile(bootstrap_means, [.025, .975])
     result.update(baseline_mean=float(baseline.mean()), dpo_5000_mean=float(dpo.mean()),
                   dpo_minus_baseline=float(differences.mean()), ci95=interval.tolist())
     return result
@@ -123,7 +142,7 @@ def paired_statistics(left: dict[str, float], right: dict[str, float], *,
 def summarize(ids: list[str], rows: dict[str, list[dict]], *, bootstrap_repeats: int = 10000) -> dict:
     total = len(ids)
     summary = {
-        "version": "svr_dpo_validation100_v1", "intended_count": total,
+        "version": "svr_dpo_fixed_validation_v1", "intended_count": total,
         "methods": {}, "metrics": {},
         "protocol": {
             "candidates_per_image": 1, "candidate_id": "c00", "selection": "none",
@@ -131,7 +150,7 @@ def summarize(ids: list[str], rows: dict[str, list[dict]], *, bootstrap_repeats:
             "post_policy": "recover_v1", "post_repeats_required": 3,
             "post_aggregation": "mean of three repeats within each CAD, then mean across CADs",
             "missing_geometry": "null, never zero", "cd": "symmetric squared Chamfer; no square root",
-            "bootstrap": "paired CAD resampling; percentile 95% interval; 10000 samples; seed 42",
+            "bootstrap": f"paired CAD resampling; percentile 95% interval; {bootstrap_repeats} samples; seed 42",
             "validity_bootstrap": "valid=1; invalid/unknown=0; unknown counts reported separately",
         },
     }
@@ -286,9 +305,9 @@ def plot_comparison(summary: dict, output: Path) -> None:
     plt.close(fig)
 
 
-def write_report(run_dir: str | Path) -> dict:
+def write_report(run_dir: str | Path, *, expected_count: int | None = None) -> dict:
     run_dir = Path(run_dir).resolve()
-    ids, rows = load_rows(run_dir)
+    ids, rows = load_rows(run_dir, expected_count=expected_count)
     summary = summarize(ids, rows)
     summary["run_dir"] = str(run_dir)
     output = run_dir / "report"
@@ -302,8 +321,9 @@ def write_report(run_dir: str | Path) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-dir", type=Path, required=True)
+    parser.add_argument("--expected-count", type=int)
     args = parser.parse_args()
-    summary = write_report(args.run_dir)
+    summary = write_report(args.run_dir, expected_count=args.expected_count)
     print(json.dumps({"report": str(args.run_dir / "report"), "intended_count": summary["intended_count"],
                       "validity_paired": summary["validity_paired"]}, indent=2))
 

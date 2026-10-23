@@ -18,6 +18,61 @@ from tools.vae_compare_post import atomic_json, fingerprint, read_json, sha256_f
 
 
 METHODS = ("baseline", "dpo_5000")
+ORCHESTRATION_SOURCES = {
+    "src/brepnet/eval/preference_compare.py", "src/brepnet/eval/preference_report.py",
+}
+
+
+def reuse_completed_run(protocol: dict) -> set[str]:
+    """Reference terminal results without rerunning or writing into their run."""
+    config = protocol["config"]
+    if config["reuse_run_dir"] is None:
+        return set()
+    source = Path(config["reuse_run_dir"])
+    run = Path(config["run_dir"])
+    previous = read_json(source / "metadata/protocol.json")
+    if read_json(source / "status.json").get("status") != "complete":
+        raise ValueError("Only a completed comparison can be reused.")
+    for name in ("checkpoint_sha256", "sampling", "post"):
+        if previous[name] != protocol[name]:
+            raise ValueError(f"Reuse protocol differs: {name}")
+    for name in ("raw_data_root", "condition_data_root", "seed"):
+        if previous["config"][name] != config[name]:
+            raise ValueError(f"Reuse configuration differs: {name}")
+    old_sources, new_sources = previous["source_sha256"], protocol["source_sha256"]
+    changed = {name for name in old_sources.keys() | new_sources.keys()
+               if old_sources.get(name) != new_sources.get(name)}
+    if changed - ORCHESTRATION_SOURCES:
+        raise ValueError(f"Generation or evaluation source changed: {sorted(changed)}")
+
+    from src.brepnet.eval.preference_report import load_rows
+    identities, _ = load_rows(source, expected_count=len(previous["identities"]))
+    if not set(identities).issubset(protocol["identities"]):
+        raise ValueError("Reused identities must be a subset of the new frozen list.")
+    artifacts = {}
+    for method in METHODS:
+        for image_id in identities:
+            for stage, record in (("raw_predictions", "inference.json"), ("evaluations", "metrics.json")):
+                relative = Path(stage) / method / image_id
+                origin = source / relative
+                if not origin.is_dir():
+                    continue  # Generation failures have no evaluation directory.
+                destination = run / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                if destination.is_symlink() and destination.resolve() == origin.resolve():
+                    pass  # Resume keeps the original reference.
+                elif destination.exists() or destination.is_symlink():
+                    raise ValueError(f"Reuse destination already contains different results: {destination}")
+                else:
+                    destination.symlink_to(origin.resolve(), target_is_directory=True)
+                artifacts[str(relative / record)] = sha256_file(origin / record)
+    atomic_json(run / "metadata/reuse.json", {
+        "source_run": str(source), "source_protocol_fingerprint": previous["fingerprint"],
+        "identities": identities, "reused_per_model": len(identities),
+        "remaining_per_model": len(protocol["identities"]) - len(identities),
+        "changed_orchestration_sources": sorted(changed), "record_sha256": artifacts,
+    })
+    return set(identities)
 
 
 def _gpu_worker(config: dict, method: str, gpu: int, identities: list[str]) -> None:
@@ -127,7 +182,7 @@ def _evaluate(config: dict, method: str, image_id: str) -> dict:
             "status": row["status"], "validity": row["validity"]}
 
 
-def run_comparison(config: dict, identities: list[str]) -> None:
+def run_comparison(config: dict, identities: list[str], reused_ids: set[str]) -> None:
     run = Path(config["run_dir"])
     started = time.monotonic()
     context = mp.get_context("spawn")
@@ -141,7 +196,9 @@ def run_comparison(config: dict, identities: list[str]) -> None:
             worker = context.Process(target=_gpu_worker, args=(config, method, gpu, identities[index::len(cards)]))
             worker.start()
             workers.append(worker)
-    atomic_json(run / "status.json", {"status": "generating", "intended_per_model": len(identities)})
+    atomic_json(run / "status.json", {"status": "generating", "intended_per_model": len(identities),
+                                     "reused_per_model": len(reused_ids),
+                                     "new_per_model": len(identities) - len(reused_ids)})
     for worker in workers:
         worker.join()
     if any(worker.exitcode != 0 for worker in workers):
@@ -154,7 +211,9 @@ def run_comparison(config: dict, identities: list[str]) -> None:
         if all(row["status"] == "ok" for row in records):
             if records[0]["seed"] != records[1]["seed"] or records[0]["input_sha256"] != records[1]["input_sha256"]:
                 raise ValueError(f"Models did not receive identical inputs/seeds: {image_id}")
-        jobs.extend((method, image_id) for method, row in zip(METHODS, records) if row["status"] == "ok")
+        # Reused evaluation paths resolve into the old run and must stay read-only.
+        if image_id not in reused_ids:
+            jobs.extend((method, image_id) for method, row in zip(METHODS, records) if row["status"] == "ok")
     atomic_json(run / "status.json", {"status": "evaluating", "jobs": len(jobs), "completed": 0})
     with ProcessPoolExecutor(max_workers=config["cpu_workers"], mp_context=context,
                              initializer=_initialize_cpu) as pool:
@@ -163,8 +222,10 @@ def run_comparison(config: dict, identities: list[str]) -> None:
             print(future.result(), flush=True)
             atomic_json(run / "status.json", {"status": "evaluating", "jobs": len(jobs), "completed": completed})
     from src.brepnet.eval.preference_report import write_report
-    write_report(run)
+    write_report(run, expected_count=len(identities))
     atomic_json(run / "status.json", {"status": "complete", "intended_per_model": len(identities),
+                                     "reused_per_model": len(reused_ids),
+                                     "new_per_model": len(identities) - len(reused_ids),
                                      "elapsed_seconds": time.monotonic() - started})
 
 
@@ -174,6 +235,8 @@ def main() -> None:
     parser.add_argument("--original-checkpoint", type=Path, required=True)
     parser.add_argument("--preference-checkpoint", type=Path, required=True)
     parser.add_argument("--split-list", type=Path, required=True)
+    parser.add_argument("--expected-count", type=int, default=100)
+    parser.add_argument("--reuse-run-dir", type=Path, help="Read-only reuse of a completed subset comparison")
     parser.add_argument("--raw-data-root", type=Path, required=True)
     parser.add_argument("--condition-data-root", type=Path, required=True)
     parser.add_argument("--gpus", type=int, nargs="+", default=list(range(8)))
@@ -186,8 +249,8 @@ def main() -> None:
     config = {key: str(value.resolve()) if isinstance(value, Path) else value
               for key, value in vars(args).items() if key != "resume"}
     identities = read_ids(args.split_list)
-    if len(identities) != 100:
-        raise ValueError("This comparison requires the frozen 100-image validation list.")
+    if len(identities) != args.expected_count:
+        raise ValueError(f"Expected {args.expected_count} identities, received {len(identities)}.")
     run = Path(config["run_dir"])
     repo = Path(__file__).resolve().parents[3]
     sources = [Path(__file__), repo / "src/brepnet/diffusion/legacy.py",
@@ -198,7 +261,7 @@ def main() -> None:
                repo / "shared/occ_utils.py", repo / "shared/common_utils.py",
                repo / "tools/vae_compare_post.py", *sorted((repo / "src/brepnet/post").rglob("*.py"))]
     protocol = {
-        "version": "svr_dpo_validation100_v1", "config": config,
+        "version": "svr_dpo_fixed_validation_v1", "config": config,
         "identities": identities, "split_sha256": sha256_file(args.split_list),
         "checkpoint_sha256": {name: sha256_file(Path(config[name]))
                               for name in ("original_checkpoint", "preference_checkpoint")},
@@ -215,7 +278,7 @@ def main() -> None:
         (run / "metadata").mkdir()
         (run / "logs").mkdir()
         atomic_json(run / "metadata/protocol.json", protocol)
-        (run / "validation100.txt").write_bytes(args.split_list.read_bytes())
+        (run / "validation.txt").write_bytes(args.split_list.read_bytes())
         atomic_json(run / "metadata/run.json", {
             "created_utc": datetime.now(timezone.utc).isoformat(),
             "command": [sys.executable, *sys.argv],
@@ -223,7 +286,8 @@ def main() -> None:
             "git_status": subprocess.check_output(["git", "status", "--short"], text=True),
         })
         (run / "metadata/git.diff").write_bytes(subprocess.check_output(["git", "diff", "HEAD"]))
-    run_comparison(config, identities)
+    reused_ids = reuse_completed_run(protocol)
+    run_comparison(config, identities, reused_ids)
 
 
 if __name__ == "__main__":

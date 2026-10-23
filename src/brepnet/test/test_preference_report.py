@@ -5,8 +5,10 @@ from pathlib import Path
 import tempfile
 import unittest
 
+import numpy as np
+
 from src.brepnet.eval.preference_report import (
-    METHODS, load_rows, paired_statistics, plot_comparison, summarize, write_csv,
+    METHODS, load_rows, paired_statistics, summarize, write_report,
 )
 
 
@@ -98,6 +100,38 @@ class PreferenceReportTests(unittest.TestCase):
         self.assertEqual(result["ci95"], [1., 1.])
         self.assertEqual(result, paired_statistics(left, right))
 
+    def test_chunked_bootstrap_matches_original_full_array(self):
+        left = {f"{index:05d}": index / 100 for index in range(3505)}
+        right = {image_id: value + np.sin(value) for image_id, value in left.items()}
+        repeats = 307  # Cross the batching boundary for the complete validation size.
+        differences = np.array([right[image_id] - left[image_id] for image_id in sorted(left)])
+        samples = np.random.default_rng(42).integers(len(left), size=(repeats, len(left)))
+        expected_interval = np.quantile(differences[samples].mean(axis=1), [.025, .975])
+        result = paired_statistics(left, right, bootstrap_repeats=repeats)
+        self.assertEqual(result["ci95"], expected_interval.tolist())
+
+    def test_frozen_list_accepts_any_size_and_must_match_protocol(self):
+        (self.root / "validation100.txt").rename(self.root / "validation.txt")
+        metadata = self.root / "metadata"
+        metadata.mkdir()
+        protocol = metadata / "protocol.json"
+        protocol.write_text(json.dumps({"identities": self.ids}))
+        ids, _ = load_rows(self.root)
+        self.assertEqual(ids, self.ids)
+        protocol.write_text(json.dumps({"identities": self.ids[:-1]}))
+        with self.assertRaisesRegex(ValueError, "protocol identities"):
+            load_rows(self.root)
+
+    def test_ambiguous_empty_and_duplicate_lists_are_rejected(self):
+        path = self.root / "validation.txt"
+        path.write_text("one\n")
+        with self.assertRaisesRegex(ValueError, "New and legacy"):
+            load_rows(self.root)
+        for contents in ("", "one\none\n"):
+            path.write_text(contents)
+            with self.assertRaisesRegex(ValueError, "nonempty and contain distinct"):
+                load_rows(self.root)
+
     def test_missing_or_running_terminal_records_are_rejected(self):
         path = self.root / "evaluations/baseline/one/metrics.json"
         original = path.read_text()
@@ -116,7 +150,7 @@ class PreferenceReportTests(unittest.TestCase):
 
     def test_changed_seed_and_incomplete_list_are_rejected(self):
         with self.assertRaisesRegex(ValueError, "100 distinct"):
-            load_rows(self.root)
+            load_rows(self.root, expected_count=100)
         path = self.root / "raw_predictions/dpo_5000/one/inference.json"
         value = json.loads(path.read_text())
         value["seed"] = 999
@@ -125,13 +159,11 @@ class PreferenceReportTests(unittest.TestCase):
             self.load()
 
     def test_report_artifacts_render_without_gpu_or_geometry_dependencies(self):
-        ids, rows = self.load()
-        result = summarize(ids, rows)
-        write_csv(self.root / "per_object.csv", ids, rows)
-        plot_comparison(result, self.root)
+        result = write_report(self.root)
+        self.assertEqual(result["intended_count"], len(self.ids))
         for name in ("per_object.csv", "comparison.png", "comparison.svg"):
-            self.assertGreater((self.root / name).stat().st_size, 0)
-        self.assertEqual(len((self.root / "per_object.csv").read_text().splitlines()), 5)
+            self.assertGreater((self.root / "report" / name).stat().st_size, 0)
+        self.assertEqual(len((self.root / "report/per_object.csv").read_text().splitlines()), 5)
 
 
 if __name__ == "__main__":
