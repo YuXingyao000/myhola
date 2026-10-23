@@ -2,7 +2,7 @@
 
 ## 入口
 
-**唯一入口是 `run.py`**：
+普通STEP结果目录的通用入口是 `run.py`：
 
 ```bash
 python -m src.brepnet.eval.run \
@@ -11,6 +11,11 @@ python -m src.brepnet.eval.run \
     --split-list <model list文件> \
     --metrics <逗号分隔的指标>
 ```
+
+已完成的单视图diffusion对照使用 `python -m src.brepnet.eval.diffusion_audit`，
+可复用的失败溯源、可见区域指标和多候选评估见
+[单视图评估说明](SINGLE_VIEW_EVALUATION.md)。该入口读取保存结果，不重新生成或修复CAD；
+`diffusion_audit_report`可单独重新汇总图表，`metrics.conditional_diversity`处理已有同图候选。
 
 ## 常用命令
 
@@ -144,7 +149,11 @@ python -m src.brepnet.eval.run \
 
 ```
 src/brepnet/eval/
-├── run.py                  # ← 唯一入口
+├── run.py                  # 普通STEP目录的通用评估入口
+├── diffusion_audit.py      # 保存的单视图对照：失败溯源与观测一致性
+├── diffusion_audit_report.py # 固定分母的汇总与图表
+├── failure_analysis.py     # 互斥失败阶段与可重叠观察
+├── failure_geometry.py     # raw半边/曲面内部一致性
 ├── protocol.py             # EvalSample, iter_eval_samples
 ├── parallel.py             # Ray wrapper
 ├── io.py                   # save/load helpers
@@ -154,11 +163,14 @@ src/brepnet/eval/
 │   ├── complexity.py       # Face/Edge/Vertex count, cyclomatic complexity
 │   ├── uniqueness.py       # VF2 graph isomorphism
 │   ├── lfd.py              # Light Field Descriptor
+│   ├── observation.py      # 同相机轮廓、可见表面CD与深度
+│   ├── conditional_diversity.py # raw指纹重复度与同图候选差异
 │   └── point_cloud_set.py  # MMD, COV, JSD (分布指标)
 ├── quality_metrics.py      # FLUX 数据集质量 (SAM2 IoU, DINO, CLIP)
 ├── adapters/               # Point2CAD, ComplexGen, NVDNet 格式适配
 ├── legacy/                 # ⚠️ 废弃代码, 仅作备份, 不要使用
 ├── METRICS_TAXONOMY.md     # 指标分类与论文对应关系
+├── SINGLE_VIEW_EVALUATION.md # 单视图分析协议、接口与命令
 └── README.md               # 本文件
 ```
 
