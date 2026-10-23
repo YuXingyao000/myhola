@@ -12,6 +12,7 @@
 |---|---|
 | 已保存的原模型／DPO完整对照：失败溯源、内部几何检查、单视图指标、重复度 | `python -m src.brepnet.eval.diffusion_audit` |
 | 已有逐件audit结果：重新汇总或调整图表字体 | `python -m src.brepnet.eval.diffusion_audit_report` |
+| 已有原模型／DPO指标汇总：导出独立的中文对照图 | `python -m src.brepnet.eval.preference_figures` |
 | 同一张图片已有多个候选：计算候选间差异与raw指纹重复度 | `python -m src.brepnet.eval.metrics.conditional_diversity` |
 | 普通STEP结果目录：原有condition、validity、complexity等指标 | `python -m src.brepnet.eval.run`，见[通用说明](README.md) |
 
@@ -107,6 +108,21 @@ python -m src.brepnet.eval.diffusion_audit_report \
   --audit-dir checkpoints/diffusion/failure_analysis/runs/full_validation_audit \
   --font /path/to/SourceHanSansSC-Regular.otf
 ```
+
+原有`preference_report`生成的`summary.json`可另导出4张独立对照图：合法率、
+后处理前面／边误差、后处理后面／边误差、面匹配F1。适用于固定100件或完整validation，
+每栏的共同样本数取自原汇总，不重新计算指标：
+
+```bash
+python -m src.brepnet.eval.preference_figures \
+  --summary /path/to/comparison_report/summary.json \
+  --output-dir /path/to/new_presentation_figures \
+  --font /path/to/SourceHanSansSC-Regular.otf
+```
+
+输出高清PNG、可缩放的SVG、`plotted_values.csv`与来源hash。几何误差直接显示
+`5.72×10⁻³`这样的原始数量级；F1和合法率显示百分比。CSV保留未缩放均值、各自共同分母和
+原汇总中的配对差值95%区间。不要将raw与post两个不同共同集合的均值当作后处理收益。
 
 ## 2. 失败位置与几何诊断
 
