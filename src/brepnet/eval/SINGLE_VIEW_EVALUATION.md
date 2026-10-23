@@ -265,3 +265,30 @@ python -m src.brepnet.eval.metrics.conditional_diversity \
 
 分析读取原文件，只在新的audit目录写报告与缓存。若需要修复规则或模型改进，先根据validation
 提出假设，再另建固定预算的实验；此工具不会利用GT替候选修复或选择结果。
+
+## 6. 按指定 ID 查看单视图失败案例
+
+`observation_gallery`读取**已经完成**的audit及其manifest，只绘制显式指定的图片，
+不会自动挑选表现好的案例，也不会重算或改写已有指标：
+
+```bash
+python -m src.brepnet.eval.observation_gallery \
+  --audit-dir /path/to/completed_audit \
+  --image-ids 00000178 00000894 00003406 \
+  --output-dir /path/to/new_case_gallery \
+  --font /path/to/SourceHanSansSC-Regular.otf \
+  --render-timeout 60
+```
+
+每件输出PNG、SVG，依次展示输入灰模、GT可见深度、各方法预测深度及轮廓叠加。
+同一件的所有深度图共用数值色阶；绿色轮廓来自输入图，橙色来自STEP重渲染。
+图中合法性、失败阶段、轮廓IoU和可见表面平方误差直接读取保存的audit。
+没有指定`--font`时使用英文标签，避免依赖本机未安装的中文字体。
+
+读取前核对manifest路径、逐件源文件hash、渲染源码和OCC版本；来源变化不会继续当成
+原评估结果展示。渲染在独立CPU进程中执行，单个STEP超时、缺失或无法三角化时保留该列
+并明确标注。它不修复、不ICP、不调整相机，也不把新渲染覆盖到原run。
+
+输出目录必须为新的独立目录，不能放在源audit或原对照run内部。
+`metadata.json`记录指定ID、源路径和hash、所用audit/manifest/字体/源码hash、
+渲染状态、共享色阶和原指标；这类人工指定案例仅用于检查，不能替代全量统计。
