@@ -44,6 +44,8 @@ def _gpu_worker(config: dict, method: str, gpu: int, identities: list[str]) -> N
         else:
             model, provenance = load_preference_svr(
                 config["original_checkpoint"], config["preference_checkpoint"], **options)
+            if provenance["preference"]["global_step"] != 5000:
+                raise ValueError("The dpo_5000 comparison requires a 5,000-step checkpoint.")
         atomic_json(run / "metadata" / f"{method}-gpu{gpu}.json", provenance)
         transform = transforms.Compose([
             transforms.ToPILImage(), transforms.Resize((224, 224)), transforms.ToTensor(),
@@ -192,6 +194,8 @@ def main() -> None:
                repo / "src/brepnet/diffusion/image_loading.py",
                repo / "src/brepnet/data/preference_generate.py",
                repo / "src/brepnet/eval/preference.py", repo / "src/brepnet/eval/preference_report.py",
+               repo / "src/brepnet/eval/metrics/validity.py",
+               repo / "shared/occ_utils.py", repo / "shared/common_utils.py",
                repo / "tools/vae_compare_post.py", *sorted((repo / "src/brepnet/post").rglob("*.py"))]
     protocol = {
         "version": "svr_dpo_validation100_v1", "config": config,
