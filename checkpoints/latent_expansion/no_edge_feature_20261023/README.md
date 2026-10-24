@@ -1,8 +1,10 @@
 # 64维全解冻：关闭edge_feature
 
-2026-10-23，用户授权在142训练。只把 `model.loss_weights.feature_weight` 从1改为0，teacher的local/bbox几何监督及其余loss保持不变。当前状态：已正常完成30,000步；2026-10-24完成3495件validation的固定mean评估与同期曲线检查，详见[评估报告](evaluation_20261024/REPORT.md)。
+2026-10-23，用户授权在142训练。只把 `model.loss_weights.feature_weight` 从1改为0，teacher的local/bbox几何监督及其余loss保持不变。当前状态：已正常完成30,000步；2026-10-24完成3495件validation的固定mean评估、同期曲线检查及完整OCC验证，详见[mean与曲线报告](evaluation_20261024/REPORT.md)、[OCC报告与六张总体图](occ_evaluation_20261024/REPORT.md)。
 
-同期25–30k validation相对原64：最终edge XYZ低20.3%、teacher bbox低52.6%。固定mean相对来源32维：raw face CD²低24.8%、raw edge低8.5%、teacher逐边低5.6%；最终边79.3%的CAD改善，但coarse逐边均值高22.7%。这支持取消特征匹配能明显缓解退化，未证明全部架构问题已解决；无OCC/test结果。旧64未保留30k权重，同预算结论限曲线。
+同期25–30k validation相对原64：最终edge XYZ低20.3%、teacher bbox低52.6%。固定mean相对来源32维：raw face CD²低24.8%、raw edge低8.5%、teacher逐边低5.6%；最终边79.3%的CAD改善，但coarse逐边均值高22.7%。这支持取消特征匹配能明显缓解退化，未证明全部架构问题已解决。旧64未保留30k权重，同预算结论限曲线；本轮未使用test。
+
+同一3495件validation、原recover_v1/180秒预算下，OCC原生合法 **3179/3495（90.96%）**，来源32维为3180（90.99%）：救回28件、退步29件，合法率基本持平。双方共同合法且双方几何可测2960件中，STEP边CD²均值下降5.48%、面下降0.46%；候选316件失败中307件仍停在裁剪面阶段，232件face-pair集合正确。结论为“几何改善，合法性瓶颈未解”；这是单seed32D来源与64D终点比较，不能将全部变化唯一归因于feature开关。
 
 - [固定协议](PLAN.md)、[架构与loss变更](ARCHITECTURE.md)、[启动命令](launch.sh)。
 - [启动记录](launch_record.json)、[实际配置](resolved_config.yaml)、[真实batch检查](preflight.json)。

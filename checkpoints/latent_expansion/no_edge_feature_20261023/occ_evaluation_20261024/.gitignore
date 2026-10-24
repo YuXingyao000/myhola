@@ -1,0 +1,9 @@
+/raw_predictions/
+/post/
+/metadata/
+/failure_analysis/raw/
+/smoke/
+/logs/
+/*.log
+/__pycache__/
+!/failure_analysis/samples.csv.gz

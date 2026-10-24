@@ -1,0 +1,6 @@
+{
+  "count": 3495,
+  "passed": true,
+  "mismatches": [],
+  "check": "source32 export CAD SHA == candidate export CAD SHA == local actual CAD SHA, each intended ID"
+}
