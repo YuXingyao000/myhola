@@ -1,6 +1,8 @@
 # VAE失败案例交互查看器
 
-交付：[打开单文件HTML](failure_viewer.html)。使用现代Chrome或Edge直接打开，无需服务器或网络。文件内含全部316件几何，约120MB，首次打开需等待加载；之后逐件解压，浏览器只缓存最近3件。HTML为本地生成产物，源码、固定统计和审计记录受版本管理。
+日常查看使用[轻量浏览器入口](http://127.0.0.1:8765/)，在187上运行并通过当前远程浏览器访问。页面约0.67MB，连同绘图库和首件几何首次加载不足6MB；切换案例才加载对应数据，每件约0.1–0.6MB，浏览器缓存最近3件。用户已确认轻量入口可以看到模型。
+
+[原单文件HTML](failure_viewer.html)保留作离线备份，约120MB。用户反馈远程预览空白／长时间加载后，新增按需加载入口；所有316件数据、显示逻辑及统计未改变。不要再把服务器上的120MB文件路径当作首选浏览方式。生成HTML及逐件几何保留本地，源码、固定统计和审计记录受版本管理。
 
 本页覆盖no_edge_feature64在固定3495件validation中的全部316件OCC失败：307件裁剪失败、6件实体构造失败、3件STEP原生／边界检查失败。与source32配对，其中29件是32维合法而64维失败，287件两版均失败。未修改训练或后处理，也未重新评定正式合法率。
 
@@ -66,3 +68,11 @@ VAE_VIEWER=checkpoints/latent_expansion/no_edge_feature_20261023/occ_evaluation_
 原始数据、checkpoint和后处理协议继承[父级报告](../REPORT.md)。本任务的边界与数据契约见[SPEC.md](SPEC.md)、[SCHEMA.md](SCHEMA.md)。打包记录和浏览器验证保存在`validation/`；浏览器测试使用`validate_browser.py`与本机现有Chromium，不安装新环境。
 
 最终验收通过：全部316件内嵌几何在浏览器解压成功，代表案例的选择、筛选、旋转、局部放大、三种几何来源及所有分布项通过；无JavaScript异常、无外部网络请求。完整数据审计为0项不一致，319个数据文件在最后UI更新后SHA仍保持一致。浏览器环境与结果见[验证记录](validation/browser.json)，测量核验见[数据审计](validation/payload.json)。
+
+轻量服务重启命令：
+
+```bash
+/mnt/d/anaconda3/envs/torch/bin/python /mnt/d/python_curve_eval/checkpoints/latent_expansion/no_edge_feature_20261023/occ_evaluation_20261024/failure_viewer/serve_viewer.py
+```
+
+服务仅监听187的`127.0.0.1:8765`，只提供页面、绘图库和清单内案例，无目录列表。案例沿用原gzip字节，通过HTTP自动解压；不依赖JavaScript的`DecompressionStream`。若改用本机外部浏览器，可在已连接187的Cursor中转发8765端口。交付方式验证见[HTTP记录](validation/http_delivery.json)。
