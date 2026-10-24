@@ -1,0 +1,46 @@
+{
+  "status": "passed",
+  "source_comparisons": [
+    {
+      "id": "00000178",
+      "comparisons": 232,
+      "maximum_absolute_difference": 9.688010116359891e-08,
+      "maximum_relative_difference": 1.801867837575644e-05
+    },
+    {
+      "id": "00000894",
+      "comparisons": 232,
+      "maximum_absolute_difference": 1.8251987599082753e-07,
+      "maximum_relative_difference": 9.619496426959633e-06
+    },
+    {
+      "id": "00003202",
+      "comparisons": 232,
+      "maximum_absolute_difference": 8.160904525159746e-08,
+      "maximum_relative_difference": 1.8242774094592655e-05
+    }
+  ],
+  "control_checks": [
+    {
+      "id": "00000178",
+      "edge_count": 20,
+      "status": "passed"
+    },
+    {
+      "id": "00000894",
+      "edge_count": 104,
+      "status": "passed"
+    },
+    {
+      "id": "00003202",
+      "edge_count": 32,
+      "status": "passed"
+    }
+  ],
+  "tolerance": {
+    "relative": 5e-05,
+    "absolute": 1e-10
+  },
+  "source_baseline_raw": "/mnt/d/python/checkpoints/latent_expansion/diagnosis_20261021/runs/20261021T115046Z/source32",
+  "source_baseline_decomposition": "/mnt/d/python/checkpoints/latent_expansion/diagnosis_20261021/shape_placement/runs/20261021T123732Z/source32"
+}

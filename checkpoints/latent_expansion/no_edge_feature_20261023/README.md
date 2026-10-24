@@ -1,6 +1,8 @@
 # 64维全解冻：关闭edge_feature
 
-2026-10-23，用户授权在142训练。只把 `model.loss_weights.feature_weight` 从1改为0，teacher的local/bbox几何监督及其余loss保持不变。当前状态：已启动，8个DDP进程进入训练且loss有限；训练尚未完成，尚无本轮几何改善结论。
+2026-10-23，用户授权在142训练。只把 `model.loss_weights.feature_weight` 从1改为0，teacher的local/bbox几何监督及其余loss保持不变。当前状态：已正常完成30,000步；2026-10-24完成3495件validation的固定mean评估与同期曲线检查，详见[评估报告](evaluation_20261024/REPORT.md)。
+
+同期25–30k validation相对原64：最终edge XYZ低20.3%、teacher bbox低52.6%。固定mean相对来源32维：raw face CD²低24.8%、raw edge低8.5%、teacher逐边低5.6%；最终边79.3%的CAD改善，但coarse逐边均值高22.7%。这支持取消特征匹配能明显缓解退化，未证明全部架构问题已解决；无OCC/test结果。旧64未保留30k权重，同预算结论限曲线。
 
 - [固定协议](PLAN.md)、[架构与loss变更](ARCHITECTURE.md)、[启动命令](launch.sh)。
 - [启动记录](launch_record.json)、[实际配置](resolved_config.yaml)、[真实batch检查](preflight.json)。
@@ -18,6 +20,8 @@
 
 启动前真实16件训练batch通过BF16前向/反向检查，未执行optimizer更新：182,982,439个参数全部可训练，encoder/posterior/decoder梯度均有限且非零；raw `edge_feature=0.0208975`，`weighted_edge_feature=0`，后者对coarse edge feature的梯度精确为0。teacher local/bbox与KL加权项仍为正。这些结果仅证明实现符合协议。
 
-03:53:12 UTC核验：8个rank均已注册、8卡各有训练进程，控制台已完成epoch 0的83个batch，loss为0.0235；W&B在线history已收到 `trainer/global_step=49`、`train/loss_step=0.0245988`。正式run的完整配置与预检配置一致。各分项按epoch记录，因此启动时还没有完整epoch的feature曲线。
+2026-10-23 03:53:12 UTC启动核验：8个rank均已注册、8卡各有训练进程，控制台已完成epoch 0的83个batch，loss为0.0235；W&B在线history已收到 `trainer/global_step=49`、`train/loss_step=0.0245988`。正式run的完整配置与预检配置一致。各分项按epoch记录，启动时尚无完整epoch的feature曲线；后续83个train/82个validation分项记录已确认weighted feature全为0。
+
+训练终点：北京时间2026-10-24 01:18:50完成W&B记录，last实际step=30000/epoch82，全部模型tensor有限、Adam步数一致。末权重SHA256 `4262f4998fe047e19c3ca21a835d74c183b7430f7a656c709ec8ed045262ada4`。日志末NCCL/TCPStore警告位于max_steps正常结束之后，tmux退出码0；详见[审计](evaluation_20261024/training_audit.json)。
 
 服务器Git接收钩子因已有未跟踪历史产物拒绝直接推送，亦拒绝非当前分支的临时ref。核对文件不重叠后，使用本次6个新增文件的Git bundle执行fetch及 `merge --ff-only`；未修改接收钩子、未覆盖或删除历史产物，启动前已验证服务器HEAD与上述提交一致。
