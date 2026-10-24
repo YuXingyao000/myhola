@@ -1,0 +1,82 @@
+{
+  "passed": true,
+  "html": "/mnt/d/python_curve_eval/checkpoints/latent_expansion/no_edge_feature_20261023/occ_evaluation_20261024/failure_viewer/failure_viewer.html",
+  "elapsed_seconds": 39.53105007298291,
+  "checks": [
+    {
+      "check": "offline_initial_load",
+      "seconds": 13.845097093028016,
+      "state": {
+        "id": "00003999",
+        "source": "fitted",
+        "face": 4,
+        "error": null,
+        "n": 316,
+        "traceCount": 107
+      }
+    },
+    {
+      "check": "all_embedded_cases_decode_in_browser",
+      "count": 316,
+      "faces": 4954,
+      "edges": 11290
+    },
+    {
+      "check": "cohort_and_stage_filters",
+      "regressed": 29,
+      "solid": 6,
+      "solid_log": "实体构造与 STEP 验收\n裁剪面 14 / 14；所有面裁剪通过。可在上方选择面查看裁剪尝试。"
+    },
+    {
+      "check": "known_lost_wire_case",
+      "id": "00024146",
+      "attempt_count": 8,
+      "mean_text": "1.73e-18"
+    },
+    {
+      "check": "camera_drag_and_gap_zoom",
+      "passed": true
+    },
+    {
+      "check": "raw_gt_fitted_source_switch",
+      "passed": true
+    },
+    {
+      "check": "all_distribution_metrics_hist_cdf_log",
+      "metrics": [
+        "replay_mean",
+        "replay_max",
+        "replay_endpoint_mean",
+        "replay_endpoint_max",
+        "replay_endpoint_other_mean",
+        "replay_endpoint_other_max",
+        "raw_mean",
+        "raw_p95",
+        "raw_max",
+        "endpoint_mean",
+        "endpoint_max"
+      ]
+    },
+    {
+      "check": "representative_stages_and_missing_edge_cases",
+      "ids": [
+        "00003999",
+        "00208610",
+        "00356252",
+        "00481408"
+      ]
+    },
+    {
+      "check": "navigation_buttons_and_arrow_key",
+      "passed": true
+    },
+    {
+      "check": "compact_viewport_1000px",
+      "passed": true
+    }
+  ],
+  "javascript_errors": [],
+  "external_requests": [],
+  "browser": "133.0.6943.16",
+  "all_cases_decoded": 316
+}

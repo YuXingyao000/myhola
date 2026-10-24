@@ -1,0 +1,20 @@
+{
+  "html_bytes": 120004257,
+  "html_sha256": "acf427a428a2d1e434d6261997efae32b341f922248eb00001bb758e13a0a646",
+  "case_count": 316,
+  "replay_match": 316,
+  "plotly_version": "6.2.0",
+  "plotly_sha256": "a32e817bb121e9e89016ce4cee85ee3f1c66f6a6c95c4b53a5f488f77756d7a4",
+  "sources": {
+    "SPEC.md": "c07c58f72879a1ccf6c87be23f6949aa4f4b19e13f1d915a79e8803c0d8370e9",
+    "SCHEMA.md": "cf75fba559e31a4c61323b452af86fe73b30dc41af13e63219eb8e63581ee2eb",
+    "build_data.py": "c601ed65f5275d43cbe8b44b1a61cd324809add6c36c229d89ce613c0efbbb4e",
+    "app.js": "f2243068a99cb01208f0ec87fe43fd0e63baa8d3ad1ae1817d15155d46b2e162",
+    "template.html": "3870500035dbf2f1fe670cee99e6015667ac17e8a73e9f01e102c1912f4fef3c"
+  },
+  "require_replay": true,
+  "argv": [
+    "checkpoints/latent_expansion/no_edge_feature_20261023/occ_evaluation_20261024/failure_viewer/build_data.py",
+    "pack"
+  ]
+}

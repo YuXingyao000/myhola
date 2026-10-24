@@ -1,0 +1,33 @@
+{
+  "delivered_utc": "2026-10-24T10:41:29.373412+00:00",
+  "html": "/mnt/d/python_curve_eval/checkpoints/latent_expansion/no_edge_feature_20261023/occ_evaluation_20261024/failure_viewer/failure_viewer.html",
+  "html_sha256": "acf427a428a2d1e434d6261997efae32b341f922248eb00001bb758e13a0a646",
+  "html_bytes": 120004257,
+  "case_count": 316,
+  "history_match_count": 316,
+  "data_validation_passed": true,
+  "browser_validation_passed": true,
+  "unchanged_payload_files_after_ui_repack": 319,
+  "source_sha256": {
+    "build_data.py": "4cc1576dec535bfa3254fb86bc3c8bf6dce264b5106b1de734433987c7c01fb3",
+    "replay_geometry.py": "d343d01dbd6c714d321e16b9a3d67c8d772c04ffcd900639a01791847b789d4c",
+    "validate_browser.py": "3554bcffbeb800bb4d47991c1999a92a4fd2e6f8ece5495eed8b944106aafba1",
+    "validate_payload.py": "b25810d36b2bc571a7a7ecfce625319acc0e77ca52abad490d2080d4b9793c15",
+    "app.js": "f2243068a99cb01208f0ec87fe43fd0e63baa8d3ad1ae1817d15155d46b2e162",
+    "template.html": "3870500035dbf2f1fe670cee99e6015667ac17e8a73e9f01e102c1912f4fef3c",
+    "SPEC.md": "c07c58f72879a1ccf6c87be23f6949aa4f4b19e13f1d915a79e8803c0d8370e9",
+    "SCHEMA.md": "cf75fba559e31a4c61323b452af86fe73b30dc41af13e63219eb8e63581ee2eb"
+  },
+  "validation_sha256": {
+    "build.json": "de8c62fe5825924207d61caff54007b9447a3cc1b2e22758c0b4bc36f89a8ef1",
+    "browser.json": "ec62f85bb64d382d6592db6c558c68127cde26bd4c93e1d42f7f26ab0e391ccb",
+    "payload.json": "2acc8046056d2ce7b70eda8abc9c2d60ea735cf0bc3cc81a8606472f8897a230",
+    "replay.json": "8432cd3fc233adbb81d8a533a1fefaa8a435f8b5da0b21f7c7efa70911087b2d"
+  },
+  "csv_lf_normalization": {
+    "numeric_records_unchanged": true,
+    "row_count": 316,
+    "metrics_csv_sha256": "00b45bb83365432ebbc17050f2f69353edf0f08e0f7b66d4f3134e081b83e1c5",
+    "note": "After browser validation, CSV line endings normalized to LF and writer configured likewise. HTML and all geometry/metric payloads remain byte-identical; build.json retains the script hash used for the actual HTML build."
+  }
+}

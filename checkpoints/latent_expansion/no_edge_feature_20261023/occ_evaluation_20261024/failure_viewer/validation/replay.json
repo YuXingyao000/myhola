@@ -1,0 +1,83 @@
+{
+  "passed": true,
+  "counts": {
+    "objects": 316,
+    "failed_faces": 767,
+    "edges": 11290,
+    "faces": 4954,
+    "owner_relations": 22580,
+    "points": 1445120,
+    "unknown_points": 0,
+    "unknown_endpoints": 122
+  },
+  "source_hashes_rechecked": true,
+  "production_code_unchanged": true,
+  "history_fields_match": true,
+  "max_connector_length_discrepancy": 9.99054075328425e-08,
+  "connector_tolerance": 1e-07,
+  "metric_recomputation_passed": true,
+  "endpoint_bases": {
+    "same_owner_nearest_endpoint_on_different_edge; not_global_wire_matching": 41054,
+    "geometric_closed_curve_self_seam; topology_IsClosed_or_endpoint_gap_le_1e-7": 3984,
+    "unknown_open_curve_without_other_edge_on_owner": 122
+  },
+  "CAD_equal_weight_metrics": {
+    "owner_mean": {
+      "count": 316,
+      "mean": 0.0021910438567484436,
+      "median": 0.001626746486313426,
+      "p90": 0.004037090470892991,
+      "p95": 0.006440245520178299,
+      "max": 0.012239358468517012
+    },
+    "owner_p95_max": {
+      "count": 316,
+      "mean": 0.024987761975400532,
+      "median": 0.01602421939301325,
+      "p90": 0.048056177756267346,
+      "p95": 0.07861903032563775,
+      "max": 0.42111511951105246
+    },
+    "owner_max": {
+      "count": 316,
+      "mean": 0.02792234615468619,
+      "median": 0.018580369473565384,
+      "p90": 0.05420516124336991,
+      "p95": 0.09059466458630303,
+      "max": 0.443196103787138
+    },
+    "endpoint_max": {
+      "count": 316,
+      "mean": 0.503219465246503,
+      "median": 0.4232054128087515,
+      "p90": 1.0948280659397804,
+      "p95": 1.305961804867847,
+      "max": 1.8042204055351603
+    }
+  },
+  "owner_max_below_fixed_display_threshold_counts": {
+    "0.001": 0,
+    "0.002": 0,
+    "0.006": 3,
+    "0.01": 39,
+    "0.08": 295
+  },
+  "failed_face_mean_distribution": {
+    "count": 764,
+    "mean": 0.00449486338395673,
+    "median": 0.002639513436933026,
+    "p90": 0.010953524369197857,
+    "p95": 0.014717420607182407,
+    "max": 0.08613085319115779
+  },
+  "accepted_face_mean_distribution_in_failed_CADs": {
+    "count": 4187,
+    "mean": 0.001477311297199825,
+    "median": 0.000947129159315787,
+    "p90": 0.003205484616918632,
+    "p95": 0.004672290634707761,
+    "max": 0.03251576715859049
+  },
+  "failed_faces_without_owner_relations": 3,
+  "note": "Analytic owner distance at 64 native parameter points before trimming. Failure/acceptance labels are historical final-path face trimming status. Small distance does not prove closed complete wires. No GT used in replay or endpoint closure."
+}
