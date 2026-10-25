@@ -43,7 +43,7 @@ FixedBSplineSurface.fit -> poles ---------+
 新的网络定义仍全部位于 `src/brepnet/models/vae/uv_intersection.py`，保留清晰的六行
 `UVIntersection.forward`；SHA256 为 `11f02b4106a9be9a33ca5d228148db71bb584777f0d7fcfa222f757d4b1a7fa8`。
 `uv_intersection_training.py` 仅负责旧 encoder 装配、权重迁移、数据/loss 适配和导出，不定义新神经网络层。
-运行代码使用独立工作树 `/mnt/d/python_uv_train`、分支 `codex/uv-intersection-training`；
+运行代码使用本地隔离工作树、142 独立 clone（均为 `/mnt/d/python_uv_train`）、分支 `codex/uv-intersection-training`；
 保留原工作区的其他未提交修改，正式源码提交后再部署。实际 Git commit 由运行 metadata 记录。
 
 ## 初始化与数据
@@ -80,3 +80,17 @@ FixedBSplineSurface.fit -> poles ---------+
 本轮导出表示为 `dual_uv_surface_v1`，保留双侧UV、双侧XYZ轨迹、曲面控制点/结点/次数。
 不把两侧平均后冒充唯一共享边；旧 OCC 构造入口会拒绝这一新表示。
 非周期样条、闭合路径、同一连续曲面的裁剪与最终共享边构造仍是后续几何导出工作。
+
+## 142 实际源预检（2026-10-25）
+
+实际训练源逐 tensor 迁移通过。真实 validation 两件 CAD（7/20面）完成 BF16 前后向、Adam 更新：
+96,774,703 个可训练参数，峰值4.33GiB，encoder/posterior 无梯度，全部decoder梯度有限。
+固定相同输入后 posterior/global attention/face local/bbox/global XYZ 与源模型逐位相等。
+旧GAT的CUDA scatter本身有重复计算浮点差，本次最大7.63e-6；encoder比较采用1e-5容差，
+不把GPU完整前向重复性称为逐位相等。原始诊断日志保存在142预检目录。
+
+每epoch3,320个microbatch，即415次optimizer更新，然后全量DDP验证和checkpoint。
+DDP validation 将3,495件补齐到3,500（5次重复），日志用于监控；最终严格评估用单卡。
+30,000步不是415的整数倍，训练末尾文件名可能沿用29,880步的val值；不得冒充30,000步实测结果。
+
+部署采用Git bundle导入独立clone；原服务器仓库的同步hook拒绝新建分支，未更改或绕过该hook。
