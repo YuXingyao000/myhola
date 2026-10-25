@@ -67,6 +67,21 @@ class TrainingCheckpointTests(unittest.TestCase):
                 {"step=00000002.ckpt", "last.ckpt"},
             )
 
+    def test_bounded_step_retention_keeps_recent_and_last(self):
+        with tempfile.TemporaryDirectory() as directory:
+            cfg = self.config(2)
+            cfg.trainer.checkpoint_step_keep_last = 2
+            callback = _build_checkpoint_callbacks(cfg, Path(directory))[1]
+            trainer = pl.Trainer(accelerator="cpu", devices=1, max_steps=7, logger=False,
+                                 callbacks=[callback], enable_model_summary=False,
+                                 enable_progress_bar=False)
+            trainer.fit(TinyTrainingModel(), train_dataloaders=DataLoader(
+                TensorDataset(torch.ones(10, 1)), batch_size=1))
+            folder = Path(directory) / "weights/steps"
+            self.assertEqual({p.name for p in folder.iterdir()},
+                             {"step=00000004.ckpt", "step=00000006.ckpt", "last.ckpt"})
+            self.assertEqual(torch.load(folder / "last.ckpt", weights_only=False)["global_step"], 7)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -105,11 +105,16 @@ def _build_checkpoint_callbacks(cfg: DictConfig, run_dir: Path) -> list[ModelChe
     if interval is not None:
         if isinstance(interval, bool) or not isinstance(interval, int) or interval < 1:
             raise ValueError("trainer.checkpoint_every_n_train_steps must be a positive integer or null.")
+        keep = cfg.trainer.get("checkpoint_step_keep_last", -1)
+        if isinstance(keep, bool) or not isinstance(keep, int) or keep == 0 or keep < -1:
+            raise ValueError("checkpoint_step_keep_last must be -1 or a positive integer")
         callbacks.append(ModelCheckpoint(
             dirpath=str(run_dir / "weights" / "steps"),
             every_n_train_steps=interval,
             every_n_epochs=0,
-            save_top_k=-1,
+            save_top_k=keep,
+            monitor="step" if keep > 0 else None,
+            mode="max",
             save_last=True,
             # Also retain the final state when max_steps ends between snapshots.
             save_on_train_epoch_end=True,
@@ -163,6 +168,13 @@ class UnifiedTrainer(pl.LightningModule):
     def __init__(self, cfg: DictConfig):
         super().__init__()
         self.cfg = cfg
+        if cfg.model.name == "PhotoBaselineDiffusion":
+            from src.brepnet.data.photo_dataset import photo_cache_provenance
+            provenance = photo_cache_provenance(cfg.dataset)
+            expected = cfg.dataset.get("provenance")
+            if expected is not None and dict(expected) != provenance:
+                raise ValueError("Photo cache changed after prepare_run")
+            OmegaConf.update(cfg.dataset, "provenance", provenance, force_add=True)
         if cfg.model.name == "PreferenceDiffusion":
             from src.brepnet.data.preference_dataset import preference_data_provenance
             provenance = preference_data_provenance(cfg.dataset)
@@ -239,7 +251,27 @@ class UnifiedTrainer(pl.LightningModule):
             elif sha256_file(Path(model_cfg.legacy_checkpoint)) != cfg.dataset.provenance.source_checkpoint_sha256:
                 raise ValueError("Initial SVR checkpoint differs from the preference generation checkpoint.")
             OmegaConf.update(model_cfg, "restoring_checkpoint", bool(has_resume), force_add=True)
+        if cfg.model.name == "PhotoBaselineDiffusion":
+            from src.brepnet.data.preference_dataset import sha256_file
+            if cfg.trainer.init_from_checkpoint:
+                raise ValueError("Photo baseline uses strict legacy initialization or full resume")
+            if cfg.eval.enabled or cfg.trainer.evaluate or cfg.trainer.diffusion_validation_inference:
+                raise ValueError("Use sample_latents and the explicit original AE for downstream evaluation")
+            if has_resume:
+                saved = torch.load(str(resume), map_location="cpu", mmap=True, weights_only=False)
+                if saved["hyper_parameters"]["model"]["name"] != "PhotoBaselineDiffusion":
+                    raise ValueError("Expected a PhotoBaselineDiffusion checkpoint")
+                if dict(cfg.dataset.provenance) != saved["hyper_parameters"]["dataset"]["provenance"]:
+                    raise ValueError("Cannot resume with a changed photo cache")
+                OmegaConf.update(model_cfg, "legacy_model_config",
+                                 saved["hyper_parameters"]["model"]["legacy_model_config"], force_add=True)
+            elif sha256_file(Path(model_cfg.legacy_checkpoint)) != cfg.dataset.provenance.source_checkpoint_sha256:
+                raise ValueError("Photo features/latents and initial weights have different sources")
+            OmegaConf.update(model_cfg, "restoring_checkpoint", bool(has_resume), force_add=True)
         self.model = build_model(model_cfg, cfg.condition)
+        if cfg.model.name == "PhotoBaselineDiffusion":
+            OmegaConf.update(cfg.model, "legacy_model_config", self.model.legacy_model_config, force_add=True)
+            self.save_hyperparameters(OmegaConf.to_container(cfg, resolve=True))
         if cfg.model.name == "PreferenceDiffusion":
             # 恢复只依赖自身 checkpoint 的架构/权重，不重新读取旧 SVR 权重。
             OmegaConf.update(cfg.model, "legacy_model_config", self.model.legacy_model_config, force_add=True)
@@ -611,6 +643,9 @@ def main(cfg: DictConfig):
         OmegaConf.update(
             cfg.dataset, "provenance", preference_data_provenance(cfg.dataset), force_add=True,
         )
+    if cfg.model.name == "PhotoBaselineDiffusion":
+        from src.brepnet.data.photo_dataset import photo_cache_provenance
+        OmegaConf.update(cfg.dataset, "provenance", photo_cache_provenance(cfg.dataset), force_add=True)
     run_record = prepare_run(cfg, Path(log_dir))
 
     # --- Logger ---

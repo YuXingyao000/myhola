@@ -1,0 +1,3 @@
+# Encoded data and diagnostic runs are local; compact reports live beside this file.
+/cache_v1/
+/ddp_check_*/
