@@ -1,6 +1,6 @@
 # UV Intersection 64D：直接双侧 UV 第一版
 
-2026-10-25。用户已确认架构并授权在 142 启动训练。当前记录为启动前协议；实际启动和检查结果随后追加。
+2026-10-25。用户已确认架构并授权在 142 启动训练。正式训练已于 11:08:11 UTC 启动，7 个 rank 已完成注册并开始更新。
 
 ## 研究问题与模型
 
@@ -94,3 +94,16 @@ DDP validation 将3,495件补齐到3,500（5次重复），日志用于监控；
 30,000步不是415的整数倍，训练末尾文件名可能沿用29,880步的val值；不得冒充30,000步实测结果。
 
 部署采用Git bundle导入独立clone；原服务器仓库的同步hook拒绝新建分支，未更改或绕过该hook。
+
+## 正式运行
+
+- 运行：`/mnt/d/python/checkpoints/uv_intersection/frozen64/20261025T110811Z`（142）。
+- W&B：[uv-direct64-frozen-30k](https://wandb.ai/whatseven777/hola-brep/runs/7052b79765ef)。
+- 代码 commit：`66beccadac59a9bfe1f920bcbb1ac3bce2b28e7c`，启动时隔离 clone 干净。
+- tmux：`uv64-direct-20261025T110811Z`，物理 GPU 1–7。
+- `metadata/launch_manifest.json` 保存精确命令、环境变量、commit、源checkpoint与batch预算；
+  `metadata/initialization_report.json` 保存448个保留tensor的映射与来源SHA。
+- 本地26项网络/训练接口检查通过；实际源2件CAD通过；2卡运行到step2后严格恢复到step3，
+  checkpoint中374份Adam参数状态存在。预检权重不用于正式run，正式run重新初始化。
+- 正式验证和checkpoint每415步；11:10:02 UTC 已完成172个microbatch（至少21次更新），未发现致命错误；尚无本轮OCC结果。
+- 完整启动记录见 [LAUNCH_20261025.json](LAUNCH_20261025.json)。
