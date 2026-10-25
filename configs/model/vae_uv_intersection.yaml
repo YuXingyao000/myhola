@@ -1,0 +1,46 @@
+name: AutoEncoder_uv_intersection
+stage: vae
+mode: train
+checkpoint: null
+# New-run migration; optimizer state is restored only by trainer.resume_from_checkpoint.
+init_uv_decoder_checkpoint: null
+init_uv_decoder_sha256: null
+freeze_encoder: true
+trainable_scope: all
+
+# Same CNN encoder and posterior as the trained 64D source.
+in_channels: 6
+latent_channels: 16
+hidden_channels: 768
+norm: layer
+primitive_blocks_per_stage: 1
+num_gat_layers: 5
+bottleneck_dim: 768
+num_encoder_layers: 8
+nhead: 16
+gaussian_weights: 5.0e-7
+sigmoid: false
+kl_reduction: sum
+face_encoder:
+  kind: cnn
+encoder_edge_value:
+  enabled: false
+
+# Decoder implementation is entirely in models/vae/uv_intersection.py.
+uv_intersection:
+  latent_dim: 64
+  face_width: 768
+  face_layers: 8
+  face_heads: 16
+  face_ffn: 2048
+  curve_width: 512
+  curve_layers: 8
+  curve_heads: 8
+  curve_ffn: 2048
+  dropout: 0.1
+  pair_chunk_size: 16
+
+# Three face L1 terms + per-side curve XYZ MSE + these two weighted terms.
+loss_weights:
+  classification_weight: 0.1
+  incidence_weight: 0.1

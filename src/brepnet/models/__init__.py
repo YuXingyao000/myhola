@@ -33,6 +33,9 @@ def _lazy_import(module_path: str, class_name: str):
 # ---------------------------------------------------------------------------
 
 _MODEL_LOADERS: Dict[str, Any] = {
+    "AutoEncoder_uv_intersection": _lazy_import(
+        "src.brepnet.models.vae", "AutoEncoder_uv_intersection"
+    ),
     "AutoEncoder_intersection": _lazy_import(
         "src.brepnet.models.vae", "AutoEncoder_intersection"
     ),

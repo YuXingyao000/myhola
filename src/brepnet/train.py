@@ -188,6 +188,23 @@ class UnifiedTrainer(pl.LightningModule):
                 OmegaConf.update(model_cfg, "restoring_checkpoint", True, force_add=True)
             if model_cfg.get("uv_boundary", {}).get("enabled", False) and not cfg.dataset.get("edge_uv_root"):
                 raise ValueError("UV boundary supervision requires dataset.edge_uv_root")
+        if cfg.model.name == "AutoEncoder_uv_intersection":
+            if cfg.trainer.init_from_checkpoint:
+                raise ValueError(
+                    "AutoEncoder_uv_intersection rejects trainer.init_from_checkpoint. "
+                    "Use model.init_uv_decoder_checkpoint for validated encoder/face migration, "
+                    "model.checkpoint for strict full-model initialization, or "
+                    "trainer.resume_from_checkpoint for a full-state restore."
+                )
+            if has_resume:
+                model_cfg.init_uv_decoder_checkpoint = None
+                model_cfg.checkpoint = None
+                OmegaConf.update(model_cfg, "restoring_checkpoint", True, force_add=True)
+            elif model_cfg.freeze_encoder and not model_cfg.init_uv_decoder_checkpoint and not model_cfg.checkpoint:
+                raise ValueError(
+                    "A fresh frozen-encoder UV run needs model.init_uv_decoder_checkpoint "
+                    "or a strict model.checkpoint; refusing to freeze a random encoder."
+                )
         self.model = build_model(model_cfg, cfg.condition)
         self._init_model_from_checkpoint()
         self._apply_trainable_scope()
@@ -198,6 +215,12 @@ class UnifiedTrainer(pl.LightningModule):
 
         # --- Visualization state ---
         self.viz: Dict[str, Any] = {}
+
+    def on_load_checkpoint(self, checkpoint: Dict[str, Any]) -> None:
+        if self.cfg.model.name == "AutoEncoder_uv_intersection":
+            # Strict tensor loading cannot detect same-shape changes to heads,
+            # dropout, or other saved architecture semantics.
+            self.model.validate_complete_checkpoint(checkpoint)
 
     def _init_model_from_checkpoint(self):
         """Load model weights without restoring optimizer/trainer state."""
@@ -299,7 +322,9 @@ class UnifiedTrainer(pl.LightningModule):
 
     def test_dataloader(self) -> DataLoader:
         dataset = self.dataset_cls("testing", self.cfg.dataset)
-        batched_vae = self.cfg.model.name in {"AutoEncoder_joint", "AutoEncoder_intersection"}
+        batched_vae = self.cfg.model.name in {
+            "AutoEncoder_joint", "AutoEncoder_intersection", "AutoEncoder_uv_intersection",
+        }
         batch_size = self.batch_size if self.stage == "diffusion" or batched_vae else 1
         return DataLoader(
             dataset,
@@ -489,6 +514,11 @@ class UnifiedTrainer(pl.LightningModule):
     def _forward_step(self, batch: Dict[str, Any], is_training: bool) -> Dict[str, Any]:
         """Dispatch forward pass based on stage."""
         if self.stage == "vae":
+            if self.cfg.model.name == "AutoEncoder_uv_intersection":
+                # Validation measures the posterior mean without building export
+                # items; the legacy visualization switch must not enable export.
+                loss, _data = self.model(batch, v_test=False, v_use_mean=not is_training)
+                return loss
             run_validation_inference = self.cfg.trainer.vae_validation_inference
             loss, _data = self.model(
                 batch,
@@ -552,15 +582,17 @@ def main(cfg: DictConfig):
     """Unified training entry point for HoLa-BRep."""
     _configure_num_threads(cfg)
     _validate_evaluation_devices(cfg)
+    accumulation = cfg.trainer.get("accumulate_grad_batches", 1)
     logger.info(
-        "Device setup: devices=%s, batch_size_per_device=%s, global_train_batch_size=%s "
-        "(single node, no gradient accumulation). W&B records metrics; trainer.devices selects GPUs.",
-        cfg.trainer.devices, cfg.trainer.batch_size,
-        cfg.trainer.devices * cfg.trainer.batch_size,
+        "Device setup: devices=%s, batch_size_per_device=%s, accumulate_grad_batches=%s, "
+        "nominal_objects_per_optimizer_step=%s (single node; final partial accumulation may be smaller). "
+        "W&B records metrics; trainer.devices selects GPUs.",
+        cfg.trainer.devices, cfg.trainer.batch_size, accumulation,
+        cfg.trainer.devices * cfg.trainer.batch_size * accumulation,
     )
     # --- Reproducibility ---
     seed_everything(cfg.trainer.seed, workers=True)
-    torch.set_float32_matmul_precision("medium")
+    torch.set_float32_matmul_precision(cfg.trainer.get("float32_matmul_precision", "medium"))
     torch.backends.cudnn.benchmark = bool(cfg.trainer.cudnn_benchmark) and not cfg.trainer.deterministic
 
     # --- Print resolved config ---
@@ -634,6 +666,7 @@ def main(cfg: DictConfig):
         max_steps=cfg.trainer.max_steps,
         max_time=cfg.trainer.get("max_time"),
         precision=cfg.trainer.precision,
+        accumulate_grad_batches=accumulation,
         check_val_every_n_epoch=cfg.trainer.check_val_every_n_epoch,
         num_sanity_val_steps=cfg.trainer.num_sanity_val_steps,
         gradient_clip_algorithm="norm",

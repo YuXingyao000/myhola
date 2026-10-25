@@ -12,6 +12,7 @@ _MODELS = {
     "AutoEncoder_light_exp": ".legacy",
     "AutoEncoder_intersection": ".intersection",
     "AutoEncoder_joint": ".joint",
+    "AutoEncoder_uv_intersection": ".uv_intersection_training",
 }
 
 _COMPATIBILITY = {
