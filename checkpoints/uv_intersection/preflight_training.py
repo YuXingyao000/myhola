@@ -32,17 +32,29 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--source', required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--config', default='train_vae_uv_intersection')
+    parser.add_argument('--largest', action='store_true', help='Use two 30-face validation CADs for the memory check.')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     torch.manual_seed(42)
     torch.set_float32_matmul_precision('highest')
     with initialize_config_dir(config_dir=str(root / 'configs'), version_base=None):
-        cfg = compose(config_name='train_vae_uv_intersection', overrides=[
+        cfg = compose(config_name=args.config, overrides=[
             f'model.init_uv_decoder_checkpoint={args.source}',
             'dataset.raw_data_root=/mnt/d/data/deepcad_v7',
         ])
     dataset = AutoEncoder_joint_dataset('validation', cfg.dataset)
-    batch = to_device(dataset.collate_fn([dataset[0], dataset[1]]))
+    items = [dataset[0], dataset[1]]
+    if args.largest:
+        items = []
+        for index in range(len(dataset)):
+            item = dataset[index]
+            if len(item[1]) == 30:
+                items.append(item)
+            if len(items) == 2:
+                break
+        assert len(items) == 2, 'The memory check requires two actual 30-face CADs.'
+    batch = to_device(dataset.collate_fn(items))
     model = build_model(cfg.model).cuda().eval()
     report = {
         'timestamp_utc': datetime.now(timezone.utc).isoformat(),
@@ -84,12 +96,27 @@ def main():
         print('retained_differences', report['retained_forward_max_abs'], flush=True)
         for name, (old, new) in pairs.items():
             torch.testing.assert_close(old, new, rtol=1e-5 if name == 'encoder' else 1e-6, atol=1e-5 if name == 'encoder' else 1e-7, msg=name)
+        if cfg.model.get('init_uv_attention_from_intersection', False):
+            # Token counts differ from the old task, but each transplanted block
+            # must still be the identical operator for the same query and memory.
+            query = torch.randn(2, 16, cfg.model.uv_intersection.curve_width, device='cuda')
+            memory = torch.randn(2, 512, cfg.model.uv_intersection.curve_width, device='cuda')
+            old_curve = query
+            for layer in reference.decoder.inter.layers:
+                old_curve = layer(old_curve, memory)
+            new_curve = model.decoder.intersection.curve_attention(query, memory)
+            torch.testing.assert_close(old_curve, new_curve, rtol=1e-6, atol=1e-7)
+            report['migrated_curve_attention_max_abs'] = float((old_curve-new_curve).abs().max())
     del reference, checkpoint, pairs, old_encoded, new_encoded, repeat_encoded, old_z, new_z, old_f, new_f, old_face, new_face
     gc.collect()
     torch.cuda.empty_cache()
 
     model.train()
-    assert not model.encoder.training and not model.posterior.training
+    frozen = bool(cfg.model.freeze_encoder)
+    assert model.encoder.training == (not frozen) and model.posterior.training == (not frozen)
+    probes = {name: next(module.parameters()) for name, module in (
+        ('encoder', model.encoder), ('posterior', model.posterior), ('decoder', model.decoder))}
+    before = {name: value.detach().clone() for name, value in probes.items()}
     optimizer = torch.optim.Adam([p for p in model.parameters() if p.requires_grad], lr=2e-5)
     torch.cuda.reset_peak_memory_stats()
     started = time.perf_counter()
@@ -99,17 +126,26 @@ def main():
     losses['total_loss'].backward()
     trainable = [(name, p) for name, p in model.named_parameters() if p.requires_grad]
     assert all(p.grad is not None and torch.isfinite(p.grad).all() for _,p in trainable)
-    assert all(p.grad is None for p in model.encoder.parameters())
-    assert all(p.grad is None for p in model.posterior.parameters())
+    if frozen:
+        assert all(p.grad is None for p in model.encoder.parameters())
+        assert all(p.grad is None for p in model.posterior.parameters())
+    else:
+        assert all(p.requires_grad for p in model.parameters())
+        assert losses['weighted_kl_loss'].requires_grad and losses['weighted_kl_loss'].item() > 0
+        assert all(value.grad.abs().sum().item() > 0 for value in probes.values())
     gradient_norm = torch.nn.utils.clip_grad_norm_([p for _,p in trainable], 1., error_if_nonfinite=True)
     uv_head = model.decoder.intersection.uv_head
     assert sum(p.grad.abs().sum().item() for p in uv_head.parameters()) > 0
     optimizer.step()
     torch.cuda.synchronize()
+    changes = {name: float((value.detach()-before[name]).abs().max()) for name,value in probes.items()}
+    assert changes['decoder'] > 0
+    assert (changes['encoder'] == 0 and changes['posterior'] == 0) if frozen else all(v > 0 for v in changes.values())
     report.update(losses={key: float(value.detach()) for key,value in losses.items()},
                   trainable_parameter_count=sum(p.numel() for _,p in trainable),
                   frozen_parameter_count=sum(p.numel() for p in model.parameters() if not p.requires_grad),
-                  decoder_gradients_all_finite=True, frozen_encoder_gradients_none=True,
+                  all_trainable_gradients_finite=True, freeze_encoder=frozen,
+                  probe_max_update=changes,
                   gradient_norm_before_clip=float(gradient_norm),
                   peak_allocated_GiB=torch.cuda.max_memory_allocated()/2**30,
                   training_step_seconds=time.perf_counter()-started)

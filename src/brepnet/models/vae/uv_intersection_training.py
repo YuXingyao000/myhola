@@ -1,7 +1,7 @@
 """UV VAE 的训练装配、明确权重迁移和双侧几何导出。
 
 新 decoder 的全部网络定义仍在 uv_intersection.py；此文件不增加网络层。
-旧 encoder/posterior 与全局/面 decoder 逐 tensor 保留，曲线读取网络新建。
+旧 encoder/posterior 与全局/面 decoder 逐 tensor 保留，可显式迁移同构曲线 attention。
 双侧轨迹尚不是唯一拓扑边，dual_uv_surface_v1 禁止进入旧 OCC 路径。
 """
 from __future__ import annotations
@@ -93,10 +93,42 @@ def _check_retained_semantics(cfg: Mapping, source_cfg: Mapping) -> None:
     }
     if mismatched := {key: value for key, value in same.items() if value[0] != value[1]}:
         raise ValueError(f"Retained global/face decoder configuration differs: {mismatched}")
+    if cfg.get("init_uv_attention_from_intersection", False):
+        if (source_cfg.get("intersection") or {}).get("kind", "legacy") != "legacy":
+            raise ValueError("UV attention migration requires the legacy intersection backbone.")
+        attention = {
+            "width": (source["intersection_dim"], decoder.curve_width),
+            "layers": (source["intersection_layers"], decoder.curve_layers),
+            "heads": (8, decoder.curve_heads),
+            "ffn": (2048, decoder.curve_ffn),
+            "dropout": (0.1, decoder.dropout),
+        }
+        if mismatched := {key: value for key, value in attention.items() if value[0] != value[1]}:
+            raise ValueError(f"Retained curve attention configuration differs: {mismatched}")
 
 
-def _retained_key(name: str) -> str | None:
+def _curve_attention_key(name: str) -> str | None:
+    """The explicit pre-LN block is the same operator as TransformerDecoderLayer."""
+    prefix = "decoder.intersection.curve_attention.blocks."
+    if not name.startswith(prefix):
+        return None
+    layer, component, suffix = name[len(prefix):].split(".", 2)
+    old_names = {
+        "norm_self": "norm1", "norm_cross": "norm2", "norm_ffn": "norm3",
+        "self_attention": "self_attn", "cross_attention": "multihead_attn",
+    }
+    if component == "ffn":
+        index, suffix = suffix.split(".", 1)
+        component = {"0": "linear1", "3": "linear2"}[index]
+    else:
+        component = old_names[component]
+    return f"decoder.inter.layers.{layer}.{component}.{suffix}"
+
+
+def _retained_key(name: str, include_curve_attention: bool = False) -> str | None:
     """Target key -> old source key; no suffix matching or permissive load."""
+    if include_curve_attention and (source_key := _curve_attention_key(name)) is not None:
+        return source_key
     if name.startswith(("encoder.", "posterior.")):
         return name
     global_names = {"input": "input_projection", "layers": "backbone", "output": "output_projection"}
@@ -140,9 +172,10 @@ def _initialize_retained(model: BaseVAE, cfg: Mapping, path: str) -> dict:
     if source_cfg.get("name") != "AutoEncoder_intersection":
         raise ValueError("UV decoder migration requires an AutoEncoder_intersection checkpoint.")
     _check_retained_semantics(cfg, source_cfg)
+    include_attention = bool(cfg.get("init_uv_attention_from_intersection", False))
     initialized, mapping = model.state_dict(), {}
     for target, fresh in initialized.items():
-        source_key = _retained_key(target)
+        source_key = _retained_key(target, include_attention)
         if source_key is None:
             continue
         value = source[source_key]
@@ -151,7 +184,8 @@ def _initialize_retained(model: BaseVAE, cfg: Mapping, path: str) -> dict:
         initialized[target] = value
         mapping[target] = source_key
     consumed = set(mapping.values())
-    retained_source = {key for key in source if key.startswith(RETAINED_SOURCE_PREFIXES)}
+    retained_prefixes = RETAINED_SOURCE_PREFIXES + (("decoder.inter.layers.",) if include_attention else ())
+    retained_source = {key for key in source if key.startswith(retained_prefixes)}
     if consumed != retained_source:
         raise ValueError(f"Incomplete retained checkpoint mapping: missing={sorted(retained_source-consumed)}, unexpected={sorted(consumed-retained_source)}")
     ignored = sorted(source.keys() - consumed)
@@ -168,6 +202,9 @@ def _initialize_retained(model: BaseVAE, cfg: Mapping, path: str) -> dict:
         "source_checkpoint": str(Path(path).resolve()), "source_sha256": digest,
         "source_global_step": checkpoint.get("global_step"), "source_epoch": checkpoint.get("epoch"),
         "retained_tensor_count": len(mapping), "retained_mapping": mapping,
+        "curve_attention_migrated": include_attention,
+        "retained_parameter_count": sum(p.numel() for name, p in model.named_parameters() if name in mapping),
+        "new_parameter_count": sum(p.numel() for name, p in model.named_parameters() if name not in mapping),
         "new_keys": new_keys, "ignored_source_keys": ignored,
         "deterministic_new_buffers": sorted(key for key in new_keys if key in dict(model.named_buffers())),
         "retained_tensors_bitwise_equal": True,
@@ -207,7 +244,7 @@ def _numpy(values: Mapping[str, Tensor]) -> dict:
 
 
 class AutoEncoder_uv_intersection(BaseVAE):
-    """冻结同源 encoder；只训练可独立阅读的 UVIntersectionDecoder。"""
+    """同源 encoder 与 UV decoder；freeze_encoder 明确选择全量训练或冻结对照。"""
 
     def __init__(self, cfg: Mapping):
         super().__init__()
