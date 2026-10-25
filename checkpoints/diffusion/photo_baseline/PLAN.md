@@ -19,13 +19,13 @@
 训练/验证 epsilon MSE、有限梯度、optimizer step、实际吞吐、GPU 利用率／显存、checkpoint 落盘及 resume。这里不宣称照片重建质量或有效率提升。
 
 ## Decision Rule
-严格旧权重迁移、缓存来源、真实 batch 的 loss/gradient、短 DDP 和 resume 检查通过后启动长跑；确认所有 GPU 活跃、步数推进且 checkpoint 已生成再交付状态。保持全局 batch512，不为显存占用率修改研究预算。保存定期快照并限制数量，避免长跑耗尽磁盘；best/last 保留。
+严格旧权重迁移、缓存来源、真实 batch 的 loss/gradient、短 DDP 的 checkpoint 保存和 resume 检查通过后启动长跑；确认正式训练所有 GPU 活跃、步数持续推进再交付状态，并明确是否已到正式 run 的首次保存点。保持全局 batch512，不为显存占用率修改研究预算。保存定期快照并限制数量，避免长跑耗尽磁盘；best/last 保留。
 
 ## Edge Cases
 缺失／损坏图像、cache 来源不符、split 重叠、重复 ID、非有限值、超过30面、feature维度不符均拒绝；失败列表保留。新 run 不覆盖现有结果，resume 校验缓存指纹、模型结构并恢复 optimizer/step。
 
 ## Validation / Sanity Checks
-FP32 原 diffuse 与复用 denoiser 输出一致；冻结特征离线/在线误差记录；真实照片 batch 反传；所有可训练参数获梯度，DINO冻结；完整缓存检查；8-GPU smoke 与严格 resume；正式 checkpoint 写出，确认缓存输入不是灰模。
+FP32 原 diffuse 与复用 denoiser 输出一致；冻结特征离线/在线误差记录；真实照片 batch 反传；所有可训练参数获梯度，DINO冻结；完整缓存检查；8-GPU checkpoint 写出与严格 resume；正式运行持续推进，确认缓存输入不是灰模。
 
 ## Implementation Constraints
 只修改相关模块，保留已有未提交工作；共享原 LegacySVRDenoiser，网络不增层、不变宽；新模型不加载无用 reference 或训练 VAE/OCC。不做 depth/normal 条件、DPO、几何 loss、SAM裁剪或质量阈值筛选。已有图片质量局限保留在实验解释中。原验证100仅作监测，其他 validation / test 不参与本次参数选择。

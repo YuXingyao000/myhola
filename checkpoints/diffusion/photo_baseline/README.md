@@ -2,6 +2,19 @@
 
 2026-10-25 用户授权长时间训练。这里使用已有 FLUX **合成真实感图片**，不称作实拍数据。当前目标是获得照片域的原版网络基线，之后再讨论条件架构。
 
+## 已启动
+
+正式 run：`/mnt/d/python/checkpoints/diffusion_photo_baseline/20261025T125340Z`，后台 tmux `hola-photo-baseline`。在线曲线：[W&B](https://wandb.ai/whatseven777/hola-brep/runs/ca1061135728)。12:55 UTC 启动核验窗口从 step520 推进至 704，约 7.145 step/s，8 卡平均 GPU utilization 为 99.4%–100%，显存约 7.4–7.5 GiB。这个速度不含定期验证 / 存盘开销；不代表一夜已达到原来的 150 万步。
+
+运行代码 commit `7134f28c`；另外保存 520 个源码 / 配置文件快照与依赖版本，覆盖未提交依赖。正式 run 此时还没有到首次保存点；短跑的 checkpoint / Adam 恢复已通过。之后约每 4,553 steps 的验证会保存 last / best，每 5,000 steps 保存定期快照。
+
+```bash
+# 实时查看（不另起训练）
+tail -f /mnt/d/python/checkpoints/diffusion_photo_baseline/20261025T125340Z/logs/console.log
+```
+
+分支 `codex/photo-rgb-baseline-20261025`。源机提交后的自动同步被目标机“必须已处于同名分支”规则拒绝；保留目标分支，未强推 / 切换远端。当前训练在源机 4090 上运行，不依赖该同步。
+
 ## 固定协议
 
 | 项目 | 本轮设置 |
@@ -30,7 +43,9 @@
 - [CACHE_VALIDATION.json](CACHE_VALIDATION.json)：全部 46,727 条照片 / latent 均成功，未静默删样本；split、文件与原 checkpoint 指纹。
 - [MODEL_PREFLIGHT.json](MODEL_PREFLIGHT.json)：原 FP32 diffuse 与新入口逐位一致；真实 batch64 的 12 次 BF16 更新，有限梯度、DINO 冻结。
 - [DDP_VALIDATION.json](DDP_VALIDATION.json)：8 卡从 step32 恢复到 step36，所有 Adam state 的 step 同步恢复；原 SVR 路径设为不存在仍能恢复。
-- `RUN_STATUS.json`：正式长跑的启动核验快照，完成后写入；其中 step 不是实时值。
+- [RUN_STATUS.json](RUN_STATUS.json)：正式长跑的启动核验快照；其中 step 不是实时值。
+
+相关 dataset / checkpoint / device / preference 单元检查共 27 项通过。正式 W&B 已记录的启动 loss 均有限；这些实现检查不替代下游重建评估。
 
 原 checkpoint SHA256：`9dcafb192529c1ddf65942392c25b409fbbf2bce407805f34a460d0b44bb4839`。缓存父协议绑定原 AE；没有复用名字相似的另一版 VAE cache。缓存分片合并修正为每个 NPZ member 只读取一次；中断后的合并核对原协议和每条 shard identity，不重复编码图片。
 
