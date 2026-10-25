@@ -28,4 +28,16 @@
 
 ## 启动状态
 
-待完成实际源全模型梯度、最大尺寸显存和短多卡检查，再填写正式run信息。
+正式run已启动，7个rank正常推进；2026-10-25 14:46:19 UTC确认151个microbatch、至少18次参数更新，无致命错误。
+
+- 运行目录（142）：`/mnt/d/python/checkpoints/uv_intersection/joint64/20261025T144428Z`。
+- W&B：[uv-direct64-joint-30k](https://wandb.ai/whatseven777/hola-brep/runs/745b0a12df12)。
+- tmux：`uv64-joint-20261025T144428Z`；源代码commit `ca7954d1112187bd11fc89034238718c797ee9ee`，启动时工作树干净。
+- 实际参数：170,699,647全部训练，冻结0；592个源tensor迁移170,229,690个参数，新接口469,957个参数。
+- 本地28项检查通过；两个真实30面validation CAD（00025689/00072409）完成全模型BF16训练步，
+  峰值15.15GiB，encoder/posterior/decoder探针均实际更新，KL参与优化，所有可训练梯度有限。
+- 迁移后的8层attention在相同16-query/512-memory输入下与旧算子逐位一致。
+- 2卡、batch2、累积2的短运行完成2次optimizer更新与validation，checkpoint中617组参数状态全部step2。
+- 正式运行采用7卡×batch2×累积8、30,000步、LR2e-5。每415步完整DDP validation；
+  validation sampler会补齐5个重复样本，最终精确评估用单卡。停止在非完整epoch时不把旧val值当末步实测。
+- 精确命令、环境与初始化映射在run的metadata；紧凑验收记录见 [JOINT_LAUNCH_20261025.json](JOINT_LAUNCH_20261025.json)。

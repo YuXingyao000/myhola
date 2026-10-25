@@ -1,0 +1,134 @@
+{
+  "scope": "Initialization, full-model gradients and training launch verification; not a quality conclusion.",
+  "local_tests_passed": 28,
+  "actual_source_preflight": {
+    "timestamp_utc": "2026-10-25T14:41:47.769600+00:00",
+    "sample_ids": [
+      "00025689",
+      "00072409"
+    ],
+    "face_counts": [
+      30,
+      30
+    ],
+    "source_sha_expected": "4262f4998fe047e19c3ca21a835d74c183b7430f7a656c709ec8ed045262ada4",
+    "retained_forward_max_abs": {
+      "encoder": 5.7220458984375e-06,
+      "posterior_mean": 0.0,
+      "global_attention": 0.0,
+      "face_local": 0.0,
+      "face_bbox": 0.0,
+      "face_xyz": 0.0
+    },
+    "migrated_curve_attention_max_abs": 0.0,
+    "trainable_parameter_count": 170699647,
+    "frozen_parameter_count": 0,
+    "freeze_encoder": false,
+    "probe_max_update": {
+      "encoder": 2.0001083612442017e-05,
+      "posterior": 2.0001083612442017e-05,
+      "decoder": 2.0001083612442017e-05
+    },
+    "all_trainable_gradients_finite": true,
+    "losses": {
+      "face_local": 0.0019250541226938367,
+      "face_center_scale": 0.0015975302085280418,
+      "face_xyz": 0.001826945343054831,
+      "edge_existence": 0.6653753519058228,
+      "curve_xyz": 0.09103771299123764,
+      "curve_incidence": 0.16056355834007263,
+      "kl_loss": 0.0018852208741009235,
+      "weighted_kl_loss": 0.0018852208741009235,
+      "total_loss": 0.18086636066436768
+    },
+    "gradient_norm_before_clip": 2.372791051864624,
+    "peak_allocated_GiB": 15.146338939666748,
+    "training_step_seconds": 2.422380822710693,
+    "passed": true
+  },
+  "migration": {
+    "source_checkpoint": "/mnt/d/python/checkpoints/latent_expansion/d64_no_edge_feature/20261023T034042Z/weights/last.ckpt",
+    "source_sha256": "4262f4998fe047e19c3ca21a835d74c183b7430f7a656c709ec8ed045262ada4",
+    "source_global_step": 30000,
+    "source_epoch": 82,
+    "retained_tensor_count": 592,
+    "retained_parameter_count": 170229690,
+    "new_parameter_count": 469957,
+    "curve_attention_migrated": true,
+    "retained_tensors_bitwise_equal": true
+  },
+  "ddp_preflight": {
+    "devices": 2,
+    "batch_size_per_device": 2,
+    "accumulate_grad_batches": 2,
+    "global_step": 2,
+    "adam_parameter_states": 617,
+    "all_optimizer_states_at_step_2": true,
+    "checkpoint": "/mnt/d/python/checkpoints/uv_intersection/preflight_20261025/joint_ddp_v1/weights/last.ckpt"
+  },
+  "formal_training": {
+    "timestamp_utc": "20261025T144428Z",
+    "code_commit": "ca7954d1112187bd11fc89034238718c797ee9ee",
+    "cwd": "/mnt/d/python_uv_train",
+    "command": [
+      "/mnt/d/anaconda3/envs/torch/bin/python",
+      "-m",
+      "src.brepnet.train",
+      "--config-name",
+      "train_vae_uv_intersection_joint",
+      "model.init_uv_decoder_checkpoint=/mnt/d/python/checkpoints/latent_expansion/d64_no_edge_feature/20261023T034042Z/weights/last.ckpt",
+      "dataset.raw_data_root=/mnt/d/data/deepcad_v7",
+      "trainer.output_dir=/mnt/d/python/checkpoints",
+      "trainer.run_dir=/mnt/d/python/checkpoints/uv_intersection/joint64/20261025T144428Z",
+      "trainer.devices=7",
+      "trainer.batch_size=2",
+      "trainer.accumulate_grad_batches=8",
+      "trainer.max_steps=30000",
+      "trainer.num_workers=2",
+      "trainer.num_threads=2",
+      "trainer.log_every_n_steps=10",
+      "trainer.seed=42",
+      "trainer.wandb.name=uv-direct64-joint-30k-20261025T144428Z"
+    ],
+    "environment": {
+      "CUDA_VISIBLE_DEVICES": "1,2,3,4,5,6,7",
+      "OMP_NUM_THREADS": "2",
+      "MKL_NUM_THREADS": "2",
+      "PYTHONUNBUFFERED": "1",
+      "HYDRA_FULL_ERROR": "1",
+      "PYTHONPATH": "/mnt/d/python_uv_train"
+    },
+    "tmux_session": "uv64-joint-20261025T144428Z",
+    "run_dir": "/mnt/d/python/checkpoints/uv_intersection/joint64/20261025T144428Z",
+    "source_checkpoint": "/mnt/d/python/checkpoints/latent_expansion/d64_no_edge_feature/20261023T034042Z/weights/last.ckpt",
+    "physical_gpus": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "freeze_encoder": false,
+    "trainable_parameters": 170699647,
+    "frozen_parameters": 0,
+    "migrated_parameters": 170229690,
+    "new_parameters": 469957,
+    "nominal_cad_per_optimizer_update": 112,
+    "training_budget_optimizer_steps": 30000,
+    "preflight_dir": "/mnt/d/python/checkpoints/uv_intersection/preflight_20261025"
+  },
+  "status": "running",
+  "startup_health": {
+    "timestamp_utc": "2026-10-25T14:46:19.346496+00:00",
+    "microbatches_completed": 151,
+    "optimizer_updates_lower_bound": 18,
+    "latest_reported_loss": "0.194",
+    "all_7_ranks_registered": true,
+    "zero_non_trainable_parameters_reported": true,
+    "fatal_error_found": false,
+    "tmux_active": true
+  },
+  "wandb_url": "https://wandb.ai/whatseven777/hola-brep/runs/745b0a12df12"
+}
