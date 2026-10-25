@@ -106,7 +106,7 @@
     "preflight_dir": "/mnt/d/python/checkpoints/uv_intersection/preflight_20261025"
   },
   "wandb_url": "https://wandb.ai/whatseven777/hola-brep/runs/7052b79765ef",
-  "status": "launched; 7 ranks registered; optimizer updates started",
+  "status": "paused_by_user",
   "startup_health": {
     "timestamp_utc": "2026-10-25T11:10:02.352099+00:00",
     "microbatches_completed": 172,
@@ -115,5 +115,71 @@
     "all_7_ranks_registered": true,
     "fatal_error_found": false,
     "tmux_active": true
+  },
+  "pause": {
+    "requested_at_utc": "2026-10-25T14:31:09.157196+00:00",
+    "reason": "User requested pause; next main experiment must train encoder, posterior and decoder jointly.",
+    "signal": "SIGTERM via Lightning parent",
+    "parent_pid": 1366283,
+    "progress_observed": [
+      "7",
+      "2981"
+    ],
+    "status": "paused_by_user",
+    "latest_existing_checkpoint": "/mnt/d/python/checkpoints/uv_intersection/frozen64/20261025T110811Z/weights/last.ckpt",
+    "new_training_started": false,
+    "preserved_checkpoint": {
+      "global_step": 2905,
+      "epoch": 6,
+      "optimizer_state_count": 374,
+      "freeze_encoder": true
+    },
+    "graceful_sigint_remaining_ranks": [
+      1366283,
+      1366665,
+      1366666,
+      1366667,
+      1366668,
+      1366669,
+      1366670
+    ],
+    "forced_cleanup_reason": "Distributed processes did not exit after SIGTERM and SIGINT; existing checkpoint verified before targeted cleanup.",
+    "forced_cleanup_pids": [
+      1366283,
+      1366665,
+      1366666,
+      1366667,
+      1366668,
+      1366669,
+      1366670,
+      1366819,
+      1366820,
+      1366821,
+      1366822,
+      1366823,
+      1366830,
+      1366833,
+      1366834,
+      1366837,
+      1366847,
+      1366850,
+      1366866,
+      1366898,
+      1366899,
+      1366900,
+      1366901,
+      1366903,
+      1366904,
+      1366912,
+      1366913,
+      1366914,
+      1366915,
+      1366934,
+      1366935
+    ],
+    "verified_at_utc": "2026-10-25T14:33:20.013234+00:00",
+    "remaining_training_pids": [],
+    "gpu_resources_released": true,
+    "checkpoint_at_pause_instant_saved": false
   }
 }
