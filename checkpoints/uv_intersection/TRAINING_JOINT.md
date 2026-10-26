@@ -41,3 +41,11 @@
 - 正式运行采用7卡×batch2×累积8、30,000步、LR2e-5。每415步完整DDP validation；
   validation sampler会补齐5个重复样本，最终精确评估用单卡。停止在非完整epoch时不把旧val值当末步实测。
 - 精确命令、环境与初始化映射在run的metadata；紧凑验收记录见 [JOINT_LAUNCH_20261025.json](JOINT_LAUNCH_20261025.json)。
+
+## 中途观察（2026-10-26，北京时间）
+
+读取W&B记录时global_step约10329/30000。validation记录从step414到9959：
+face_xyz L1 0.0022325→0.0019342；curve_xyz MSE 0.069607→0.00376686；
+curve_incidence MSE 0.111281→0.00595031。最近一次曲线项小幅回升，整体仍下降。
+两侧对应采样点的RMS间距按日志口径为sqrt(3×MSE)≈0.1336（数据坐标），并非最近曲线距离或毫米值。
+这是中途loss观察，不是几何/OCC验收；保持现有训练不变。原始validation历史见 [JOINT_PROGRESS_20261026.json](JOINT_PROGRESS_20261026.json)。
