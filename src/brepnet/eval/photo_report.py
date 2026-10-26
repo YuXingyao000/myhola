@@ -22,8 +22,8 @@ METRICS = ("face_cd_sq", "edge_cd_sq", "face_f1")
 def load_rows(run: Path):
     protocol = read_json(run / "metadata/protocol.json")
     ids = protocol["identities"]
-    if len(ids) != 100 or len(set(ids)) != 100:
-        raise ValueError("Require exactly the frozen validation100")
+    if not ids or len(set(ids)) != len(ids):
+        raise ValueError("Require a nonempty, unique frozen validation population")
     rows = {method: [] for method in METHODS}
     for mid in ids:
         seeds = []
@@ -33,6 +33,11 @@ def load_rows(run: Path):
                 raise ValueError(f"Unfinished inference: {method}/{mid}")
             if infer["input_sha256"] != protocol["input_sha256"][mid]:
                 raise ValueError("Unpaired inputs")
+            expected = (protocol["reuse_fingerprint"] if mid in protocol.get("reused_ids", [])
+                        else protocol["fingerprint"])
+            if (infer.get("protocol_fingerprint") != expected or
+                    infer.get("method") != method or infer.get("image_id") != mid):
+                raise ValueError(f"Inference provenance differs: {method}/{mid}")
             seeds.append(infer["seed"])
             result = read_json(run / "evaluations" / method / mid / "metrics.json") if infer["status"] == "ok" else {}
             if infer["status"] == "ok" and result.get("status") not in EVALUATION_TERMINAL:
@@ -60,20 +65,33 @@ def load_rows(run: Path):
 
 
 def paired_delta(left, right, key):
+    if len(left) != len(right):
+        raise ValueError("Paired populations differ in size")
+    if any(a.get("image_id") != b.get("image_id") for a, b in zip(left, right)):
+        raise ValueError("Paired CAD order differs")
     paired = [(a[key], b[key]) for a,b in zip(left, right)
               if finite_number(a.get(key)) and finite_number(b.get(key))]
     if not paired:
         return {"n": 0, "mean_delta": None, "ci95": None}
     difference = np.diff(np.array(paired), axis=1)[:,0]
     rng = np.random.default_rng(42)
-    means = difference[rng.integers(len(difference), size=(10000, len(difference)))].mean(1)
+    # Bound memory while preserving the same seeded bootstrap draw sequence.
+    means = np.empty(10000)
+    for start in range(0, 10000, 100):
+        indices = rng.integers(len(difference), size=(100, len(difference)))
+        means[start:start+100] = difference[indices].mean(1)
     return {"n": len(paired), "mean_delta": float(difference.mean()),
             "ci95": np.quantile(means, [.025,.975]).tolist(), "bootstrap_repeats": 10000}
 
 
 def summarize(rows):
-    result = {"intended_per_method": 100, "methods": {}, "pairwise": {},
-              "scope": "fixed validation100; best checkpoint selected on this same validation set",
+    ids = [r["image_id"] for r in rows[METHODS[0]]]
+    if not ids or len(ids) != len(set(ids)):
+        raise ValueError("Require nonempty unique CAD IDs")
+    if any([r["image_id"] for r in rows[m]] != ids for m in METHODS):
+        raise ValueError("Methods must cover the same ordered CAD population")
+    result = {"intended_per_method": len(ids), "methods": {}, "pairwise": {},
+              "scope": "development validation; step4553 selected by loss on the original validation100 only",
               "cd": "sum of two directed mean squared nearest distances; no sqrt or registration"}
     keys = [f"{stage}_{k}" for stage in ("raw", "post") for k in METRICS] + ["raw_face_count_abs_error"]
     common_post = set.intersection(*[{r["image_id"] for r in rows[m] if r["post_complete"]} for m in METHODS])
@@ -117,9 +135,10 @@ def result_table(run: Path, summary):
     metrics=summary['methods']
     lines=[]
     def add(title, values): lines.append([title,*values])
-    for name,key in (("生成成功 / 100","generated"),("有效 solid / 100 ↑","valid_solids"),
-                     ("产出 STEP / 100","step_outputs"),("超时 / 100","timeouts")):
-        add(name,[str(metrics[m][key])+" / 100" for m in METHODS])
+    total = summary["intended_per_method"]
+    for name,key in (("生成成功","generated"),("有效 solid ↑","valid_solids"),
+                     ("产出 STEP","step_outputs"),("超时","timeouts")):
+        add(name,[f"{metrics[m][key]} / {total}  ({metrics[m][key]/total:.1%})" for m in METHODS])
     for title,key,scale in (("原始面 CD² × 1000 ↓","raw_face_cd_sq",1000),
                             ("原始边 CD² × 1000 ↓","raw_edge_cd_sq",1000),
                             ("原始面 F1 ↑","raw_face_f1",100),
@@ -134,7 +153,7 @@ def result_table(run: Path, summary):
         f"{metrics[m]['post_on_all_three_common']['face_cd_sq']['mean']*1000:.3f}  (n={len(summary['all_three_common_post_ids'])})"
         if summary['all_three_common_post_ids'] else '—  (n=0)' for m in METHODS])
     fig,ax=plt.subplots(figsize=(15,8.8));ax.axis('off')
-    fig.text(.045,.95,'照片条件重建：固定 100 个验证对象',fontsize=23,weight='bold',color='#142b46')
+    fig.text(.045,.95,f'照片条件重建：固定 {total:,} 个验证对象',fontsize=23,weight='bold',color='#142b46')
     fig.text(.045,.90,'相同照片 · 相同 seed · 每图 1 个候选 · 原版 1000-step DDPM · 同一 VAE / 后处理',fontsize=12,color='#536578')
     table=ax.table(cellText=lines,colLabels=['指标',*LABELS],cellLoc='center',
                    colWidths=[.34,.22,.22,.22],bbox=[0,.12,1,.78])
@@ -145,8 +164,8 @@ def result_table(run: Path, summary):
         else:
             cell.set_facecolor('#ffffff' if row%2 else '#edf2f7')
             if col==0:cell.set_text_props(ha='left',color='#24384d')
-    fig.text(.045,.075,'失败与超时保留在 100 的分母；几何均值旁标注实际测量 n。CD² 为双向平方距离之和。',fontsize=10,color='#536578')
-    fig.text(.045,.045,'4,553 步按同一验证集 loss 选出，存在选模偏差；这是合成照片 validation，不是独立 test 或实拍评价。',fontsize=10,color='#536578')
+    fig.text(.045,.075,f'失败与超时保留在 {total:,} 的分母；几何均值旁标注实际测量 n。CD² 为双向平方距离之和。',fontsize=10,color='#536578')
+    fig.text(.045,.045,'4,553 步只按原 100 图的验证 loss 选出；这是合成照片 validation，不是独立 test 或实拍评价。',fontsize=10,color='#536578')
     fig.savefig(run/'comparison.png',dpi=180,bbox_inches='tight');plt.close(fig)
     return lines
 
@@ -200,6 +219,13 @@ def main():
     args=parser.parse_args();run=Path(args.run_dir)
     protocol,rows=load_rows(run)
     summary=summarize(rows)
+    if protocol.get("reused_ids"):
+        original = set(protocol["reused_ids"])
+        summary["subsets"] = {
+            name: summarize({m: [r for r in rows[m] if (r["image_id"] in original) == included]
+                             for m in METHODS})
+            for name, included in (("original_monitoring100", True), ("additional_validation", False))
+        }
     atomic_json(run/'summary.json',summary)
     with (run/'per_object.csv').open('w') as handle:
         writer=csv.DictWriter(handle,fieldnames=list(rows[METHODS[0]][0]),lineterminator='\n');writer.writeheader()
@@ -207,12 +233,24 @@ def main():
     lines=result_table(run,summary)
     training=training_curve(run,Path(args.training_run))
     markdown=['# 照片 baseline 固定验证结果','',
-              '固定 validation100；三组均输入相同合成照片，K=1、相同 seed。原始 SVR 行是原权重直接接收照片，不能与此前灰模成绩直接混合。','',
+              f'固定 validation {summary["intended_per_method"]} 件；三组均输入相同合成照片，K=1、相同 seed。原始 SVR 行是原权重直接接收照片，不能与此前灰模成绩直接混合。','',
               '| 指标 | 原始 SVR | 照片4553步（最低val loss） | 照片310000步 |','|---|---:|---:|---:|']
     markdown.extend('| '+' | '.join(row)+' |' for row in lines)
-    markdown.extend(['','4,553步使用同一验证集 loss 选模，存在选择偏差；这不是保留 test。CD为双向均值平方距离之和，不开方；face F1阈值0.1。后处理为 recover_v1，每件整体180秒、200次优化；有效STEP几何重复采样3次。',
+    markdown.extend(['','4,553步只使用原100件的验证 loss 选模；这不是保留 test。CD为双向均值平方距离之和，不开方；face F1阈值0.1。后处理为 recover_v1，每件整体180秒、200次优化；有效STEP几何重复采样3次。',
                      '',f"训练前100个日志点均值 {training['first_100_train_mean']:.6f}，后100个 {training['last_100_train_mean']:.6f}；末次验证 {training['last_validation'][1]:.6f}。loss不能直接替代下游质量。",'',
                      '逐件状态见 per_object.csv；配对差值及95% bootstrap区间见 summary.json，缺失几何未补零。协议及源代码摘要见 metadata/protocol.json。'])
+    if "subsets" in summary:
+        markdown.extend(['', '## 原100件与新增验证对象', '',
+                         '| 子集 | 方法 | 有效 solid | 原始面 CD² × 1000 | 原始面 F1 |',
+                         '|---|---|---:|---:|---:|'])
+        for name, subset in summary["subsets"].items():
+            for method in METHODS:
+                values = subset["methods"][method]
+                cd = values["metrics"]["raw_face_cd_sq"]["mean"]
+                f1 = values["metrics"]["raw_face_f1"]["mean"]
+                cd_text = f'{cd*1000:.3f}' if cd is not None else '缺失'
+                f1_text = f'{f1:.2%}' if f1 is not None else '缺失'
+                markdown.append(f'| {name} | {method} | {values["valid_solids"]}/{subset["intended_per_method"]} | {cd_text} | {f1_text} |')
     (run/'README.md').write_text('\n'.join(markdown)+'\n')
     print(json.dumps({'methods':summary['methods'],'training':training},indent=2))
 

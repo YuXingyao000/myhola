@@ -4,6 +4,8 @@
 
 2026-10-26 用户要求停训并评价：训练已停止，保留最近完整 step310000 和最低监测 validation loss 的 step4553。固定照片 validation100 的三组对比、停止记录与图表见 [evaluation_20261026](evaluation_20261026/README.md)。下面“已启动”保留最初启动时的历史记录。
 
+同日按用户要求扩展至完整3,505件validation。冻结协议与可复现命令见 [全量计划](evaluation_full_20261026/PLAN.md) 和 [启动脚本](evaluation_full_20261026/RUN_EVALUATION.sh)。三组权重、输入、采样和后处理参数保持一致；原300条结果通过摘要校验后引用，补跑新增10,215次重建。完成状态以全量目录的 `status.json` 和评估报告为准，不能用100件的结果替代全量结果。
+
 ## 已启动
 
 正式 run：`/mnt/d/python/checkpoints/diffusion_photo_baseline/20261025T125340Z`，后台 tmux `hola-photo-baseline`。在线曲线：[W&B](https://wandb.ai/whatseven777/hola-brep/runs/ca1061135728)。12:55 UTC 启动核验窗口从 step520 推进至 704，约 7.145 step/s，8 卡平均 GPU utilization 为 99.4%–100%，显存约 7.4–7.5 GiB。这个速度不含定期验证 / 存盘开销；不代表一夜已达到原来的 150 万步。
