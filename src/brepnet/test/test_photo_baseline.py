@@ -82,3 +82,22 @@ def test_flux_only_and_source_binding(tmp_path):
     (latent / "source.json").write_text(json.dumps(source))
     with pytest.raises(ValueError, match="provenance"):
         dataset[0]
+
+
+def test_photo_mapping_preserves_ae_and_rejects_changed_frozen_encoder():
+    from types import SimpleNamespace
+    from src.brepnet.diffusion.photo_baseline import apply_photo_state
+    names = ("p_embed", "time_embed", "net1", "fc_out", "img_fc")
+    legacy = SimpleNamespace(**{name: torch.nn.Linear(2, 2) for name in (*names, "img_model", "ae_model")})
+    ae_before = {k: v.clone() for k, v in legacy.ae_model.state_dict().items()}
+    state = {f"model.policy.{name}.{key}": torch.full_like(value, 7.)
+             for name in names for key, value in getattr(legacy, name).state_dict().items()}
+    state.update({"model.image_encoder."+k: v.clone() for k,v in legacy.img_model.state_dict().items()})
+    apply_photo_state(legacy, state)
+    assert all(torch.equal(v, ae_before[k]) for k,v in legacy.ae_model.state_dict().items())
+    assert torch.equal(legacy.fc_out.weight, torch.full((2,2), 7.))
+    with pytest.raises(ValueError, match="state keys"):
+        apply_photo_state(legacy, {k:v for k,v in state.items() if k != "model.policy.fc_out.bias"})
+    state["model.image_encoder.weight"] += 1.
+    with pytest.raises(ValueError, match="Frozen photo DINO"):
+        apply_photo_state(legacy, state)

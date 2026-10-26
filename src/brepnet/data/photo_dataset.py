@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
@@ -13,12 +12,6 @@ from torch.utils.data import Dataset, default_collate
 from torchvision import transforms
 
 from .preference_dataset import random_duplicate_padding, sha256_file
-
-
-@lru_cache(maxsize=32)
-def _cached_file_hash(path: str, size: int, mtime_ns: int) -> str:
-    """每进程只核对一次未变化的大数组；恢复进程重新读取验证。"""
-    return sha256_file(Path(path))
 
 
 def photo_transform():
@@ -44,8 +37,8 @@ def photo_cache_provenance(config: dict) -> dict:
     for info in manifest["splits"].values():
         for field in ("features", "means", "counts"):
             artifact = path.parent / info["files"][field]
-            stat = artifact.stat()
-            if _cached_file_hash(str(artifact), stat.st_size, stat.st_mtime_ns) != info["sha256"][field]:
+            # 文件系统时间戳可能合并快速写入；每次启动按实际内容核验。
+            if sha256_file(artifact) != info["sha256"][field]:
                 raise ValueError(f"Photo cache content changed: {artifact}")
     return {
         "manifest": str(path), "manifest_sha256": hashlib.sha256(payload).hexdigest(),

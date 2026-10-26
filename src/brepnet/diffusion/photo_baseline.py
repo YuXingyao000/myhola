@@ -9,6 +9,50 @@ from .legacy import build_legacy_svr, load_legacy_svr
 from .preference import LegacySVRDenoiser, per_sample_mse
 
 
+def apply_photo_state(legacy: nn.Module, state: dict[str, Tensor]) -> None:
+    """严格映射训练 wrapper 的全部状态；原 AE 不在映射中，DINO 必须未变。"""
+    modules = {f"model.policy.{name}.": getattr(legacy, name)
+               for name in ("p_embed", "time_embed", "net1", "fc_out", "img_fc")}
+    modules["model.image_encoder."] = legacy.img_model
+    expected = {prefix + key: value for prefix, module in modules.items()
+                for key, value in module.state_dict().items()}
+    if state.keys() != expected.keys():
+        raise ValueError("Photo checkpoint state keys differ from the complete original architecture")
+    for key, value in state.items():
+        reference = expected[key]
+        if value.shape != reference.shape or value.dtype != reference.dtype or not torch.isfinite(value).all():
+            raise ValueError(f"Photo checkpoint shape/dtype/value mismatch: {key}")
+        if key.startswith("model.image_encoder.") and not torch.equal(value, reference):
+            raise ValueError("Frozen photo DINO differs from the original SVR DINO")
+    for prefix, module in modules.items():
+        if prefix.startswith("model.policy."):
+            module.load_state_dict({key[len(prefix):]: value for key, value in state.items()
+                                    if key.startswith(prefix)}, strict=True)
+
+
+def load_photo_svr(original_checkpoint, photo_checkpoint, *, device="cpu", source_cache=None):
+    """照片去噪器 + 严格保留原 AE，供既有 FP32 sampler / decoder 评价。"""
+    from pathlib import Path
+    from src.brepnet.data.preference_dataset import sha256_file
+
+    saved = torch.load(photo_checkpoint, map_location="cpu", mmap=True, weights_only=False)
+    config = saved["hyper_parameters"]
+    if config["model"]["name"] != "PhotoBaselineDiffusion":
+        raise ValueError("Expected a PhotoBaselineDiffusion checkpoint")
+    original_hash = sha256_file(Path(original_checkpoint))
+    if config["dataset"]["provenance"]["source_checkpoint_sha256"] != original_hash:
+        raise ValueError("Photo training used a different original DINO / AE")
+    legacy, provenance = load_legacy_svr(original_checkpoint, source_cache=source_cache)
+    if config["model"]["legacy_model_config"] != provenance["model_config"]:
+        raise ValueError("Photo and original architecture configurations differ")
+    apply_photo_state(legacy, saved["state_dict"])
+    provenance["photo"] = {"checkpoint": str(Path(photo_checkpoint).resolve()),
+                            "sha256": sha256_file(Path(photo_checkpoint)),
+                            "global_step": saved["global_step"], "strict_load": True,
+                            "dino_equal_original": True, "original_ae_retained": True}
+    return legacy.to(device).eval(), provenance
+
+
 class PhotoBaselineDiffusion(nn.Module):
     def __init__(self, cfg: dict):
         super().__init__()

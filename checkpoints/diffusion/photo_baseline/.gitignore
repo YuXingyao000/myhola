@@ -1,3 +1,8 @@
 # Encoded data and diagnostic runs are local; compact reports live beside this file.
 /cache_v1/
 /ddp_check_*/
+# Per-object native outputs remain local; preserve compact tables and reports.
+/evaluation_*/evaluations/
+/evaluation_*/gt_metric_samples/
+/evaluation_*/preflight/
+/evaluation_*/training_history.csv

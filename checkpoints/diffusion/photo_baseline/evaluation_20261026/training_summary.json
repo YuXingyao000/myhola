@@ -1,0 +1,18 @@
+{
+  "train_points": 6250,
+  "validation_points": 68,
+  "first_100_train_mean": 0.03065292991697788,
+  "last_100_train_mean": 0.0212704386562109,
+  "first_validation": [
+    4552.0,
+    0.02604089491069317
+  ],
+  "last_validation": [
+    309603.0,
+    0.07256632298231125
+  ],
+  "minimum_validation": [
+    4552.0,
+    0.02604089491069317
+  ]
+}

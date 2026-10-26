@@ -1,0 +1,15 @@
+{
+  "requested_at_utc": "2026-10-26T02:38:39.650794+00:00",
+  "run_dir": "/mnt/d/python/checkpoints/diffusion_photo_baseline/20261025T125340Z",
+  "last_observed_epoch": 68,
+  "last_observed_step": 312535,
+  "last_complete_checkpoint_step": 310000,
+  "latest_snapshot": "/mnt/d/python/checkpoints/diffusion/photo_baseline/evaluation_20261026/weights/photo_latest.ckpt",
+  "validation_best_snapshot": "/mnt/d/python/checkpoints/diffusion/photo_baseline/evaluation_20261026/weights/photo_val_best.ckpt",
+  "stop_method": "SIGINT to verified Lightning parent; no write-in-progress checkpoint used",
+  "training_stopped": true,
+  "training_gpus_released": true,
+  "training_exit_code": 1,
+  "exit_reason": "User-requested KeyboardInterrupt; prior complete checkpoints preserved",
+  "unsaved_steps_at_stop_observation": 2535
+}
