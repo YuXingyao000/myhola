@@ -37,5 +37,43 @@
   "train_validation_manifests_disjoint": true,
   "main_training_started": false,
   "source_collection_revision": "optional geometry helper is snapshotted when present; metadata-only runtime revision audited",
-  "revision_resume_verified": true
+  "revision_resume_verified": true,
+  "GT_mean_comparison": [
+    {
+      "image_id": "00000061",
+      "num_faces": 7,
+      "bitwise_equal": false,
+      "max_abs_diff": 1.1026859283447266e-06,
+      "mean_abs_diff": 1.0901879221592026e-07
+    },
+    {
+      "image_id": "00000070",
+      "num_faces": 14,
+      "bitwise_equal": false,
+      "max_abs_diff": 1.5795230865478516e-06,
+      "mean_abs_diff": 1.1853470738287797e-07
+    }
+  ],
+  "GT_mean_note": "Same strictly retained original AE; observed small numerical differences, not bitwise equivalence. GT encoding cache is not used for candidate sampling or pair labels. Future DDPM control and DPO must share one fixed GT cache.",
+  "formal_startup_c00_equivalence": {
+    "ids": [
+      "00000178",
+      "00000894",
+      "00003202",
+      "00003406",
+      "00003999",
+      "00005825",
+      "00006067",
+      "00006608",
+      "00007585",
+      "00007655",
+      "00008165",
+      "00009919",
+      "00010156",
+      "00010531",
+      "00010555",
+      "00010704"
+    ],
+    "latent_and_raw_bitwise_equal_to_baseline": true
+  }
 }

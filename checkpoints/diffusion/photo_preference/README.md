@@ -20,6 +20,8 @@
 
 本轮正式run：`/mnt/d/python/checkpoints/diffusion/photo_preference_data/20261026T055801Z`。启动后实时状态在run下 `status.json`，每阶段结束保存 `metadata/{validation,train}_summary.json`；全部完成后顶层status为complete且两份正式manifest均发布。运行实际启动核验另记[LAUNCH.json](LAUNCH.json)。
 
+已于2026-10-26 06:01 UTC（北京时间14:01）在后台tmux `hola-photo-preference` 启动；代码提交334ba0a4，分支 `codex/photo-preference-20261026`。06:06 UTC核验时，validation已完成700个候选评价、79张图的全部K8、74对偏好；其中17条后处理计量错误仍保留，没有被当成未知负例或重新采样。最近125.44秒完成336个候选，实测2.679候选/秒，剩余约41.5小时仅为短窗口外推；该快照不代替实时status或最终完成结论。8卡快照均为100%利用率、显存约6.5GiB。
+
 新运行命令（不要对正在运行的任务重复执行）：
 
 ```bash
@@ -37,6 +39,10 @@ bash /mnt/d/python/checkpoints/diffusion/photo_preference/RUN_GENERATION.sh \
 
 8张4090，每卡2个独立worker，CPU32、有界队列64，FP32/batch1、原生DDPM1000。两个同卡worker的真实完整采样已经对照已完成baseline c00：两件latent及全部raw字段逐位相同。实际32个候选的生成→OCC→选对完成，恢复后394个候选文件摘要和偏好标签不变。这些只验证实现，不是照片DPO效果证据。
 
+正式启动核对16个worker均严格加载照片310000步；首批16张validation的c00 latent及全部raw字段与既有baseline逐位相同，8卡利用率99%–100%。40项相关单测通过。
+
+另检查两件重新编码的GT mean与照片训练缓存，最大绝对差分别1.10e-6和1.58e-6，未逐位相同；原因未作专项定位，不能宣称缓存逐位复现。二者使用同一严格保留的原AE，该GT编码缓存不参与候选生成或偏好标签。后续普通继续训练与DPO对照应共享同一份固定GT cache，避免再引入数据变量；具体差值记于VALIDATION.json。
+
 已有同结构灰模双worker约2.76候选/秒的八卡短窗口仅作预算参考，40.1万候选约40小时；实际全量耗时受CPU后处理、I/O及零件复杂度影响，预计约两天量级。正式启动后会记录本轮实测速率。
 
 本次不自动启动DPO训练。已有PreferenceDataset/PreferenceDiffusion训练入口仍需下一步显式适配照片数据协议与照片policy/reference初始化，不能直接套用灰模训练配置。
@@ -46,3 +52,5 @@ bash /mnt/d/python/checkpoints/diffusion/photo_preference/RUN_GENERATION.sh \
 本轮改动放在 `data/preference_source.py`（显式条件/模型来源）、`preference_generate.py`（共享调度、输入错误保留分母）、`preference_io.py`（协议与源快照），照片模型加载只增加显式DINO repo参数。原模型结构、采样器、偏好阈值、VAE和OCC算法保持既有实现。
 
 旧run保留不变；修改后的源码不能伪装成旧run的原始源码，严格resume会检测版本差异。新run记录完整源快照和Git dirty diff，覆盖工作区现有未提交依赖；仅提交本轮改动，不纳入其他DPO/几何研究工作。运行数据、checkpoint与大量候选均不提交Git。
+
+源机提交后的自动同步仍因目标服务器未处于同名分支而被拒绝，保留目标分支未强推。本轮在源机4090运行，不依赖同步成功。
