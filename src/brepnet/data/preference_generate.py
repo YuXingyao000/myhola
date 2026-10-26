@@ -1,4 +1,4 @@
-"""原 HoLa SVR 偏好数据：GPU 采样 → 有界 CPU 后处理队列 → 同图选对。
+"""HoLa 灰模/照片偏好数据：GPU 采样 → 有界 CPU 后处理队列 → 同图选对。
 
 运行示例见 configs/datagen/preference.yaml；正式训练由独立入口启动。
 """
@@ -20,6 +20,7 @@ import traceback
 
 from src.brepnet.data.preference_io import append_json, prepare_run
 from src.brepnet.data.preference_selection import SelectionConfig, select_pair_with_report
+from src.brepnet.data.preference_source import image_path, is_photo, load_condition, load_model, retain_native_validity
 from tools.vae_compare_post import atomic_json, read_json, sha256_file
 
 
@@ -42,10 +43,82 @@ def _unknown(image_id: str, candidate_id: str, status: str, error: str) -> dict:
             "validity": "unknown", "status": status, "error": error, "raw": {}, "post": []}
 
 
-def _check_files(directory: Path, hashes: dict) -> None:
+def _check_files(directory: Path, hashes: dict, *, allow_missing: bool = False) -> None:
     for name, digest in hashes.items():
+        if allow_missing and digest is None:
+            if (directory / name).exists():
+                raise ValueError(f"Previously missing input changed: {directory / name}")
+            continue
         if sha256_file(directory / name) != digest:
             raise ValueError(f"Generated artifact changed: {directory / name}")
+
+
+def prepare_image(model, config: dict, run: Path, split: str, image_id: str):
+    """Validate saved inputs, load the selected RGB, and encode the same-AE GT."""
+    import numpy as np
+    from src.brepnet.diffusion.legacy import encode_original_gt
+
+    root = run / "candidates" / split / image_id
+    root.mkdir(parents=True, exist_ok=True)
+    gt = Path(config["raw_data_root"]) / image_id
+    paths = (image_path(config, image_id), gt / "data.npz", gt / "normalized_shape.step")
+    sources = {str(path): sha256_file(path) if path.is_file() else None for path in paths}
+    previous = read_json(root / "sources.json")
+    if previous and previous != sources:
+        raise ValueError(f"Input assets changed: {image_id}")
+    atomic_json(root / "sources.json", sources)
+    if (root / "input_failure.json").exists():
+        return None  # Preserve the first terminal input failure, without retrying.
+
+    cache = run / "gt_cache" / f"{image_id}_0"
+    record = read_json(cache / "source.json")
+    if record:
+        if record["gt_npz_sha256"] != sources[str(gt / "data.npz")]:
+            raise ValueError(f"GT cache input changed: {image_id}")
+        _check_files(cache, record["output_sha256"])
+    try:
+        if any(value is None for value in sources.values()):
+            raise FileNotFoundError(f"Missing input assets: {[name for name, value in sources.items() if value is None]}")
+        image = load_condition(config, image_id)[None]
+        if not record:
+            stats = encode_original_gt(model, gt / "data.npz")
+            cache.mkdir(parents=True, exist_ok=True)
+            temporary, target = cache / "features.tmp", cache / "features.npy"
+            with temporary.open("wb") as stream:
+                np.save(stream, stats, allow_pickle=False)
+            os.replace(temporary, target)
+            atomic_json(cache / "source.json", {
+                "gt_npz_sha256": sources[str(gt / "data.npz")],
+                "output_sha256": {"features.npy": sha256_file(target)},
+                "precision": "float32", "layout": "mean32,std32"})
+        return image
+    except Exception as exc:
+        if not is_photo(config):
+            raise
+        traceback.print_exc()
+        atomic_json(root / "input_failure.json", {
+            "image_id": image_id, "status": "input_error", "validity": "unknown",
+            "error": f"{type(exc).__name__}: {exc}", "sources": sources})
+        return None
+
+
+def input_failure_records(run: Path, split: str, image_id: str, config: dict) -> list[dict]:
+    """Count all K requested candidates when an image cannot be prepared."""
+    root = run / "candidates" / split / image_id
+    failure = read_json(root / "input_failure.json")
+    records = []
+    for index in range(config["candidates"]):
+        candidate_id = f"c{index:02d}"
+        path = root / candidate_id / "inference.json"
+        row = _unknown(image_id, candidate_id, "input_error", failure["error"])
+        row["seed"] = candidate_seed(config["seed"], image_id, index)
+        previous = read_json(path)
+        if previous and previous != row:
+            raise ValueError(f"Input failure conflicts with an existing candidate: {path}")
+        if not previous:
+            atomic_json(path, row)
+        records.append(row)
+    return records
 
 
 def _gpu_worker(gpu: int, worker_index: int, identities: list[str], split: str, config: dict,
@@ -58,55 +131,27 @@ def _gpu_worker(gpu: int, worker_index: int, identities: list[str], split: str, 
     try:
         import numpy as np
         import torch
-        from torchvision import transforms
-        from src.brepnet.diffusion.image_loading import load_image_view
-        from src.brepnet.diffusion.legacy import encode_original_gt, load_legacy_svr, sample_candidates
+        from src.brepnet.diffusion.legacy import sample_candidates
 
         torch.set_num_threads(config["gpu_cpu_threads"])
         torch.set_float32_matmul_precision("highest")
         torch.backends.cuda.matmul.allow_tf32 = False
         torch.backends.cudnn.allow_tf32 = False
-        model, provenance = load_legacy_svr(
-            config["checkpoint"], "cuda:0", dino_repo=config["dino_repo"],
-            source_cache=run / f"metadata/legacy_source_gpu{gpu}_worker{worker_index}")
+        model, provenance = load_model(
+            config, run / f"metadata/legacy_source_gpu{gpu}_worker{worker_index}", "cuda:0")
         atomic_json(run / f"metadata/{worker_name}.json", provenance)
-        transform = transforms.Compose([
-            transforms.ToPILImage(), transforms.Resize((224, 224)), transforms.ToTensor(),
-            transforms.Normalize((.485, .456, .406), (.229, .224, .225)),
-        ])
         processed_images = 0
         for image_id in identities:
             # Finish all K candidates of the current image before a requested pause.
             if (run / "PAUSE").exists():
                 break
             image_root = run / "candidates" / split / image_id
-            image_root.mkdir(parents=True, exist_ok=True)
-            image_path = Path(config["condition_data_root"]) / image_id / "imgs.npz"
-            gt_root = Path(config["raw_data_root"]) / image_id
-            sources = {str(path): sha256_file(path)
-                       for path in (image_path, gt_root / "data.npz", gt_root / "normalized_shape.step")}
-            previous = read_json(image_root / "sources.json")
-            if previous and previous != sources:
-                raise ValueError(f"Input assets changed: {image_id}")
-            atomic_json(image_root / "sources.json", sources)
-            # GT and sampled candidates use the same frozen original AE.
-            cache = run / "gt_cache" / f"{image_id}_0"
-            cache.mkdir(parents=True, exist_ok=True)
-            stats_path = cache / "features.npy"
-            cache_record = read_json(cache / "source.json")
-            if cache_record:
-                _check_files(cache, cache_record["output_sha256"])
-            else:
-                stats = encode_original_gt(model, gt_root / "data.npz")
-                temporary = cache / "features.tmp"
-                with temporary.open("wb") as stream:
-                    np.save(stream, stats, allow_pickle=False)
-                os.replace(temporary, stats_path)
-                atomic_json(cache / "source.json", {
-                    "gt_npz_sha256": sources[str(gt_root / "data.npz")],
-                    "output_sha256": {"features.npy": sha256_file(stats_path)},
-                    "precision": "float32", "layout": "mean32,std32"})
-            image = transform(load_image_view(image_path, "svr_imgs", 0, read_single_view=True))[None]
+            image = prepare_image(model, config, run, split, image_id)
+            if image is None:
+                for row in input_failure_records(run, split, image_id, config):
+                    events.put(("candidate", row))
+                processed_images += 1
+                continue
             for index in range(config["candidates"]):
                 candidate_id = f"c{index:02d}"
                 directory = image_root / candidate_id
@@ -178,6 +223,11 @@ def _cpu_worker(index: int, config: dict, run_string: str, jobs, events) -> None
                 timeout_seconds=config["post"]["timeout_seconds"],
                 max_optimize_iter=config["post"]["max_optimize_iter"],
                 gt_cache_root=run / "gt_metric_samples", start_method="fork")
+            if is_photo(config):
+                normalized = retain_native_validity(record)
+                if normalized != record:
+                    atomic_json(Path(directory) / "evaluation/metrics.json", normalized)
+                    record = normalized
             events.put(("candidate", record))
     except Exception:
         events.put(("fatal", f"CPU {index}: {traceback.format_exc()}"))
@@ -234,7 +284,11 @@ def _completed_records(run: Path, split: str, image_id: str, config: dict) -> li
     sources = read_json(root / "sources.json")
     if not sources:
         raise ValueError(f"Missing source record: {root}")
-    _check_files(Path("/"), sources)
+    _check_files(Path("/"), sources, allow_missing=is_photo(config))
+    if (root / "input_failure.json").exists():
+        if any(row.get("status") != "input_error" or row.get("validity") != "unknown" for row in rows):
+            raise ValueError(f"Input failure contains inconsistent candidate records: {root}")
+        return rows
     cache = run / "gt_cache" / f"{image_id}_0"
     _check_files(cache, read_json(cache / "source.json")["output_sha256"])
     gt = Path(config["raw_data_root"]) / image_id
@@ -403,7 +457,8 @@ def main() -> None:
                 summaries[split] = run_phase(split, protocol["splits"][split], config, run)
                 if summaries[split].get("status") == "paused":
                     return
-                if split == "validation" and summaries[split]["images"] and not summaries[split]["pairs"]:
+                if (split == "validation" and summaries[split]["images"] and not summaries[split]["pairs"]
+                        and config.get("stop_if_no_validation_pairs", True)):
                     atomic_json(run / "status.json", {"status": "stopped_no_validation_pairs", **summaries})
                     return
             atomic_json(run / "status.json", {"status": "complete", **summaries})

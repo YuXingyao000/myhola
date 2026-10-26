@@ -35,6 +35,10 @@ def source_hashes() -> dict[str, str]:
         *REPO_ROOT.glob("src/brepnet/data/preference_*.py"),
         REPO_ROOT / "src/brepnet/diffusion/legacy.py",
         REPO_ROOT / "src/brepnet/diffusion/image_loading.py",
+        REPO_ROOT / "src/brepnet/data/photo_dataset.py",
+        REPO_ROOT / "src/brepnet/diffusion/photo_baseline.py",
+        REPO_ROOT / "src/brepnet/diffusion/preference.py",
+        *REPO_ROOT.glob("src/brepnet/diffusion/preference_geometry.py"),
         REPO_ROOT / "src/brepnet/eval/preference.py",
         *REPO_ROOT.glob("src/brepnet/post/**/*.py"),
         REPO_ROOT / "tools/vae_compare_post.py",
@@ -95,6 +99,7 @@ def _record_runtime_revision(run: Path, config: dict, previous: dict, current: d
 def prepare_run(config: dict, run: Path, resume: bool,
                 accept_scheduling_update: bool = False) -> dict:
     from OCC import VERSION as occ_version
+    from src.brepnet.data.preference_source import source_protocol
 
     splits = {name: read_ids(config[f"{name}_list"]) for name in ("validation", "train")}
     if set(splits["validation"]) & set(splits["train"]):
@@ -129,6 +134,11 @@ def prepare_run(config: dict, run: Path, resume: bool,
         "sampling": "original DDPM1000 / FP32 / batch=1 / svr_imgs[0]",
         "gt_cache": "original embedded AE / FP32 / mean32+std32 / rotation0",
     }
+    source = source_protocol(config)
+    if source:
+        protocol.update(source)
+        protocol["version"] = "photo_preference_generation_v1"
+        protocol["sampling"] = "original DDPM1000 / FP32 / batch=1 / real_photo.npz[flux]"
     protocol["fingerprint"] = fingerprint(protocol)
     path = run / "metadata/protocol.json"
     if resume:

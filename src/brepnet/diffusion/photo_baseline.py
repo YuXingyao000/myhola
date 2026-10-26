@@ -30,7 +30,8 @@ def apply_photo_state(legacy: nn.Module, state: dict[str, Tensor]) -> None:
                                     if key.startswith(prefix)}, strict=True)
 
 
-def load_photo_svr(original_checkpoint, photo_checkpoint, *, device="cpu", source_cache=None):
+def load_photo_svr(original_checkpoint, photo_checkpoint, *, device="cpu", source_cache=None,
+                   dino_repo=None):
     """照片去噪器 + 严格保留原 AE，供既有 FP32 sampler / decoder 评价。"""
     from pathlib import Path
     from src.brepnet.data.preference_dataset import sha256_file
@@ -42,7 +43,7 @@ def load_photo_svr(original_checkpoint, photo_checkpoint, *, device="cpu", sourc
     original_hash = sha256_file(Path(original_checkpoint))
     if config["dataset"]["provenance"]["source_checkpoint_sha256"] != original_hash:
         raise ValueError("Photo training used a different original DINO / AE")
-    legacy, provenance = load_legacy_svr(original_checkpoint, source_cache=source_cache)
+    legacy, provenance = load_legacy_svr(original_checkpoint, source_cache=source_cache, dino_repo=dino_repo)
     if config["model"]["legacy_model_config"] != provenance["model_config"]:
         raise ValueError("Photo and original architecture configurations differ")
     apply_photo_state(legacy, saved["state_dict"])

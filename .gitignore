@@ -214,5 +214,6 @@ env.txt
 
 # Preference candidates, per-image decisions and generated latent caches.
 /checkpoints/diffusion/preference_data/
+/checkpoints/diffusion/photo_preference_data/
 /checkpoints/diffusion/preference_eval/
 /checkpoints/diffusion/failure_analysis/runs/
