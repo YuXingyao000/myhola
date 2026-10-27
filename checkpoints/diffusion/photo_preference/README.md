@@ -39,6 +39,14 @@ bash /mnt/d/python/checkpoints/diffusion/photo_preference/RUN_GENERATION.sh \
 
 8张4090，每卡2个独立worker，CPU32、有界队列64，FP32/batch1、原生DDPM1000。两个同卡worker的真实完整采样已经对照已完成baseline c00：两件latent及全部raw字段逐位相同。实际32个候选的生成→OCC→选对完成，恢复后394个候选文件摘要和偏好标签不变。这些只验证实现，不是照片DPO效果证据。
 
+2026-10-27用户要求释放一张卡，已通过run下的 `PAUSE` 标记让各worker完成当前图片和后处理后退出，退出码0。暂停时train完成27,639张图、221,112个候选、25,083对；validation完整3,505张图、3,160对。随后使用原run的严格resume，显式覆盖 `gpus=[0,1,2,3,4,5,6]`，释放物理GPU 7。每卡worker数、CPU资源、模型、seed、K8及评价协议不变；运行源码摘要全部相同，原协议指纹保持不变。GPU 7留给用户，后续恢复不要直接使用上面的默认8卡命令；使用本次保存的7卡命令：
+
+```bash
+bash /mnt/d/python/checkpoints/diffusion/photo_preference_data/20261026T055801Z/metadata/resume_7gpu_20261027.sh
+```
+
+该命令仅用于任务已退出后的恢复，不能与正在运行的同一run并行启动。暂停快照及核验记录在run下 `metadata/release_gpu7_20261027.json`，实际资源覆盖和完整命令在 `metadata/runtime_revisions.json`；大规模运行产物不提交Git。
+
 正式启动核对16个worker均严格加载照片310000步；首批16张validation的c00 latent及全部raw字段与既有baseline逐位相同，8卡利用率99%–100%。40项相关单测通过。
 
 另检查两件重新编码的GT mean与照片训练缓存，最大绝对差分别1.10e-6和1.58e-6，未逐位相同；原因未作专项定位，不能宣称缓存逐位复现。二者使用同一严格保留的原AE，该GT编码缓存不参与候选生成或偏好标签。后续普通继续训练与DPO对照应共享同一份固定GT cache，避免再引入数据变量；具体差值记于VALIDATION.json。
