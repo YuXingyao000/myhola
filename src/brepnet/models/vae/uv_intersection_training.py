@@ -232,11 +232,16 @@ def _training_targets(batch: Mapping) -> dict[str, Tensor]:
         pairs.append(boundary["face_pairs"] + offset)
         curves.append(boundary["curves"])
         offset = offset + count
-    return {
+    targets = {
         "face_local": batch["face_norm"], "face_center_scale": batch["face_bbox"],
         "face_xyz": batch["face_points"][..., :3],
         "edge_pairs": torch.cat(pairs), "edge_xyz": torch.cat(curves),
     }
+    if any("edge_uv" in boundary for boundary in batch["boundary_targets"]):
+        # Cache labels use the same representative edge and point order as curves.
+        targets["edge_uv"] = torch.cat([item["edge_uv"] for item in batch["boundary_targets"]])
+        targets["edge_uv_valid"] = torch.cat([item["edge_uv_valid"] for item in batch["boundary_targets"]])
+    return targets
 
 
 def _numpy(values: Mapping[str, Tensor]) -> dict:
@@ -274,6 +279,11 @@ class AutoEncoder_uv_intersection(BaseVAE):
         self.criterion = UVDecoderLoss(
             classification_weight=float(weights.get("classification_weight", 0.1)),
             incidence_weight=float(weights.get("incidence_weight", 0.1)),
+            supervision_version=cfg.get("supervision_version", "legacy_mse"),
+            uv_weight=float(weights.get("uv_weight", 0.1)),
+            tangent_weight=float(weights.get("tangent_weight", 0.01)),
+            relative_xyz_weight=float(weights.get("relative_xyz_weight", 0.05)),
+            relative_scale_floor=float(weights.get("relative_scale_floor", 0.01)),
         )
         self.initialization_report = {}
         if source_path:
@@ -317,6 +327,8 @@ class AutoEncoder_uv_intersection(BaseVAE):
         prediction = self.decode(latents, batch["face_counts"])
         losses = self.criterion(prediction, _training_targets(batch))
         losses["kl_loss"] = kl_loss.detach() if self.freeze_encoder else kl_loss
+        kl_weight = float(self._configuration["gaussian_weights"])
+        losses["kl_unweighted"] = kl_loss.detach() / kl_weight if kl_weight else kl_loss.detach() * 0
         losses["weighted_kl_loss"] = kl_loss * 0 if self.freeze_encoder else kl_loss
         losses["total_loss"] = losses.pop("total") + losses["weighted_kl_loss"]
         data = self.export_training_items(prediction, latents, statistics, batch) if v_test else {}

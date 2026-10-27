@@ -1,0 +1,36 @@
+defaults:
+  - train_vae_uv_intersection_joint
+  - _self_
+
+# Continue the trained UV network; do not migrate again from the older 3D-edge VAE.
+# Runtime supplies explicit trainer.resume_from_checkpoint and uv_curve_target_root.
+trainer:
+  exp_name: uv_intersection/supervision_v2
+  max_steps: 60000
+  devices: 7
+  batch_size: 2
+  accumulate_grad_batches: 8
+  wandb:
+    name: vae-uv-intersection-supervision-v2
+
+model:
+  init_uv_decoder_checkpoint: null
+  init_uv_decoder_sha256: null
+  freeze_encoder: false
+  trainable_scope: all
+  supervision_version: geometry_uv_v2
+  # XYZ L1 and each of the three existing face L1 objectives have weight 1.
+  # KL is already weighted once inside FacePosterior by gaussian_weights=5e-7.
+  loss_weights:
+    classification_weight: 0.1
+    incidence_weight: 0.1
+    uv_weight: 0.1
+    tangent_weight: 0.01
+    relative_xyz_weight: 0.05
+    relative_scale_floor: 0.01
+
+dataset:
+  # Separate from old OCC UV: these targets refer to FixedBSplineSurface.
+  uv_curve_target_root: ???
+  uv_curve_target_parameters_sha256: ???
+  edge_uv_root: null

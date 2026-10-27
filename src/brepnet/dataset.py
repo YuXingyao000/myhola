@@ -27,7 +27,8 @@ from PIL import Image
 
 from src.brepnet.data.rotations import NUM_CUBE24_VIEWS, cube24_rotation_matrix
 from src.brepnet.data.shared_boundaries import build_shared_boundary_targets, validate_legacy_geometry
-from src.brepnet.data.edge_uv import load_edge_uv_sidecar
+from src.brepnet.data.edge_uv import load_edge_uv_sidecar, sha256_file
+from src.brepnet.data.uv_curve_targets import load_uv_curve_targets
 from src.brepnet.diffusion.image_loading import load_image_view
 
 
@@ -570,6 +571,40 @@ class AutoEncoder_joint_dataset(AutoEncoder_dataset3):
         self.boundary_closed_tolerance = float(v_conf["boundary_closed_tolerance"])
         self.boundary_allow_closed_phase = bool(v_conf["boundary_allow_closed_phase"])
         super().__init__(v_training_mode, v_conf)
+        uv_root = v_conf.get("uv_curve_target_root")
+        if uv_root is not None and not str(uv_root).strip():
+            raise ValueError("uv_curve_target_root must be an explicit directory or null")
+        self.uv_curve_target_root = Path(uv_root) if uv_root is not None else None
+        if self.uv_curve_target_root is not None:
+            if self.edge_uv_root is not None:
+                raise ValueError("uv_curve_target_root and legacy edge_uv_root use different charts; choose one")
+            if not self.uv_curve_target_root.is_dir():
+                raise FileNotFoundError(f"UV curve target directory missing: {self.uv_curve_target_root}")
+            digest = v_conf.get("uv_curve_target_parameters_sha256")
+            if (not isinstance(digest, str) or len(digest) != 64
+                    or any(char not in "0123456789abcdef" for char in digest)):
+                raise ValueError("UV curve targets require uv_curve_target_parameters_sha256 (64 lowercase hex)")
+            self.uv_curve_target_parameters_sha256 = digest
+        self._uv_source_fingerprints = {}
+
+    def _load_uv_curve_supervision(self, sample_id, target):
+        """Load original-chart labels; rigid augmentation leaves UV unchanged."""
+        source_path = self.root / sample_id / "data.npz"
+        stat = source_path.stat()
+        stamp = (stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns)
+        cached = self._uv_source_fingerprints.get(sample_id)
+        if cached is None or cached[0] != stamp:
+            cached = (stamp, sha256_file(source_path))
+            self._uv_source_fingerprints[sample_id] = cached
+        labels = load_uv_curve_targets(
+            self.uv_curve_target_root / sample_id / "uv_curve_targets.npz",
+            source_sha256=cached[1],
+            face_pairs=target["face_pairs"],
+            source_edge_ids=target["source_edge_ids"],
+            expected_parameters_sha256=self.uv_curve_target_parameters_sha256,
+        )
+        target["edge_uv"] = labels["uv"]
+        target["edge_uv_valid"] = labels["valid"]
 
     def _load_sample_arrays(self, folder_path):
         try:
@@ -602,6 +637,8 @@ class AutoEncoder_joint_dataset(AutoEncoder_dataset3):
                 closed_tolerance=self.boundary_closed_tolerance,
                 allow_closed_phase=self.boundary_allow_closed_phase,
             )
+            if self.uv_curve_target_root is not None:
+                self._load_uv_curve_supervision(sample_id, target)
         except Exception as exc:
             raise ValueError(f"joint VAE sample {sample_id!r}: {exc}") from exc
         return item + ({key: torch.from_numpy(value) for key, value in target.items()},)

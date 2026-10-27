@@ -1,0 +1,47 @@
+{
+  "audited_at_utc": "2026-10-27",
+  "scope": "Static training/run-management review plus installed Lightning callback-state behavior; not a completed model/optimizer resume test.",
+  "source_checkpoint": "/mnt/d/python/checkpoints/uv_intersection/joint64/20261025T144428Z/weights/last.ckpt",
+  "source_sha256_from_frozen_spec": "c4f409b1a904d431cf82cf4754001ca590b59dc44abbaf987181819977a32318",
+  "source_step": 30000,
+  "planned_max_steps": 60000,
+  "planned_additional_updates": 30000,
+  "stage_directory_template": "/mnt/d/python/checkpoints/uv_intersection/joint64/20261025T144428Z/stages/supervision_v2_<UTC>",
+  "source_review": {
+    "run_management.resolve_run_directory": "Explicit trainer.run_dir takes precedence over the run inferred from resume_from_checkpoint.",
+    "run_management.prepare_run": "A new stage directory receives its own metadata/run.json and W&B ID. Each invocation records resolved configuration and resume_from_checkpoint.",
+    "train.UnifiedTrainer": "UV resume disables model initialization paths and sets restoring_checkpoint; on_load_checkpoint validates complete model architecture.",
+    "train.main": "trainer.fit(module, ckpt_path=source_checkpoint) requests Lightning full-state resume. max_steps is cumulative, so 60000 adds 30000 updates to step 30000.",
+    "train.configure_optimizers": "Adam over all currently trainable model parameters; preserving parameter order/shapes and full trainability is required to reuse optimizer state."
+  },
+  "server_142_callback_test": {
+    "pytorch_lightning_version": "2.5.0.post0",
+    "method": "ModelCheckpoint.load_state_dict with synthetic old callback state and a distinct stage weights directory; no model training or directory creation.",
+    "best_model_score_reset": true,
+    "best_k_models_reset": true,
+    "last_model_path_reset": true,
+    "kth_values_not_restored_per_installed_source": true,
+    "old_best_model_path_retained_initially": true,
+    "old_best_model_path_boundary": "Until a new validation save, callback.best_model_path still points to the old run; do not interpret it as the best supervision-v2 checkpoint.",
+    "old_top_k_files_subject_to_new_stage_pruning": false
+  },
+  "required_launch_settings": {
+    "trainer.run_dir": "Explicit new stage directory",
+    "trainer.resume_from_checkpoint": "Original step-30000 last.ckpt",
+    "trainer.max_steps": 60000,
+    "model.freeze_encoder": false,
+    "trainer.init_from_checkpoint": null,
+    "checkpoint_monitor": "Existing val/loss; safe because stage top-k state starts empty"
+  },
+  "provenance_to_add_at_launch": [
+    "Stage metadata recording source checkpoint SHA, original run, source step 30000, target step 60000, supervision-v2 protocol and full-state resume intent.",
+    "A stage reference under the original run; leave original weights, logs, W&B run and metadata snapshots intact."
+  ],
+  "runtime_checks_still_required": [
+    "Strict model state and architecture validation with the actual source checkpoint.",
+    "Restored global_step=30000, optimizer state count/steps and Adam moments verified before the first update.",
+    "First new optimizer update reaches global_step=30001 and all intended model parameters remain trainable.",
+    "New loss configuration and UV target root are used after resume; source checkpoint hyperparameters must not override the newly passed configuration."
+  ],
+  "limits": "Full optimizer/loop resume does not promise byte-identical future sample order from a mid-epoch checkpoint with shuffled or worker-augmented loading. New W&B stage is intentionally separate because total-loss semantics changed. No generic trainer or run-management code modification is needed."
+}

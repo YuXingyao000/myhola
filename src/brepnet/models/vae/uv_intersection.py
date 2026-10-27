@@ -410,10 +410,15 @@ class FixedBSplineSurface(nn.Module):
 
 class FaceReconstructionLoss(nn.Module):
     def forward(self, prediction: dict[str, Tensor], target: dict[str, Tensor]) -> dict[str, Tensor]:
-        return {
+        losses = {
             name: F.l1_loss(prediction[name].float(), target[name].float())
             for name in ("face_local", "face_center_scale", "face_xyz")
         }
+        # Already included in face_local's six-channel mean; never add twice.
+        losses["face_normal"] = F.l1_loss(
+            prediction["face_local"][..., 3:].detach().float(), target["face_local"][..., 3:].float(),
+        )
+        return losses
 
 
 class EdgeSupervision(nn.Module):
@@ -441,7 +446,7 @@ class BalancedExistenceLoss(nn.Module):
 
 
 class CurveGeometryLoss(nn.Module):
-    """每侧都对GT监督；只允许两侧一起反向，防止各自选不同方向。"""
+    """历史 MSE 目标，保留旧配置与 curve_xyz 诊断的准确语义。"""
 
     def forward(self, predicted: Tensor, target: Tensor) -> dict[str, Tensor]:
         # predicted [R,2,16,3], target [R,16,3]；GT仅包含真实边。
@@ -457,31 +462,165 @@ class CurveGeometryLoss(nn.Module):
         }
 
 
+class CommonCurveOrientation(nn.Module):
+    """按双侧 XYZ L1 选一次方向；GT XYZ、UV、valid 一起翻转。"""
+
+    def forward(self, predicted: Tensor, target: dict[str, Tensor]) -> dict[str, Tensor]:
+        # predicted [R,2,T,3]; XYZ [R,T,3], UV [R,2,T,2], valid [R,2,T].
+        xyz = target["edge_xyz"].float()
+        forward = (predicted.float() - xyz[:, None]).abs().mean((1, 2, 3))
+        backward = (predicted.float() - xyz.flip(1)[:, None]).abs().mean((1, 2, 3))
+        reverse = backward < forward  # Equal costs deterministically keep GT order.
+        uv, valid = target["edge_uv"].float(), target["edge_uv_valid"].bool()
+        return {
+            "edge_xyz": torch.where(reverse[:, None, None], xyz.flip(1), xyz),
+            "edge_uv": torch.where(reverse[:, None, None, None], uv.flip(2), uv),
+            "edge_uv_valid": torch.where(reverse[:, None, None], valid.flip(2), valid),
+        }
+
+
+class RelativeCurveXYZLoss(nn.Module):
+    """逐边 XYZ L1 / max(GT半径, floor)；仅重加权，不是独立shape信息。"""
+
+    def __init__(self, scale_floor: float = 0.01):
+        super().__init__()
+        if scale_floor <= 0:
+            raise ValueError("Relative XYZ scale_floor must be positive.")
+        self.scale_floor = scale_floor
+
+    def forward(self, predicted: Tensor, target: Tensor) -> Tensor:
+        if not len(target):
+            return predicted.sum() * 0
+        centered = target - target.mean(dim=1, keepdim=True)
+        scale = torch.linalg.vector_norm(centered, dim=-1).amax(dim=1)
+        per_edge_l1 = (predicted - target[:, None]).abs().mean((1, 2, 3))
+        return (per_edge_l1 / scale.clamp_min(self.scale_floor)).mean()
+
+
+class MaskedCurveUVLoss(nn.Module):
+    """只使用当前曲面参数域下可靠的 GT UV；无效点不影响其它目标。"""
+
+    def forward(self, predicted: Tensor, target: Tensor, valid: Tensor) -> dict[str, Tensor]:
+        if not valid.any():
+            zero = predicted.sum() * 0
+            return {"curve_uv": zero, "curve_uv_valid_fraction": zero.detach()}
+        safe_target = torch.where(valid[..., None], target, torch.zeros_like(target))
+        return {
+            "curve_uv": (predicted - safe_target).abs()[valid].mean(),
+            "curve_uv_valid_fraction": valid.float().mean().detach(),
+        }
+
+
+class CurveTangentLoss(nn.Module):
+    """三维相邻点差分方向；仅 GT 长度 <=1e-6 时屏蔽，不屏蔽预测坍缩。"""
+
+    def __init__(self, epsilon: float = 1e-6):
+        super().__init__()
+        self.epsilon = epsilon
+
+    def forward(self, predicted: Tensor, target: Tensor) -> dict[str, Tensor]:
+        # [R,2,T-1,3] 与 [R,T-1,3]；不隐式增加首尾闭合线段。
+        pred_delta = predicted.diff(dim=2)
+        gt_delta = target.diff(dim=1)
+        valid = torch.linalg.vector_norm(gt_delta, dim=-1) > self.epsilon
+        if not valid.any():
+            zero = predicted.sum() * 0
+            return {"curve_tangent": zero, "curve_tangent_valid_fraction": zero.detach()}
+        pred_direction = F.normalize(pred_delta, dim=-1, eps=self.epsilon)
+        gt_direction = F.normalize(gt_delta, dim=-1, eps=self.epsilon)
+        cosine = (pred_direction * gt_direction[:, None]).sum(dim=-1).clamp(-1, 1)
+        mask = valid[:, None].expand_as(cosine)
+        return {
+            "curve_tangent": (1 - cosine)[mask].mean(),
+            "curve_tangent_valid_fraction": valid.float().mean().detach(),
+        }
+
+
+class SupervisedCurveLoss(nn.Module):
+    """v2：共同方向的绝对/相对XYZ、UV、切向；旧MSE只作诊断。"""
+
+    def __init__(self, relative_scale_floor: float = 0.01):
+        super().__init__()
+        self.orientation = CommonCurveOrientation()
+        self.relative = RelativeCurveXYZLoss(relative_scale_floor)
+        self.uv = MaskedCurveUVLoss()
+        self.tangent = CurveTangentLoss()
+        self.legacy_diagnostic = CurveGeometryLoss()
+
+    def forward(self, xyz: Tensor, uv: Tensor, target: dict[str, Tensor]) -> dict[str, Tensor]:
+        xyz, uv = xyz.float(), uv.float()
+        aligned = self.orientation(xyz, target)
+        truth = aligned["edge_xyz"]
+        if not len(truth):
+            zero = xyz.sum() * 0 + uv.sum() * 0
+            losses = {name: zero for name in (
+                "curve_xyz_l1", "curve_xyz_relative", "curve_uv", "curve_tangent",
+                "curve_incidence",
+            )}
+            losses.update({name: zero.detach() for name in (
+                "curve_xyz", "curve_uv_valid_fraction", "curve_tangent_valid_fraction",
+            )})
+            return losses
+        losses = {
+            "curve_xyz_l1": F.l1_loss(xyz, truth[:, None].expand_as(xyz)),
+            "curve_xyz_relative": self.relative(xyz, truth),
+            "curve_incidence": F.mse_loss(xyz[:, 0], xyz[:, 1]),
+        }
+        losses.update(self.uv(uv, aligned["edge_uv"], aligned["edge_uv_valid"]))
+        losses.update(self.tangent(xyz, truth))
+        # Preserve the original min-MSE direction choice and W&B metric name.
+        with torch.no_grad():
+            losses["curve_xyz"] = self.legacy_diagnostic(xyz, target["edge_xyz"])["curve_xyz"]
+        return losses
+
+
 class UVDecoderLoss(nn.Module):
-    """显式审阅目标；默认权重不是已经选定的正式训练协议。
+    """显式监督版本；旧配置保持 MSE，新阶段通过 geometry_uv_v2 启用。
 
     target: face_local[N,16,16,6], face_center_scale[N,4], face_xyz[N,16,16,3],
-            edge_pairs[R,2] (i<j), edge_xyz[R,16,3] (共同点序)。
-    旧UV标签不直接沿用；新曲面参数域不能假装等于旧OCC参数域。
+            edge_pairs[R,2] (i<j), edge_xyz[R,16,3]；v2另需当前参数域的
+            edge_uv[R,2,16,2]、edge_uv_valid[R,2,16]，与edge_pairs同序。
+    每项保留 raw 与 weighted_ 日志；诊断不进入 total，KL由adapter添加一次。
     """
 
-    def __init__(self, classification_weight: float = 0.1, incidence_weight: float = 0.1):
+    def __init__(
+        self, classification_weight: float = 0.1, incidence_weight: float = 0.1,
+        supervision_version: str = "legacy_mse", uv_weight: float = 0.1,
+        tangent_weight: float = 0.01, relative_xyz_weight: float = 0.05,
+        relative_scale_floor: float = 0.01,
+    ):
         super().__init__()
+        if supervision_version not in {"legacy_mse", "geometry_uv_v2"}:
+            raise ValueError(f"Unknown UV supervision version: {supervision_version!r}.")
+        self.supervision_version = supervision_version
         self.face = FaceReconstructionLoss()
         self.match = EdgeSupervision()
         self.existence = BalancedExistenceLoss()
         self.geometry = CurveGeometryLoss()
+        self.supervised_geometry = SupervisedCurveLoss(relative_scale_floor)
         self.classification_weight = classification_weight
         self.incidence_weight = incidence_weight
+        self.weights = {
+            "face_local": 1.0, "face_center_scale": 1.0, "face_xyz": 1.0,
+            "edge_existence": classification_weight, "curve_incidence": incidence_weight,
+        }
+        if supervision_version == "geometry_uv_v2":
+            self.weights.update({
+                "curve_xyz_l1": 1.0, "curve_uv": uv_weight,
+                "curve_tangent": tangent_weight, "curve_xyz_relative": relative_xyz_weight,
+            })
+        else:
+            self.weights["curve_xyz"] = 1.0
 
     def forward(self, prediction: dict[str, Tensor], target: dict[str, Tensor]) -> dict[str, Tensor]:
         positive, rows = self.match(prediction["edge_pairs"], target["edge_pairs"], len(prediction["face_xyz"]))
         losses = self.face(prediction, target)
         losses["edge_existence"] = self.existence(prediction["edge_logits"], positive)
-        losses.update(self.geometry(prediction["edge_xyz"][rows], target["edge_xyz"]))
-        losses["total"] = (
-            losses["face_local"] + losses["face_center_scale"] + losses["face_xyz"]
-            + self.classification_weight * losses["edge_existence"]
-            + losses["curve_xyz"] + self.incidence_weight * losses["curve_incidence"]
-        )
+        if self.supervision_version == "geometry_uv_v2":
+            losses.update(self.supervised_geometry(prediction["edge_xyz"][rows], prediction["edge_uv"][rows], target))
+        else:
+            losses.update(self.geometry(prediction["edge_xyz"][rows], target["edge_xyz"]))
+        weighted = {f"weighted_{name}": losses[name] * weight for name, weight in self.weights.items()}
+        losses.update(weighted)
+        losses["total"] = torch.stack(tuple(weighted.values())).sum()
         return losses
