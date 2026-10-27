@@ -49,3 +49,21 @@ face_xyz L1 0.0022325→0.0019342；curve_xyz MSE 0.069607→0.00376686；
 curve_incidence MSE 0.111281→0.00595031。最近一次曲线项小幅回升，整体仍下降。
 两侧对应采样点的RMS间距按日志口径为sqrt(3×MSE)≈0.1336（数据坐标），并非最近曲线距离或毫米值。
 这是中途loss观察，不是几何/OCC验收；保持现有训练不变。原始validation历史见 [JOINT_PROGRESS_20261026.json](JOINT_PROGRESS_20261026.json)。
+
+## 完成与原始几何测试（2026-10-27，北京时间）
+
+训练正常达到30,000 optimizer steps，last为epoch72；全state浮点有限，SHA256
+`c4f409b1a904d431cf82cf4754001ca590b59dc44abbaf987181819977a32318`。
+采用最后权重完成固定validation3495件，7个独立单GPU分片，无失败/重复/漏件；
+posterior mean、FP32、无TF32/增强、threshold0.5，新旧全部输入文件hash一致。
+
+面CD²从旧64D的1.98006e-5降到1.62574e-5（-17.89%）；
+曲线双侧点集CD²从5.46103e-5升到1.24813e-3（22.86倍），3491/3495件退步。
+拓扑micro F1 0.998559→0.997837。双侧对应点间距CAD宏平均0.0430632，单位为数据坐标。
+因此loss收敛不能视为曲线重建已改善。新旧训练历史/表示/目标不同，此比较不是单变量消融。
+
+原始NPZ在142 `/mnt/d/python/checkpoints/uv_intersection/evaluation_20261027/full_v1/raw_predictions/`；
+评估代码commit `3e6fd5c80f9f29a1b37510acba05e6ca0089ab9d`。
+独立SciPy曲面/UV回代误差均小于1e-6，未发现导出坐标转换问题。
+**原生双UV到OCC的构造接口尚未实现，本轮未测OCC合法率。**
+协议、逐CAD紧凑统计、分布图与结论见 [评估报告](evaluation_20261027/results_v2/REPORT.md)。
