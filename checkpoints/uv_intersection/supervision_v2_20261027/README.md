@@ -1,6 +1,6 @@
 # UV监督第二阶段
 
-用户授权新增曲线监督并从上一轮继续全量训练。当前实现与验收进展见下表；正式启动信息将在完成真实批次和标签覆盖验收后补入。
+用户授权新增曲线监督并从上一轮继续全量训练。**正式训练已于2026-10-27 16:14:50（北京时间）在142启动**；启动信息见 [LAUNCH](LAUNCH.json)，监控见 [W&B](https://wandb.ai/whatseven777/hola-brep/runs/c41fedf5a922)。
 
 | 项目 | 状态 |
 |---|---|
@@ -8,7 +8,7 @@
 | 新loss | 已实现直接UV、XYZ差分走向、GT尺度相对XYZ；绝对XYZ改L1 |
 | 局部验证 | loss/网络26项、dataset10项、adapter11项通过；真实两件与两卡完整resume通过 |
 | GT UV缓存 | 49,975件全部生成并逐文件审计通过，UV有效点99.94075%，无样本丢弃 |
-| 正式训练 | 验收完成，准备启动；训练进程/首批状态见后续LAUNCH记录，不据此宣称效果改善 |
+| 正式训练 | 七卡已运行，完整恢复权重/Adam/step；首批至少19次更新正常，尚无效果结论 |
 
 入口配置：`configs/train_vae_uv_intersection_supervision_v2.yaml`。实际系数见 [架构与目标](ARCHITECTURE.md)，标签协议见 [SPEC](SPEC.md)，研究判断见 [PLAN](PLAN.md)。
 
@@ -25,3 +25,5 @@ W&B中的`curve_xyz`继续表示旧MSE诊断；本轮绝对目标名为`curve_xy
 标签目录为`/mnt/d/data/uv_curve_targets/fixed_bspline_supervision_v2_20261027`，固定参数SHA256 `86f05342ed4b50ab4f97bdb3d9a10b96b5c1a64eefa567b935e6c3b2c9cc3121`。投影代码为`de61a2a8`，后续只收紧异常配置/负reason flag校验，数值算法和默认参数未变。6起点、17×17粗网格、20步有界GN、4步长线搜索、轨迹DP；残差阈值1e-3、连续UV步长阈值0.35，其余设置完整写在每份sidecar与报告。7分片最大耗时104.59秒；独立读取全部sidecar审计15.48秒。
 
 46,108,032个UV点中46,080,715有效；完整单侧轨迹2,877,130/2,881,752。零有效CAD=0、零有效双侧边=0；单侧零有效轨迹1,278照常保留XYZ/切向目标。无效点主要是多解/参数跳变，39点残差超阈值。有效点残差全局P99为1.57e-7。全缓存审计将源SHA与生成日志对照，没有重算全部raw SHA；训练loader逐件重新核对原始文件摘要。
+
+正式阶段目录：`/mnt/d/python/checkpoints/uv_intersection/joint64/20261025T144428Z/stages/supervision_v2_20261027T081450Z`。启动代码commit `16b7129afb9d9b4b2c0dfae94629780a8d9b80f3`，GPU1–7，Adam lr2e-5，BF16，seed42，累计步数30000→60000。启动日志确认7个rank、0冻结参数、完整checkpoint恢复；16:16:42检查时至少完成19次新更新，记录的总loss均有限，未出现fatal错误。后续文档提交不改变本次训练代码。
