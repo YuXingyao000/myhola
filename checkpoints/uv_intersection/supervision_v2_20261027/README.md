@@ -6,9 +6,9 @@
 |---|---|
 | 网络/固定曲面 | 保持30k UV模型全部结构和参数形状，170,699,647参数全量训练 |
 | 新loss | 已实现直接UV、XYZ差分走向、GT尺度相对XYZ；绝对XYZ改L1 |
-| 局部验证 | 新11项+原15项，共26项通过；真实数据/续训验证待完成 |
-| GT UV缓存 | 按当前GT固定曲面离线反求，生成及覆盖验收待完成 |
-| 正式训练 | 待启动，不能把实现通过视为已训练或效果改善 |
+| 局部验证 | loss/网络26项、dataset10项、adapter11项通过；真实两件与两卡完整resume通过 |
+| GT UV缓存 | 49,975件全部生成并逐文件审计通过，UV有效点99.94075%，无样本丢弃 |
+| 正式训练 | 验收完成，准备启动；训练进程/首批状态见后续LAUNCH记录，不据此宣称效果改善 |
 
 入口配置：`configs/train_vae_uv_intersection_supervision_v2.yaml`。实际系数见 [架构与目标](ARCHITECTURE.md)，标签协议见 [SPEC](SPEC.md)，研究判断见 [PLAN](PLAN.md)。
 
@@ -19,3 +19,9 @@
 数据保持train46480、validation3495的原accepted清单、原增强、7卡×每卡2件×累积8（112件/更新）。正式生成规则只用固定validation前32件验收；test不参与。UV失效mask只屏蔽UV项，不丢CAD/边，其XYZ、切向和拓扑监督仍保留。
 
 W&B中的`curve_xyz`继续表示旧MSE诊断；本轮绝对目标名为`curve_xyz_l1`。所有实际loss有`weighted_`贡献，避免原始值与加权值混淆。新增face_normal只拆出诊断，不重复加权；KL只加一次。
+
+验收记录：[标签全量覆盖](LABEL_COVERAGE.json)、[32件真实投影](LABEL_PREFLIGHT_32.json)、[合成几何](LABEL_SYNTHETIC.json)、[独立数学审计](PROJECTION_AUDIT.json)、[真实模型/Adam检查](REAL_BATCH_VALIDATION.json)、[两卡Lightning续训](DDP_VALIDATION.json)。原始30k权重全部逐tensor保留；两卡检查的617份Adam状态从30000到30002。该两步仅是验收，正式训练仍从原始30000开始。
+
+标签目录为`/mnt/d/data/uv_curve_targets/fixed_bspline_supervision_v2_20261027`，固定参数SHA256 `86f05342ed4b50ab4f97bdb3d9a10b96b5c1a64eefa567b935e6c3b2c9cc3121`。投影代码为`de61a2a8`，后续只收紧异常配置/负reason flag校验，数值算法和默认参数未变。6起点、17×17粗网格、20步有界GN、4步长线搜索、轨迹DP；残差阈值1e-3、连续UV步长阈值0.35，其余设置完整写在每份sidecar与报告。7分片最大耗时104.59秒；独立读取全部sidecar审计15.48秒。
+
+46,108,032个UV点中46,080,715有效；完整单侧轨迹2,877,130/2,881,752。零有效CAD=0、零有效双侧边=0；单侧零有效轨迹1,278照常保留XYZ/切向目标。无效点主要是多解/参数跳变，39点残差超阈值。有效点残差全局P99为1.57e-7。全缓存审计将源SHA与生成日志对照，没有重算全部raw SHA；训练loader逐件重新核对原始文件摘要。
