@@ -57,7 +57,9 @@ class UVProjectionConfig:
         if self.coarse_grid_size < 3 or not 2 <= self.starts <= 16 or self.iterations < 1:
             raise ValueError("Invalid projection grid/start/iteration count")
         for key, value in asdict(self).items():
-            if isinstance(value, float) and (not np.isfinite(value) or value <= 0):
+            if key in {"coarse_grid_size", "starts", "iterations", "allow_closed_phase"}:
+                continue
+            if type(value) not in {int, float} or not np.isfinite(value) or value <= 0:
                 raise ValueError(f"{key} must be finite and positive")
 
 
@@ -113,7 +115,8 @@ def validate_uv_curve_targets(
             raise ValueError(f"UV cache {key} must be finite float32")
     if (arrays["uv"] < 0).any() or (arrays["uv"] > 1).any() or (arrays["residual"] < 0).any():
         raise ValueError("UV cache coordinates/residual out of range")
-    if arrays["reason_flags"].dtype.kind not in "iu" or (arrays["reason_flags"] > 31).any():
+    if (arrays["reason_flags"].dtype.kind not in "iu"
+            or (arrays["reason_flags"] < 0).any() or (arrays["reason_flags"] > 31).any()):
         raise ValueError("UV cache reason_flags invalid")
     if not np.array_equal(arrays["valid"], arrays["reason_flags"] == 0):
         raise ValueError("UV cache mask and reasons disagree")
