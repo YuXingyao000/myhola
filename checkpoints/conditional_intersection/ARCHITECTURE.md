@@ -1,6 +1,6 @@
 # Conditional Intersection：架构快照
 
-日期：2026-10-29（北京时间）。实现Git hash：`74c7ecb4`。配置入口`configs/train_vae_conditional_intersection.yaml`。状态：已实现，8项CPU检查通过；142真实preflight进行中，未正式训练。本快照不代表训练完成或有效性已验证。
+日期：2026-10-29（北京时间）。网络实现Git hash：`74c7ecb4`，preflight路径引用修正`9c6b5908`。配置入口`configs/train_vae_conditional_intersection.yaml`。状态：本轮8项检查及54项旧decoder／VAE／shared-curve回归共62项通过，142真实FP32/BF16前后向及最大尺寸batch8检查通过，两卡短运行完成2次更新；resume验收进行中，未正式训练。本快照不代表训练完成或有效性已验证。
 
 ## 1. 数据流与保留范围
 
@@ -143,7 +143,9 @@ score等价于`(q_content·k_content + q_position·k_position)/sqrt(128)`。首�
 
 ## 5. 初始化、梯度与运行边界
 
-来源是32维shared_curve_uv best42471，完整SHA及路径见README。旧权重严格迁移到同语义层；新增局部投影零初始化，使M每个位置初始等于旧单memory token。eval时所有value相同，softmax加权结果保留原value；训练dropout在256位置上的随机行为不等于旧单key，不能宣称训练等价。
+来源是32维shared_curve_uv best42471，完整SHA及路径见README。模型总参数190,236,065，全部可训练；新增7,937,922个参数，778个来源state项严格保留。新增局部投影零初始化，使M每个位置初始等于旧单memory token。eval时所有value相同，softmax加权结果在精确算术下保留原value；实际浮点计算不保证完整模型逐位一致，训练dropout在256位置上的随机行为也不等于旧单key。
+
+142实测在两个30面CAD重复构成的batch8中：coarse边特征最大差1.34e-5、coarse边XYZ最大差3.89e-6；已有refinement对数值变化敏感，final全部候选XYZ最大差1.55e-4，出现在未选中候选。实际选中曲线XYZ最大差2.03e-6，分类选择分歧0，互反共享XYZ差0。原2件7＋20面检查的coarse边XYZ最大差6.14e-6。完整数值见[验收表](README.md#实现及研究状态)及[PREFLIGHT_LARGEST_BATCH8.json](PREFLIGHT_LARGEST_BATCH8.json)。这些是初始化与实现检查，不是完整validation合法率结果。
 
 关闭attention dropout时，零局部投影使所有value相同，改变attention权重不改变加权value，因此参考点及位置分支首步梯度为零。正式训练保留0.1 attention dropout；随机mask作用后，权重之和不再固定，参考UV／位置分支首步可能产生非零梯度。这种梯度来自随机mask，不是位置间的空间内容差异。
 
@@ -151,6 +153,6 @@ CNN局部特征输入经零投影的首步梯度仍为零，但局部投影本�
 
 `freeze_encoder=false`、`trainable_scope=all`，无新冻结层；KL sum系数1e-6恢复训练作用。feature matching权重1.0保留，teacher target仍detach。源checkpoint的encoder冻结历史与本次全解冻不同，正式效果不作为严格单变量attention消融。新run不继承Adam状态；恢复本实验必须使用同结构完整checkpoint。
 
-142环境PyTorch2.8/cu128，正式计划为物理GPU1–7、microbatch2、累积8，即112 CAD/update；来源历史128 CAD/update。GPU0保留给现有ComfyUI。配置中的7张可见卡在进程内编号0–6，不与物理编号混用；正式运行metadata记录最终实测配置。
+142环境PyTorch2.8/cu128，最大尺寸batch8全模型BF16训练单卡峰值7.91GiB；正式计划为物理GPU1–7、microbatch8、累积2，即112 CAD/update，替代初始batch2／累积8方案但保持总批量。来源历史128 CAD/update。GPU0保留给现有ComfyUI。配置中的7张可见卡在进程内编号0–6，不与物理编号混用；正式运行metadata记录最终实测配置。
 
 论文依据：[Conditional DETR](https://arxiv.org/abs/2108.06152)及[作者Transformer实现](https://github.com/Atten4Vis/ConditionalDETR/blob/main/models/transformer.py)。这是保留旧B-Rep接口的适配，非原论文完整架构复现。

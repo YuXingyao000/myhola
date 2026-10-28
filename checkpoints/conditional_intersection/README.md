@@ -1,6 +1,6 @@
 # Conditional Intersection（32维共享XYZ）
 
-日期：2026-10-29（北京时间）。实现提交`74c7ecb4`。状态：已实现，8项CPU检查通过；142真实preflight进行中，未正式训练。正式运行的信息与验证结果在启动验收后补充。
+日期：2026-10-29（北京时间）。网络实现提交`74c7ecb4`，preflight路径引用修正`9c6b5908`。状态：本轮8项检查及54项旧decoder／VAE／shared-curve回归共62项通过，142真实FP32/BF16前后向及最大尺寸batch8检查通过，两卡短运行完成2次更新；resume验收进行中，未正式训练。正式运行信息在启动验收后补充。
 
 [研究计划](PLAN.md) · [逐层结构与张量形状](ARCHITECTURE.md) · [91%来源模型](../vae_baseline/xyz32_20261028/README.md)
 
@@ -13,7 +13,8 @@
 - 源权重（142）：`/mnt/d/python/checkpoints/shared_curve_uv/candidate/20261019T064906.049992Z/weights/epoch=0116-step=00042471-val_loss=0.036517.ckpt`。
 - SHA256：`ce749416c1635dda1563161b971bd4260d064cfdb0c31f1fa9d06ad0e70961ff`。
 - 用`model.init_conditional_intersection_checkpoint`显式迁移；`init_shared_curve_checkpoint`清空。旧整体投影、8层self/cross内容投影、FFN、LN和其他模型参数保留；新增局部投影、参考UV及位置分支初始化。
-- 局部投影零初始化，初始各位置value相同；eval输出应近等价于来源模型。训练attention dropout的采样不同，不保证同seed下训练输出逐位相同。
+- 模型总参数**190,236,065**，全部可训练；新增**7,937,922**个参数，778个来源state项严格保留。
+- 局部投影零初始化，初始各位置value相同；eval时coarse输出近等价，原refinement会对数值差异敏感，完整模型并非逐位一致。实际迁移误差见本页验收表。训练attention dropout的采样不同，不保证同seed下训练输出逐位相同。
 - 首步位置梯度为零只适用于关闭attention dropout的检查。正式训练保留0.1 attention dropout，随机mask加权和仍依赖attention，因此ReferenceUVHead／位置分支首步可能有梯度，但不是空间内容信号。CNN局部输入经零投影的首步梯度仍为零；局部投影更新后才打开实际空间内容及对应位置学习路径，面CNN其他监督路径不受此结论限制。
 - 本次**全模型训练**：`freeze_encoder=false`、`trainable_scope=all`。来源模型历史上冻结encoder；本轮不假装与它只有一个变量不同。更新encoder后旧latent cache／diffusion不能默认兼容。
 - 这是**新run、新Adam**，不是resume。完整新模型加载及后续resume仍要求同结构严格加载。
@@ -39,7 +40,7 @@
 
 ## 首阶段训练配置
 
-Adam，lr`2e-5`，seed42，BF16 mixed，clip norm1；全模型训练。142使用PyTorch2.8/cu128，正式计划使用物理GPU1–7、每卡microbatch2、累积8，即112 CAD/update；GPU0保留给正在运行的ComfyUI。来源历史为8卡×batch16、128 CAD/update，因此本轮批量并非完全相同。实际配置以run metadata为准。
+Adam，lr`2e-5`，seed42，BF16 mixed，clip norm1；全模型训练。142使用PyTorch2.8/cu128，正式计划使用物理GPU1–7、每卡microbatch8、累积2，即112 CAD/update；GPU0保留给正在运行的ComfyUI。来源历史为8卡×batch16、128 CAD/update，因此本轮批量并非完全相同。最大尺寸单卡检查通过后将预设batch2／累积8调整为batch8／累积2，总批量不变；实际配置以run metadata为准。
 
 新Intersection和原refinement均按64候选分块并开启激活重算，refinement几何分块保持128，减少全量训练时既有edge CNN等激活的显存。这只调整计算／重算方式，不改变网络参数或研究loss。首阶段30000个optimizer更新或24小时先到停止，不把终点之前的旧validation值称作最后一步实测。
 
@@ -56,11 +57,27 @@ CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7 WANDB_MODE=online python -u -m src.brepnet.tr
   dataset.val_dataset=checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt \
   dataset.test_dataset=checkpoints/joint_boundary/validation/test_contract_audit/accepted.txt \
   'model.init_conditional_intersection_checkpoint="/mnt/d/python/checkpoints/shared_curve_uv/candidate/20261019T064906.049992Z/weights/epoch=0116-step=00042471-val_loss=0.036517.ckpt"' \
-  trainer.devices=7 trainer.batch_size=2 trainer.accumulate_grad_batches=8
+  trainer.devices=7 trainer.batch_size=8 trainer.accumulate_grad_batches=2
 ```
 
 正式run输出`checkpoints/conditional_intersection/xyz32/<UTC时间>/`。启动前保存命令、数据／权重身份、resolved config及Git状态；本独立工作树不在主工作区自动同步范围，检查142实际HEAD及源权重摘要后才启动。
 
 ## 实现及研究状态
 
-实现Git hash：`74c7ecb4`。8项CPU检查通过，142真实preflight进行中；完整新模块参数量、真实批量测试、正式运行目录／GPU／W&B／步数在验收后补充。尚未启动正式训练，没有新方案的完整validation几何或OCC结果；90.99%是来源checkpoint的历史结果。
+网络实现Git hash：`74c7ecb4`。本轮8项检查及54项旧decoder／VAE／shared-curve回归共62项通过；142真实验证详见[PREFLIGHT.json](PREFLIGHT.json)与[PREFLIGHT_LARGEST_BATCH8.json](PREFLIGHT_LARGEST_BATCH8.json)。FP32对照关闭cuDNN TF32；BF16训练检查采用与trainer相同的matmul medium／cuDNN TF32设置。两次更新均loss／梯度有限，所有可训练参数都有梯度，互反共享XYZ最大差为0。
+
+以下均为初始化后、新旧模型的最大绝对差；单位为数据坐标或相应特征数值，不是几何质量评价。
+
+| 比较项 | 真实2件：7＋20面 | 最大尺寸batch8：每件30面 |
+|---|---:|---:|
+| coarse面XYZ | 0 | 0 |
+| coarse边特征 | 6.68e-6 | 1.34e-5 |
+| coarse边XYZ | 6.14e-6 | 3.89e-6 |
+| final全部候选边XYZ | 1.08e-5 | 1.55e-4 |
+| final实际选中边XYZ | 2.38e-7 | 2.03e-6 |
+| final分类选择分歧数 | 0 | 0 |
+| BF16单卡训练峰值 | 3.62GiB | 7.91GiB |
+
+最大尺寸batch将CAD `00025689`、`00072409`重复组成8个对象，仅用于显存和实现验证。coarse中浮点计算差异经既有refinement后有所放大；最大1.55e-4的XYZ差出现在未选中候选，实际选中曲线保持约2e-6以内。源权重逐项保留不等于完整模型输出逐位相同，不能用这些小批量检查宣称合法率已保持或提升。
+
+两卡短运行已完成2次optimizer更新，resume验收进行中。尚未启动正式训练，正式run目录／W&B／步数将在启动后记录。没有新方案的完整validation几何或OCC结果；90.99%是来源checkpoint的历史结果。

@@ -1,6 +1,6 @@
 # Conditional Intersection：研究计划
 
-日期：2026-10-29（北京时间）。实现提交`74c7ecb4`。状态：已实现，8项CPU检查通过；142真实preflight进行中，未正式训练。尚无本方案训练收益或完整评估结论。
+日期：2026-10-29（北京时间）。网络实现提交`74c7ecb4`，preflight路径引用修正`9c6b5908`。状态：本轮8项检查及54项旧decoder／VAE／shared-curve回归共62项通过，142真实FP32/BF16前后向及最大尺寸batch8检查通过，两卡短运行完成2次更新；resume验收进行中，未正式训练。尚无本方案训练收益或完整评估结论。
 
 ## 问题与决定
 
@@ -15,7 +15,7 @@
 - 保留refinement、curve conditioning、shared XYZ、辅助UV以及现有loss权重。feature匹配权重明确为1.0，不沿用后来的64维no-edge-feature实验。
 - 本次Encoder、Posterior及Decoder全部参与训练；历史来源训练冻结Encoder，因此本轮不是严格的仅attention单变量消融。
 - 新run、新Adam，不恢复来源run的optimizer、步数或Timer。首阶段上限30000个optimizer更新或24小时，先到者结束；设备／microbatch以142实测为准并保存在resolved config。
-- 142采用PyTorch2.8/cu128，正式计划使用物理GPU1–7、每卡microbatch2、累积8，即112 CAD/update；GPU0保留给现有ComfyUI。来源历史为128 CAD/update，批量差异明确记录。Intersection和原refinement均按64候选分块并启用激活重算，refinement几何分块128；这是计算／显存调整，不改参数或loss。
+- 142采用PyTorch2.8/cu128，正式计划使用物理GPU1–7、每卡microbatch8、累积2，即112 CAD/update；GPU0保留给现有ComfyUI。来源历史为128 CAD/update，批量差异明确记录。Intersection和原refinement均按64候选分块并启用激活重算，refinement几何分块128；这是计算／显存调整，不改参数或loss。
 - 保留原数据、UV sidecar、增广、半边索引和OCC接口；不将本次参考UV写成曲线几何或新增GT输入。
 
 ## 实现验收
@@ -25,6 +25,8 @@
 3. 确认零初始化的局部投影首步得到梯度，并在更新后打开真实空间内容路径。关闭attention dropout时，初始value空间恒定，参考UV／位置分支首步梯度应为零；正式训练保留0.1 attention dropout，随机mask使加权和依赖attention，首步位置梯度可以非零，但这不是空间内容信号。CNN局部特征输入经零投影的首步梯度仍为零（不代表面CNN的其他训练路径无梯度）。验收同时覆盖这两种情况，不仅依据首步位置梯度判断路径是否学到空间内容。
 4. 比较分块与未分块输出／梯度；检查激活重算和BF16训练。142上使用实际最大面数样本检查显存，再进行短DDP训练验收。
 5. 完成验收后，在142启动独立正式run；记录Git、初始化摘要、全部超参数、GPU、命令及W&B链接。
+
+已完成的真实检查见[PREFLIGHT.json](PREFLIGHT.json)与[PREFLIGHT_LARGEST_BATCH8.json](PREFLIGHT_LARGEST_BATCH8.json)：190,236,065个参数全部可训练，新增7,937,922个参数；778个来源state项严格保留。最大尺寸检查将两个30面CAD重复组成8个对象，仅用于显存与实现验证，单卡BF16训练峰值7.91GiB。初始化coarse误差很小，但经原refinement后全部候选输出并非逐位相同；分类选择无分歧，实际选中曲线最大XYZ差约2.03e-6。完整误差及边界见README，不将小批量一致性当作下游收益。
 
 ## 研究评价
 
