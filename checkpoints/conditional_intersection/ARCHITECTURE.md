@@ -1,6 +1,6 @@
 # Conditional Intersection：架构快照
 
-日期：2026-10-29（北京时间）。网络实现Git hash：`74c7ecb4`，preflight路径引用修正`9c6b5908`。配置入口`configs/train_vae_conditional_intersection.yaml`。状态：本轮8项检查及54项旧decoder／VAE／shared-curve回归共62项通过，142真实FP32/BF16前后向及最大尺寸batch8检查通过，两卡短运行完成2次更新；resume验收进行中，未正式训练。本快照不代表训练完成或有效性已验证。
+日期：2026-10-29（北京时间）。网络实现Git hash：`74c7ecb4`，正式启动提交`7609d276`。配置入口`configs/train_vae_conditional_intersection.yaml`。状态：62项检查、142真实前后向、最大尺寸batch8及两卡断点恢复通过；七卡正式全量训练已启动。本快照不代表训练完成或有效性已验证。
 
 ## 1. 数据流与保留范围
 

@@ -1,6 +1,6 @@
 # Conditional Intersection（32维共享XYZ）
 
-日期：2026-10-29（北京时间）。网络实现提交`74c7ecb4`，preflight路径引用修正`9c6b5908`。状态：本轮8项检查及54项旧decoder／VAE／shared-curve回归共62项通过，142真实FP32/BF16前后向及最大尺寸batch8检查通过，两卡短运行完成2次更新；resume验收进行中，未正式训练。正式运行信息在启动验收后补充。
+日期：2026-10-29（北京时间）。网络实现提交`74c7ecb4`，正式启动提交`7609d276`。状态：62项检查通过，142真实前后向、最大尺寸batch8和两卡完整断点恢复通过；**七卡全量训练已启动并开始更新**。尚无本轮完整validation／OCC质量结果。
 
 [研究计划](PLAN.md) · [逐层结构与张量形状](ARCHITECTURE.md) · [91%来源模型](../vae_baseline/xyz32_20261028/README.md)
 
@@ -80,4 +80,13 @@ CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7 WANDB_MODE=online python -u -m src.brepnet.tr
 
 最大尺寸batch将CAD `00025689`、`00072409`重复组成8个对象，仅用于显存和实现验证。coarse中浮点计算差异经既有refinement后有所放大；最大1.55e-4的XYZ差出现在未选中候选，实际选中曲线保持约2e-6以内。源权重逐项保留不等于完整模型输出逐位相同，不能用这些小批量检查宣称合法率已保持或提升。
 
-两卡短运行已完成2次optimizer更新，resume验收进行中。尚未启动正式训练，正式run目录／W&B／步数将在启动后记录。没有新方案的完整validation几何或OCC结果；90.99%是来源checkpoint的历史结果。
+两卡短运行先完成2次更新，再严格恢复到第3步；844组Adam状态全部连续推进，checkpoint权重有限。恢复检查在epoch中途停止，因此第3步没有新的validation分数；`last.ckpt`确实保存第3步。[完整验收记录](VALIDATION.json)。没有本轮完整validation几何或OCC结果；90.99%是来源checkpoint的历史结果。
+
+## 正式运行
+
+- 142工作树：`/mnt/d/python_uv_train`，启动时提交`7609d2768fa2bc621674dc747892c464d2a1c0ab`，远程工作树干净。
+- UTC启动时间：2026-10-28 16:43:31；run：`/mnt/d/python/checkpoints/conditional_intersection/xyz32/20261028T164331.682169Z`。
+- tmux：`conditional-train-20261028t164331`；7个DDP rank，物理GPU1–7，190,236,065个参数全部可训练。
+- [W&B运行](https://wandb.ai/whatseven777/hola-brep/runs/f62c86405ea5)；实际命令、初始化、环境与启动检查见[LAUNCH.json](LAUNCH.json)。
+- 每卡batch8、累积2，全局112；Adam lr2e-5，seed42，BF16，30,000更新或24小时先到停止。正式run从91%源权重重新初始化，没有使用smoke更新后的权重。
+- 固定train 46,480件、validation 3,495件；本阶段不读取test数据进行研究判断。首个完整validation及checkpoint尚待epoch完成。
