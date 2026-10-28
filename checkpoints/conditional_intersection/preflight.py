@@ -118,7 +118,7 @@ def main():
     torch.set_float32_matmul_precision("highest")
     with initialize_config_dir(config_dir=str(root / "configs"), version_base=None):
         cfg = compose(config_name="train_vae_conditional_intersection", overrides=[
-            f"model.init_conditional_intersection_checkpoint={args.source}",
+            f"model.init_conditional_intersection_checkpoint={json.dumps(args.source)}",
             "dataset.raw_data_root=/mnt/d/data/deepcad_v7",
             "dataset.edge_uv_root=/mnt/d/data/deepcad_v7_uv/v1",
         ])
