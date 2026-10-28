@@ -1,0 +1,60 @@
+{
+  "verified_utc": "2026-10-28T08:21:07.297738+00:00",
+  "checkpoint": "/mnt/d/python/checkpoints/shared_curve_uv/candidate/20261019T064906.049992Z/weights/epoch=0116-step=00042471-val_loss=0.036517.ckpt",
+  "checkpoint_sha256": "ce749416c1635dda1563161b971bd4260d064cfdb0c31f1fa9d06ad0e70961ff",
+  "global_step": 42471,
+  "epoch": 116,
+  "code_commit": "e0090d1a81c69d19b58b3e86827683a2b99aad76",
+  "torch": "2.8.0+cu128",
+  "strict_loading": "<All keys matched successfully>",
+  "model_parameters": 182298143,
+  "historical_freeze_encoder": true,
+  "historical_feature_weight": 1.0,
+  "smoke_only": true,
+  "training_started": false,
+  "inference_uv_sidecars_read": false,
+  "samples": [
+    {
+      "id": "00000178",
+      "latent_shape": [
+        7,
+        32
+      ],
+      "face_shape": [
+        7,
+        16,
+        16,
+        3
+      ],
+      "edge_shape": [
+        20,
+        16,
+        3
+      ],
+      "twin_reverse_max_abs": 0.0,
+      "representation": "legacy_half_edges",
+      "all_output_finite": true
+    },
+    {
+      "id": "00000894",
+      "latent_shape": [
+        20,
+        32
+      ],
+      "face_shape": [
+        20,
+        16,
+        16,
+        3
+      ],
+      "edge_shape": [
+        104,
+        16,
+        3
+      ],
+      "twin_reverse_max_abs": 0.0,
+      "representation": "legacy_half_edges",
+      "all_output_finite": true
+    }
+  ]
+}

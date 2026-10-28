@@ -2,6 +2,8 @@
 
 用户授权新增曲线监督并从上一轮继续全量训练。**已按用户要求于2026-10-28 15:54（北京时间）在142停训；固定51,460步完整checkpoint完成3495件validation评估。** 曲线CD²较UV30k降低70.09%，仍为旧XYZ64的6.84倍；面CD²较UV30k退步10.89%。完整结果见 [评估报告](evaluation_20261028/results_v1/REPORT.md)，判断与边界见 [本次研究记录](evaluation_20261028/NOTE.md)。启动信息保留于 [LAUNCH](LAUNCH.json)，曲线见 [W&B](https://wandb.ai/whatseven777/hola-brep/runs/c41fedf5a922)。
 
+用户随后决定将后续研究基线恢复为 [32维显式共享XYZ版本](../../vae_baseline/xyz32_20261028/README.md)。本实验保持停止并保留全部资产；没有启动新的32维训练。
+
 | 项目 | 状态 |
 |---|---|
 | 网络/固定曲面 | 保持30k UV模型全部结构和参数形状，170,699,647参数全量训练 |
