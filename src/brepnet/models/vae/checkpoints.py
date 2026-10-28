@@ -6,7 +6,10 @@ so moving migration code cannot add a prefix or duplicate model parameters.
 from __future__ import annotations
 
 from collections.abc import Mapping
+import hashlib
 import logging
+from pathlib import Path
+import re
 
 import torch
 from torch import Tensor
@@ -30,6 +33,43 @@ class IntersectionCheckpointLoader:
 
     def __init__(self, model):
         self.model = model
+
+    def init_conditional_intersection(self, path: str) -> None:
+        """Retain a complete legacy-inter model; initialize only spatial attention."""
+        if self.model.decoder.intersection_kind != "conditional_attention":
+            raise ValueError("Conditional initialization requires intersection.kind=conditional_attention")
+        checkpoint, source = _read_checkpoint(path)
+        source_cfg = checkpoint.get("hyper_parameters", {}).get("model", {})
+        if source_cfg.get("intersection", {}).get("kind", "legacy") != "legacy":
+            raise ValueError("Conditional initialization requires the legacy single-token intersection")
+        current = self.model.state_dict()
+        new_pattern = re.compile(
+            r"decoder\.inter\.(spatial_memory\.local_projection\.|reference_uv_head\.layers\.|"
+            r"layers\.\d+\.multihead_attn\.(query_position|key_position|query_scale)\.)"
+        )
+        fresh = {key: value for key, value in current.items() if new_pattern.match(key)}
+        expected = current.keys() - fresh.keys()
+        if not fresh or source.keys() != expected:
+            raise ValueError(
+                "Conditional initialization requires the complete matching legacy-inter model; "
+                f"missing={sorted(expected - source.keys())}, "
+                f"unexpected={sorted(source.keys() - expected)}"
+            )
+        self.model.load_state_dict({**source, **fresh}, strict=True)
+        digest = hashlib.sha256()
+        with Path(path).open("rb") as stream:
+            for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                digest.update(chunk)
+        self.model.initialization_report = {
+            "source": str(path), "source_sha256": digest.hexdigest(),
+            "source_epoch": checkpoint.get("epoch"),
+            "source_global_step": checkpoint.get("global_step"),
+            "retained_state_keys": len(source), "initialized_keys": sorted(fresh),
+            "initialized_parameters": sum(value.numel() for value in fresh.values()),
+            "mapping": "Every legacy tensor retained exactly; only spatial/reference/position parameters added.",
+            "equivalence": "Initial eval with zero local projection; train-time dropout differs for 256 keys.",
+        }
+        logger.info("Conditional intersection initialization: %s", self.model.initialization_report)
 
     @staticmethod
     def _repeat_latent_parameter(value, *, segments=(), repeat_output=False, attention=False):

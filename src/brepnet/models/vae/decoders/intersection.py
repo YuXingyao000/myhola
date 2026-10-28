@@ -17,6 +17,7 @@ from .primitives import (
     SharedCurveFusion, CurveConditionedUVPathHead,
 )
 from .refinement import CurvePointFeedback, IntersectionRefiner
+from .conditional_intersection import ConditionalIntersection
 
 if TYPE_CHECKING:
     from ..legacy import AutoEncoder_light
@@ -265,9 +266,10 @@ class IntersectionDecoder(nn.Module):
         if self.shared_curve_enabled and self.curve_point_feedback_enabled:
             raise ValueError("Per-half-edge point feedback would break shared curve geometry.")
         if self.curve_conditioning_enabled and (
-            not self.refinement_enabled or (intersection_cfg or {}).get("kind", "legacy") != "legacy"
+            not self.refinement_enabled
+            or (intersection_cfg or {}).get("kind", "legacy") not in {"legacy", "conditional_attention"}
         ):
-            raise ValueError("Curve conditioning requires legacy intersection with refinement enabled.")
+            raise ValueError("Curve conditioning requires legacy/conditional intersection with refinement enabled.")
         if self.curve_point_feedback_enabled and not self.curve_conditioning_enabled:
             raise ValueError("Curve point feedback requires the retained curve conditioning path.")
         self.face_features = FaceFeatureDecoder(
@@ -287,6 +289,10 @@ class IntersectionDecoder(nn.Module):
         self.intersection_kind = str(intersection_cfg.get("kind", "legacy"))
         if self.intersection_kind == "legacy":
             self.inter = legacy.inter
+        elif self.intersection_kind == "conditional_attention":
+            self.inter = ConditionalIntersection(
+                legacy.inter, self.face_geometry.local_feature_channels, intersection_cfg,
+            )
         elif self.intersection_kind == "local_attention":
             self.inter = LocalPairIntersection(
                 self.face_dim, self.edge_dim, self.face_geometry.local_feature_channels,
@@ -420,9 +426,12 @@ class IntersectionDecoder(nn.Module):
 
         # The original Transformer runs once. No geometry/GT enters this stage.
         faces = self.face_features(face_latents, face_counts)
-        if self.intersection_kind == "local_attention":
+        if self.intersection_kind in {"local_attention", "conditional_attention"}:
             coarse_faces, local_features = self.face_geometry.forward_with_local_features(faces)
-            edges = self.inter(faces, local_features, coarse_faces.points, pairs.indices)
+            if self.intersection_kind == "conditional_attention":
+                edges = self.inter(faces, local_features, pairs.indices)
+            else:
+                edges = self.inter(faces, local_features, coarse_faces.points, pairs.indices)
             coarse = self._decode_stage(faces, edges, pairs, face_geometry=coarse_faces)
         else:
             edges = self._run_candidates(faces[pairs.indices])

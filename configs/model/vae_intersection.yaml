@@ -18,6 +18,7 @@ init_uv_boundary_checkpoint: null
 init_shared_curve_checkpoint: null
 # Added 2026-10-20: same-architecture channel expansion; never optimizer resume.
 init_latent_expansion_checkpoint: null
+init_conditional_intersection_checkpoint: null
 checkpoint: null
 trainable_scope: all
 edge_threshold: 0.5

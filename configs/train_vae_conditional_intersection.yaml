@@ -1,0 +1,47 @@
+defaults:
+  - train_vae_shared_curve_uv
+  - _self_
+
+# New run from the accepted 32D shared-XYZ checkpoint (validation 3180/3495).
+# Replace only the pair cross-attention; retain its old projections, self-attention,
+# FFNs, refinement, conditioning, shared XYZ decoder, auxiliary UV, and losses.
+# All parameters train. No optimizer/step state is resumed from the source run.
+trainer:
+  exp_name: conditional_intersection/xyz32
+  devices: 7
+  batch_size: 2
+  accumulate_grad_batches: 8
+  learning_rate: 2.0e-5
+  precision: bf16-mixed
+  gradient_clip_val: 1.0
+  seed: 42
+  max_epochs: 10000
+  max_steps: 30000
+  max_time: "01:00:00:00"
+  wandb:
+    enabled: true
+    offline: false
+    name: vae-conditional-intersection-xyz32
+
+model:
+  init_shared_curve_checkpoint: null
+  init_conditional_intersection_checkpoint: ???
+  freeze_encoder: false
+  trainable_scope: all
+  latent_channels: 8
+  gaussian_weights: 1.0e-6
+  intersection:
+    kind: conditional_attention
+    reference_hidden_dim: 128
+    candidate_chunk_size: 64
+    checkpoint_candidates: true
+  # Recompute candidate geometry activations to fit full-model training.
+  # This changes execution/memory use, not the layers or research losses.
+  refinement:
+    candidate_chunk_size: 64
+    geometry_chunk_size: 128
+    checkpoint_candidates: true
+  # Deliberately retain the 91% source model's feature matching, unlike the
+  # later 64D no-edge-feature experiment. All other loss weights are inherited.
+  loss_weights:
+    feature_weight: 1.0

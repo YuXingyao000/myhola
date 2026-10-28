@@ -40,6 +40,7 @@ class AutoEncoder_intersection(BaseVAE):
         uv_boundary_path = cfg.get("init_uv_boundary_checkpoint")
         shared_curve_path = cfg.get("init_shared_curve_checkpoint")
         latent_expansion_path = cfg.get("init_latent_expansion_checkpoint")
+        conditional_path = cfg.get("init_conditional_intersection_checkpoint")
         shared_curve_cfg = dict(cfg.get("shared_curve") or {})
         shared_curve_enabled = bool(shared_curve_cfg.get("enabled", False))
         uv_boundary_cfg = dict(cfg.get("uv_boundary") or {})
@@ -53,13 +54,13 @@ class AutoEncoder_intersection(BaseVAE):
         restoring = bool(cfg.get("restoring_checkpoint", False))
         sources = (legacy_path, refinement_path, curve_feedback_path, edge_value_path,
                    face_encoder_path, uv_boundary_path, shared_curve_path,
-                   latent_expansion_path, full_path)
+                   latent_expansion_path, conditional_path, full_path)
         if sum(bool(path) for path in sources) > 1:
             raise ValueError(
                 "Choose only one of init_legacy_checkpoint, init_refinement_checkpoint, "
                 "init_curve_feedback_checkpoint, init_encoder_edge_value_checkpoint, "
                 "init_face_encoder_checkpoint, init_uv_boundary_checkpoint, init_shared_curve_checkpoint, "
-                "init_latent_expansion_checkpoint or checkpoint"
+                "init_latent_expansion_checkpoint, init_conditional_intersection_checkpoint or checkpoint"
             )
         if restoring and any(sources):
             raise ValueError("Resume must restore the new checkpoint without a second initialization")
@@ -69,7 +70,7 @@ class AutoEncoder_intersection(BaseVAE):
                 "init_refinement_checkpoint, init_curve_feedback_checkpoint, "
                 "init_encoder_edge_value_checkpoint, init_face_encoder_checkpoint, "
                 "init_uv_boundary_checkpoint, init_shared_curve_checkpoint, "
-                "init_latent_expansion_checkpoint or checkpoint"
+                "init_latent_expansion_checkpoint, init_conditional_intersection_checkpoint or checkpoint"
             )
         intersection_cfg = cfg.get("intersection")
         curve_conditioning_cfg = cfg.get("curve_conditioning")
@@ -122,6 +123,8 @@ class AutoEncoder_intersection(BaseVAE):
             initializer.init_shared_curve(shared_curve_path)
         if latent_expansion_path:
             initializer.init_latent_expansion(latent_expansion_path)
+        if conditional_path:
+            initializer.init_conditional_intersection(conditional_path)
         if full_path:
             checkpoint = torch.load(str(full_path), map_location="cpu", weights_only=False)
             state = checkpoint.get("state_dict", checkpoint)

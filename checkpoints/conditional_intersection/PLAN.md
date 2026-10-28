@@ -1,0 +1,38 @@
+# Conditional Intersection：研究计划
+
+日期：2026-10-29（北京时间）。状态：实现与验收阶段；尚无本方案训练收益或完整评估结论。
+
+## 问题与决定
+
+已恢复的32维显式共享XYZ模型在固定3495件validation上得到3180件合法solid（90.99%）。它的原Intersection让一个面token查询另一个面token；cross-attention只有一个key，无法在面内选择局部位置。用户同意借鉴Conditional DETR，在原Intersection内部加入内容／位置分开的attention，继续输出原64维有向边特征。
+
+本轮不追加末端correction或第二个refinement，不更换曲线表示。面CNN已经生成的16×16中间特征成为空间memory；每个有向面对仍只有一个query。ReferenceUVHead预测被读取面上的一个参考位置，没有GT位置标签，不代表曲线中心或曲线上的某一个点。
+
+## 固定范围
+
+- 来源为 [91% XYZ32基线](../vae_baseline/xyz32_20261028/README.md) 的shared_curve_uv best42471，SHA256 `ce749416c1635dda1563161b971bd4260d064cfdb0c31f1fa9d06ad0e70961ff`。
+- 保留原8层512维Intersection的self-attention、FFN、LayerNorm、输入／输出投影与侧别位置参数；仅替换每层cross-attention的计算。
+- 保留refinement、curve conditioning、shared XYZ、辅助UV以及现有loss权重。feature匹配权重明确为1.0，不沿用后来的64维no-edge-feature实验。
+- 本次Encoder、Posterior及Decoder全部参与训练；历史来源训练冻结Encoder，因此本轮不是严格的仅attention单变量消融。
+- 新run、新Adam，不恢复来源run的optimizer、步数或Timer。首阶段上限30000个optimizer更新或24小时，先到者结束；设备／microbatch以142实测为准并保存在resolved config。
+- 142采用PyTorch2.8/cu128，正式计划使用物理GPU1–7、每卡microbatch2、累积8，即112 CAD/update；GPU0保留给现有ComfyUI。来源历史为128 CAD/update，批量差异明确记录。Intersection和原refinement均按64候选分块并启用激活重算，refinement几何分块128；这是计算／显存调整，不改参数或loss。
+- 保留原数据、UV sidecar、增广、半边索引和OCC接口；不将本次参考UV写成曲线几何或新增GT输入。
+
+## 实现验收
+
+1. 新旧模块在eval、FP32、零局部投影时，对相同输入产生近等价边特征；完整模型迁移严格保留旧权重。训练dropout的随机分布改变，不能宣称逐步训练等价。
+2. 真实validation小批量检查训练／推理张量形状、有限loss与梯度、反向共享XYZ、全模型可训练及checkpoint完整加载。
+3. 确认零初始化的局部投影首步得到梯度；在它更新之后，参考UV／位置分支得到梯度。初始value空间恒定时位置梯度应为零，不伪报为训练失败，也不跳过后续启动检查。
+4. 比较分块与未分块输出／梯度；检查激活重算和BF16训练。142上使用实际最大面数样本检查显存，再进行短DDP训练验收。
+5. 完成验收后，在142启动独立正式run；记录Git、初始化摘要、全部超参数、GPU、命令及W&B链接。
+
+## 研究评价
+
+用固定3495件validation与来源权重比较。posterior mean、原始预测及固定recover_v1后处理分别报告：面／边CD²、拓扑指标、原生合法solid数、救回／退步及耗时；失败保留在预定分母。训练loss与attention热图仅帮助解释，不替代完整几何和合法率结果。test不参与结构选择或容差调整。
+
+注意力图按层和head展示在owner面16×16网格上，核查参考UV与实际读取区域；多head未被监督为边上不同区段，参考UV也没有两侧3D对应保证。判断应基于实际权重与下游几何，而非仅凭参考点看似合理。
+
+## 参考
+
+- [Conditional DETR论文](https://arxiv.org/abs/2108.06152)：内容与位置query分开匹配。
+- [作者Transformer实现](https://github.com/Atten4Vis/ConditionalDETR/blob/main/models/transformer.py)：逐head拼接内容／位置，value传递内容。本项目的一面对单query、固定参考UV与旧权重迁移是任务适配，不是原论文完整复现。
