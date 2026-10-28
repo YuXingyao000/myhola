@@ -4,6 +4,16 @@
 
 policy和冻结reference均严格初始化到照片baseline的310,000步；原SVR checkpoint仅提供同源冻结DINO/AE，不作为本轮reference。新Adam、新DPO步数，不恢复baseline optimizer。原24层网络和DPO公式不变。
 
+## 已启动
+
+2026-10-28 07:32 UTC（北京时间15:32）已在tmux `photo-dpo-20261028T073228Z`启动，run为 `/mnt/d/python/checkpoints/diffusion_preference_photo/20261028T073228Z`。运行代码commit `4b8c3c3d`，分支 `codex/photo-dpo-20261028`，另存2,919份实际源码/配置快照。在线曲线：[W&B](https://wandb.ai/whatseven777/hola-brep/runs/acc61a68da66)。启动核验时已完成首个epoch的832个batch，纯训练约6.6–6.8 step/s；已读取的训练日志数值均有限，step799的rank0 local总loss为0.721833。GPU0–6利用率93–100%、显存约7.6GiB，GPU7为0%/15MiB。快照见[RUN_STATUS.json](RUN_STATUS.json)，不是实时进度或训练完成结论。
+
+```bash
+tail -f /mnt/d/python/checkpoints/diffusion_preference_photo/20261028T073228Z/logs/console.log
+```
+
+完整启动命令保存在run的 `metadata/launch.sh`，退出码写 `metadata/exit_code.txt`。正式预算5,000步；后台继续运行，本次不自动启动下游评价。代码提交后的服务器自动同步仍因目标未处于同名分支而被拒绝，未强推或切换目标；本机4090训练不依赖同步。
+
 ## 数据与训练
 
 生成run为 `checkpoints/diffusion/photo_preference_data/20261026T055801Z`。训练使用全部46,627件CAD作为GT流，独立均匀抽取42,283对候选；未能选出pair的4,344件仍参加GT训练。候选latent保持原始[30,32]，不重编码、排列或按pair类型重采样。
@@ -33,6 +43,6 @@ policy和冻结reference均严格初始化到照片baseline的310,000步；原SV
 
 ## 启动
 
-使用[RUN_TRAINING.sh](RUN_TRAINING.sh)指定新的绝对run路径。脚本固定使用GPU 0–6，拒绝覆盖已有run；已启动任务不可重复执行。实际run和后台会话将在启动核验后写入 `RUN_STATUS.json`。从断点继续必须使用原run及完整checkpoint，不能重新初始化reference。
+使用[RUN_TRAINING.sh](RUN_TRAINING.sh)指定新的绝对run路径。脚本固定使用GPU 0–6，拒绝覆盖已有run；已启动任务不可重复执行。实际run和后台会话见 `RUN_STATUS.json`。从断点继续必须使用原run及完整checkpoint，不能重新初始化reference。
 
 本次只启动DPO。下游对照使用照片310k的81.68%完整validation baseline及原评价协议；未经完整重建评估，不把训练loss或偏好accuracy当作合法率提升。
