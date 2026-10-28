@@ -121,6 +121,9 @@ def main():
             f"model.init_conditional_intersection_checkpoint={json.dumps(args.source)}",
             "dataset.raw_data_root=/mnt/d/data/deepcad_v7",
             "dataset.edge_uv_root=/mnt/d/data/deepcad_v7_uv/v1",
+            "dataset.train_dataset=checkpoints/joint_boundary/validation/train_contract_audit/accepted.txt",
+            "dataset.val_dataset=checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt",
+            "dataset.test_dataset=checkpoints/joint_boundary/validation/test_contract_audit/accepted.txt",
         ])
     dataset = AutoEncoder_joint_dataset("validation", cfg.dataset)
     items = [dataset[0], dataset[1]]
