@@ -85,7 +85,8 @@ def insert_unique(records, rows, source):
         records[identifier] = row
 
 
-def load_shards(root, ids, split_sha, *, baseline=False):
+def load_shards(root, ids, split_sha, *, baseline=False, checkpoint_sha=None, checkpoint_step=30000):
+    expected_sha = checkpoint_sha or (OLD_SHA if baseline else NEW_SHA)
     shard_root = root if baseline else root / "shards"
     dirs = sorted(shard_root.glob("shard_[0-9][0-9][0-9]"))
     require(bool(dirs), f"No shards in {shard_root}")
@@ -96,8 +97,8 @@ def load_shards(root, ids, split_sha, *, baseline=False):
         require(protocol["shard_index"] == index, f"Missing/out-of-order shard: {shard}")
         require(protocol["shard_count"] == len(dirs), f"Incomplete shard set: {shard}")
         require(protocol["split_sha256"] == split_sha, f"Split mismatch: {shard}")
-        require(protocol["checkpoint_sha256"] == (OLD_SHA if baseline else NEW_SHA), f"Wrong checkpoint: {shard}")
-        require(protocol.get("checkpoint_global_step") == 30000, f"Not fixed final checkpoint: {shard}")
+        require(protocol["checkpoint_sha256"] == expected_sha, f"Wrong checkpoint: {shard}")
+        require(protocol.get("checkpoint_global_step") == checkpoint_step, f"Not fixed checkpoint step: {shard}")
         require(protocol.get("smoke_limit") is None, f"Smoke run cannot be a full evaluation: {shard}")
         expected = ids[index::len(dirs)]
         require(protocol["intended_ids"] == expected, f"Unexpected shard CAD order: {shard}")
@@ -113,7 +114,7 @@ def load_shards(root, ids, split_sha, *, baseline=False):
             require(completion["status"] == "completed", f"Incomplete shard: {shard}")
             require(completion["intended_count"] == len(expected), f"Completion denominator mismatch: {shard}")
             require(completion["counts"] == counts, f"Completion status counts mismatch: {shard}")
-            require(completion["checkpoint_sha256"] == NEW_SHA, f"Completion checkpoint mismatch: {shard}")
+            require(completion["checkpoint_sha256"] == expected_sha, f"Completion checkpoint mismatch: {shard}")
             completion_hash = sha256(completion_path)
         require(protocol.get("latent") == "posterior_mean" and protocol.get("tf32") is False,
                 f"Incompatible inference protocol: {shard}")
@@ -188,14 +189,14 @@ def audit_old_exports(root, ids, new_records, baseline):
 
 
 
-def audit_run_completion(root, provenance):
+def audit_run_completion(root, provenance, *, checkpoint_sha=NEW_SHA):
     verification = read_json(root / "source_verification.json")
     exits = read_json(root / "process_exit_codes.json")
     launch = read_json(root / "launch.json")
     require(verification.get("source_unchanged") is True and all(verification["source_checks"].values()),
             "Evaluation source changed during run")
     require(set(verification["source_checks"]) == set(provenance["source_hashes"]), "Incomplete source end checks")
-    require(verification["checkpoint_sha256"] == NEW_SHA, "End checkpoint hash mismatch")
+    require(verification["checkpoint_sha256"] == checkpoint_sha, "End checkpoint hash mismatch")
     require(verification["source_git_commit"] == launch["source_git_commit"] == provenance["source_git_commit"],
             "Launch/protocol/end source commits differ")
     expected = [{"shard": index, "exit_code": 0} for index in range(len(provenance["shards"]))]

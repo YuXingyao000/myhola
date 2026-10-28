@@ -103,20 +103,39 @@ def predict(model, batch):
     return arrays, values
 
 
-def main():
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkpoint", type=Path, required=True)
+    parser.add_argument("--checkpoint-sha256", default=CHECKPOINT_SHA,
+                        help="Frozen checkpoint identity; defaults to the original UV 30k checkpoint")
+    parser.add_argument("--expected-step", type=int, default=30000)
+    parser.add_argument("--spec", type=Path, default=HERE / "SPEC.md",
+                        help="Frozen evaluation specification included in source provenance")
     parser.add_argument("--split", type=Path, required=True)
     parser.add_argument("--data-root", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--shard-count", type=int, default=1)
     parser.add_argument("--limit", type=int, help="Implementation smoke only; total IDs before sharding")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
+    if (len(args.checkpoint_sha256) != 64
+            or any(char not in "0123456789abcdef" for char in args.checkpoint_sha256)):
+        parser.error("--checkpoint-sha256 must contain 64 lowercase hexadecimal characters")
+    if args.expected_step < 0:
+        parser.error("--expected-step must be nonnegative")
+    args.spec = args.spec.resolve()
+    if not args.spec.is_file():
+        parser.error(f"--spec does not exist: {args.spec}")
+    return args
+
+
+def main():
+    args = parse_args()
     ids = args.split.read_text().split()
     if len(ids) != 3495 or len(set(ids)) != 3495 or sha256(args.split) != SPLIT_SHA:
         raise ValueError("Frozen validation list changed")
-    if sha256(args.checkpoint) != CHECKPOINT_SHA:
+    checkpoint_digest = sha256(args.checkpoint)
+    if checkpoint_digest != args.checkpoint_sha256:
         raise ValueError("Final checkpoint identity changed")
     if args.limit is not None:
         ids = ids[:args.limit]
@@ -132,11 +151,12 @@ def main():
     torch.backends.cudnn.benchmark = False
     seed()
     checkpoint = torch.load(args.checkpoint, map_location="cpu", weights_only=False, mmap=True)
-    if checkpoint["global_step"] != 30000 or checkpoint["hyper_parameters"]["model"]["freeze_encoder"]:
-        raise ValueError("Expected final full-training 30k checkpoint")
+    if checkpoint["global_step"] != args.expected_step or checkpoint["hyper_parameters"]["model"]["freeze_encoder"]:
+        raise ValueError(f"Expected full-training checkpoint at step {args.expected_step}")
     cfg = OmegaConf.to_container(OmegaConf.create(checkpoint["hyper_parameters"]), resolve=True)
     model_cfg = dict(cfg["model"])
-    model_cfg.update(init_uv_decoder_checkpoint=None, checkpoint=str(args.checkpoint), mode="frozen_inference")
+    model_cfg.update(init_uv_decoder_checkpoint=None, checkpoint=str(args.checkpoint),
+                     restoring_checkpoint=False, mode="frozen_inference")
     model = AutoEncoder_uv_intersection(model_cfg).cuda().eval()
     available = [identifier for identifier in selected if (args.data_root / identifier / "data.npz").is_file()]
     available_path = out / "available_ids.txt"
@@ -146,12 +166,14 @@ def main():
                     is_overfit=False, epoch_scale_factor=1, edge_uv_root=None)
     dataset = AutoEncoder_joint_dataset("validation", data_cfg) if available else None
     locations = {name: index for index, name in enumerate(dataset.data_folders)} if dataset else {}
-    sources = [Path(__file__), HERE / "metrics.py", HERE / "SPEC.md", ROOT / "tools/vae_compare_metrics.py",
-               ROOT / "src/brepnet/dataset.py", ROOT / "src/brepnet/data/shared_boundaries.py"]
+    sources = [Path(__file__), HERE / "launch.py", HERE / "metrics.py", args.spec,
+               ROOT / "tools/vae_compare_metrics.py", ROOT / "src/brepnet/dataset.py",
+               ROOT / "src/brepnet/data/shared_boundaries.py", ROOT / "src/brepnet/data/uv_curve_targets.py"]
     sources += sorted((ROOT / "src/brepnet/models/vae").rglob("*.py"))
     protocol = {
-        "created_utc": datetime.now(timezone.utc).isoformat(), "checkpoint_sha256": CHECKPOINT_SHA,
+        "created_utc": datetime.now(timezone.utc).isoformat(), "checkpoint_sha256": checkpoint_digest,
         "checkpoint": str(args.checkpoint), "checkpoint_global_step": checkpoint["global_step"],
+        "expected_step": args.expected_step, "spec": str(args.spec), "spec_sha256": sha256(args.spec),
         "checkpoint_epoch": checkpoint["epoch"], "split_sha256": SPLIT_SHA,
         "intended_ids": selected, "shard_index": args.shard_index, "shard_count": args.shard_count,
         "smoke_limit": args.limit, "model_config": model_cfg, "dataset_config": data_cfg,
@@ -160,7 +182,8 @@ def main():
         "latent": "posterior_mean", "batch_size": 1, "seed": 42, "threshold": model.edge_threshold,
         "torch": torch.__version__, "gpu": torch.cuda.get_device_name(0),
         "source_git_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
-        "source_hashes": {str(path.relative_to(ROOT)): sha256(path) for path in sources},
+        "source_hashes": {str(path.relative_to(ROOT) if path.is_relative_to(ROOT) else path): sha256(path)
+                          for path in sources},
         "occ_status": "not_evaluated_native_dual_uv_constructor_not_implemented",
     }
     write_json(out / "protocol.json", protocol)
@@ -187,7 +210,7 @@ def main():
                     if not np.isclose(values["gt_pair_gap_rms"] ** 2 / 3, losses["loss_curve_incidence"], rtol=1e-5, atol=1e-7):
                         raise ValueError("Independent dual-side gap differs from incidence loss")
                 arrays.update(input_source_sha256=np.asarray(source_digest),
-                              encoder_checkpoint_sha256=np.asarray(CHECKPOINT_SHA))
+                              encoder_checkpoint_sha256=np.asarray(checkpoint_digest))
                 path = args.output_root / "raw_predictions" / identifier / "data.npz"
                 path.parent.mkdir(parents=True, exist_ok=False)
                 with path.open("xb") as target:
@@ -209,7 +232,7 @@ def main():
                 print(json.dumps({"completed": ordinal + 1, "total": len(selected), "counts": counts,
                                   "elapsed_seconds": time.monotonic() - started}), flush=True)
     completion = {"status": "completed", "intended_count": len(selected), "counts": dict(counts),
-                  "elapsed_seconds": time.monotonic() - started, "checkpoint_sha256": CHECKPOINT_SHA}
+                  "elapsed_seconds": time.monotonic() - started, "checkpoint_sha256": checkpoint_digest}
     write_json(out / "completion.json", completion)
     print(json.dumps(completion), flush=True)
     if counts["failed"]:
