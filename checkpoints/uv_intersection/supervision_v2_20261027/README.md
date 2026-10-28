@@ -1,6 +1,6 @@
 # UV监督第二阶段
 
-用户授权新增曲线监督并从上一轮继续全量训练。**正式训练已于2026-10-27 16:14:50（北京时间）在142启动**；启动信息见 [LAUNCH](LAUNCH.json)，监控见 [W&B](https://wandb.ai/whatseven777/hola-brep/runs/c41fedf5a922)。
+用户授权新增曲线监督并从上一轮继续全量训练。**已按用户要求于2026-10-28 15:54（北京时间）在142停训；固定51,460步完整checkpoint完成3495件validation评估。** 曲线CD²较UV30k降低70.09%，仍为旧XYZ64的6.84倍；面CD²较UV30k退步10.89%。完整结果见 [评估报告](evaluation_20261028/results_v1/REPORT.md)，判断与边界见 [本次研究记录](evaluation_20261028/NOTE.md)。启动信息保留于 [LAUNCH](LAUNCH.json)，曲线见 [W&B](https://wandb.ai/whatseven777/hola-brep/runs/c41fedf5a922)。
 
 | 项目 | 状态 |
 |---|---|
@@ -8,7 +8,8 @@
 | 新loss | 已实现直接UV、XYZ差分走向、GT尺度相对XYZ；绝对XYZ改L1 |
 | 局部验证 | loss/网络26项、dataset10项、adapter11项通过；真实两件与两卡完整resume通过 |
 | GT UV缓存 | 49,975件全部生成并逐文件审计通过，UV有效点99.94075%，无样本丢弃 |
-| 正式训练 | 七卡已运行，完整恢复权重/Adam/step；首批至少19次更新正常，尚无效果结论 |
+| 正式训练 | 已停；固定保存步数30000→51460，增加21460次更新，保留完整模型/Adam |
+| 下游评估 | 固定validation 3495/3495成功；三方几何/拓扑比较完成；OCC合法率未评估 |
 
 入口配置：`configs/train_vae_uv_intersection_supervision_v2.yaml`。实际系数见 [架构与目标](ARCHITECTURE.md)，标签协议见 [SPEC](SPEC.md)，研究判断见 [PLAN](PLAN.md)。
 
@@ -26,4 +27,4 @@ W&B中的`curve_xyz`继续表示旧MSE诊断；本轮绝对目标名为`curve_xy
 
 46,108,032个UV点中46,080,715有效；完整单侧轨迹2,877,130/2,881,752。零有效CAD=0、零有效双侧边=0；单侧零有效轨迹1,278照常保留XYZ/切向目标。无效点主要是多解/参数跳变，39点残差超阈值。有效点残差全局P99为1.57e-7。全缓存审计将源SHA与生成日志对照，没有重算全部raw SHA；训练loader逐件重新核对原始文件摘要。
 
-正式阶段目录：`/mnt/d/python/checkpoints/uv_intersection/joint64/20261025T144428Z/stages/supervision_v2_20261027T081450Z`。启动代码commit `16b7129afb9d9b4b2c0dfae94629780a8d9b80f3`，GPU1–7，Adam lr2e-5，BF16，seed42，累计步数30000→60000。启动日志确认7个rank、0冻结参数、完整checkpoint恢复；16:16:42检查时至少完成19次新更新，记录的总loss均有限，未出现fatal错误。后续文档提交不改变本次训练代码。
+正式阶段目录：`/mnt/d/python/checkpoints/uv_intersection/joint64/20261025T144428Z/stages/supervision_v2_20261027T081450Z`。启动代码commit `16b7129afb9d9b4b2c0dfae94629780a8d9b80f3`，GPU1–7，Adam lr2e-5，BF16，seed42，原计划累计步数30000→60000；实际固定评估保存至51460。启动日志确认7个rank、0冻结参数、完整checkpoint恢复；16:16:42启动验收时至少完成19次新更新。停训后原训练进程组全部退出，W&B正常结束；没有重启训练。见 [停止记录](evaluation_20261028/STOP.json)。后续文档提交不改变本次训练代码。

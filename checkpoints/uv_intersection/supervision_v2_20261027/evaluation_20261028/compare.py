@@ -167,8 +167,13 @@ def report(summary):
     n = summary["planned_cads"]
     pair = summary["paired"]["v2_vs_uv30k"]
     old_pair = summary["paired"]["v2_vs_old_xyz64"]
-    edge = pair.get("edge_cd_sq", {})
-    lines = ["# UV 监督 v2 停训评估", "",
+    conclusion = "存在缺失几何指标，需结合各项有效分母解释，不能给出完整比较结论。"
+    if "edge_cd_sq" in pair and "edge_cd_sq" in old_pair:
+        edge = pair["edge_cd_sq"]
+        conclusion = (f"**曲线 CD² 相对 UV30k 变化 {edge['relative_change_of_mean']:+.2%}，"
+                      f"{edge['improved_cads']} / {n} 件改善；但均值仍为旧 XYZ64 的 "
+                      f"{old_pair['edge_cd_sq']['ratio_of_means_new_over_old']:.2f} 倍。**")
+    lines = ["# UV 监督 v2 停训评估", "", conclusion, "",
              f"固定 checkpoint **51,460 步**；validation **{n} CAD**。本次没有重启训练。",
              "使用固定最终快照，不据评估结果选择 best；训练历史不等，不是等预算单变量消融。", "",
              "## 原始几何", "",
@@ -218,7 +223,10 @@ def report(summary):
               "- 几何改善说明当前监督对实际输出有效；是否值得继续此架构，还需看与旧 XYZ64 的剩余差距。",
               "- 现有资料未证明曲线误差完全源于某一层、某个 loss 或 latent 容量。", "",
               "## 文件", "", "`summary.json`、`summary.csv.gz`、`per_cad.csv.gz`；"
-              "`three_way_geometry_cdf.png/pdf`、`uv_curve_diagnostics_cdf.png/pdf`。", ""]
+              "`three_way_geometry_cdf.png/pdf`、`uv_curve_diagnostics_cdf.png/pdf`。", "",
+              f"远程完整评估及原始预测：`{summary['artifact_locations']['v2_original_output_root']}`。",
+              f"本地聚合读取紧凑副本：`{summary['artifact_locations']['v2_compact_input_root']}`；"
+              "未复制或重新扫描大型原始预测文件。", ""]
     return "\n".join(lines)
 
 
@@ -241,6 +249,16 @@ def main():
     old, old_audit = A.load_shards(args.baseline_root, ids, A.SPLIT_SHA, baseline=True)
     completion = {"v2": A.audit_run_completion(args.input_root, new_audit, checkpoint_sha=V2_SHA),
                   "uv30k": A.audit_run_completion(args.uv30k_root, previous_audit)}
+    new_protocol = A.read_json(args.input_root / "shards/shard_000/protocol.json")
+    old_protocol = A.read_json(args.uv30k_root / "shards/shard_000/protocol.json")
+    for key in ("precision", "seed", "latent", "batch_size", "threshold", "autocast", "tf32"):
+        A.require(key in new_protocol and new_protocol[key] == old_protocol.get(key),
+                  f"UV inference protocol changed: {key}")
+    A.require(new_protocol["dataset_config"]["is_aug"] == old_protocol["dataset_config"]["is_aug"] == 0,
+              "Augmented input is not comparable with the frozen validation")
+    commands = A.read_json(args.input_root / "launch.json")["commands"]
+    producer_roots = {item["command"][item["command"].index("--output-root") + 1] for item in commands}
+    A.require(len(producer_roots) == 1, "Evaluation shards wrote to different original output roots")
     metric_key = "checkpoints/uv_intersection/evaluation_20261027/metrics.py"
     A.require(new_audit["source_hashes"].get(metric_key) == previous_audit["source_hashes"].get(metric_key)
               and metric_key in new_audit["source_hashes"], "UV metric implementation changed")
@@ -253,6 +271,10 @@ def main():
         "compare_source_sha256": A.sha256(__file__), "aggregate_helper_sha256": A.sha256(HELPER_PATH),
         "split_sha256": A.SPLIT_SHA, "planned_cads": len(ids), "original_split_cads": 3505,
         "existing_contract_exclusions": 10, "completion": completion,
+        "artifact_locations": {"v2_original_output_root": next(iter(producer_roots)),
+                               "v2_compact_input_root": str(args.input_root.resolve()),
+                               "comparison_output_root": str(args.output.resolve()),
+                               "large_raw_files_copied_or_rehashed": False},
         "uv_input_hash_audit": input_audit, "baseline_export_audit": exports,
         "models": {name: {"provenance": provenance[name], "macro": A.macro_metrics(records),
                           "topology": A.topology(records),
