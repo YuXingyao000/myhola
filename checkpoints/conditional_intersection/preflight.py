@@ -48,7 +48,8 @@ def compare_decoders(reference, model, batch):
             }
             for name, (expected, actual) in tensors.items():
                 differences[f"{stage_name}/{name}"] = float((expected - actual).abs().max())
-                torch.testing.assert_close(actual, expected, rtol=2e-4, atol=2e-5, msg=name)
+                print(json.dumps({"tensor": f"{stage_name}/{name}", "max_abs": differences[f"{stage_name}/{name}"]}), flush=True)
+                torch.testing.assert_close(actual, expected, rtol=2e-4, atol=2e-5)
         torch.testing.assert_close(new.edge_uv, old.edge_uv, rtol=2e-4, atol=2e-5)
         xyz = new.refined.edge_geometry.points
         twin_error = float((xyz - xyz[new.pairs.reverse].flip(1)).abs().max())
@@ -98,7 +99,7 @@ def train_updates(model, batch, lr):
         torch.cuda.synchronize()
         updates.append({
             "step": step + 1, "seconds": time.monotonic() - started,
-            "losses": {key: float(value) for key, value in losses.items()},
+            "losses": {key: float(value.detach()) for key, value in losses.items()},
             "gradient_l1": gradients, "gradient_norm_before_clip": norm,
             "parameters_without_gradient": missing,
         })
@@ -111,11 +112,14 @@ def main():
     parser.add_argument("--source", required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--largest", action="store_true")
+    parser.add_argument("--batch-size", type=int, default=2)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     torch.manual_seed(42)
     torch.set_num_threads(2)
     torch.set_float32_matmul_precision("highest")
+    # Compare the changed attention in FP32, without chunk-dependent TF32 CNN rounding.
+    torch.backends.cudnn.allow_tf32 = False
     with initialize_config_dir(config_dir=str(root / "configs"), version_base=None):
         cfg = compose(config_name="train_vae_conditional_intersection", overrides=[
             f"model.init_conditional_intersection_checkpoint={json.dumps(args.source)}",
@@ -136,6 +140,10 @@ def main():
             if len(items) == 2:
                 break
         assert len(items) == 2, "Expected two real 30-face validation CADs"
+        # Repeat the two largest CADs only for a worst-shape allocation check.
+        items = [items[index % 2] for index in range(args.batch_size)]
+    else:
+        items = [dataset[index] for index in range(args.batch_size)]
     batch = device_batch(dataset.collate_fn(items))
     model = build_model(cfg.model).cuda().eval()
     assert model.initialization_report["source_sha256"] == SOURCE_SHA256
@@ -149,6 +157,9 @@ def main():
     report = {
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "scope": "Implementation and memory check on validation; not a quality evaluation.",
+        "repeated_largest_cads_for_memory_only": args.largest and args.batch_size > 2,
+        "comparison_precision": "FP32; cuDNN TF32 disabled",
+        "training_precision": "BF16 autocast; matmul=medium, cuDNN TF32 enabled, matching trainer",
         "torch": torch.__version__, "gpu": torch.cuda.get_device_name(0), "seed": 42,
         "sample_ids": list(batch["v_prefix"]), "face_counts": batch["face_counts"].tolist(),
         "initialization": model.initialization_report,
@@ -167,6 +178,8 @@ def main():
     del reference, checkpoint, weights
     gc.collect()
     torch.cuda.empty_cache()
+    torch.backends.cudnn.allow_tf32 = True
+    torch.set_float32_matmul_precision("medium")
     report["updates"], report["peak_train_memory_gib"] = train_updates(model, batch, cfg.trainer.learning_rate)
     report["passed"] = True
     args.output.parent.mkdir(parents=True, exist_ok=True)

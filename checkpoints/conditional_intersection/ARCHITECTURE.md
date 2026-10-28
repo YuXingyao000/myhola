@@ -1,6 +1,6 @@
 # Conditional Intersection：架构快照
 
-日期：2026-10-29（北京时间）。实现Git hash：待提交后填写。配置入口`configs/train_vae_conditional_intersection.yaml`。本快照描述已讨论并批准、正在实现的方案，尚不代表训练完成或有效性已验证。
+日期：2026-10-29（北京时间）。实现Git hash：`74c7ecb4`。配置入口`configs/train_vae_conditional_intersection.yaml`。状态：已实现，8项CPU检查通过；142真实preflight进行中，未正式训练。本快照不代表训练完成或有效性已验证。
 
 ## 1. 数据流与保留范围
 
@@ -145,7 +145,9 @@ score等价于`(q_content·k_content + q_position·k_position)/sqrt(128)`。首�
 
 来源是32维shared_curve_uv best42471，完整SHA及路径见README。旧权重严格迁移到同语义层；新增局部投影零初始化，使M每个位置初始等于旧单memory token。eval时所有value相同，softmax加权结果保留原value；训练dropout在256位置上的随机行为不等于旧单key，不能宣称训练等价。
 
-零局部投影时，改变attention权重不改变加权value，因此参考点及位置分支首步梯度为零。局部投影有梯度并更新后，空间value产生差异，位置分支才开始获得有效梯度。实现验收必须覆盖这个启动过程。
+关闭attention dropout时，零局部投影使所有value相同，改变attention权重不改变加权value，因此参考点及位置分支首步梯度为零。正式训练保留0.1 attention dropout；随机mask作用后，权重之和不再固定，参考UV／位置分支首步可能产生非零梯度。这种梯度来自随机mask，不是位置间的空间内容差异。
+
+CNN局部特征输入经零投影的首步梯度仍为零，但局部投影本身可以得到梯度。投影更新后，不同位置的value产生内容差异，局部内容及其位置选择路径才真正打开；面CNN的原几何监督等其他梯度路径仍存在。实现验收必须覆盖无dropout的理论启动、正式dropout条件及投影更新后的空间梯度，不把首步位置梯度非零误报为空间定位已学习。
 
 `freeze_encoder=false`、`trainable_scope=all`，无新冻结层；KL sum系数1e-6恢复训练作用。feature matching权重1.0保留，teacher target仍detach。源checkpoint的encoder冻结历史与本次全解冻不同，正式效果不作为严格单变量attention消融。新run不继承Adam状态；恢复本实验必须使用同结构完整checkpoint。
 

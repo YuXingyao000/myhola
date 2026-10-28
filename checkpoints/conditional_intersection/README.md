@@ -1,6 +1,6 @@
 # Conditional Intersection（32维共享XYZ）
 
-日期：2026-10-29（北京时间）。状态：实现与验收中；本页尚不表示训练已启动或有效性已提升。正式运行的信息与验证结果在启动验收后补充。
+日期：2026-10-29（北京时间）。实现提交`74c7ecb4`。状态：已实现，8项CPU检查通过；142真实preflight进行中，未正式训练。正式运行的信息与验证结果在启动验收后补充。
 
 [研究计划](PLAN.md) · [逐层结构与张量形状](ARCHITECTURE.md) · [91%来源模型](../vae_baseline/xyz32_20261028/README.md)
 
@@ -14,6 +14,7 @@
 - SHA256：`ce749416c1635dda1563161b971bd4260d064cfdb0c31f1fa9d06ad0e70961ff`。
 - 用`model.init_conditional_intersection_checkpoint`显式迁移；`init_shared_curve_checkpoint`清空。旧整体投影、8层self/cross内容投影、FFN、LN和其他模型参数保留；新增局部投影、参考UV及位置分支初始化。
 - 局部投影零初始化，初始各位置value相同；eval输出应近等价于来源模型。训练attention dropout的采样不同，不保证同seed下训练输出逐位相同。
+- 首步位置梯度为零只适用于关闭attention dropout的检查。正式训练保留0.1 attention dropout，随机mask加权和仍依赖attention，因此ReferenceUVHead／位置分支首步可能有梯度，但不是空间内容信号。CNN局部输入经零投影的首步梯度仍为零；局部投影更新后才打开实际空间内容及对应位置学习路径，面CNN其他监督路径不受此结论限制。
 - 本次**全模型训练**：`freeze_encoder=false`、`trainable_scope=all`。来源模型历史上冻结encoder；本轮不假装与它只有一个变量不同。更新encoder后旧latent cache／diffusion不能默认兼容。
 - 这是**新run、新Adam**，不是resume。完整新模型加载及后续resume仍要求同结构严格加载。
 
@@ -54,7 +55,7 @@ CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7 WANDB_MODE=online python -u -m src.brepnet.tr
   dataset.train_dataset=checkpoints/joint_boundary/validation/train_contract_audit/accepted.txt \
   dataset.val_dataset=checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt \
   dataset.test_dataset=checkpoints/joint_boundary/validation/test_contract_audit/accepted.txt \
-  'model.init_conditional_intersection_checkpoint=/mnt/d/python/checkpoints/shared_curve_uv/candidate/20261019T064906.049992Z/weights/epoch=0116-step=00042471-val_loss=0.036517.ckpt' \
+  'model.init_conditional_intersection_checkpoint="/mnt/d/python/checkpoints/shared_curve_uv/candidate/20261019T064906.049992Z/weights/epoch=0116-step=00042471-val_loss=0.036517.ckpt"' \
   trainer.devices=7 trainer.batch_size=2 trainer.accumulate_grad_batches=8
 ```
 
@@ -62,4 +63,4 @@ CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7 WANDB_MODE=online python -u -m src.brepnet.tr
 
 ## 实现及研究状态
 
-实现Git hash：待提交后填写。完整新模块参数量、真实批量测试、142运行目录／GPU／W&B／步数：待验收后填写。现阶段没有新方案的完整validation几何或OCC结果；90.99%是来源checkpoint的历史结果。
+实现Git hash：`74c7ecb4`。8项CPU检查通过，142真实preflight进行中；完整新模块参数量、真实批量测试、正式运行目录／GPU／W&B／步数在验收后补充。尚未启动正式训练，没有新方案的完整validation几何或OCC结果；90.99%是来源checkpoint的历史结果。
