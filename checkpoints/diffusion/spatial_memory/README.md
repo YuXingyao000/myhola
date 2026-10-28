@@ -1,6 +1,6 @@
 # Spatial photo diffusion v1
 
-已实现照片 → 512 个空间 query → 24 层 conditioned denoiser，VAE 保持原版冻结。当前只有实现验证，尚无正式训练或下游重建效果结果。研究依据与比较限制见 [PLAN.md](PLAN.md)。
+已实现照片 → 512 个空间 query → 24 层 conditioned denoiser，VAE 保持原版冻结。2026-10-28 按用户要求启动 8 卡正式训练，运行记录见 [NOTE.md](NOTE.md)；尚无下游重建效果结果。研究依据与比较限制见 [PLAN.md](PLAN.md)。
 
 ## 模块与结构
 
@@ -30,14 +30,14 @@ decoded = model.decode_latents(latent)               # 原 VAE raw + 去重映�
 
 ## 训练命令
 
-本机 4090 环境为 `/mnt/d/anaconda3/envs/torch`，PyTorch 2.4.1/cu124。GPU7 留给用户。下述命令启动**新的从头训练**，不是从 DPO 接着训练；默认完整 validation 监测 epsilon MSE，不会在每次 validation 跑 1000 步几何生成。
+本机 4090 环境为 `/mnt/d/anaconda3/envs/torch`，PyTorch 2.4.1/cu124。用户于 2026-10-28 明确允许使用全部 8 卡，覆盖此前预留 GPU7 的安排。下述命令启动**新的从头训练**，不是从 DPO 接着训练；默认完整 validation 监测 epsilon MSE，不会在每次 validation 跑 1000 步几何生成。已有运行时请勿重复启动，当前 run 见 NOTE。
 
 ```bash
 cd /mnt/d/python
-CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 OMP_NUM_THREADS=4 \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 OMP_NUM_THREADS=4 \
 /mnt/d/anaconda3/envs/torch/bin/python -m src.brepnet.train \
   --config-name train_diffusion_spatial_photo \
-  trainer.devices=7 \
+  trainer.devices=8 \
   trainer.batch_size=64 \
   trainer.learning_rate=1e-4 \
   trainer.precision=bf16-mixed \
@@ -45,7 +45,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 OMP_NUM_THREADS=4 \
   trainer.seed=42
 ```
 
-数据/权重路径和 SHA256 显式写在该配置中；换机器需迁移对应资产并覆盖路径，不可换成另一 VAE 的旧 cache。7×64=448 全局 batch；`epoch_scale_factor=10` 使完整 validation 约每 1040 optimizer steps 执行一次。完整 checkpoint 包含冻结参数与 Adam 状态，约 6.9 GiB，写盘会暂停训练；定期 step checkpoint 只保留最近 3 份，validation 保留 best3/last。10M 是总步数上限，正式停止与选模须依据训练/验证状态及固定下游评估。
+数据/权重路径和 SHA256 显式写在该配置中；换机器需迁移对应资产并覆盖路径，不可换成另一 VAE 的旧 cache。上述命令显式覆盖配置中的 7 卡默认值，8×64=512 全局 batch；`epoch_scale_factor=10` 使完整 validation 约每 910 optimizer steps 执行一次。完整 checkpoint 包含冻结参数与 Adam 状态，约 6.9 GiB，写盘会暂停训练；定期 step checkpoint 只保留最近 3 份，validation 保留 best3/last。10M 是总步数上限，正式停止与选模须依据训练/验证状态及固定下游评估。
 
 续训在同一条命令后增加 `trainer.resume_from_checkpoint=/绝对路径/原run/weights/last.ckpt`，恢复原 run、优化器和计步。恢复必须匹配架构与数据协议；不允许宽松加载旧模型。推理可用 `load_spatial_photo(checkpoint, device="cuda")`，严格恢复完整新模型，再调用上述采样/解码接口。
 

@@ -1,0 +1,66 @@
+{
+  "checked_at_utc": "2026-10-28T10:44:44.768963+00:00",
+  "status": "training_running",
+  "run_dir": "/mnt/d/python/checkpoints/diffusion_spatial_photo/20261028T104221Z",
+  "training_code_commit": "9c38bdc27608424fc73c5cb44e4d1e3b93f3dd74",
+  "tmux_session": "spatial-photo-20261028T104221Z",
+  "wandb_url": "https://wandb.ai/whatseven777/hola-brep/runs/1e37b32cb626",
+  "completed_steps_at_check": 109,
+  "epoch_steps": 910,
+  "global_batch": 512,
+  "per_gpu_batch": 64,
+  "devices": 8,
+  "max_steps": 10000000,
+  "full_training_and_validation_enabled": true,
+  "console_progress": "Epoch 0:  12%|\u2588\u258f        | 109/910 [01:33<11:29,  1.16it/s, v_num=b626]",
+  "gpus": [
+    {
+      "index": 0,
+      "utilization_percent": 100,
+      "memory_used_mib": 17193
+    },
+    {
+      "index": 1,
+      "utilization_percent": 100,
+      "memory_used_mib": 17387
+    },
+    {
+      "index": 2,
+      "utilization_percent": 100,
+      "memory_used_mib": 17193
+    },
+    {
+      "index": 3,
+      "utilization_percent": 100,
+      "memory_used_mib": 17193
+    },
+    {
+      "index": 4,
+      "utilization_percent": 100,
+      "memory_used_mib": 17193
+    },
+    {
+      "index": 5,
+      "utilization_percent": 100,
+      "memory_used_mib": 17193
+    },
+    {
+      "index": 6,
+      "utilization_percent": 100,
+      "memory_used_mib": 17193
+    },
+    {
+      "index": 7,
+      "utilization_percent": 100,
+      "memory_used_mib": 17193
+    }
+  ],
+  "initialization_and_sanity_validation_passed": true,
+  "full_validation_completed": false,
+  "quality_evaluated": false,
+  "wandb_observed_metric": {
+    "trainer/global_step": 49,
+    "train/loss_step_local": 0.6625608205795288,
+    "scope": "rank0 local batch, not global validation"
+  }
+}
