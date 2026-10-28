@@ -1,0 +1,28 @@
+{
+  "status": "passed",
+  "run_dir": "/mnt/d/python/checkpoints/diffusion/spatial_memory/smoke_ddp",
+  "physical_gpus": [
+    1,
+    2
+  ],
+  "precision": "bf16-mixed",
+  "batch_per_gpu": 4,
+  "global_batch": 8,
+  "first_global_step": 2,
+  "resumed_global_step": 4,
+  "all_adam_parameter_steps": [
+    4
+  ],
+  "resume_without_original_checkpoint": true,
+  "train_batches_per_epoch": 2,
+  "validation_batches_per_rank": 1,
+  "validation_is_full_dataset_class_but_limited_for_smoke": true,
+  "full_dataset_validation_count": 3505,
+  "formal_training_started": false,
+  "unit_tests": {
+    "passed": 42,
+    "skipped": 1
+  },
+  "legacy_source_sha256": "9dcafb192529c1ddf65942392c25b409fbbf2bce407805f34a460d0b44bb4839",
+  "checkpoint_bytes": 7335015821
+}

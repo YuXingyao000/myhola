@@ -278,7 +278,13 @@ class UnifiedTrainer(pl.LightningModule):
             elif sha256_file(Path(model_cfg.legacy_checkpoint)) != cfg.dataset.provenance.source_checkpoint_sha256:
                 raise ValueError("Photo features/latents and initial weights have different sources")
             OmegaConf.update(model_cfg, "restoring_checkpoint", bool(has_resume), force_add=True)
+        if cfg.model.name == "SpatialPhotoDiffusion":
+            from src.brepnet.diffusion.spatial_model import prepare_spatial_model_config
+            prepare_spatial_model_config(cfg, model_cfg, str(resume) if has_resume else None)
         self.model = build_model(model_cfg, cfg.condition)
+        if cfg.model.name == "SpatialPhotoDiffusion":
+            OmegaConf.update(cfg.model, "legacy_model_config", self.model.legacy_model_config, force_add=True)
+            self.save_hyperparameters(OmegaConf.to_container(cfg, resolve=True))
         if cfg.model.name == "PhotoBaselineDiffusion":
             OmegaConf.update(cfg.model, "legacy_model_config", self.model.legacy_model_config, force_add=True)
             self.save_hyperparameters(OmegaConf.to_container(cfg, resolve=True))
@@ -656,6 +662,9 @@ def main(cfg: DictConfig):
     if cfg.model.name == "PhotoBaselineDiffusion":
         from src.brepnet.data.photo_dataset import photo_cache_provenance
         OmegaConf.update(cfg.dataset, "provenance", photo_cache_provenance(cfg.dataset), force_add=True)
+    if cfg.model.name == "SpatialPhotoDiffusion":
+        from src.brepnet.data.spatial_photo_dataset import spatial_data_provenance
+        OmegaConf.update(cfg.dataset, "provenance", spatial_data_provenance(cfg.dataset), force_add=True)
     run_record = prepare_run(cfg, Path(log_dir))
 
     # --- Logger ---

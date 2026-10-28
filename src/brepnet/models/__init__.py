@@ -57,6 +57,9 @@ _MODEL_LOADERS: Dict[str, Any] = {
     "PhotoBaselineDiffusion": _lazy_import(
         "src.brepnet.diffusion.photo_baseline", "PhotoBaselineDiffusion"
     ),
+    "SpatialPhotoDiffusion": _lazy_import(
+        "src.brepnet.diffusion.spatial_model", "SpatialPhotoDiffusion"
+    ),
 }
 
 # ---------------------------------------------------------------------------
