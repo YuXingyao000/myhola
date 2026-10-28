@@ -81,6 +81,12 @@ class PreferenceDiffusion(nn.Module):
         loader_options = dict(source_cache=cfg.get("legacy_source_cache"), dino_repo=cfg.get("dino_repo"))
         if cfg.get("restoring_checkpoint", False):
             legacy, self.provenance = build_legacy_svr(cfg["legacy_model_config"], **loader_options)
+        elif cfg.get("model_source") == "photo":
+            from .photo_baseline import load_photo_svr
+            legacy, self.provenance = load_photo_svr(
+                cfg["legacy_checkpoint"], cfg["photo_checkpoint"], **loader_options)
+            if self.provenance["photo"]["global_step"] != cfg["photo_global_step"]:
+                raise ValueError("Photo policy/reference initialization step differs from the selected baseline")
         else:
             legacy, self.provenance = load_legacy_svr(cfg["legacy_checkpoint"], **loader_options)
         self.legacy_model_config = self.provenance["model_config"]
@@ -111,9 +117,14 @@ class PreferenceDiffusion(nn.Module):
     def forward(self, batch: dict, v_test: bool = False) -> dict[str, Tensor]:
         # GT 与 pair 从不同对象流抽样；一次 DINO forward，冻结特征由双方共享。
         has_pairs = not v_test and "winner_latent" in batch
-        images = torch.cat((batch["gt_image"], batch["pair_image"])) if has_pairs else batch["gt_image"]
-        with torch.no_grad():
-            image_features = self.image_encoder(images)
+        if "image_features" in batch:
+            # 无图像增强时复用冻结DINO的FP32输出；img_fc仍由policy训练。
+            image_features = (torch.cat((batch["image_features"], batch["pair_image_features"]))
+                              if has_pairs else batch["image_features"]).detach()
+        else:
+            images = torch.cat((batch["gt_image"], batch["pair_image"])) if has_pairs else batch["gt_image"]
+            with torch.no_grad():
+                image_features = self.image_encoder(images)
         batch_size = len(batch["gt_latent"])
         gt_features = image_features[:batch_size]
         noisy_gt, gt_timestep, gt_noise = self._noise(batch["gt_latent"])

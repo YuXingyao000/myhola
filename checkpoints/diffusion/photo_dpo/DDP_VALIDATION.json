@@ -1,0 +1,54 @@
+{
+  "checked_at_utc": "2026-10-28T07:30:43.918822+00:00",
+  "devices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "batch_per_gpu": 8,
+  "global_batch": 56,
+  "first_global_step": 4,
+  "resumed_global_step": 6,
+  "optimizer_parameter_states": 314,
+  "optimizer_steps": [
+    6
+  ],
+  "reference_and_dino_unchanged": true,
+  "policy_tensors_changed_after_resume": 314,
+  "resume_without_original_or_photo_checkpoint": true,
+  "data_provenance_unchanged": true,
+  "validation_limit_batches_for_preflight": 1,
+  "all_logged_scalars_finite": true,
+  "logs": {
+    "version_0": {
+      "train/loss_step_local": 0.7112212181091309,
+      "val/ddpm_loss": 0.05006035044789314,
+      "val/loss": 0.05006035044789314,
+      "train/ddpm_loss": 0.023506755009293556,
+      "train/preference_loss": 0.6931726336479187,
+      "train/preference_logit": -5.040785254095681e-05,
+      "train/preference_accuracy": 0.3705357313156128,
+      "train/winner_mse": 0.021521583199501038,
+      "train/loser_mse": 0.022027209401130676,
+      "train/loss_epoch": 0.7166793942451477
+    },
+    "version_1": {
+      "train/loss_step_local": 0.7030466198921204,
+      "train/ddpm_loss": 0.025550832971930504,
+      "train/preference_loss": 0.66789311170578,
+      "train/preference_logit": 0.054330237209796906,
+      "train/preference_accuracy": 0.9732142686843872,
+      "train/winner_mse": 0.02190273068845272,
+      "train/loser_mse": 0.02852453477680683,
+      "train/loss_epoch": 0.6934439539909363
+    }
+  },
+  "unit_tests": {
+    "passed": 51,
+    "command": "pytest -q src/brepnet/test/test_photo_dpo.py src/brepnet/test/test_diffusion_preference.py src/brepnet/test/test_photo_baseline.py src/brepnet/test/test_observation_preference_dataset.py src/brepnet/test/test_preference_geometry.py"
+  }
+}

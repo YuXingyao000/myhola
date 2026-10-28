@@ -236,6 +236,9 @@ class UnifiedTrainer(pl.LightningModule):
         if cfg.model.name == "PreferenceDiffusion":
             from src.brepnet.data.preference_dataset import sha256_file
 
+            photo_source = model_cfg.get("model_source") == "photo"
+            if photo_source != (cfg.dataset.provenance.get("protocol_version") == "photo_preference_generation_v1"):
+                raise ValueError("Preference model and dataset photo/grey sources must agree")
             if cfg.trainer.init_from_checkpoint:
                 raise ValueError("Use model.legacy_checkpoint to initialize preference training, or resume_from_checkpoint.")
             if cfg.eval.enabled or cfg.trainer.evaluate or cfg.trainer.diffusion_validation_inference:
@@ -245,11 +248,18 @@ class UnifiedTrainer(pl.LightningModule):
                 if dict(cfg.dataset.provenance) != saved["hyper_parameters"]["dataset"]["provenance"]:
                     raise ValueError("Cannot resume preference training with a changed pair pool/protocol.")
                 saved_model_cfg = saved["hyper_parameters"]["model"]
+                if photo_source and any(model_cfg.get(key) != saved_model_cfg.get(key) for key in (
+                        "model_source", "photo_global_step", "beta_dpo", "preference_weight")):
+                    raise ValueError("Cannot resume photo DPO with changed source or objective")
                 OmegaConf.update(
                     model_cfg, "legacy_model_config", saved_model_cfg["legacy_model_config"], force_add=True,
                 )
-            elif sha256_file(Path(model_cfg.legacy_checkpoint)) != cfg.dataset.provenance.source_checkpoint_sha256:
+            elif sha256_file(Path(model_cfg.photo_checkpoint if photo_source else model_cfg.legacy_checkpoint)) != cfg.dataset.provenance.source_checkpoint_sha256:
                 raise ValueError("Initial SVR checkpoint differs from the preference generation checkpoint.")
+            if photo_source and not has_resume:
+                if (sha256_file(Path(model_cfg.legacy_checkpoint)) != cfg.dataset.provenance.original_checkpoint_sha256 or
+                        model_cfg.photo_global_step != cfg.dataset.provenance.photo_global_step):
+                    raise ValueError("Photo DPO original DINO/AE or selected baseline step differs from generation")
             OmegaConf.update(model_cfg, "restoring_checkpoint", bool(has_resume), force_add=True)
         if cfg.model.name == "PhotoBaselineDiffusion":
             from src.brepnet.data.preference_dataset import sha256_file

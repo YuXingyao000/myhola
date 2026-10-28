@@ -48,6 +48,10 @@ def preference_data_provenance(config: dict) -> dict:
     ).hexdigest()
     if recorded_fingerprint != actual_fingerprint:
         raise ValueError(f"Generation protocol fingerprint mismatch: {protocol_path}")
+    if protocol["version"] == "photo_preference_generation_v1":
+        from .photo_preference_dataset import photo_preference_provenance
+        return photo_preference_provenance(
+            config, protocol, recorded_fingerprint, hashlib.sha256(protocol_bytes).hexdigest(), status)
     if protocol["version"] != "svr_preference_generation_v1":
         raise ValueError(f"Unsupported generation protocol: {protocol['version']}")
     for mode, field in (("train", "train_dataset"), ("validation", "val_dataset")):
