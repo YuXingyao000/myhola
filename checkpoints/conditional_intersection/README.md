@@ -1,6 +1,6 @@
 # Conditional Intersection（32维共享XYZ）
 
-日期：2026-10-29（北京时间）。网络实现提交`74c7ecb4`，正式启动提交`7609d276`。状态：62项检查通过，142真实前后向、最大尺寸batch8和两卡完整断点恢复通过；**七卡全量训练已启动并开始更新**。尚无本轮完整validation／OCC质量结果。
+日期：2026-10-29。网络实现提交`74c7ecb4`，feature-on启动提交`7609d276`。**原feature-on运行已停止，后续采用[关闭edge_feature重新训练](no_edge_feature_20261029/README.md)。** 本页保留原轮次配置与启动证据；旧轮次best415／last5395正在固定validation上评估。
 
 [研究计划](PLAN.md) · [逐层结构与张量形状](ARCHITECTURE.md) · [91%来源模型](../vae_baseline/xyz32_20261028/README.md)
 

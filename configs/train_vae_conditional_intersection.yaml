@@ -5,6 +5,8 @@ defaults:
 # New run from the accepted 32D shared-XYZ checkpoint (validation 3180/3495).
 # Replace only the pair cross-attention; retain its old projections, self-attention,
 # FFNs, refinement, conditioning, shared XYZ decoder, auxiliary UV, and losses.
+# Historical feature-on run only. New runs after 2026-10-29 use
+# train_vae_conditional_intersection_no_edge_feature instead.
 # All parameters train. No optimizer/step state is resumed from the source run.
 trainer:
   exp_name: conditional_intersection/xyz32
@@ -41,7 +43,8 @@ model:
     candidate_chunk_size: 64
     geometry_chunk_size: 128
     checkpoint_candidates: true
-  # Deliberately retain the 91% source model's feature matching, unlike the
-  # later 64D no-edge-feature experiment. All other loss weights are inherited.
+  # Preserve this historical run's feature matching for reproducibility.
+  # Restoring source weights does not require this loss; the accepted new
+  # training entry explicitly disables it while retaining all geometry terms.
   loss_weights:
     feature_weight: 1.0
