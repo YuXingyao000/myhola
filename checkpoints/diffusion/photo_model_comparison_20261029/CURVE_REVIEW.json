@@ -1,0 +1,24 @@
+{
+  "spatial": {
+    "validation_points": 70,
+    "best_step": 20930,
+    "best_val_mse": 0.04238878935575485,
+    "last_monitored_step": 63700,
+    "last_val_mse": 0.051549091935157776,
+    "rise_from_best_percent": 21.610200995653784,
+    "last_train_ddpm_mse": 0.031677503138780594,
+    "last_train_point_partial_epoch": false,
+    "last_complete_epoch_train_ddpm_mse": 0.031677503138780594
+  },
+  "photo_dpo": {
+    "validation_points": 6,
+    "best_step": 1664,
+    "best_val_mse": 0.0500933863222599,
+    "last_monitored_step": 4992,
+    "last_val_mse": 0.06383562088012695,
+    "rise_from_best_percent": 27.433231344075537,
+    "last_train_ddpm_mse": 0.039763785898685455,
+    "last_train_point_partial_epoch": true,
+    "last_complete_epoch_train_ddpm_mse": 0.03574702516198158
+  }
+}

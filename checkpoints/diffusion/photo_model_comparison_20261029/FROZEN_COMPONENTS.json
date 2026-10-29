@@ -1,0 +1,22 @@
+{
+  "best": {
+    "model.ae_model.": {
+      "identical_to_original_svr": true,
+      "tensor_count": 704
+    },
+    "model.image_encoder.": {
+      "identical_to_original_svr": true,
+      "tensor_count": 344
+    }
+  },
+  "last": {
+    "model.ae_model.": {
+      "identical_to_original_svr": true,
+      "tensor_count": 704
+    },
+    "model.image_encoder.": {
+      "identical_to_original_svr": true,
+      "tensor_count": 344
+    }
+  }
+}

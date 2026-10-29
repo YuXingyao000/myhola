@@ -1,0 +1,148 @@
+{
+  "unit_tests": {
+    "passed": 9,
+    "file": "src/brepnet/test/test_photo_model_comparison.py"
+  },
+  "preflight": [
+    {
+      "method": "photo_dpo5000",
+      "image_id": "00000178",
+      "generation": "ok",
+      "evaluation": "ok",
+      "latent_shape": [
+        30,
+        32
+      ],
+      "raw_shapes": {
+        "face_features": [
+          12,
+          32
+        ],
+        "pred_face_adj": [
+          144
+        ],
+        "pred_face_adj_prob": [
+          120
+        ],
+        "pred_edge_face_connectivity": [
+          40,
+          3
+        ],
+        "pred_face": [
+          12,
+          16,
+          16,
+          3
+        ],
+        "pred_edge": [
+          40,
+          16,
+          3
+        ]
+      },
+      "seconds": 5.962425041012466,
+      "validity": "invalid",
+      "sampling_steps": 1000
+    },
+    {
+      "method": "spatial_best",
+      "image_id": "00000178",
+      "generation": "ok",
+      "evaluation": "ok",
+      "latent_shape": [
+        30,
+        32
+      ],
+      "raw_shapes": {
+        "face_features": [
+          13,
+          32
+        ],
+        "pred_face_adj": [
+          169
+        ],
+        "pred_face_adj_prob": [
+          132
+        ],
+        "pred_edge_face_connectivity": [
+          44,
+          3
+        ],
+        "pred_face": [
+          13,
+          16,
+          16,
+          3
+        ],
+        "pred_edge": [
+          44,
+          16,
+          3
+        ]
+      },
+      "seconds": 15.367806755006313,
+      "validity": "invalid",
+      "sampling_steps": 1000
+    },
+    {
+      "method": "spatial_last",
+      "image_id": "00000178",
+      "generation": "ok",
+      "evaluation": "ok",
+      "latent_shape": [
+        30,
+        32
+      ],
+      "raw_shapes": {
+        "face_features": [
+          9,
+          32
+        ],
+        "pred_face_adj": [
+          81
+        ],
+        "pred_face_adj_prob": [
+          84
+        ],
+        "pred_edge_face_connectivity": [
+          28,
+          3
+        ],
+        "pred_face": [
+          9,
+          16,
+          16,
+          3
+        ],
+        "pred_edge": [
+          28,
+          16,
+          3
+        ]
+      },
+      "seconds": 15.11160492990166,
+      "validity": "invalid",
+      "sampling_steps": 1000
+    }
+  ],
+  "protocol_fingerprint": "39583d5e680760e6fcc4492860953f9b455a13cf8aa88204926e07b1916156bd",
+  "full_evaluation_complete": false,
+  "full_evaluation": {
+    "launched_at_utc": "2026-10-29T02:03:27.752498+00:00",
+    "tmux_session": "photo-model-eval-20261029",
+    "gpus": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "cpu_workers": 32,
+    "intended_per_method": 3505,
+    "new_candidates": 10515,
+    "run_dir": "/mnt/d/python/checkpoints/diffusion/photo_model_comparison_20261029/run"
+  }
+}
