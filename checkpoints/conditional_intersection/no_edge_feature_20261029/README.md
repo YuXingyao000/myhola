@@ -33,5 +33,16 @@ epoch0到12总validation loss增加4.39%，去掉feature项后其余加权目标
 这不等同于纯几何度量，也不是源checkpoint到终点的比较。
 新旧total loss不能直接对比高低；应比较相同原始几何项和固定3495件validation的下游合法率。
 
-正式启动信息将在142验收后记入本目录`LAUNCH.json`。旧两权重后处理结果单独归档到
-`../feature_on_evaluation_20261029/`，不使用test调规则。
+## 新运行
+
+- 2026-10-29 01:36:47 UTC在142启动，代码提交`d2fa70c32508095a9c8161800f8ad3f2856ba524`。
+- Run：`/mnt/d/python/checkpoints/conditional_intersection/no_edge_feature_xyz32/20261029T013647.209854Z`。
+- tmux：`conditional-no-feature-20261029t013647`。
+- [W&B](https://wandb.ai/whatseven777/hola-brep/runs/d99031bca830)；完整命令及来源见[LAUNCH.json](LAUNCH.json)。
+- 190,236,065个参数全部可训练，7个DDP rank已注册并开始更新。首次启动检查没有Traceback；尚无本轮完整validation结论。
+- [REAL_BATCH_CHECK.json](REAL_BATCH_CHECK.json)：142真实两件CAD、BF16前后向通过；weighted_edge_feature严格为0，各主要模块梯度有限。检查模型未用于正式初始化。
+- [实际run配置核对](RESOLVED_RUN_CHECK.json)确认`feature_weight=0`、`freeze_encoder=false`、`trainable_scope=all`和`resume_from_checkpoint=null`；[启动状态](STARTUP_HEALTH.json)保存7卡注册及早期更新证据。启动时仅有未跟踪的评估脚本／验收记录，无已跟踪模型代码改动。
+
+02:00 UTC复核时，新run已记录239个optimizer step，仍在首个epoch，未出现Traceback；见[LATEST_HEALTH.json](LATEST_HEALTH.json)。分项train loss按epoch写入，首轮结束前W&B尚无分项值是既有日志行为；feature关闭由实际resolved config及真实前后向共同核验。
+
+旧两权重后处理[完整报告](../feature_on_evaluation_20261029/REPORT.md)：best415为3171/3495（90.73%），last5395为3172/3495（90.76%），来源3180/3495（90.99%）。last原始几何更准，但合法率净少8件。旧结果不是本次feature关闭新run的结果，不使用test调规则。

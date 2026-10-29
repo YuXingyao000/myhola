@@ -1,0 +1,59 @@
+{
+  "conditional_best415": {
+    "prediction_status": {
+      "ok": 3495
+    },
+    "gt_status": {
+      "ok": 3495
+    },
+    "face_status": {
+      "ok": 3495
+    },
+    "edge_status": {
+      "ok": 3495
+    },
+    "face_mae_status": {
+      "ok": 3495
+    },
+    "internal_topology_status": {
+      "ok": 3495
+    },
+    "topology_status": {
+      "ok": 3495
+    }
+  },
+  "conditional_last5395": {
+    "prediction_status": {
+      "ok": 3495
+    },
+    "gt_status": {
+      "ok": 3495
+    },
+    "face_status": {
+      "ok": 3495
+    },
+    "edge_status": {
+      "ok": 3495
+    },
+    "face_mae_status": {
+      "ok": 3495
+    },
+    "internal_topology_status": {
+      "ok": 3495
+    },
+    "topology_status": {
+      "ok": 3495
+    }
+  },
+  "cpu": {
+    "os_cpu_count": 128,
+    "affinity_count": 128,
+    "load": [
+      26.09033203125,
+      22.99169921875,
+      19.21630859375
+    ],
+    "workers_total": 64,
+    "threads_per_worker": 1
+  }
+}

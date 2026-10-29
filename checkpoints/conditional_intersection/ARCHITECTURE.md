@@ -1,6 +1,6 @@
 # Conditional Intersection：架构快照
 
-日期：2026-10-29（北京时间）。网络实现Git hash：`74c7ecb4`，正式启动提交`7609d276`。配置入口`configs/train_vae_conditional_intersection.yaml`。状态：62项检查、142真实前后向、最大尺寸batch8及两卡断点恢复通过；七卡正式全量训练已启动。本快照不代表训练完成或有效性已验证。
+日期：2026-10-29。网络实现Git hash：`74c7ecb4`，原feature-on启动提交`7609d276`，旧轮次现已停止。本快照保留该网络结构；当前`d2fa70c3`新运行采用`configs/train_vae_conditional_intersection_no_edge_feature.yaml`，仅关闭edge_feature匹配，网络结构不变。旧配置入口仍用于历史复现。62项检查、142真实前后向、最大尺寸batch8及两卡断点恢复通过；实现验收不代表训练有效性已验证。
 
 ## 1. 数据流与保留范围
 
@@ -13,7 +13,8 @@ F：batch总面数；每个对象有n个面；P=sum(n*(n-1))是有向面对候�
     v
 原 HolisticEncoder（CNN + GAT + 全局交互）              [本轮可训练]
     | [F,32]
-原 FacePosterior（mean/std；训练sample，验证mean）       [本轮可训练]
+原 FacePosterior（mean/std；训练及val loss采样）         [本轮可训练]
+                  独立几何／OCC评估使用mean
     | Z[F,32] <-- 纯解码推理入口；不读取GT连接或GT UV
     v
 原 FaceFeatureDecoder（8层768维，16 heads）
@@ -43,7 +44,7 @@ F：batch总面数；每个对象有n个面；P=sum(n*(n-1))是有向面对候�
               +--> 反向半边仅反转采样轴 --> XYZ[P,16,3]
               +--> 原CurveConditionedUVPathHead --> auxiliary UV[P,2,16,2]
               |
-原 IntersectionLoss（权重不变；解冻后KL参与优化）
+原 IntersectionLoss（新run仅feature_weight=0；KL参与优化）
 ```
 
 输入及半边输出字段与来源相同；输出仍为`legacy_half_edges`，没有可微B-Spline或UV生成XYZ路径。保留原refinement，不额外堆叠correction。原模型／loss细节见[共享曲线快照](../shared_curve_uv/ARCHITECTURE.md)。

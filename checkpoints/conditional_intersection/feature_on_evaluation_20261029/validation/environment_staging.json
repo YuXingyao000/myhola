@@ -1,0 +1,10 @@
+{
+  "source": "/mnt/d/anaconda3/envs/torch",
+  "staged": "/root/hola_eval/conditional_feature_on_20261029/environment",
+  "count": 109594,
+  "bytes": 12153713565,
+  "seconds": 179.51021829503588,
+  "all_content_sha_equal": true,
+  "noatime_source_reads": true,
+  "environment_reinstalled": false
+}

@@ -1,6 +1,6 @@
 # Conditional Intersection（32维共享XYZ）
 
-日期：2026-10-29。网络实现提交`74c7ecb4`，feature-on启动提交`7609d276`。**原feature-on运行已停止，后续采用[关闭edge_feature重新训练](no_edge_feature_20261029/README.md)。** 本页保留原轮次配置与启动证据；旧轮次best415／last5395正在固定validation上评估。
+日期：2026-10-29。网络实现提交`74c7ecb4`，feature-on启动提交`7609d276`。**原feature-on运行已停止，后续采用[关闭edge_feature重新训练](no_edge_feature_20261029/README.md)。** 本页保留原轮次配置与启动证据；旧轮次best415／last5395已完成固定3495件validation的原始几何、OCC后处理及独立STEP复核，见[完整结果](feature_on_evaluation_20261029/REPORT.md)。
 
 [研究计划](PLAN.md) · [逐层结构与张量形状](ARCHITECTURE.md) · [91%来源模型](../vae_baseline/xyz32_20261028/README.md)
 
@@ -8,7 +8,7 @@
 
 原Intersection的单query读取对方一个整体面token，改为读取该面的256个空间token。query/key各自包含内容与位置分量；ReferenceUVHead从有向面对特征预测被读取面上的一个参考UV，8层共用该坐标，各层query继续调制位置打分。最终仍输出64维有向边特征，后续refinement、conditioning、共享XYZ和辅助UV保持原接口。
 
-入口：`configs/train_vae_conditional_intersection.yaml`，继承`train_vae_shared_curve_uv`。主要模块位于`src/brepnet/models/vae/decoders/conditional_intersection.py`；装配、严格初始化与原统一trainer分别接在现有decoder、checkpoint和训练入口中。完整结构及代码路径见ARCHITECTURE。
+当前入口：`configs/train_vae_conditional_intersection_no_edge_feature.yaml`。以下旧轮次记录使用`configs/train_vae_conditional_intersection.yaml`，继承`train_vae_shared_curve_uv`。主要模块位于`src/brepnet/models/vae/decoders/conditional_intersection.py`；装配、严格初始化与原统一trainer分别接在现有decoder、checkpoint和训练入口中。完整结构及代码路径见ARCHITECTURE。
 
 - 源权重（142）：`/mnt/d/python/checkpoints/shared_curve_uv/candidate/20261019T064906.049992Z/weights/epoch=0116-step=00042471-val_loss=0.036517.ckpt`。
 - SHA256：`ce749416c1635dda1563161b971bd4260d064cfdb0c31f1fa9d06ad0e70961ff`。
@@ -19,7 +19,9 @@
 - 本次**全模型训练**：`freeze_encoder=false`、`trainable_scope=all`。来源模型历史上冻结encoder；本轮不假装与它只有一个变量不同。更新encoder后旧latent cache／diffusion不能默认兼容。
 - 这是**新run、新Adam**，不是resume。完整新模型加载及后续resume仍要求同结构严格加载。
 
-## Loss：沿用来源权重，完整列出
+## 原feature-on轮次的Loss
+
+以下表格保留旧轮次的实际权重；当前新运行只将`edge_feature`从1.0改为0.0，其他项不变。
 
 | 原始项 | 对total_loss的权重 | 监督对象 |
 |---|---:|---|
@@ -80,13 +82,15 @@ CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7 WANDB_MODE=online python -u -m src.brepnet.tr
 
 最大尺寸batch将CAD `00025689`、`00072409`重复组成8个对象，仅用于显存和实现验证。coarse中浮点计算差异经既有refinement后有所放大；最大1.55e-4的XYZ差出现在未选中候选，实际选中曲线保持约2e-6以内。源权重逐项保留不等于完整模型输出逐位相同，不能用这些小批量检查宣称合法率已保持或提升。
 
-两卡短运行先完成2次更新，再严格恢复到第3步；844组Adam状态全部连续推进，checkpoint权重有限。恢复检查在epoch中途停止，因此第3步没有新的validation分数；`last.ckpt`确实保存第3步。[完整验收记录](VALIDATION.json)。没有本轮完整validation几何或OCC结果；90.99%是来源checkpoint的历史结果。
+两卡短运行先完成2次更新，再严格恢复到第3步；844组Adam状态全部连续推进，checkpoint权重有限。恢复检查在epoch中途停止，因此第3步没有新的validation分数；`last.ckpt`确实保存第3步。[完整验收记录](VALIDATION.json)。
 
-## 正式运行
+2026-10-29完成旧轮次评估：来源3180/3495（90.99%），best415为3171（90.73%），last5395为3172（90.76%），均按原生合法solid统计。last相对来源救回42件、新增失败50件。原始面／边CD²下降27.52%／17.85%，但合法率没有改善；共同合法且几何可计算的2928件中，最终STEP面CD²基本持平、边CD²只下降1.75%。新模型全解冻、来源训练冻结encoder，不能把差异全部归因于attention。完整口径、失败与逐件记录见上方报告。
+
+## 原feature-on运行（已停止）
 
 - 142工作树：`/mnt/d/python_uv_train`，启动时提交`7609d2768fa2bc621674dc747892c464d2a1c0ab`，远程工作树干净。
 - UTC启动时间：2026-10-28 16:43:31；run：`/mnt/d/python/checkpoints/conditional_intersection/xyz32/20261028T164331.682169Z`。
 - tmux：`conditional-train-20261028t164331`；7个DDP rank，物理GPU1–7，190,236,065个参数全部可训练。
 - [W&B运行](https://wandb.ai/whatseven777/hola-brep/runs/f62c86405ea5)；实际命令、初始化、环境与启动检查见[LAUNCH.json](LAUNCH.json)。
 - 每卡batch8、累积2，全局112；Adam lr2e-5，seed42，BF16，30,000更新或24小时先到停止。正式run从91%源权重重新初始化，没有使用smoke更新后的权重。
-- 固定train 46,480件、validation 3,495件；本阶段不读取test数据进行研究判断。首个完整validation及checkpoint尚待epoch完成。
+- 固定train 46,480件、validation 3,495件；本阶段不读取test数据进行研究判断。已完成13轮validation，保存best415和last5395。2026-10-29主动停止；见[停止与评估记录](feature_on_evaluation_20261029/STOP.json)。

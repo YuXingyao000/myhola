@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "scope": "Real validation CAD BF16 forward/backward, no optimizer update.",
+  "sample_ids": [
+    "00000178",
+    "00000894"
+  ],
+  "face_counts": [
+    7,
+    20
+  ],
+  "feature_weight": 0.0,
+  "weighted_edge_feature": 0.0,
+  "raw_edge_feature_diagnostic": 0.022770781069993973,
+  "total_loss": 0.034040916711091995,
+  "all_parameters_trainable": true,
+  "all_parameter_gradients_present_and_finite": true,
+  "source_sha256": "ce749416c1635dda1563161b971bd4260d064cfdb0c31f1fa9d06ad0e70961ff"
+}

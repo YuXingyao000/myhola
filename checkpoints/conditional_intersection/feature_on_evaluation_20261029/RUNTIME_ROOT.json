@@ -1,0 +1,6 @@
+{
+  "root": "/root/hola_eval/conditional_feature_on_20261029",
+  "note": "Byte-identical source/data/environment staged to root disk after /mnt/d ext4 journal stalls; all raw/STEP/record files retained here. Compact results are archived beside this pointer.",
+  "code_repository": "/root/hola_eval/conditional_feature_on_20261029/repository",
+  "python": "/root/hola_eval/conditional_feature_on_20261029/environment/bin/python"
+}

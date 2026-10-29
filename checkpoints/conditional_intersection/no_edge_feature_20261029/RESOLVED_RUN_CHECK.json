@@ -1,0 +1,14 @@
+{
+  "checked_utc": "2026-10-29T01:43:55.087296+00:00",
+  "config_path": "/mnt/d/python/checkpoints/conditional_intersection/no_edge_feature_xyz32/20261029T013647.209854Z/metadata/invocations/20261029T013651.598987Z/config.yaml",
+  "feature_weight": 0.0,
+  "freeze_encoder": false,
+  "trainable_scope": "all",
+  "resume_from_checkpoint": null,
+  "init_conditional_intersection_checkpoint": "/mnt/d/python/checkpoints/shared_curve_uv/candidate/20261019T064906.049992Z/weights/epoch=0116-step=00042471-val_loss=0.036517.ckpt",
+  "git": {
+    "commit": "d2fa70c32508095a9c8161800f8ad3f2856ba524",
+    "branch": "codex/uv-intersection-training",
+    "status": "?? checkpoints/conditional_intersection/feature_on_evaluation_20261029/SPEC.md\n?? checkpoints/conditional_intersection/feature_on_evaluation_20261029/export_predictions.py\n?? checkpoints/conditional_intersection/feature_on_evaluation_20261029/run_post.py\n?? checkpoints/conditional_intersection/no_edge_feature_20261029/REAL_BATCH_CHECK.json"
+  }
+}

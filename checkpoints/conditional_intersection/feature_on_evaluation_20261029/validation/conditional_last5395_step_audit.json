@@ -1,0 +1,15 @@
+{
+  "method": "conditional_last5395",
+  "count": 3495,
+  "native_valid": 3172,
+  "readable": 3494,
+  "status_counts": {
+    "ok": 3494,
+    "read_error": 1
+  },
+  "mismatch_count": 0,
+  "mismatches": [],
+  "passed": true,
+  "precision_mode": 0,
+  "criterion": "as-read SOLID and BRepCheck before mutation"
+}

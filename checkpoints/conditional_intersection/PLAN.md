@@ -1,6 +1,6 @@
 # Conditional Intersection：研究计划
 
-日期：2026-10-29（北京时间）。网络实现提交`74c7ecb4`，正式启动提交`7609d276`。状态：62项检查、142真实前后向及最大尺寸batch8通过；两卡从第2步完整恢复并更新至第3步，七卡正式全量训练已启动。[运行信息](README.md#正式运行)。尚无本方案训练收益或完整评估结论。
+日期：2026-10-29。网络实现提交`74c7ecb4`；原feature-on启动提交`7609d276`，现已按用户要求停止。旧best415／last5395已完成固定validation评估，合法率90.73%／90.76%，来源90.99%；原始几何改善未转化为合法率提升，见[结果](feature_on_evaluation_20261029/REPORT.md)。关闭特征匹配的新运行以`d2fa70c3`从同一91%来源重新初始化，七卡全量训练已启动，见[当前运行](no_edge_feature_20261029/README.md)。新运行尚无完整validation结论。
 
 ## 问题与决定
 
@@ -12,7 +12,7 @@
 
 - 来源为 [91% XYZ32基线](../vae_baseline/xyz32_20261028/README.md) 的shared_curve_uv best42471，SHA256 `ce749416c1635dda1563161b971bd4260d064cfdb0c31f1fa9d06ad0e70961ff`。
 - 保留原8层512维Intersection的self-attention、FFN、LayerNorm、输入／输出投影与侧别位置参数；仅替换每层cross-attention的计算。
-- 保留refinement、curve conditioning、shared XYZ、辅助UV以及现有loss权重。feature匹配权重明确为1.0，不沿用后来的64维no-edge-feature实验。
+- 保留refinement、curve conditioning、shared XYZ、辅助UV。原轮次feature匹配权重为1.0；2026-10-29用户要求关闭这一项，当前入口`train_vae_conditional_intersection_no_edge_feature`将其设为0.0，其他loss权重不变。旧入口保留历史值以复现旧运行。
 - 本次Encoder、Posterior及Decoder全部参与训练；历史来源训练冻结Encoder，因此本轮不是严格的仅attention单变量消融。
 - 新run、新Adam，不恢复来源run的optimizer、步数或Timer。首阶段上限30000个optimizer更新或24小时，先到者结束；设备／microbatch以142实测为准并保存在resolved config。
 - 142采用PyTorch2.8/cu128，正式计划使用物理GPU1–7、每卡microbatch8、累积2，即112 CAD/update；GPU0保留给现有ComfyUI。来源历史为128 CAD/update，批量差异明确记录。Intersection和原refinement均按64候选分块并启用激活重算，refinement几何分块128；这是计算／显存调整，不改参数或loss。

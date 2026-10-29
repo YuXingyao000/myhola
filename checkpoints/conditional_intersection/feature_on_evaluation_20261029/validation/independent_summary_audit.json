@@ -1,0 +1,197 @@
+{
+  "checked_utc": "2026-10-29T02:06:50.195412+00:00",
+  "summary_sha256": "198027753b9952bb492b8589be0b9d6077bb10f47f7144382a05e50438a364ab",
+  "intended_count": 3495,
+  "methods": {
+    "shared_curve_uv": {
+      "terminal_count": 3495,
+      "native_valid": 3180,
+      "valid_geometry_missing": 128,
+      "valid_despite_non_ok_status": {
+        "geometry_error": 127,
+        "timeout": 1
+      },
+      "success_marker_count": 3180
+    },
+    "conditional_best415": {
+      "terminal_count": 3495,
+      "native_valid": 3171,
+      "valid_geometry_missing": 116,
+      "valid_despite_non_ok_status": {
+        "geometry_error": 116
+      },
+      "success_marker_count": 3171,
+      "step_audit_passed": true
+    },
+    "conditional_last5395": {
+      "terminal_count": 3495,
+      "native_valid": 3172,
+      "valid_geometry_missing": 116,
+      "valid_despite_non_ok_status": {
+        "geometry_error": 116
+      },
+      "success_marker_count": 3173,
+      "step_audit_passed": true
+    }
+  },
+  "pairs": {
+    "conditional_best415": {
+      "transitions": {
+        "both_valid": 3137,
+        "rescued": 34,
+        "regressed": 43,
+        "both_failed": 281
+      },
+      "common_valid_computable": 2930,
+      "step_geometry": {
+        "face_cd": {
+          "shared_curve_uv": {
+            "count": 2930,
+            "mean": 0.00047515703793236654,
+            "median": 0.0003933132110986756,
+            "p90": 0.00091298458318666
+          },
+          "conditional_best415": {
+            "count": 2930,
+            "mean": 0.00047277941388421845,
+            "median": 0.00039015648429595556,
+            "p90": 0.0009083644762649678
+          }
+        },
+        "edge_cd": {
+          "shared_curve_uv": {
+            "count": 2930,
+            "mean": 9.690827437315541e-05,
+            "median": 6.873197171530486e-05,
+            "p90": 0.00019636001745090465
+          },
+          "conditional_best415": {
+            "count": 2930,
+            "mean": 9.073554651704407e-05,
+            "median": 6.755179031630963e-05,
+            "p90": 0.00018848055976689376
+          }
+        }
+      },
+      "raw": {
+        "face_cd_sq": {
+          "count": 3495,
+          "improved": 3148,
+          "regressed": 347,
+          "unchanged": 0,
+          "difference": {
+            "count": 3495,
+            "mean": -6.197997508947094e-06,
+            "median": -4.3909612941134876e-06,
+            "p90": -2.1634985784159554e-08
+          }
+        },
+        "edge_cd_sq": {
+          "count": 3495,
+          "improved": 2756,
+          "regressed": 739,
+          "unchanged": 0,
+          "difference": {
+            "count": 3495,
+            "mean": -3.234428158118905e-06,
+            "median": -4.9162408168468545e-06,
+            "p90": 3.3699728106586712e-06
+          }
+        },
+        "face_mae": {
+          "count": 3495,
+          "improved": 3098,
+          "regressed": 397,
+          "unchanged": 0,
+          "difference": {
+            "count": 3495,
+            "mean": -0.0002087971525856513,
+            "median": -0.00018977503526857072,
+            "p90": 1.3343829605065043e-05
+          }
+        }
+      }
+    },
+    "conditional_last5395": {
+      "transitions": {
+        "both_valid": 3130,
+        "rescued": 42,
+        "regressed": 50,
+        "both_failed": 273
+      },
+      "common_valid_computable": 2928,
+      "step_geometry": {
+        "face_cd": {
+          "shared_curve_uv": {
+            "count": 2928,
+            "mean": 0.00047411049446909514,
+            "median": 0.00039472119095209886,
+            "p90": 0.0009108556560911839
+          },
+          "conditional_last5395": {
+            "count": 2928,
+            "mean": 0.00047424378209500573,
+            "median": 0.00039178642277212474,
+            "p90": 0.0009192172478971987
+          }
+        },
+        "edge_cd": {
+          "shared_curve_uv": {
+            "count": 2928,
+            "mean": 9.683819951233613e-05,
+            "median": 6.875066567545065e-05,
+            "p90": 0.00019728413780127562
+          },
+          "conditional_last5395": {
+            "count": 2928,
+            "mean": 9.514483271193482e-05,
+            "median": 6.905869698408734e-05,
+            "p90": 0.00019186102136244785
+          }
+        }
+      },
+      "raw": {
+        "face_cd_sq": {
+          "count": 3495,
+          "improved": 3071,
+          "regressed": 424,
+          "unchanged": 0,
+          "difference": {
+            "count": 3495,
+            "mean": -7.248741004300017e-06,
+            "median": -5.267958954419516e-06,
+            "p90": 3.7999233464177436e-07
+          }
+        },
+        "edge_cd_sq": {
+          "count": 3495,
+          "improved": 2885,
+          "regressed": 610,
+          "unchanged": 0,
+          "difference": {
+            "count": 3495,
+            "mean": -1.0654600787230767e-05,
+            "median": -6.4753562916767054e-06,
+            "p90": 3.180028399440972e-06
+          }
+        },
+        "face_mae": {
+          "count": 3495,
+          "improved": 3074,
+          "regressed": 421,
+          "unchanged": 0,
+          "difference": {
+            "count": 3495,
+            "mean": -0.00024635087328433265,
+            "median": -0.00021550236483057635,
+            "p90": 1.597974102789919e-05
+          }
+        }
+      }
+    }
+  },
+  "assertions_passed": 178,
+  "passed": true,
+  "scope": "Independent stdlib recomputation from all raw and terminal per-CAD records; verified existing independent native STEP reread audits. No production post rerun, parameter change, or new selection.",
+  "conclusion": "All summary counts, paired partitions, macro geometry summaries, micro topology, and native STEP audits match. Best415:3171/3495; last5395:3172/3495; baseline3180/3495. Geometry failures retain independently established solid validity."
+}

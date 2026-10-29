@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "count": 3495,
+  "method": "conditional_best415",
+  "transferred_raw_sha_matches": true,
+  "source_cad_sha_matches_142_and_baseline": true,
+  "ids_unique_and_complete": true,
+  "source_unchanged": true,
+  "checkpoint_unchanged": true,
+  "export_seconds": 220.81431624945253,
+  "records_sha256": "c7744e2dc732d9bd965764a5138a33666a544ead9c96dcbf8ec71b36b5eae761"
+}

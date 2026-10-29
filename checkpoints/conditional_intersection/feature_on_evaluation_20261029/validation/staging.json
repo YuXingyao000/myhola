@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "count": 17477,
+  "bytes": 2572948753,
+  "seconds": 55.564954105066136,
+  "noatime_source_reads": true,
+  "staged_gt_count": 3495,
+  "logical_data_root": "/mnt/d/data/deepcad_v7",
+  "physical_data_root": "/root/hola_eval/conditional_feature_on_20261029/gt",
+  "baseline_logical_root": "/mnt/d/python_curve_eval/checkpoints/shared_curve_uv/evaluation_20261020/best",
+  "baseline_physical_root": "/root/hola_eval/conditional_feature_on_20261029/baseline"
+}

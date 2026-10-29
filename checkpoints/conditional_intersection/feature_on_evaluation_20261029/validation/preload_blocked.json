@@ -1,0 +1,10 @@
+{
+  "candidate_attempts": 0,
+  "workers_started": 0,
+  "cause": "source shared library opens blocked in jbd2_log_wait_commit before preloading completed",
+  "pids": [
+    2887066,
+    2887067
+  ],
+  "action": "SIGTERM; preserve zero-CAD startup logs; use byte-identical staged environment and repository"
+}

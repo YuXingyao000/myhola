@@ -425,5 +425,18 @@
     "SIGUSR1": "No handler in non-SLURM run; do not send.",
     "SIGTERM": "Signals subprocess ranks and raises SIGTERMException after current batch; ModelCheckpoint.on_exception empty, so no new checkpoint automatically saved.",
     "recommended_action": "Preserve exact last complete checkpoint as immutable snapshot, then SIGTERM only this run process/ranks. Current in-memory incomplete epoch is not claimed saved."
+  },
+  "validation_sampling_contract": {
+    "vae_validation_inference": false,
+    "validation_latent": "sample: mean + std * randn_like(std)",
+    "export_latent": "posterior mean",
+    "evidence": [
+      "configs/train_vae_intersection.yaml:21 sets vae_validation_inference=false",
+      "src/brepnet/train.py:524-527 calls AutoEncoder_intersection v_test=(not is_training and run_validation_inference)",
+      "src/brepnet/models/vae/intersection.py:153-155 and 166 pass v_test into posterior use_mean",
+      "src/brepnet/models/vae/encoders.py:273 branches mean versus sample",
+      "feature_on_evaluation_20261029/export_predictions.py:150 explicitly calls sample(..., True)"
+    ],
+    "meaning": "Training history is sampled-latent validation; separate export/OCC evaluation uses deterministic posterior mean. Do not present the two as identical predictions or metrics."
   }
 }
