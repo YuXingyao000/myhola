@@ -1,0 +1,37 @@
+{
+  "Task": "分离粗糙度空间变化与各向异性，检验是否缩小目标零件和场景之间的表面真实感落差。",
+  "Assumptions": {
+    "facts": ["用户允许调整微观反射属性，禁止改变几何。", "已有九张近景原图使用常量金属材质。", "旧实验同时改变底色并混合两种反射机制，未完成单因素比较。"],
+    "hypothesis": "缺少表面反射细节是当前假感的一项原因；不预设添加噪声就会更真实。",
+    "scope": "这是渲染材质实验，不是纯图片后处理；不改生产 Step3/Step4。"
+  },
+  "Inputs": {
+    "source_request": "/mnt/d/data/cad_scene_enhancements/lut_sweep_20261029_001/request.json",
+    "scenes": ["office", "factory", "assembly"],
+    "models": ["00301161", "00489180", "00269315"],
+    "profiles": {
+      "baseline": {"roughness_amplitude": 0.0, "anisotropy": 0.0},
+      "roughness": {"roughness_amplitude": 0.10, "anisotropy": 0.0, "wavelengths_mm": [25.0, 0.8, 0.8]},
+      "anisotropy": {"roughness_amplitude": 0.0, "anisotropy": 0.5, "local_axis": [1.0, 0.0, 0.0]}
+    }
+  },
+  "Outputs": {
+    "directory": "/mnt/d/data/cad_scene_enhancements/reflectance_20261029_001",
+    "sample": "<scene>/<model>/<profile>/{rgb.png,mask.png,depth.exr,metadata.json}",
+    "figures": "每场景三行三列完整对照；三场景概览；全部九例均保留。"
+  },
+  "Processing Protocol": [
+    "使用冻结的导入、拍摄工具与原始相机/模型变换；CPU，每任务8线程，64 samples，seed 8，512×512。",
+    "每个零件先重渲原材质，再只替换Roughness或Anisotropic/Tangent输入。保持原基色、metallic、法线、灯光、背景、AgX不变。",
+    "roughness = .32 + .10*(2*Noise.Fac-1)，使用米制转换后的物体局部坐标；不接入Normal/Displacement。",
+    "各向异性切线为局部X轴在表面切平面的投影，强度按1-dot(N,D)^2衰减，避免法线平行于X轴时切线退化。",
+    "同一输入的三臂共享几何、相机、seed与采样数；保存深度、mask及网格/角法线摘要。",
+    "三场景独立CPU进程并行；不使用任何训练GPU；不保存覆盖源blend。"
+  ],
+  "Metrics": ["每臂成功/失败/缺失数量，分母27。", "相对本次baseline的mask差异像素数、深度最大绝对误差、网格/角法线/相机摘要一致性。", "目标内RGB平均绝对变化仅描述改变量，不作为真实感分数。", "看图判断金属反射是否可信，孔槽是否仍可辨，是否出现人为条纹、斑块或变脏感。"],
+  "Decision Rule": "只有多形状、多场景出现可辨的正向收益且几何检查通过，才讨论候选；任何视觉收益均先标为Agent观察，用户验收待定。无明显收益如实保留负结果，不自动选择最显眼的一列。",
+  "Edge Cases": "既定输入缺失/损坏直接停止该场景并保留日志，未产出计缺失；空mask或非有限深度视为失败。摘要不一致停止，不用fallback改几何。",
+  "Validation / Sanity Checks": ["先做一个三臂真实渲染验证接口和不变量，再完成其余八例。", "输入文件/代码保存sha256；baseline与旧原图差异另报，防止把重渲差异当材质收益。", "各臂Normal与Displacement输入均未连接，alpha/透射/发光保持关闭。"],
+  "Implementation Constraints": "独立实验目录；小函数；不引入外部权重；不改网格/UV/法线/灯光；数据和图片不入Git。",
+  "Deliverables": ["spec.json", "material.py", "render.py", "request.json与输入摘要", "27组渲染及几何检查", "对照图和result.json/NOTE.md"]
+}

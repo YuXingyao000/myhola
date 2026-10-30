@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "audit_date_utc": "2026-10-29",
+  "method": "PIXLRelight",
+  "audit_scope": "只读核对论文、官方推理代码和权重发布页；本文件不含运行结论，不安装、不下载权重、不重复其他 agent 的 CPU 实验。",
+  "decision": {
+    "status": "仅待验证的光照迁移候选；尚未证明适合本项目的照片增强目标",
+    "task_contract": "源 RGB + 同场景目标光照的 intrinsic maps -> 保留源细节的目标光照 RGB。Cycles passes 表示已经指定的目标外观，不是源图分解，也不是模型自行选择照明的 light slider。",
+    "synthetic_to_real_claim_supported": false,
+    "reason": "未找到合成图与对应实拍图的跨域增强监督或本项目 CAD 金属照片化评估。网络结构较大、前馈或使用真实照片训练，都不能单独证明能改善合成图真实感。"
+  },
+  "paper_facts": {
+    "source": "paper_v1",
+    "sections": ["3.1", "3.3", "3.4", "4.1", "4.2", "Appendix D"],
+    "training_data": [
+      {"name": "MIIW", "domain": "实拍", "dataset_scene_count_reported": 985, "illumination_conditions": 25},
+      {"name": "BigTime", "domain": "实拍延时摄影", "dataset_scene_count_reported": 212},
+      {"name": "VIDIT", "domain": "Unreal 合成", "dataset_scene_count_reported": 300, "illumination_conditions": 40}
+    ],
+    "scene_count_note": "以上是论文描述的数据集规模，不将其直接视作实际 train split 数量；作者称测试场景与训练无重叠，本审计未复核 split 清单。",
+    "training_pair": "同场景抽取两种照明作为源/目标；冻结 Marigold 从目标提取条件，输出对目标 RGB 做 L1 与感知监督。无源/目标光度增强。不是 CG->实拍配对。",
+    "quantitative_scope": "MIIW 30 个室内测试场景，另有 6 场景/12 对实拍；目标条件取自目标图。指标作逐图逐通道尺度校正。",
+    "authored_light_scope": "20 张 DL3DV 图像、5 种 Blender 灯光，仅定性，无目标实拍。",
+    "limitation": "分解偏差、重建错误及有限训练域可能传递到输出。",
+    "evidence_conflict": "模型卡称训练为室内；论文明确包含 BigTime 和 VIDIT，不能据模型卡概括为纯室内实拍训练。附录 D 一句称推理会分解 Blender RGB，与主方法及现行源码直接使用 passes 不一致；本审计采用可执行源码合同。"
+  },
+  "runtime_contract": {
+    "source_rgb": "源图像，官方 loader 用 PIL convert(RGB) 和 ToTensor，读取显示编码数值到 [0,1]；无 linear->sRGB、逆 sRGB、AgX 或 ICC 转换。RGBA 会先合成到白底。",
+    "source_geometry": "当前 512x512 源图在默认 512 设置下无需裁剪；任意非方图需另核对 crop/pad 与条件空间对应，不假定通用坐标守恒。",
+    "target_intrinsics": "9 通道 A/S/R：A 为 diffuse_color；S 为 diffuse_direct+diffuse_indirect；R 为 glossy_color*(glossy_direct+glossy_indirect)，加可选 transmission/volume/emission/environment。输入 EXR 必须是线性值。",
+    "normalization": "A 截到 [0,1]；S/R 各取非负，再共同以 tau=max(quantile(S,0.98),quantile(R,0.98),1e-8) 截断、除以 tau。quantile 汇总全图所有 RGB 值，不限 target mask；不做 gamma。随后双线性缩放到网络尺寸。",
+    "output": "网络输出逐像素 RGB gain/bias，插值回原图尺寸，计算 gain*source+bias 并截到 [0,1]；PIL 输出为 8-bit PNG。",
+    "existing_assets": "真实 Blender 几何和材质可直接生成目标 passes，绕过 DA3/Marigold 几何材质估计。depth/normals/mask/empty background 不直接作为当前 relighter 输入。",
+    "source_refs": ["official_load_fn", "official_pixl_relight", "official_head"]
+  },
+  "color_and_identity_interpretation": {
+    "evidence_type": "基于源码合同的研究判断，未经当前 CPU 结果验证",
+    "agx_source": "AgX PNG 是可被 loader 接受的显示图像，不能因此认定其与训练照片分布一致；也没有依据将所有合成图统称 OOD，因为训练包含 VIDIT。该 AgX look、曝光、金属零件和场景分布尚未验证。不要对已显示映射的 PNG 再额外套 gamma。",
+    "linear_source": "官方入口没有把线性源图转成显示图像的步骤；不能把线性 EXR 数值直接当其照片输入。若另建 linear->sRGB 源分支，需要显式记录转换，不把它称作官方原始合同。",
+    "no_exact_inverse": "AgX 源图和归一化线性 passes 不是可直接相乘还原彼此的同一颜色空间。相同物理照明也不保证网络数值 identity；偏离可能来自条件/色调映射分布及模型误差，而非更真实。",
+    "global_scale_invariance": "若所有光照通道共同乘正常数 k，且未触发 epsilon、其他设置不变，则 tau 同乘 k，归一化 S/R 不变。因此目标条件基本丢失全局绝对曝光；只统一放大所有灯不是可靠的新光照控制。相对灯权重、方向、颜色或遮挡变化才会保留有效差异。",
+    "highlight_clipping": "p98 截断丢失高亮相对强度尾部，对金属高光有明确风险；保留 diffuse/specular 共同尺度不等于保留全部 HDR。"
+  },
+  "expected_experiment_interpretation": {
+    "same_lighting": "源合成图 + 同照明目标 passes：作为 identity/漂移对照。没有论文依据预期它自动增加材质微结构、摄影噪声或真实感。零初始化是训练起点，不是训练后严格 identity 约束。",
+    "new_lighting": "源合成图 + 不同相对照明 passes：合理预期是光照迁移；其可信程度需与同几何同相机下直接 Cycles 目标渲染及源图比较。即便更好看，也不能据此宣称已做合成->实拍域转换。",
+    "value_given_exact_scene": "论文主要用神经模型保留真实源照片细节并容忍粗糙重建。当前已经有完整场景和准确几何，直接重渲染本来就是强基线；模型是否增加价值尚无证据。",
+    "geometry_risk": "不输出新 mesh、不显式重采样像素，不等于几何证据绝对守恒：空间变化 gain/bias 和截断能抹去孔槽/薄边对比、制造内部明暗边界或改变视觉轮廓。mask 固定也无法约束内部证据。",
+    "success_claim_boundary": "identity vs newlighting 可以验证实现和条件响应；是否更像照片需独立视觉判断及几何证据检查，不用光度变化量替代。"
+  },
+  "published_assets_and_cpu": {
+    "weights": "官方 model.safetensors（发布列表 2.56 GB）及 config.yaml；公开预训练，不需自行训练。",
+    "license": {"code": "MIT", "weights": "CC BY-NC 4.0"},
+    "cpu_source_evidence": "infer.py 接受 --device cpu --dtype float32，模型 inference 显式支持 CPU；本审计没有独立实测成功或耗时，运行事实归另一 agent 的报告。",
+    "cycles_only_note": "默认构造器会初始化未使用的 Marigold；Cycles-only wrapper 可注入 Identity 跳过，并严格核对所需 net/head 参数。",
+    "download_or_run_by_this_audit": false,
+    "source_refs": ["official_assets", "official_model_card", "official_infer", "official_pixl_relight"]
+  },
+  "sources": {
+    "paper_v1": "https://arxiv.org/html/2605.18735v1",
+    "official_load_fn": "https://github.com/mlfarinha/pixlrelight/blob/main/src/utils/load_fn.py",
+    "official_pixl_relight": "https://github.com/mlfarinha/pixlrelight/blob/main/src/models/pixl_relight.py",
+    "official_head": "https://github.com/mlfarinha/pixlrelight/blob/main/src/models/head.py",
+    "official_infer": "https://github.com/mlfarinha/pixlrelight/blob/main/infer.py",
+    "official_assets": "https://huggingface.co/mlfarinha/pixlrelight/tree/main",
+    "official_model_card": "https://huggingface.co/mlfarinha/pixlrelight"
+  }
+}

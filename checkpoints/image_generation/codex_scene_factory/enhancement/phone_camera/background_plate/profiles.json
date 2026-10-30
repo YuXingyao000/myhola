@@ -1,0 +1,15 @@
+{
+  "depth": {
+    "control_type": "depth",
+    "controlnet_dir": "/mnt/d/model/Flux1_ControlNet_Depth",
+    "controlnet_conditioning_scale": 0.5,
+    "control_guidance_end": 1.0
+  },
+  "canny": {
+    "control_type": "canny",
+    "controlnet_dir": "/mnt/d/model/Flux1_ControlNet_Union_Pro_2",
+    "controlnet_conditioning_scale": 0.7,
+    "control_guidance_end": 0.8,
+    "canny_thresholds": [100, 200]
+  }
+}

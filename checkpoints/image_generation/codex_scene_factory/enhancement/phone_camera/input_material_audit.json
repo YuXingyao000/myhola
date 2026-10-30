@@ -1,0 +1,593 @@
+{
+  "purpose": "Read-only source geometry, shading and reflection diagnosis; no new render",
+  "script": "/mnt/d/python_room_generation/checkpoints/image_generation/codex_scene_factory/enhancement/phone_camera/audit_input_material.py",
+  "script_sha256": "6a692e2043ce4072b65e49a59f50f2d656d8fdd1c2ebf6e42f258b45139230ba",
+  "python": "/mnt/d/anaconda3/envs/torch/bin/python",
+  "pythonocc_version": "7.8.1.1",
+  "frozen_step3_source_checks": {
+    "step2/preview.py": {
+      "sha256": "bd893faf3646876213c21573dadf6ec68110b94cd65c841ed928c8e498861146",
+      "matches_request": true
+    },
+    "step3/capture.py": {
+      "sha256": "ea32e96120b06b3d5d712d95e158694b03f984d6fea13cbe2851598f5e2c7a6f",
+      "matches_request": true
+    },
+    "step3/part.py": {
+      "sha256": "d0683c65d72b77bbc30a056902de34faa6d06c51d21d00356876365d599ff5a1",
+      "matches_request": true
+    }
+  },
+  "source_parts": [
+    {
+      "model_id": "00182999",
+      "step_file": "/mnt/d/data/deepcad_v6/00182999/normalized_shape.step",
+      "step_sha256": "917589e3b6596711f092d79e5146c8b4eb15218505fb6afd7128191404422c94",
+      "step_read_status": 1,
+      "step_valid": true,
+      "step_counts": {
+        "faces": 14,
+        "solids": 1
+      },
+      "step_bounds": [
+        -0.899999998971,
+        -0.01285714284245,
+        -0.709714284903,
+        0.899999998971,
+        0.01285714284245,
+        0.709714284903
+      ],
+      "step_volume": 0.01958735853335175,
+      "physical_step_dimensions_mm": [
+        151.51469028312573,
+        2.164495575474427,
+        119.48015576614797
+      ],
+      "y_thickness_projection_at_center_px": 0.9185050503052253,
+      "target_pixels": 2283,
+      "target_rgb_median": [
+        131.0,
+        136.0,
+        133.0
+      ],
+      "target_rgb_std": [
+        5.064563644133653,
+        4.588405301226294,
+        4.266723311044854
+      ],
+      "stl_file": "/mnt/d/data/deepcad_stl_total/00182999.stl",
+      "stl_sha256": "abeb9ec6732c0d60369e5615cb846c2f60d8d2c23a96173830e1bae686facff0",
+      "stl_matches_manifest": true,
+      "mesh_conversion": "ply_to_stl",
+      "selected_mesh_source": {
+        "path": "/mnt/d/data/deepcad_v6/00182999/mesh.ply",
+        "sha256": "a6a9d4d140b150bdb4e728db8f400d0107c477ea8dc279903c949a4c12bb2873"
+      }
+    },
+    {
+      "model_id": "00301161",
+      "step_file": "/mnt/d/data/deepcad_v6/00301161/normalized_shape.step",
+      "step_sha256": "326ea1bc272b54257a31363ebc6a13ff37adebebff9cb1c31b89051d0ed70255",
+      "step_read_status": 1,
+      "step_valid": true,
+      "step_counts": {
+        "faces": 24,
+        "solids": 1
+      },
+      "step_bounds": [
+        -0.8999999985830001,
+        -0.405000099362,
+        -0.603000600112,
+        0.899999998583,
+        0.404999999362,
+        0.6029994979920581
+      ],
+      "step_volume": 0.984266503544024,
+      "physical_step_dimensions_mm": [
+        190.5632070246711,
+        85.75345374787273,
+        127.67735929367497
+      ],
+      "y_thickness_projection_at_center_px": 44.207166627114304,
+      "target_pixels": 11406,
+      "target_rgb_median": [
+        158.0,
+        121.0,
+        81.0
+      ],
+      "target_rgb_std": [
+        34.47755171507609,
+        39.79267172586914,
+        48.788270800923925
+      ],
+      "stl_file": "/mnt/d/data/deepcad_stl_total/00301161.stl",
+      "stl_sha256": "5807b4c262f8a2b156762c82f56e7d7cd4f46a337cc5c4f41e6b3b9a25d0dd62",
+      "stl_matches_manifest": true,
+      "mesh_conversion": "ply_to_stl",
+      "selected_mesh_source": {
+        "path": "/mnt/d/data/deepcad_v6/00301161/mesh.ply",
+        "sha256": "00432907fc015c4529e495222299a2d89131857fcb5dd604cce8ff8feccbdd1d"
+      }
+    },
+    {
+      "model_id": "00269315",
+      "step_file": "/mnt/d/data/deepcad_v6/00269315/normalized_shape.step",
+      "step_sha256": "20f8bbe119b4c99e25bd2acd4825ebfe3554a5602b853cd9acbab6d6d0ad47de",
+      "step_read_status": 1,
+      "step_valid": true,
+      "step_counts": {
+        "faces": 14,
+        "solids": 1
+      },
+      "step_bounds": [
+        -0.899999999126,
+        -0.06661882956339,
+        -0.34446980866700005,
+        0.899999999126,
+        0.06661882956339,
+        0.344469808667
+      ],
+      "step_volume": 0.04197475595301115,
+      "physical_step_dimensions_mm": [
+        174.37010832065175,
+        12.90703615382678,
+        66.73915323198777
+      ],
+      "y_thickness_projection_at_center_px": 7.148617545077999,
+      "target_pixels": 1870,
+      "target_rgb_median": [
+        184.0,
+        160.0,
+        135.0
+      ],
+      "target_rgb_std": [
+        15.41497891089755,
+        11.472632367130293,
+        17.660306937694376
+      ],
+      "stl_file": "/mnt/d/data/deepcad_stl_total/00269315.stl",
+      "stl_sha256": "8b6bb9297f473d4a46540b4a262140ae7a99cd08eef7a33fd40cd505e33e9b83",
+      "stl_matches_manifest": true,
+      "mesh_conversion": "ply_to_stl",
+      "selected_mesh_source": {
+        "path": "/mnt/d/data/deepcad_v6/00269315/mesh.ply",
+        "sha256": "e8c1a9c0869f89d96be475c47807380f2bf08ef828621fbb344b2802c4e2596e"
+      }
+    }
+  ],
+  "blender_inspection": {
+    "blender_version": "5.2.2 LTS",
+    "scene_file": "/mnt/d/data/cad_scene_placements/office_step2_support_fix_20261026_001/support_scene/prepared_scene.blend",
+    "recorded_scene_sha256": "456eed79ebb1cc4c2642957dee8fc1ea097fd480f18387106497c2c9a9d6ffab",
+    "color_management": {
+      "view_transform": "AgX",
+      "look": "AgX - Medium High Contrast",
+      "exposure": 0.0,
+      "gamma": 1.0
+    },
+    "world_background_strength": 0.2800000011920929,
+    "lights": [
+      {
+        "name": "Panel emitted illumination",
+        "type": "AREA",
+        "energy": 115.0,
+        "color": [
+          1.0,
+          0.9200000166893005,
+          0.8100000023841858
+        ],
+        "location": [
+          -1.0,
+          0.47999998927116394,
+          2.7699999809265137
+        ]
+      },
+      {
+        "name": "Panel emitted illumination.001",
+        "type": "AREA",
+        "energy": 115.0,
+        "color": [
+          1.0,
+          0.9200000166893005,
+          0.8100000023841858
+        ],
+        "location": [
+          1.1200000047683716,
+          -0.47999998927116394,
+          2.7699999809265137
+        ]
+      },
+      {
+        "name": "Sun through west window",
+        "type": "SUN",
+        "energy": 1.399999976158142,
+        "color": [
+          1.0,
+          0.8999999761581421,
+          0.7400000095367432
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "material_override": "None",
+    "compositor_present": false,
+    "floor": {
+      "object": "500 mm carpet tile 5 5",
+      "material": "Contract carpet tile 0",
+      "roughness": 0.9100000262260437,
+      "sheen_weight": 0.15000000596046448,
+      "noise_scale": 230.0,
+      "bump_strength": 0.41999998688697815,
+      "bump_distance": 0.0012000000569969416,
+      "semantic_material": "procedural contract carpet tile, not vinyl"
+    },
+    "parts": [
+      {
+        "model_id": "00182999",
+        "dimensions_mm": [
+          151.5146791934967,
+          2.1644956432282925,
+          119.48015540838242
+        ],
+        "vertices": 24,
+        "triangles": 44,
+        "source_signed_volume": 0.019587359362474323,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "has_custom_normals": false,
+        "sharp_edges": 36,
+        "y_plane_corner_normal_max_error_degrees": 0.0,
+        "reflection_ray_samples": [
+          {
+            "polygon": 32,
+            "normal": [
+              0.0,
+              -1.0,
+              0.0
+            ],
+            "direction": [
+              -0.4058413803577423,
+              -0.8200633525848389,
+              -0.40347105264663696
+            ],
+            "hit_object": "500 mm carpet tile 5 5"
+          },
+          {
+            "polygon": 33,
+            "normal": [
+              0.0,
+              -1.0,
+              0.0
+            ],
+            "direction": [
+              -0.4281453788280487,
+              -0.8141820430755615,
+              -0.39217254519462585
+            ],
+            "hit_object": "500 mm carpet tile 5 5"
+          },
+          {
+            "polygon": 25,
+            "normal": [
+              0.0,
+              -1.0,
+              0.0
+            ],
+            "direction": [
+              -0.4854104220867157,
+              -0.7844797968864441,
+              -0.38596394658088684
+            ],
+            "hit_object": "500 mm carpet tile 5 5"
+          },
+          {
+            "polygon": 24,
+            "normal": [
+              0.0,
+              -1.0,
+              0.0
+            ],
+            "direction": [
+              -0.5051812529563904,
+              -0.7775171399116516,
+              -0.3745119273662567
+            ],
+            "hit_object": "500 mm carpet tile 5 5"
+          },
+          {
+            "polygon": 30,
+            "normal": [
+              0.0,
+              -1.0,
+              0.0
+            ],
+            "direction": [
+              -0.4693458080291748,
+              -0.812755286693573,
+              -0.3451717495918274
+            ],
+            "hit_object": "500 mm carpet tile 5 5"
+          },
+          {
+            "polygon": 31,
+            "normal": [
+              0.0,
+              -1.0,
+              0.0
+            ],
+            "direction": [
+              -0.45966023206710815,
+              -0.8104711771011353,
+              -0.36311012506484985
+            ],
+            "hit_object": "500 mm carpet tile 5 5"
+          }
+        ],
+        "material": {
+          "name": "satin_metal",
+          "base_color_linear": [
+            0.55,
+            0.57,
+            0.6,
+            1.0
+          ],
+          "metallic": 1.0,
+          "roughness": 0.32,
+          "normal_input_linked": false,
+          "anisotropic": 0.0
+        }
+      },
+      {
+        "model_id": "00301161",
+        "dimensions_mm": [
+          190.56320190429688,
+          85.75344830751419,
+          127.67735123634338
+        ],
+        "vertices": 223,
+        "triangles": 446,
+        "source_signed_volume": 0.9843815301694645,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "has_custom_normals": false,
+        "sharp_edges": 240,
+        "y_plane_corner_normal_max_error_degrees": 0.019782341029446364,
+        "reflection_ray_samples": [
+          {
+            "polygon": 53,
+            "normal": [
+              0.0,
+              1.0,
+              0.0
+            ],
+            "direction": [
+              0.480366975069046,
+              0.6798552870750427,
+              -0.5541158318519592
+            ],
+            "hit_object": "Desk B oak laminate cap"
+          },
+          {
+            "polygon": 46,
+            "normal": [
+              0.0,
+              1.0,
+              0.0
+            ],
+            "direction": [
+              0.4077771306037903,
+              0.6881663203239441,
+              -0.6001208424568176
+            ],
+            "hit_object": "Desk B oak laminate cap"
+          },
+          {
+            "polygon": 52,
+            "normal": [
+              0.0,
+              1.0,
+              0.0
+            ],
+            "direction": [
+              0.5364423990249634,
+              0.636053740978241,
+              -0.5546756982803345
+            ],
+            "hit_object": "Desk B oak laminate cap"
+          },
+          {
+            "polygon": 14,
+            "normal": [
+              -0.8304497599601746,
+              0.0,
+              0.5570934414863586
+            ],
+            "direction": [
+              -0.671046793460846,
+              -0.7178874611854553,
+              0.18529419600963593
+            ],
+            "hit_object": "South wall"
+          },
+          {
+            "polygon": 15,
+            "normal": [
+              -0.8304497599601746,
+              0.0,
+              0.5570934414863586
+            ],
+            "direction": [
+              -0.6696479916572571,
+              -0.7257882356643677,
+              0.15748997032642365
+            ],
+            "hit_object": "South wall"
+          },
+          {
+            "polygon": 54,
+            "normal": [
+              0.0,
+              1.0,
+              0.0
+            ],
+            "direction": [
+              0.5043546557426453,
+              0.6507954001426697,
+              -0.5675312280654907
+            ],
+            "hit_object": "Desk B oak laminate cap"
+          }
+        ],
+        "material": {
+          "name": "satin_metal",
+          "base_color_linear": [
+            0.55,
+            0.57,
+            0.6,
+            1.0
+          ],
+          "metallic": 1.0,
+          "roughness": 0.32,
+          "normal_input_linked": false,
+          "anisotropic": 0.0
+        }
+      },
+      {
+        "model_id": "00269315",
+        "dimensions_mm": [
+          174.37011003494263,
+          12.907017953693867,
+          66.71275198459625
+        ],
+        "vertices": 204,
+        "triangles": 412,
+        "source_signed_volume": 0.041969190424875236,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "has_custom_normals": false,
+        "sharp_edges": 210,
+        "y_plane_corner_normal_max_error_degrees": 0.0,
+        "reflection_ray_samples": [
+          {
+            "polygon": 284,
+            "normal": [
+              0.0,
+              -1.0,
+              0.0
+            ],
+            "direction": [
+              -0.5675498843193054,
+              -0.6194177269935608,
+              -0.5424102544784546
+            ],
+            "hit_object": "Desk A oak laminate cap"
+          },
+          {
+            "polygon": 282,
+            "normal": [
+              0.0,
+              -1.0,
+              0.0
+            ],
+            "direction": [
+              -0.5411221981048584,
+              -0.6355445384979248,
+              -0.5506995320320129
+            ],
+            "hit_object": "Desk A oak laminate cap"
+          },
+          {
+            "polygon": 1,
+            "normal": [
+              -0.258819043636322,
+              0.0,
+              0.9659258127212524
+            ],
+            "direction": [
+              -0.7432821393013,
+              0.6397399306297302,
+              0.19561317563056946
+            ],
+            "hit_object": "North wall"
+          },
+          {
+            "polygon": 0,
+            "normal": [
+              -0.258819043636322,
+              0.0,
+              0.9659258127212524
+            ],
+            "direction": [
+              -0.7598703503608704,
+              0.6249366998672485,
+              0.17902857065200806
+            ],
+            "hit_object": "North wall"
+          },
+          {
+            "polygon": 409,
+            "normal": [
+              1.0,
+              0.0,
+              0.0
+            ],
+            "direction": [
+              0.5767630338668823,
+              0.6026936173439026,
+              -0.5514571070671082
+            ],
+            "hit_object": "Desk A oak laminate cap"
+          },
+          {
+            "polygon": 408,
+            "normal": [
+              1.0,
+              0.0,
+              0.0
+            ],
+            "direction": [
+              0.571867823600769,
+              0.6022710800170898,
+              -0.5569890737533569
+            ],
+            "hit_object": "Desk A oak laminate cap"
+          }
+        ],
+        "material": {
+          "name": "satin_metal",
+          "base_color_linear": [
+            0.55,
+            0.57,
+            0.6,
+            1.0
+          ],
+          "metallic": 1.0,
+          "roughness": 0.32,
+          "normal_input_linked": false,
+          "anisotropic": 0.0
+        }
+      }
+    ]
+  },
+  "scene_build_source": "/mnt/d/data/cad_scene_templates/office_20261023_001/build_scene.py",
+  "scene_build_source_sha256": "42718beb2738dd9441441e258cfd1c8a8b6f40e039949ba2ed1144ea95c5bbae",
+  "prompt_mismatch": {
+    "prompt_file": "/mnt/d/python_room_generation/checkpoints/image_generation/codex_scene_factory/enhancement/phone_camera/krea_office_matte.md",
+    "prompt_sha256": "11d558c9fcfddfad0335902c49a8611443f009e8b6542339aad37ea101b0d7ba",
+    "prompt_floor_description": "Matte gray vinyl flooring",
+    "actual_floor": "procedural contract carpet tiles",
+    "consequence": "The prompt requests a different material; floor smoothing is not evidence of restored carpet realism.",
+    "experiment_handling": "Keep this prompt unchanged for the current spatial-mechanism comparison; any later correction is a separate version."
+  },
+  "limitations": [
+    "Reflection rays sample ideal mirror directions at six triangle centers; rough BRDF integration, indirect bounces and light transport contributions were not measured.",
+    "Projected Y thickness is measured through the bounding-box center, not a full per-pixel visible-side thickness estimate.",
+    "Valid STEP, matching bounds and closed imported meshes do not certify full tessellation fidelity.",
+    "Planar normal checks address these three samples, not the entire dataset; some curved facets appropriately have interpolated corner normals.",
+    "No source geometry, material, camera, image or prompt was modified, and no GPU rendering was used."
+  ]
+}

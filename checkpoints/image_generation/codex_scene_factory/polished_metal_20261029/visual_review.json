@@ -1,0 +1,70 @@
+{
+  "date_utc": "2026-10-29",
+  "review_type": "agent_subjective_non_blind_development_review",
+  "scope": "实际查看三张完整图板，共6组18张；另看factory圆盘、office块状件三臂原尺寸图。知道列身份，非盲评或用户验收，未渲染/调参。",
+  "run_dir": "/mnt/d/data/cad_scene_enhancements/polished_metal_20261029_001",
+  "boards_reviewed": [
+    "comparison_office.png",
+    "comparison_factory.png",
+    "comparison_assembly.png"
+  ],
+  "comparison": "baseline roughness=.32；polished_constant=.05494453579771756；polished_map用Metal050A原roughness图。三臂同几何、法线、相机、灯光、底色，128 samples/seed8。",
+  "per_case": [
+    {
+      "scene": "office",
+      "model_id": "00301161",
+      "metal_recognition": "stronger_mirror_metal_cue",
+      "geometry_readability": "regression",
+      "overall_photorealism": "unclear",
+      "observation": "镜面反射更明确，但孔内连续层次变成近黑区加细亮线，木桌倒影也削弱局部轮廓分离，整体照片感不确定。"
+    },
+    {
+      "scene": "office",
+      "model_id": "00489180",
+      "metal_recognition": "stronger_mirror_metal_cue",
+      "geometry_readability": "mixed",
+      "overall_photorealism": "weakly_preferable",
+      "observation": "杯子倒影使抛光表面更具体，中央细槽更清楚，虽有盘面/背景混淆，整体照片感仍有低置信弱偏好。"
+    },
+    {
+      "scene": "factory",
+      "model_id": "00301161",
+      "metal_recognition": "stronger_mirror_metal_cue",
+      "geometry_readability": "regression",
+      "overall_photorealism": "unclear",
+      "observation": "镜面金属感增强，但强白色台面纹理映入正面、孔内近黑反射削弱体积读取，整体照片感不确定。"
+    },
+    {
+      "scene": "factory",
+      "model_id": "00489180",
+      "metal_recognition": "stronger_mirror_metal_cue",
+      "geometry_readability": "mixed",
+      "overall_photorealism": "unclear",
+      "observation": "盘面环境倒影与中央细槽更清楚，但台面纹理使左下轮廓更难分离，整体照片感不确定。"
+    },
+    {
+      "scene": "assembly",
+      "model_id": "00301161",
+      "metal_recognition": "stronger_mirror_metal_cue",
+      "geometry_readability": "regression",
+      "overall_photorealism": "unclear",
+      "observation": "红柜亮条和环境倒影强化镜面感，同时孔内层次和褐色前面的轮廓分离下降，整体照片感不确定。"
+    },
+    {
+      "scene": "assembly",
+      "model_id": "00489180",
+      "metal_recognition": "stronger_mirror_metal_cue",
+      "geometry_readability": "mixed",
+      "overall_photorealism": "unclear",
+      "observation": "镜面类别与中央细槽更明确，但暗环境/褐色台面倒影主导盘面并弱化部分边界，整体照片感不确定。"
+    }
+  ],
+  "map_vs_constant": "6组均没有可靠可见的额外收益；主要变化来自整体roughness降低，不代表两臂逐像素相同。",
+  "overall": "镜面金属可辨性6/6增强，但整体照片感仅office圆盘有低置信弱偏好，其余5组不确定；块状件3组结构可辨性退步，圆盘3组细槽改善与轮廓混淆并存，因此不支持统一默认。",
+  "environment_limit": "低粗糙度使台面纹理和视野外环境直接主导目标表面，暴露场景材质/反射内容对观感的限制；尚未定位确定的物理反射错误，真实镜面也会产生伪装，形状难读不能直接等同不真实。",
+  "geometry_evidence": "读取结果与18份metadata均报告零mask/depth差异、几何/法线/相机摘要未变；本次未独立重算。00301161斜三角为既有实际面，不判为法线错误。",
+  "supports_uniform_default": false,
+  "human_review": "pending",
+  "selected_default": null,
+  "limitations": "主观小样本审查，无匹配加工工艺的实拍参考；计数不是统计胜率或重建结果。不以更亮/更多纹理当真实感，不建议新参数扫描。"
+}

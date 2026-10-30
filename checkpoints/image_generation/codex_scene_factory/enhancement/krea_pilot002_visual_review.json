@@ -1,0 +1,84 @@
+{
+  "created_at_utc": "2026-10-27T07:33:44.102360+00:00",
+  "run_dir": "/mnt/d/data/cad_scene_enhancements/office_krea_pilot_20261027_002",
+  "reviewer": "assistant",
+  "human_review": "pending",
+  "technical_status": "pass",
+  "technical_report": "/mnt/d/data/cad_scene_enhancements/office_krea_pilot_20261027_002/validation.json",
+  "planned": 15,
+  "technical_pass": 15,
+  "viewed_artifacts": [
+    "/mnt/d/data/cad_scene_enhancements/office_krea_pilot_20261027_002/comparisons/page_00.jpg",
+    "/mnt/d/data/cad_scene_enhancements/office_krea_pilot_20261027_002/00182999/strength_0_25/enhanced.png",
+    "/mnt/d/data/cad_scene_enhancements/office_krea_pilot_20261027_002/00182999/strength_0_35/enhanced.png",
+    "/mnt/d/data/cad_scene_enhancements/office_krea_pilot_20261027_002/00182999/strength_0_45/enhanced.png"
+  ],
+  "strength_reviews": [
+    {
+      "strength": 0.25,
+      "actual_steps": 10,
+      "recommendation": "use_as_conservative_batch_experiment",
+      "observations_zh": [
+        "五件主要布局大体保留，变化主要是轻微色调/纹理调整。",
+        "十字件512图未观察到0.35/0.45的蓝绿色斑，也未见005的明显白边。",
+        "照片真实感提升有限且未被证明；这不是人工质量通过。"
+      ]
+    },
+    {
+      "strength": 0.35,
+      "actual_steps": 14,
+      "recommendation": "reject_as_current_batch_default",
+      "observations_zh": [
+        "00182999十字件左侧地面新增两个半透明蓝绿椭圆斑，原图不存在。",
+        "其余图出现更明显的道具/纹理改变；较低于0.45的强度也不保证不发生幻觉。"
+      ]
+    },
+    {
+      "strength": 0.45,
+      "actual_steps": 18,
+      "recommendation": "reject_as_current_batch_default",
+      "observations_zh": [
+        "00182999十字件左侧仍有较淡的竖向绿色斑；柜脚和拉手被重画。",
+        "打印机细节、杯柄/杯碟、便签等局部更改，不能按固定布局保真增强验收。"
+      ]
+    }
+  ],
+  "choice": {
+    "model": "FLUX.1 Krea-dev Q8 GGUF",
+    "pipeline": "FluxInpaintPipeline",
+    "processing_resolution": [
+      512,
+      512
+    ],
+    "final_resolution": [
+      512,
+      512
+    ],
+    "prompt_style": "photographic_caption",
+    "strength": 0.25,
+    "nominal_steps": 40,
+    "actual_steps": 10,
+    "guidance_scale": 4.5,
+    "protect_padding_px": 2,
+    "feather_px": 4
+  },
+  "choice_rationale_zh": "保留原场景且避免本轮可见伪影的保守选择，允许推进固定100张实验；不是照片真实感已经明显提高或全量视觉验收通过的结论。",
+  "caption_comparison": {
+    "prior_run": "/mnt/d/data/cad_scene_enhancements/office_krea_pilot_20261027_001",
+    "comparison_strength": 0.25,
+    "per_image_mean_abs_rgb_difference": {
+      "00301161": 0.7582829793294271,
+      "00489180": 0.637017567952474,
+      "00495463": 0.6303888956705729,
+      "00182999": 0.5219917297363281,
+      "00269315": 0.58935546875
+    },
+    "interpretation_zh": "两种提示词下0.25结果接近。采用caption主要为匹配图生图文本接口，不宣称比上一版编辑式提示词有实证质量优势。"
+  },
+  "metrics_note_zh": "目标及保护区域像素差均为0仍不足以发现其外侧生成伪影；像素差大小不作为真实感指标。",
+  "limitations_zh": [
+    "只检验五个办公室输入；不能据此证明其他七场景效果。",
+    "未使用GPU、未修改生产代码、未改参数或筛除样本。",
+    "仅选定后续完整批量的实验配置，人工最终验收仍待进行。"
+  ]
+}

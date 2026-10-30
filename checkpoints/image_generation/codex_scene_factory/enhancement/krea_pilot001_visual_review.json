@@ -1,0 +1,65 @@
+{
+  "created_at_utc": "2026-10-27T07:29:14.084115+00:00",
+  "run_dir": "/mnt/d/data/cad_scene_enhancements/office_krea_pilot_20261027_001",
+  "reviewer": "assistant",
+  "human_review": "pending",
+  "technical_report": "/mnt/d/data/cad_scene_enhancements/office_krea_pilot_20261027_001/validation.json",
+  "technical_status": "pass",
+  "technical_pass_count": 15,
+  "model": "FLUX.1 Krea-dev Q8 GGUF",
+  "processing_resolution": [
+    512,
+    512
+  ],
+  "final_resolution": [
+    512,
+    512
+  ],
+  "configuration": {
+    "num_inference_steps": 40,
+    "guidance_scale": 4.5,
+    "protect_padding_px": 2,
+    "feather_px": 4,
+    "seed": 8
+  },
+  "view_scope_zh": "查看原图与五件×三个强度完整拼图；逐张查看全部五件0.25最终图，以及地面十字件/桌面弧形件0.45最终图。",
+  "comparison_image": "/mnt/d/data/cad_scene_enhancements/office_krea_pilot_20261027_001/comparisons/page_00.jpg",
+  "strength_reviews": [
+    {
+      "strength": 0.25,
+      "actual_steps": 10,
+      "recommendation": "conservative_candidate_pending_caption_comparison",
+      "layout_zh": "主要道具与构图大体保留；不是背景像素或全部道具几何严格不变。",
+      "seams_zh": "五件全图未观察到005那种突出的十字白边；目标周围接触和边界总体较连续。",
+      "photorealism_zh": "木纹、纸张、表面局部细节有变化，但整体仍很接近渲染基线，尚无明显或一致的照片真实感跃升。",
+      "mean_background_abs_rgb_change": 4.720999885069281
+    },
+    {
+      "strength": 0.45,
+      "actual_steps": 18,
+      "recommendation": "not_selected_for_fixed_layout_enhancement",
+      "layout_zh": "开始重画已有道具结构：00182999柜脚变粗且拉手形状改变；00495463打印机前部细节改变；00269315杯柄、便签及背景投影改变。",
+      "seams_zh": "查看的十字件/弧形件未出现005级别的亮边，但固定目标与修改后的周围结构、阴影关系仍需审阅。",
+      "photorealism_zh": "部分表面更有细节，同时改变道具；不能把新增细节或较大像素变化直接当作照片真实感改善。",
+      "mean_background_abs_rgb_change": 7.450449887929118
+    },
+    {
+      "strength": 0.65,
+      "actual_steps": 26,
+      "recommendation": "reject_as_preserving_enhancement_default",
+      "layout_zh": "明显新增或替换道具、改变布局：00301161出现透明支架样物件并把键盘重画成深色长方体；00489180新增透明杯形物件且改显示器底座；00269315将马克杯重画成透明杯并更换底座/小主机。",
+      "seams_zh": "保护像素仍为零差，但周围空间和道具改写已破坏“仅改善原场景质感”的假设；固定目标像素不能保证整幅图的空间/光照一致性。",
+      "photorealism_zh": "改变最明显，并没有因此获得稳定的真实照片效果。",
+      "mean_background_abs_rgb_change": 12.413424433296845
+    }
+  ],
+  "conclusion_zh": "本轮没有证据支持直接以0.45或0.65批量作为保真增强默认。0.25可保留为保守候选，再与caption提示词下0.25/0.35结果比较；技术保护通过不代表视觉通过。",
+  "selected_for_100": false,
+  "selection_state": "await_caption_pilot_comparison",
+  "metrics_note_zh": "背景平均像素差只表示改动程度，不是照片真实感得分。步数/耗时/显存来自运行时记录，并已对照日志；未重跑模型。",
+  "limitations_zh": [
+    "只有五件办公室图，没有证明其他场景表现。",
+    "没有人工最终验收或下游训练收益证据。",
+    "未修改生产代码、未使用GPU、未启动批量。"
+  ]
+}

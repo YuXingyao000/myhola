@@ -1,0 +1,13 @@
+{
+  "Task": "检验原roughness=.32是否过度模糊金属环境反射；区分整体粗糙度降低与外部贴图细节的贡献。",
+  "Assumptions": {"facts": ["用户允许改变反射属性，几何和底色不动。", "Metal050A官方CC0素材已下载；实际粗糙度像素范围9..22/255，明显低于原.32。", "原高度图几乎常量；本轮不使用法线或高度图。"], "hypothesis": "更低的粗糙度可能让环境反射形成更可信的金属质感，也可能增加混乱反射、噪声或遮掩孔槽。", "limits": "不是实测BRDF，不保证适合所有加工工艺；不把材质球预览当照片。"},
+  "Inputs": {"source_request": "/mnt/d/data/cad_scene_enhancements/lut_sweep_20261029_001/request.json", "scenes": ["office", "factory", "assembly"], "models": ["00301161", "00489180"], "roughness_map": "/mnt/d/data/cad_scene_assets/ambientcg/Metal050A/1k/files/Metal050A_1K-PNG_Roughness.png", "source_url": "https://ambientcg.com/a/Metal050A", "license": "CC0-1.0", "asset_manifest": "/mnt/d/data/cad_scene_enhancements/metal_asset_20261029_001/assets.json"},
+  "Outputs": {"directory": "/mnt/d/data/cad_scene_enhancements/polished_metal_20261029_001", "sample": "scene/model/profile/{rgb.png,mask.png,depth.exr,metadata.json}", "summary": "18张产物及三场景三列对照，成功/失败/缺失全记。"},
+  "Processing Protocol": ["baseline=原constant roughness .32；polished_constant=素材纹理均值；polished_map=素材原始roughness数值。均值由下载的1024²灰度图/255计算。", "只替换Roughness输入；Base Color=.55/.57/.60，metallic=1；不改变Normal/Displacement/Anisotropic。", "贴图用Non-Color、Linear interpolation、BOX projection、blend=.2；局部Object坐标按真实缩放换为米，设整块纹理宽度.1m。该尺寸为显式诊断假设，原素材未提供尺寸。", "固定既有相机/姿态/场景/AgX；每臂128 samples、seed8、CPU8线程。baseline重新渲染同预算，避免比较64与128。", "先factory圆盘三臂检验接口与几何不变量，再完成余下五组。"],
+  "Metrics": ["planned18，success/failed/missing。", "候选与新baseline的mask差异像素/深度最大误差，网格/角法线/相机摘要。", "视觉分别评估金属质感、环境反射的可信度、孔槽和轮廓是否易读；RGB改变量不是照片感分数。"],
+  "Decision Rule": "只有跨场景/形状收益且结构可辨才列为候选；不会因为高光更多就宣布更真实。不自动改生产默认。",
+  "Edge Cases": "输入缺失/损坏或非有限值停止该场景并保留失败/缺失；素材不使用预览缩略图代替；不改几何以修外观。",
+  "Validation / Sanity Checks": ["核对素材文件指向shader roughness且不是glossiness。", "source hash、asset hash、脚本快照、相机及渲染预算保存。", "mask/depth及几何一致性检查沿用已验证的reflectance实验。", "记录polished_constant与map的平均差并说明BOX混合会改变局部粗糙度分布。"],
+  "Implementation Constraints": "独立实验目录；复制并复用已验证的渲染循环，只替换材质构造和图板标签；不改生产代码，不调用图像生成模型，不使用GPU。",
+  "Deliverables": ["spec.json", "material.py/render.py/compare.py", "request.json与素材溯源", "18组图像与几何验证", "比较图与result.json/NOTE.md"]
+}

@@ -66,10 +66,11 @@ def fetch_asset(
     catalog: Path | None = None,
     max_download_mb: int = 2048,
 ) -> dict:
-    """获取一个素材版本，核对缓存摘要，再更新 build.py 使用的平铺文件清单。
+    """获取一个素材版本，核对缓存摘要，再更新模板的素材文件清单。
 
     分辨率仅控制 Poly Haven / ambientCG 的下载选择；Sketchfab 和本地目录
     保留已有文件。缓存不自动更新，已有模板文件也不会被不同内容静默覆盖。
+    清单可为旧版文件列表，或带 files 列表的房间清单；合并时保留原有格式和元数据。
     """
     if provider not in PROVIDERS or not re.fullmatch(r"[A-Za-z0-9_-]+", asset_id):
         raise ValueError("Unknown provider or unsafe asset_id")
@@ -130,10 +131,19 @@ def fetch_asset(
             raise ValueError(f"Copied file SHA-256 mismatch: {record['path']}")
     manifest_path = template_dir / "assets.json"
     existing = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else []
-    manifest = {item["path"]: item for item in existing}
+    # 房间清单另有 reference_id、source 等元数据，只更新其中的 files。
+    # 未创建清单的旧模板仍使用平铺列表，不悄悄改变现有接口。
+    existing_files = existing["files"] if isinstance(existing, dict) else existing
+    manifest = {item["path"]: item for item in existing_files}
     for record in records:
         manifest[record["path"]] = {**manifest.get(record["path"], {}), **record}
-    _write_json(manifest_path, sorted(manifest.values(), key=lambda item: item["path"]))
+    merged_files = sorted(manifest.values(), key=lambda item: item["path"])
+    if isinstance(existing, dict):
+        existing["files"] = merged_files
+        merged_manifest = existing
+    else:
+        merged_manifest = merged_files
+    _write_json(manifest_path, merged_manifest)
     return {"asset": metadata, "cache_hit": cache_hit, "variant": variant,
             "template_dir": str(template_dir), "files": records}
 

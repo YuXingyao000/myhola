@@ -1,0 +1,94 @@
+{
+  "created_at_utc": "2026-10-27T07:08:22.962598+00:00",
+  "run_dir": "/mnt/d/data/cad_scene_enhancements/office_pilot_20261027_005",
+  "status": "pass",
+  "planned": 5,
+  "unique_input_models": 5,
+  "records": 5,
+  "reported_success": 5,
+  "reported_failed": 0,
+  "audit_pass": 5,
+  "audit_failed": 0,
+  "missing": 0,
+  "duplicate_result_ids": [],
+  "unexpected_result_ids": [],
+  "errors": [],
+  "runtime_log_checked": true,
+  "runtime_log_file": "/mnt/d/data/cad_scene_enhancements/office_pilot_20261027_005.log",
+  "actual_steps_by_strength": {
+    "1.0": [
+      40
+    ]
+  },
+  "inference_seconds_recorded_total": 302.16759757348336,
+  "peak_allocated_gib_recorded": 14.529609680175781,
+  "peak_reserved_gib_recorded": 15.69140625,
+  "human_review": "pending",
+  "findings": [
+    {
+      "job_id": "00301161/strength_1_0",
+      "status": "pass",
+      "strength": 1.0,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 3.253292193437652,
+      "actual_steps_recorded": 40,
+      "inference_seconds_recorded": 60.14820906706154,
+      "peak_allocated_bytes_recorded": 15601049600,
+      "peak_reserved_bytes_recorded": 16848519168
+    },
+    {
+      "job_id": "00489180/strength_1_0",
+      "status": "pass",
+      "strength": 1.0,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 3.00294150227486,
+      "actual_steps_recorded": 40,
+      "inference_seconds_recorded": 60.59839998208918,
+      "peak_allocated_bytes_recorded": 15601049600,
+      "peak_reserved_bytes_recorded": 16848519168
+    },
+    {
+      "job_id": "00495463/strength_1_0",
+      "status": "pass",
+      "strength": 1.0,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 28.942620031297697,
+      "actual_steps_recorded": 40,
+      "inference_seconds_recorded": 60.509908247040585,
+      "peak_allocated_bytes_recorded": 15601049600,
+      "peak_reserved_bytes_recorded": 16848519168
+    },
+    {
+      "job_id": "00182999/strength_1_0",
+      "status": "pass",
+      "strength": 1.0,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 12.354791644150751,
+      "actual_steps_recorded": 40,
+      "inference_seconds_recorded": 60.470990921137854,
+      "peak_allocated_bytes_recorded": 15601049600,
+      "peak_reserved_bytes_recorded": 16848519168
+    },
+    {
+      "job_id": "00269315/strength_1_0",
+      "status": "pass",
+      "strength": 1.0,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 3.8259160639212046,
+      "actual_steps_recorded": 40,
+      "inference_seconds_recorded": 60.4400893561542,
+      "peak_allocated_bytes_recorded": 15601049600,
+      "peak_reserved_bytes_recorded": 16848519168
+    }
+  ],
+  "limitations": [
+    "Timing, GPU peaks and step counts are recorded instrumentation, not an independent GPU replay.",
+    "Model weight hashes were not re-read by this audit.",
+    "Background pixel change does not measure photorealism; edited background depth is not certified."
+  ]
+}

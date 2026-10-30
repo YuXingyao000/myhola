@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "protected_pixel_mutation_detected_despite_updated_output_hash_and_checks_pass": true,
+  "missing_and_duplicate_records_detected": true,
+  "missing_results_retains_all_15_jobs": true,
+  "original_run_unchanged": true,
+  "gpu_used": false
+}

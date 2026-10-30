@@ -1,0 +1,34 @@
+{
+  "workshop_room_20261019_001": {
+    "prompt_file": "workshop.md",
+    "description": "Shed 改编工作间：旧木料、工具与局部维护痕迹"
+  },
+  "factory_20261023_001": {
+    "prompt_file": "factory.md",
+    "description": "小型机加工车间：钻削工位、涂装设备与混凝土地面"
+  },
+  "assembly_20261023_001": {
+    "prompt_file": "assembly.md",
+    "description": "机械装配车间：木工作台、金属部件与分区使用痕迹"
+  },
+  "electronics_20261023_001": {
+    "prompt_file": "electronics.md",
+    "description": "电子维修工作室：防静电台面、仪器与日常维护质感"
+  },
+  "office_20261023_001": {
+    "prompt_file": "office.md",
+    "description": "普通办公室：橡木饰面、地毯与克制的日常使用痕迹"
+  },
+  "auto_repair_20261025_001": {
+    "prompt_file": "auto_repair.md",
+    "description": "汽车维修工位：轮胎橡胶、设备涂层与局部清洁痕迹"
+  },
+  "woodworking_20261025_001": {
+    "prompt_file": "woodworking.md",
+    "description": "木工工作室：木纹方向、细孔与局部工具接触痕迹"
+  },
+  "home_kitchen_20261025_001": {
+    "prompt_file": "home_kitchen.md",
+    "description": "家庭餐厨空间：日常清洁的木材、陶瓷与金属表面"
+  }
+}

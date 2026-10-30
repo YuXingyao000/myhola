@@ -1,0 +1,43 @@
+{
+  "date_utc": "2026-10-29",
+  "review_type": "agent_subjective_development_observation",
+  "scope": "只看factory/00489180的三张512×512原尺寸RGB及联系图；未渲染、未运行模型、未改生产代码。",
+  "images_reviewed": [
+    "/mnt/d/data/cad_scene_enhancements/reflectance_20261029_001/comparison_factory.png",
+    "/mnt/d/data/cad_scene_enhancements/reflectance_20261029_001/factory/00489180/baseline/rgb.png",
+    "/mnt/d/data/cad_scene_enhancements/reflectance_20261029_001/factory/00489180/roughness/rgb.png",
+    "/mnt/d/data/cad_scene_enhancements/reflectance_20261029_001/factory/00489180/anisotropy/rgb.png"
+  ],
+  "frozen_parameters_read_from_metadata": {
+    "roughness": {"roughness_amplitude": 0.1, "anisotropy": 0.0, "wavelengths_mm": [25.0, 0.8, 0.8]},
+    "anisotropy": {"roughness_amplitude": 0.0, "anisotropy": 0.5, "local_axis": [1.0, 0.0, 0.0]},
+    "samples": 64,
+    "seed": 8
+  },
+  "baseline": {
+    "visible": "圆盘正面以平滑灰蓝渐变和少量宽高光为主，中央细槽及底部接触仍可辨；缺少表面细节的原有观感很明确。"
+  },
+  "roughness_only": {
+    "effect_visibility": "高：无需差分图或放大，512原图就能看见正面密集的斜向近水平长条纹；侧环也由平滑变成细颗粒状。",
+    "brushed_metal_reading": "第一眼能够联想到拉丝金属；原有大尺度渐变、底部宽高光和中央细槽亮区仍叠在纹理上，并非完全平涂的条纹图案。",
+    "painted_stripe_risk": "正面长条纹对比明显、覆盖范围很大，许多纹路在大面上持续可见，具有程序化条纹贴面的观感风险；侧环的颗粒响应与正面的长纹也形成较强风格切换。",
+    "judgment": "当前可以确认“材质变化终于清楚可见”，不能确认“照片真实感提升”。它比基线更容易被读成有拉丝表面的金属，但纹理强度/规则感也可能引入新的假感。我不会仅凭单视图将其判为可信加工表面，也不会武断称为涂漆条纹。",
+    "manufacturing_limit": "没有该零件对应的实际加工工艺或实拍参考，不能断言正面应当是直线拉丝、同心车纹或其他表面。"
+  },
+  "anisotropy_only": {
+    "effect_visibility": "低：与baseline非常接近，主要仍是平滑大面和宽渐变；能感到细微明暗/高光变化，但没有可靠可辨的方向性高光或新的表面层次。",
+    "judgment": "本件本视角未见明确真实感收益；最大anisotropy=0.5不等于该条件下必有肉眼可见效果，不能由这张图推出各向异性机制普遍无效。"
+  },
+  "geometry_and_contact": {
+    "visual": "三图中圆盘外缘、中心细槽和接触关系未见明显改变；roughness纹理没有在本图中被明确读成新增孔洞或沟槽。",
+    "metadata_reported": "三份metadata的signature_unchanged=true、mask_differing_pixels=0、depth_max_abs_error_m=0、old_mask_differing_pixels=0。",
+    "limit": "这些是读取已有检查结果；本次没有独立重算几何、深度或摘要。"
+  },
+  "pilot_conclusion": "roughness-only已经突破旧实验“几乎看不出变化”的问题，但当前更接近可见的风格候选，尚不能升级为统一真实感方案；anisotropy-only在这张圆盘图上没有明确收益。保留冻结参数看完其余8个组合再判断跨场景、跨形状表现，不据此单件挑优或中途改配方。",
+  "human_review": "pending",
+  "limitations": [
+    "仅一个圆盘、一个factory视角；不是盲评或用户验收。",
+    "单张图不能验证纹理随光源/视角变化的物理一致性。",
+    "效果可见性、材料可辨性与整体照片真实感是三个不同判断。"
+  ]
+}

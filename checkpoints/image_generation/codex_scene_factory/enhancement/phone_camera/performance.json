@@ -1,0 +1,192 @@
+[
+  {
+    "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_kontext_20261027_001",
+    "count": 6,
+    "success": 6,
+    "pure_inference_seconds": 253.514307995094,
+    "peak_allocated_gib": 14.528144359588623,
+    "initial_sigma": 1.0,
+    "steps": [
+      28
+    ],
+    "config": {
+      "pipeline": "kontext_edit",
+      "processing_size": 1024,
+      "num_inference_steps": 28,
+      "guidance_scale": 2.5,
+      "strengths": [
+        1.0
+      ],
+      "resident_model": true,
+      "max_sequence_length": 512,
+      "protect_padding_px": 2,
+      "feather_px": 4
+    }
+  },
+  {
+    "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001",
+    "count": 12,
+    "success": 12,
+    "pure_inference_seconds": 109.34600802417845,
+    "peak_allocated_gib": 14.528099060058594,
+    "initial_sigma": 0.5128441452980042,
+    "steps": [
+      10,
+      14
+    ],
+    "config": {
+      "pipeline": "flux",
+      "processing_size": 1024,
+      "num_inference_steps": 40,
+      "guidance_scale": 2.5,
+      "strengths": [
+        0.25,
+        0.35
+      ],
+      "resident_model": true,
+      "max_sequence_length": 512,
+      "protect_padding_px": 2,
+      "feather_px": 4
+    }
+  },
+  {
+    "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_off_20261027_001",
+    "count": 6,
+    "success": 6,
+    "pure_inference_seconds": 45.370796635281295,
+    "peak_allocated_gib": 15.74248218536377,
+    "initial_sigma": 0.7771334648132324,
+    "steps": [
+      26
+    ],
+    "config": {
+      "pipeline": "flux_depth",
+      "processing_size": 512,
+      "num_inference_steps": 40,
+      "guidance_scale": 4.5,
+      "strengths": [
+        0.65
+      ],
+      "controlnet_dir": "/mnt/d/model/Flux1_ControlNet_Depth",
+      "controlnet_conditioning_scale": 0.0,
+      "depth_input_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_inputs_20261027_001",
+      "sampling_mask": "full_frame",
+      "resident_model": true,
+      "max_sequence_length": 512,
+      "protect_padding_px": 2,
+      "feather_px": 4
+    }
+  },
+  {
+    "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_on_20261027_001",
+    "count": 6,
+    "success": 6,
+    "pure_inference_seconds": 45.48371335421689,
+    "peak_allocated_gib": 15.74248218536377,
+    "initial_sigma": 0.7771334648132324,
+    "steps": [
+      26
+    ],
+    "config": {
+      "pipeline": "flux_depth",
+      "processing_size": 512,
+      "num_inference_steps": 40,
+      "guidance_scale": 4.5,
+      "strengths": [
+        0.65
+      ],
+      "controlnet_dir": "/mnt/d/model/Flux1_ControlNet_Depth",
+      "controlnet_conditioning_scale": 0.5,
+      "depth_input_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_inputs_20261027_001",
+      "sampling_mask": "full_frame",
+      "resident_model": true,
+      "max_sequence_length": 512,
+      "protect_padding_px": 2,
+      "feather_px": 4
+    }
+  },
+  {
+    "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001",
+    "count": 6,
+    "success": 6,
+    "pure_inference_seconds": 45.32199074304663,
+    "peak_allocated_gib": 15.74248218536377,
+    "initial_sigma": 0.7771334648132324,
+    "steps": [
+      26
+    ],
+    "config": {
+      "pipeline": "flux_depth",
+      "processing_size": 512,
+      "num_inference_steps": 40,
+      "guidance_scale": 4.5,
+      "strengths": [
+        0.65
+      ],
+      "controlnet_dir": "/mnt/d/model/Flux1_ControlNet_Depth",
+      "controlnet_conditioning_scale": 0.5,
+      "depth_input_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_inputs_20261027_001",
+      "sampling_mask": "convex_hull",
+      "protect_padding_px": 6,
+      "feather_px": 8,
+      "resident_model": true,
+      "max_sequence_length": 512
+    }
+  },
+  {
+    "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001",
+    "count": 6,
+    "success": 6,
+    "pure_inference_seconds": 97.3742634113878,
+    "peak_allocated_gib": 17.614203453063965,
+    "initial_sigma": 0.7595109343528748,
+    "steps": [
+      20
+    ],
+    "config": {
+      "pipeline": "flux_depth",
+      "processing_size": 1024,
+      "num_inference_steps": 40,
+      "guidance_scale": 4.5,
+      "strengths": [
+        0.5
+      ],
+      "controlnet_dir": "/mnt/d/model/Flux1_ControlNet_Depth",
+      "controlnet_conditioning_scale": 0.5,
+      "depth_input_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_inputs_20261027_001",
+      "sampling_mask": "convex_hull",
+      "protect_padding_px": 6,
+      "feather_px": 8,
+      "resident_model": true,
+      "max_sequence_length": 512
+    }
+  },
+  {
+    "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001",
+    "count": 6,
+    "success": 6,
+    "pure_inference_seconds": 45.30788856302388,
+    "peak_allocated_gib": 15.74248218536377,
+    "initial_sigma": 0.7771334648132324,
+    "steps": [
+      26
+    ],
+    "config": {
+      "pipeline": "flux_depth",
+      "processing_size": 512,
+      "num_inference_steps": 40,
+      "guidance_scale": 4.5,
+      "strengths": [
+        0.65
+      ],
+      "controlnet_dir": "/mnt/d/model/Flux1_ControlNet_Depth",
+      "controlnet_conditioning_scale": 0.5,
+      "depth_input_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_inputs_20261027_001",
+      "sampling_mask": "convex_hull",
+      "protect_padding_px": 6,
+      "feather_px": 8,
+      "resident_model": true,
+      "max_sequence_length": 512
+    }
+  }
+]

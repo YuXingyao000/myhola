@@ -238,10 +238,14 @@ def run_codex_turn(
             elif event["type"] == "turn.failed":
                 failed = True
                 turn_error = event.get("error")
+            elif event["type"] == "error":
+                turn_error = event.get("message") or turn_error
         reply_file = turn_dir / "reply.txt"
         if reply_file.is_file():
             result["reply"] = reply_file.read_text(encoding="utf-8").strip()
-        process.check_returncode()
+        if process.returncode:
+            message = turn_error.get("message") if isinstance(turn_error, dict) else turn_error
+            raise RuntimeError(message or f"Codex 退出码 {process.returncode}；详情见 {turn_dir / 'stderr.log'}")
         if len(thread_ids) != 1:
             raise RuntimeError("Codex 事件中缺少唯一的 thread.started 会话 ID")
         if session_id is not None and result["session_id"] != session_id:

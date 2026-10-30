@@ -1,0 +1,87 @@
+{
+  "reviewer": "independent_assistant_visual_inspection",
+  "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_office_surfaces_20261027_001",
+  "comparison_run": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_surfaces_20261027_001",
+  "scope": {
+    "samples_inspected": 6,
+    "all_full_original_raw_protected_comparisons_seen": true,
+    "human_review": "pending"
+  },
+  "paired_protocol_audit": {
+    "matched_fields": {
+      "config": true,
+      "samples": true,
+      "model_files": true,
+      "controlnet_files": true,
+      "depth_files": true,
+      "versions": true,
+      "source_hashes": true
+    },
+    "sample_seeds_equal": true,
+    "changed_factor": "仅完整prompt：明确低光泽木面、哑光墙、灰色短绒地毯；仍不要求生成前景零件或纸笔。"
+  },
+  "conclusion": {
+    "acceptance": "not_accepted_candidate_batch",
+    "improvement": "相对generic surfaces，灰地面恢复哑光地毯，没有大范围镜面和白亮倒影；薄片背后的棱条和十字底座也没有重现。背景真实感更接近目标。",
+    "remaining": "00182999十字下方仍有与主体分离的暗条/模糊影；00489180有叠层主机和难以解释的双显示器支撑；CAD本身仍是原始平整材质。",
+    "most_discussable_examples": [
+      "00301161",
+      "00495463",
+      "00269315"
+    ],
+    "do_not_hide_examples": [
+      "00182999",
+      "00489180"
+    ],
+    "engineering_recommendation": "本轮的任务范围与实际材质描述更合理，可作为待人工选择的背景增强候选；不把它包装成六件稳定通过，也不据此扩大到全数据集。",
+    "uniform_six_sample_configuration_recommended": false
+  },
+  "observations": [
+    {
+      "model_id": "00301161",
+      "target": "主体及孔槽保持，原材质仍平整。",
+      "background": "较细的木纹、适度微反射与设备细节比原图更像摄影；没有matte组新增铅笔，也没有generic组明显的键盘旁亮长条。远处小纸片/线缆仍重画。",
+      "status": "background_gain_candidate_pending_human"
+    },
+    {
+      "model_id": "00489180",
+      "target": "圆盘及原中心细线保持。",
+      "background": "地毯表面较前组合理，但主机仍成叠层方块，显示器仍像有两组支撑；纸面有复杂彩色细节。背景结构疑点尚未解决。",
+      "status": "background_prop_geometry_suspect"
+    },
+    {
+      "model_id": "00495463",
+      "target": "薄片和缺口保持，旧透明/金属棱条未重现。",
+      "background": "打印机细节、细木纹与哑光地毯提供照片线索；打印机部分结构已重画，应人工判断，但没有此前明显目标邻接伪影。",
+      "status": "relative_improvement_candidate_pending_human"
+    },
+    {
+      "model_id": "00182999",
+      "target": "十字主体保持；没有新增实体底座。",
+      "background": "镜面地面已恢复哑光，巨大材质分区不再出现；但十字下方有分离的模糊暗条，画面仍有悬浮/接触不一致感。",
+      "status": "contact_shadow_consistency_failure"
+    },
+    {
+      "model_id": "00269315",
+      "target": "拱形及内部空隙保持。",
+      "background": "陶瓷杯、细木纹和地毯较协调，没有新增金属容器/面板/线缆连接目标；原CAD材质与周围仍有细节程度差异。",
+      "status": "relative_improvement_candidate_pending_human"
+    },
+    {
+      "model_id": "00320493",
+      "target": "平片保持，原材质几乎不变。",
+      "background": "地毯更符合场景，鼠标仍像鼠标；主机被重画成倾斜不明块，键盘细节复杂但需审阅。",
+      "status": "mixed_gain_with_prop_details_pending"
+    }
+  ],
+  "mechanism_hypotheses": [
+    "背景编辑prompt描述范围与真实材质均影响结果，当前两个配对对照支持这一方向；完整prompt多处文字同时改变，不能归因到单个词。",
+    "接触影落在保护区外可能与原接触附近锁定、生成器只能在外围补影有关；当前只观察到现象，没有独立因果验证。"
+  ],
+  "limits": [
+    "技术成功6/6不等于视觉合格6/6。",
+    "所有结果仍是合成真实感图像，不能称实拍。",
+    "同场景六件开发样本，尚无跨场景和独立CAD验证。",
+    "背景身份可以变化，要求的是物理和语义可信；像素保护也不能保证全图正确。"
+  ]
+}

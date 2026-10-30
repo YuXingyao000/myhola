@@ -1,0 +1,29 @@
+{
+  "created_utc": "2026-10-19T09:24:58.090821+00:00",
+  "status": "pass",
+  "tests_run": 16,
+  "failures": 0,
+  "errors": 0,
+  "tests": [
+    "room_workflow_checks.RoomWorkflowTests.test_blocked_remains_incomplete",
+    "room_workflow_checks.RoomWorkflowTests.test_builder_mutation_during_inspect_rejected",
+    "room_workflow_checks.RoomWorkflowTests.test_create_ready",
+    "room_workflow_checks.RoomWorkflowTests.test_create_transport_failure_retains_records",
+    "room_workflow_checks.RoomWorkflowTests.test_duplicate_candidate_image_coverage_rejected",
+    "room_workflow_checks.RoomWorkflowTests.test_exhausted_repair_budget_preserves_failure",
+    "room_workflow_checks.RoomWorkflowTests.test_host_mutation_during_inspect_rejected",
+    "room_workflow_checks.RoomWorkflowTests.test_incomplete_candidate_image_coverage_rejected",
+    "room_workflow_checks.RoomWorkflowTests.test_missing_reference_image_coverage_rejected",
+    "room_workflow_checks.RoomWorkflowTests.test_ready_with_issue_rejected",
+    "room_workflow_checks.RoomWorkflowTests.test_resume_failed_inspect_uses_original_session",
+    "room_workflow_checks.RoomWorkflowTests.test_resume_feedback_keeps_history_and_session",
+    "room_workflow_checks.RoomWorkflowTests.test_resume_ready_without_feedback_does_not_call_agent",
+    "room_workflow_checks.RoomWorkflowTests.test_resume_unfinished_create_refuses_new_session",
+    "room_workflow_checks.RoomWorkflowTests.test_revise_repair_ready_same_session",
+    "room_workflow_checks.RoomWorkflowTests.test_technical_failure_skips_inspect_then_repairs"
+  ],
+  "workflow_sha256": "ad34f33cf44abd6fde21bff476401566fe1f19653aa859b90620f55ac0236e30",
+  "validation_sha256": "ef0c0ab542b7e3de7b16f7093fcf4f0c453bba7b1c8b6c52c58deca1dbc7cce0",
+  "scope": "Mock Codex turns and Blender previews; actual workflow file staging, hashing, review checks, state transitions, records, and resume logic. No real Codex or Blender invocation.",
+  "output": "test_blocked_remains_incomplete (room_workflow_checks.RoomWorkflowTests.test_blocked_remains_incomplete) ... ok\ntest_builder_mutation_during_inspect_rejected (room_workflow_checks.RoomWorkflowTests.test_builder_mutation_during_inspect_rejected) ... ok\ntest_create_ready (room_workflow_checks.RoomWorkflowTests.test_create_ready) ... ok\ntest_create_transport_failure_retains_records (room_workflow_checks.RoomWorkflowTests.test_create_transport_failure_retains_records) ... ok\ntest_duplicate_candidate_image_coverage_rejected (room_workflow_checks.RoomWorkflowTests.test_duplicate_candidate_image_coverage_rejected) ... ok\ntest_exhausted_repair_budget_preserves_failure (room_workflow_checks.RoomWorkflowTests.test_exhausted_repair_budget_preserves_failure) ... ok\ntest_host_mutation_during_inspect_rejected (room_workflow_checks.RoomWorkflowTests.test_host_mutation_during_inspect_rejected) ... ok\ntest_incomplete_candidate_image_coverage_rejected (room_workflow_checks.RoomWorkflowTests.test_incomplete_candidate_image_coverage_rejected) ... ok\ntest_missing_reference_image_coverage_rejected (room_workflow_checks.RoomWorkflowTests.test_missing_reference_image_coverage_rejected) ... ok\ntest_ready_with_issue_rejected (room_workflow_checks.RoomWorkflowTests.test_ready_with_issue_rejected) ... ok\ntest_resume_failed_inspect_uses_original_session (room_workflow_checks.RoomWorkflowTests.test_resume_failed_inspect_uses_original_session) ... ok\ntest_resume_feedback_keeps_history_and_session (room_workflow_checks.RoomWorkflowTests.test_resume_feedback_keeps_history_and_session) ... ok\ntest_resume_ready_without_feedback_does_not_call_agent (room_workflow_checks.RoomWorkflowTests.test_resume_ready_without_feedback_does_not_call_agent) ... ok\ntest_resume_unfinished_create_refuses_new_session (room_workflow_checks.RoomWorkflowTests.test_resume_unfinished_create_refuses_new_session) ... ok\ntest_revise_repair_ready_same_session (room_workflow_checks.RoomWorkflowTests.test_revise_repair_ready_same_session) ... ok\ntest_technical_failure_skips_inspect_then_repairs (room_workflow_checks.RoomWorkflowTests.test_technical_failure_skips_inspect_then_repairs) ... ok\n\n----------------------------------------------------------------------\nRan 16 tests in 0.173s\n\nOK\n"
+}

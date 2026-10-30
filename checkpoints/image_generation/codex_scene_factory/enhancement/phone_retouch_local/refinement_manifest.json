@@ -1,0 +1,50 @@
+[
+  {
+    "model_id": "00301161",
+    "enhanced": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_office_surfaces_20261027_001/00301161/strength_0.65/protected.png",
+    "official": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00301161/deeplpf.png",
+    "projected": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00301161/local_gain.png",
+    "comparison": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00301161/refinement_comparison.jpg",
+    "target_comparison": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00301161/target_comparison.jpg"
+  },
+  {
+    "model_id": "00489180",
+    "enhanced": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_office_surfaces_20261027_001/00489180/strength_0.65/protected.png",
+    "official": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00489180/deeplpf.png",
+    "projected": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00489180/local_gain.png",
+    "comparison": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00489180/refinement_comparison.jpg",
+    "target_comparison": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00489180/target_comparison.jpg"
+  },
+  {
+    "model_id": "00495463",
+    "enhanced": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_office_surfaces_20261027_001/00495463/strength_0.65/protected.png",
+    "official": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00495463/deeplpf.png",
+    "projected": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00495463/local_gain.png",
+    "comparison": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00495463/refinement_comparison.jpg",
+    "target_comparison": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00495463/target_comparison.jpg"
+  },
+  {
+    "model_id": "00182999",
+    "enhanced": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_office_surfaces_20261027_001/00182999/strength_0.65/protected.png",
+    "official": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00182999/deeplpf.png",
+    "projected": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00182999/local_gain.png",
+    "comparison": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00182999/refinement_comparison.jpg",
+    "target_comparison": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00182999/target_comparison.jpg"
+  },
+  {
+    "model_id": "00269315",
+    "enhanced": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_office_surfaces_20261027_001/00269315/strength_0.65/protected.png",
+    "official": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00269315/deeplpf.png",
+    "projected": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00269315/local_gain.png",
+    "comparison": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00269315/refinement_comparison.jpg",
+    "target_comparison": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00269315/target_comparison.jpg"
+  },
+  {
+    "model_id": "00320493",
+    "enhanced": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_office_surfaces_20261027_001/00320493/strength_0.65/protected.png",
+    "official": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00320493/deeplpf.png",
+    "projected": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00320493/local_gain.png",
+    "comparison": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00320493/refinement_comparison.jpg",
+    "target_comparison": "/mnt/d/data/cad_scene_enhancements/office_phone_deeplpf_refinement_20261027_001/00320493/target_comparison.jpg"
+  }
+]

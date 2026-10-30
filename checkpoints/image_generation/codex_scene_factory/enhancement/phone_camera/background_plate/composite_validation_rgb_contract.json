@@ -1,0 +1,244 @@
+{
+  "status": "pass",
+  "device": "cpu",
+  "seed": 8,
+  "rgb_input_contract": "pass: each of the three inputs rejects float PIL images",
+  "source_sha256": "ac697e1a7461193e33f851348ec47c67f4773769307094fd0707136b140ae708",
+  "cases": {
+    "additive": {
+      "identity": {
+        "mode": "additive",
+        "working_domain": "display-linear sRGB EOTF; AgX remains baked; not scene-linear",
+        "before_clip_min": 0.004391442037410293,
+        "before_clip_max": 0.8631572134541023,
+        "negative_channel_fraction": 0.0,
+        "above_one_channel_fraction": 0.0,
+        "identity_max_abs_float_error": 5.551115123125783e-17,
+        "identity_max_abs_uint8_error": 0,
+        "target_max_abs_uint8_error": 0,
+        "protected_max_abs_uint8_error": 0,
+        "protected_pixels": 3408,
+        "protected_source": "with_part_rgb, target binary mask dilated by Euclidean radius 2px",
+        "outside_target_delta": {
+          "mean": 0.017075663199587063,
+          "p50": 0.0,
+          "p95": 0.14070862040896748,
+          "max": 0.3898290017665949
+        },
+        "delta_heatmap_range": [
+          0,
+          0.1
+        ],
+        "alignment_signals_not_a_gate": {
+          "full_frame": {
+            "source_edge_pixels": 6076,
+            "edited_edge_pixels": 6076,
+            "source_supported_within_2px": 1.0,
+            "edited_unmatched_beyond_2px": 0.0
+          },
+          "target_neighborhood": {
+            "source_edge_pixels": 6076,
+            "edited_edge_pixels": 6076,
+            "source_supported_within_2px": 1.0,
+            "edited_unmatched_beyond_2px": 0.0
+          }
+        }
+      },
+      "edited_background": {
+        "mode": "additive",
+        "working_domain": "display-linear sRGB EOTF; AgX remains baked; not scene-linear",
+        "before_clip_min": 0.01420340760303229,
+        "before_clip_max": 0.9775671879586991,
+        "negative_channel_fraction": 0.0,
+        "above_one_channel_fraction": 0.0,
+        "identity_max_abs_float_error": 5.551115123125783e-17,
+        "identity_max_abs_uint8_error": 0,
+        "target_max_abs_uint8_error": 0,
+        "protected_max_abs_uint8_error": 0,
+        "protected_pixels": 3408,
+        "protected_source": "with_part_rgb, target binary mask dilated by Euclidean radius 2px",
+        "outside_target_delta": {
+          "mean": 0.017075663199587063,
+          "p50": 0.0,
+          "p95": 0.14070862040896748,
+          "max": 0.3898290017665949
+        },
+        "delta_heatmap_range": [
+          0,
+          0.1
+        ],
+        "alignment_signals_not_a_gate": {
+          "full_frame": {
+            "source_edge_pixels": 6076,
+            "edited_edge_pixels": 6076,
+            "source_supported_within_2px": 1.0,
+            "edited_unmatched_beyond_2px": 0.0
+          },
+          "target_neighborhood": {
+            "source_edge_pixels": 6076,
+            "edited_edge_pixels": 6076,
+            "source_supported_within_2px": 1.0,
+            "edited_unmatched_beyond_2px": 0.0
+          }
+        }
+      },
+      "strict_target_copy": "pass",
+      "hole_background_not_filled": "pass",
+      "near_black_identity": "pass",
+      "analytic_shadow": 0.39999999999999997,
+      "analytic_positive_delta": 0.7999999999999999
+    },
+    "relative_darkening": {
+      "identity": {
+        "mode": "relative_darkening",
+        "working_domain": "display-linear sRGB EOTF; AgX remains baked; not scene-linear",
+        "before_clip_min": 0.004391442037410293,
+        "before_clip_max": 0.8631572134541023,
+        "negative_channel_fraction": 0.0,
+        "above_one_channel_fraction": 0.0,
+        "identity_max_abs_float_error": 5.551115123125783e-17,
+        "identity_max_abs_uint8_error": 0,
+        "target_max_abs_uint8_error": 0,
+        "protected_max_abs_uint8_error": 0,
+        "protected_pixels": 3408,
+        "protected_source": "with_part_rgb, target binary mask dilated by Euclidean radius 2px",
+        "outside_target_delta": {
+          "mean": 0.017075663199587063,
+          "p50": 0.0,
+          "p95": 0.14070862040896748,
+          "max": 0.3898290017665949
+        },
+        "delta_heatmap_range": [
+          0,
+          0.1
+        ],
+        "alignment_signals_not_a_gate": {
+          "full_frame": {
+            "source_edge_pixels": 6076,
+            "edited_edge_pixels": 6076,
+            "source_supported_within_2px": 1.0,
+            "edited_unmatched_beyond_2px": 0.0
+          },
+          "target_neighborhood": {
+            "source_edge_pixels": 6076,
+            "edited_edge_pixels": 6076,
+            "source_supported_within_2px": 1.0,
+            "edited_unmatched_beyond_2px": 0.0
+          }
+        }
+      },
+      "edited_background": {
+        "mode": "relative_darkening",
+        "working_domain": "display-linear sRGB EOTF; AgX remains baked; not scene-linear",
+        "before_clip_min": 0.010331149422457853,
+        "before_clip_max": 0.9775671879586991,
+        "negative_channel_fraction": 0.0,
+        "above_one_channel_fraction": 0.0,
+        "identity_max_abs_float_error": 5.551115123125783e-17,
+        "identity_max_abs_uint8_error": 0,
+        "target_max_abs_uint8_error": 0,
+        "protected_max_abs_uint8_error": 0,
+        "protected_pixels": 3408,
+        "protected_source": "with_part_rgb, target binary mask dilated by Euclidean radius 2px",
+        "outside_target_delta": {
+          "mean": 0.017075663199587063,
+          "p50": 0.0,
+          "p95": 0.14070862040896748,
+          "max": 0.3898290017665949
+        },
+        "delta_heatmap_range": [
+          0,
+          0.1
+        ],
+        "alignment_signals_not_a_gate": {
+          "full_frame": {
+            "source_edge_pixels": 6076,
+            "edited_edge_pixels": 6076,
+            "source_supported_within_2px": 1.0,
+            "edited_unmatched_beyond_2px": 0.0
+          },
+          "target_neighborhood": {
+            "source_edge_pixels": 6076,
+            "edited_edge_pixels": 6076,
+            "source_supported_within_2px": 1.0,
+            "edited_unmatched_beyond_2px": 0.0
+          }
+        }
+      },
+      "strict_target_copy": "pass",
+      "hole_background_not_filled": "pass",
+      "near_black_identity": "pass",
+      "analytic_shadow": 0.3,
+      "analytic_positive_delta": 0.7999999999999999
+    }
+  },
+  "clipping_detection": {
+    "mode": "additive",
+    "working_domain": "display-linear sRGB EOTF; AgX remains baked; not scene-linear",
+    "before_clip_min": 1.5768816127216092,
+    "before_clip_max": 1.5768816127216092,
+    "negative_channel_fraction": 0.0,
+    "above_one_channel_fraction": 1.0,
+    "identity_max_abs_float_error": 0.0,
+    "identity_max_abs_uint8_error": 0,
+    "target_max_abs_uint8_error": 0,
+    "protected_max_abs_uint8_error": 0,
+    "protected_pixels": 3408,
+    "protected_source": "with_part_rgb, target binary mask dilated by Euclidean radius 2px",
+    "outside_target_delta": {
+      "mean": 0.7461117359469547,
+      "p50": 0.7461117359469547,
+      "p95": 0.7461117359469547,
+      "max": 0.7461117359469547
+    },
+    "delta_heatmap_range": [
+      0,
+      0.1
+    ],
+    "alignment_signals_not_a_gate": {
+      "full_frame": {
+        "source_edge_pixels": 0,
+        "edited_edge_pixels": 0,
+        "source_supported_within_2px": null,
+        "edited_unmatched_beyond_2px": null
+      },
+      "target_neighborhood": {
+        "source_edge_pixels": 0,
+        "edited_edge_pixels": 0,
+        "source_supported_within_2px": null,
+        "edited_unmatched_beyond_2px": null
+      }
+    }
+  },
+  "edge_shift_check": {
+    "aligned": {
+      "full_frame": {
+        "source_edge_pixels": 256,
+        "edited_edge_pixels": 256,
+        "source_supported_within_2px": 1.0,
+        "edited_unmatched_beyond_2px": 0.0
+      },
+      "target_neighborhood": {
+        "source_edge_pixels": 256,
+        "edited_edge_pixels": 256,
+        "source_supported_within_2px": 1.0,
+        "edited_unmatched_beyond_2px": 0.0
+      }
+    },
+    "moved_12px": {
+      "full_frame": {
+        "source_edge_pixels": 256,
+        "edited_edge_pixels": 256,
+        "source_supported_within_2px": 0.0,
+        "edited_unmatched_beyond_2px": 1.0
+      },
+      "target_neighborhood": {
+        "source_edge_pixels": 256,
+        "edited_edge_pixels": 256,
+        "source_supported_within_2px": 0.0,
+        "edited_unmatched_beyond_2px": 1.0
+      }
+    }
+  },
+  "limits": "Synthetic CPU behavior checks; no photographic-quality or physically correct relighting conclusion."
+}

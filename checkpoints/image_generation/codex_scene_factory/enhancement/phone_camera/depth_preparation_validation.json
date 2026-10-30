@@ -1,0 +1,60 @@
+{
+  "status": "pass",
+  "planned": 6,
+  "success": 6,
+  "failed": 0,
+  "missing": 0,
+  "synthetic_inverse_mapping": "[1,2,4] -> [255,85,0]",
+  "invalid_handling": "NaN/Inf/0 black",
+  "error_cases": [
+    "constant",
+    "invalid"
+  ],
+  "all_source_hashes_match": true,
+  "all_output_hashes_match": true,
+  "all_rgb_channels_equal": true,
+  "all_outputs_match_independent_formula": true,
+  "visual_review": "All six RGB-depth pairs opened; CAD, monitor, keyboard, printer, desk edges, floor, cabinet align; no evident vertical flip.",
+  "limitations": [
+    "No verification against original 3D camera ray geometry in this preparation task",
+    "Relative metric inverse depth differs from monocular estimated depth used during ControlNet training"
+  ],
+  "samples": [
+    {
+      "model_id": "00301161",
+      "status": "pass",
+      "source_hash": "a8caa01d4abf7432f228af1560bedc14abb18b836c532721259681ca66b0d54b",
+      "output_hash": "494f9488c90af8a60348870d6e01853d2e8bdcfb059d803b45c794fca1b232b8"
+    },
+    {
+      "model_id": "00489180",
+      "status": "pass",
+      "source_hash": "0c8acd5e760b13ffc657ccb2f428165b1666c014eeb984de94142d8095458665",
+      "output_hash": "d94245503e91fc7b13ce2a1dbd59407dd35399118875305010e7b22d5c55e770"
+    },
+    {
+      "model_id": "00495463",
+      "status": "pass",
+      "source_hash": "96aea67127fb38bc9f40573274ab26a068725a00aeacbd5b1498b2c8f51c059f",
+      "output_hash": "567c2bd51b1f5cca1f85f862c123f39c97caa36bbfd288655e759c9d7fcf14fe"
+    },
+    {
+      "model_id": "00182999",
+      "status": "pass",
+      "source_hash": "e9895b5a37ab877b903f00f415682ff27a59dceaa5c6354e020aa196338601e6",
+      "output_hash": "302dea8081f78bea27ed427c2e9b8073e8c052e487847ef0f4c06a20b7b2689b"
+    },
+    {
+      "model_id": "00269315",
+      "status": "pass",
+      "source_hash": "35e291fc8a1747cbe72e30a6f744e7a21cdca39b558917f163bf185c2537d36c",
+      "output_hash": "b2860e0eba3fd85cae5ca5984fe799c81be88320f99bf9f68d97da9adcba2921"
+    },
+    {
+      "model_id": "00320493",
+      "status": "pass",
+      "source_hash": "8b2f9aef5918a65301a475ab9c7549e86d3682cb624be52e1d70899213bacebf",
+      "output_hash": "fdf51341e27513afcd48fbc10874b705fbb35ff6a3274f07b4e1e1bbcc4f7409"
+    }
+  ]
+}

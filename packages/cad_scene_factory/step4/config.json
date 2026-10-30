@@ -1,0 +1,14 @@
+{
+  "pipeline": "flux",
+  "processing_size": 512,
+  "resident_model": true,
+  "strengths": [
+    0.25
+  ],
+  "num_inference_steps": 40,
+  "guidance_scale": 4.5,
+  "max_sequence_length": 512,
+  "protect_padding_px": 2,
+  "feather_px": 4,
+  "seed": 8
+}

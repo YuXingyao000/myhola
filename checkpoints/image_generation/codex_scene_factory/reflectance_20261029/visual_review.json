@@ -1,0 +1,88 @@
+{
+  "date_utc": "2026-10-29",
+  "review_type": "agent_subjective_non_blind_development_review",
+  "reviewer_context": "审查者已看过旧实验并提供过比较建议；知道三列身份，非盲评、非独立人工验收。没有优化参数、运行模型或渲染。",
+  "run_dir": "/mnt/d/data/cad_scene_enhancements/reflectance_20261029_001",
+  "boards_reviewed": ["comparison_office.png", "comparison_factory.png", "comparison_assembly.png"],
+  "coverage": "全部9个场景/CAD组合、27张图均从三张完整对照板查看；另补看下列10张512×512原图。此前pilot已单独查看factory/00489180的全部3张原图。",
+  "additional_full_resolution_images": [
+    "office/00301161/roughness/rgb.png",
+    "office/00269315/roughness/rgb.png",
+    "factory/00269315/roughness/rgb.png",
+    "assembly/00301161/roughness/rgb.png",
+    "assembly/00489180/roughness/rgb.png",
+    "assembly/00269315/roughness/rgb.png",
+    "factory/00301161/roughness/rgb.png",
+    "office/00489180/roughness/rgb.png",
+    "assembly/00301161/baseline/rgb.png",
+    "assembly/00269315/baseline/rgb.png"
+  ],
+  "verdict_definition": {
+    "preferable": "在本图中主观更倾向候选的整体照片感；不是已验证的真实感提升。",
+    "unclear": "变化可见或弱，但没有足够把握判定整体更像照片。",
+    "regression": "本图中候选增加的人工纹理观感超过主观收益，更倾向基线。"
+  },
+  "per_case": [
+    {
+      "scene": "office", "model_id": "00301161",
+      "roughness": {"vs_baseline": "unclear", "visibility": "clear", "reason": "正面有细拉丝线索，但斜面变为明显颗粒感，跨表面的视觉风格切换较强；比原图有细节，未形成明确照片感优势。"},
+      "anisotropy": {"vs_baseline": "unclear", "visibility": "subtle", "reason": "斜面高光和明暗分区变化，主要大面仍均一；无明确整体收益。"}
+    },
+    {
+      "scene": "office", "model_id": "00489180",
+      "roughness": {"vs_baseline": "unclear", "visibility": "clear", "reason": "盘面可读成细拉丝金属，但暖色长纹也带来贴纹理的观感；材料可辨性与照片感不能直接等同。"},
+      "anisotropy": {"vs_baseline": "unclear", "visibility": "subtle", "reason": "中央槽附近高光略变，盘面整体仍为平滑暖色渐变。"}
+    },
+    {
+      "scene": "office", "model_id": "00269315",
+      "roughness": {"vs_baseline": "unclear", "visibility": "clear", "reason": "细纹打破均一色面，暖色正面同时更容易联想到木纹或贴面；不足以确认更像实物金属。"},
+      "anisotropy": {"vs_baseline": "unclear", "visibility": "very_subtle", "reason": "弧形正面与顶面仍近似均一，完整图中没有稳定可辨的优势。"}
+    },
+    {
+      "scene": "factory", "model_id": "00301161",
+      "roughness": {"vs_baseline": "preferable", "visibility": "clear", "confidence": "low_to_medium", "reason": "弱偏好：冷色反射下的面内细纹使零件更容易被读成加工金属，减少纯平灰面的观感；斜面颗粒偏强仍是限制，不能据此选为统一方案。"},
+      "anisotropy": {"vs_baseline": "unclear", "visibility": "subtle", "reason": "孔口与斜面高光略变，未增加可明确判断的整体照片感。"}
+    },
+    {
+      "scene": "factory", "model_id": "00489180",
+      "roughness": {"vs_baseline": "unclear", "visibility": "clear", "reason": "维持pilot判断：拉丝金属联想更强，但大面积密集长纹过于醒目，侧环又偏颗粒；确认变化可见，不确认整体更真实。"},
+      "anisotropy": {"vs_baseline": "unclear", "visibility": "subtle", "reason": "与基线近似，宽渐变与小高光仍占主导，没有明确方向性收益。"}
+    },
+    {
+      "scene": "factory", "model_id": "00269315",
+      "roughness": {"vs_baseline": "unclear", "visibility": "clear", "reason": "弧面出现可辨的长纹，但与侧面的颗粒感组合仍很程序化；没有解决目标与浅色台面整体对比偏弱的问题。"},
+      "anisotropy": {"vs_baseline": "unclear", "visibility": "very_subtle", "reason": "目标仍主要靠轮廓辨认，微小反射变化不足以判定更像照片。"}
+    },
+    {
+      "scene": "assembly", "model_id": "00301161",
+      "roughness": {"vs_baseline": "regression", "visibility": "clear", "confidence": "medium", "reason": "强暖色平行长纹与中央粗颗粒区的切换很突出，像给不同面套上程序纹理；相较基线，新增材质假感超过本图中感到的细节收益。"},
+      "anisotropy": {"vs_baseline": "unclear", "visibility": "subtle", "reason": "高光展宽/位置变化，表面依然平滑，未见明确收益或明显退步。"}
+    },
+    {
+      "scene": "assembly", "model_id": "00489180",
+      "roughness": {"vs_baseline": "unclear", "visibility": "clear", "reason": "暗色盘面更有拉丝表面线索，同时长纹覆盖均匀且很强，带有贴面感；两种观感并存，无法可靠选优。"},
+      "anisotropy": {"vs_baseline": "unclear", "visibility": "subtle", "reason": "中央亮区稍宽，其余大面变化有限；高光变化不等于照片感改善。"}
+    },
+    {
+      "scene": "assembly", "model_id": "00269315",
+      "roughness": {"vs_baseline": "regression", "visibility": "clear", "confidence": "medium", "reason": "斜向长条纹遍布暖色正面，侧面转为粗颗粒，整体更像有纹理的贴面/木质条；此图更倾向保留基线。"},
+      "anisotropy": {"vs_baseline": "unclear", "visibility": "very_subtle", "reason": "顶面和正面仅轻微影调变化，未形成明显方向性反射或整体优势。"}
+    }
+  ],
+  "summary": {
+    "roughness_visible_cases": 9,
+    "roughness_vs_baseline": {"preferable": 1, "unclear": 6, "regression": 2},
+    "anisotropy_vs_baseline": {"preferable": 0, "unclear": 9, "regression": 0},
+    "main_claim": "空间粗糙度变化在九组中都产生了清楚可见的纹理，但没有得到稳定的照片真实感收益。冷色factory块状件仅有弱主观偏好，assembly两图出现更强的程序贴面感；各向异性没有形成明确整体优势。",
+    "interpretation": "计数只总结此次有身份提示的主观偏好，不是胜率估计或统计显著性结果；不以9/9纹理可见宣称9/9真实感提升。",
+    "decision": "本轮不足以把任一候选升级为统一默认；保留全部27图与固定配方，不逐件挑参数，不提出参数优化。"
+  },
+  "geometry_visual_boundary": "未从对照中发现明确新增孔洞/沟槽或轮廓改变；00301161斜三角是既有实际几何，不能因为明暗变化重判为法线错误。本报告不替代mask/depth与几何摘要验收。",
+  "human_final_review": "pending",
+  "limitations": [
+    "只有3个CAD、3个场景、一个固定视角/种子；不是独立实拍评估。",
+    "实际加工工艺未知，不能把直线拉丝视为每件零件的正确制造纹理。",
+    "暖色环境下的木质/贴面联想是主观感知，不是材质被技术上改成木材或颜色贴图的事实。",
+    "本轮只能判断图中效果；未验证跨视角或跨光源变化的感知一致性。"
+  ]
+}

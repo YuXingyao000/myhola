@@ -1,0 +1,224 @@
+{
+  "status": "pass",
+  "scope": "Five fixed placements and five original STL samples; no new Agent calls or 100-part batch restart.",
+  "step2_run": "/mnt/d/data/cad_scene_placements/office_step2_support_fix_20261026_001",
+  "step3_run": "/mnt/d/data/cad_scene_renders/office_step3_support_fix_20261026_001",
+  "negative_control": {
+    "pass": false,
+    "visible_surface_pixels": 3312,
+    "expected_height_m": 0.7634999752,
+    "tolerance_m": 0.002,
+    "mask": "/mnt/d/data/cad_scene_placements/office_step2_support_fix_20261026_001/old_scene_negative_control/support_mask_value.png",
+    "depth": "/mnt/d/data/cad_scene_placements/office_step2_support_fix_20261026_001/old_scene_negative_control/support_depth_value.exr",
+    "depth_convention": "camera_axis_z_m",
+    "rendered_height_m": {
+      "min": 0.7683572506711236,
+      "median": 0.7683604404987328,
+      "max": 0.7683608702675266
+    },
+    "max_height_error_m": 0.004860895067526627
+  },
+  "workflow": {
+    "order": [
+      "select_regions",
+      "prepare_supports",
+      "measure",
+      "propose_setup",
+      "preview",
+      "inspect_setup"
+    ],
+    "prepared_scene_used_everywhere": true,
+    "source_unchanged": true,
+    "validation_exported": true
+  },
+  "material_and_contact": {
+    "status": "pass",
+    "shared_material_isolated": true,
+    "mesh_unchanged": true,
+    "original_scene_unchanged": true,
+    "prepared_material_survives_reload": true,
+    "contact_accepts_aligned_and_rejects_buried": true
+  },
+  "step2": {
+    "negative_control_rejected": true,
+    "source_scene_unchanged": true,
+    "planned": 5,
+    "passed": 5,
+    "human_review": "pending",
+    "agent_calls": 0
+  },
+  "step3": {
+    "status": "completed",
+    "planned": 5,
+    "success": 5,
+    "failed": 0,
+    "not_run": 0,
+    "not_run_ids": [],
+    "blender_exit_code": 0,
+    "human_review": "pending",
+    "output_dir": "/mnt/d/data/cad_scene_renders/office_step3_support_fix_20261026_001"
+  },
+  "per_placement": [
+    {
+      "region_id": "desk_a_mug_area",
+      "max_error_mm": 0.000753174838052928,
+      "visible_support_pixels": 3318
+    },
+    {
+      "region_id": "desk_b_left_surface",
+      "max_error_mm": 0.000737163419639586,
+      "visible_support_pixels": 3158
+    },
+    {
+      "region_id": "desk_b_note_area",
+      "max_error_mm": 0.00085360820079039,
+      "visible_support_pixels": 3178
+    },
+    {
+      "region_id": "sorting_counter_gap",
+      "max_error_mm": 0.0008283915710061152,
+      "visible_support_pixels": 3054
+    },
+    {
+      "region_id": "central_carpet_area",
+      "max_error_mm": 0.0008999267606278269,
+      "visible_support_pixels": 2386
+    }
+  ],
+  "per_model": [
+    {
+      "model_id": "00269315",
+      "contact_gap_mm": 0.0005856444464935606,
+      "visible_part_pixels": 1870
+    },
+    {
+      "model_id": "00301161",
+      "contact_gap_mm": 0.0005553762744137103,
+      "visible_part_pixels": 11406
+    },
+    {
+      "model_id": "00489180",
+      "contact_gap_mm": 0.0005818473903795862,
+      "visible_part_pixels": 11393
+    },
+    {
+      "model_id": "00495463",
+      "contact_gap_mm": 0.0005692233367993182,
+      "visible_part_pixels": 2193
+    },
+    {
+      "model_id": "00182999",
+      "contact_gap_mm": 0.0007279646600244494,
+      "visible_part_pixels": 2283
+    }
+  ],
+  "new_rgb_surface_depth_audit": [
+    {
+      "model_id": "00269315",
+      "rendered_surface_minus_recorded_mm": [
+        -0.0008841535799053446,
+        -0.0006636143630167624,
+        -0.0005266800139347438
+      ],
+      "vertices_below_surface_0_01mm": 0
+    },
+    {
+      "model_id": "00301161",
+      "rendered_surface_minus_recorded_mm": [
+        -0.0008724356876932404,
+        -0.0007070600360759016,
+        -0.000565917668726712
+      ],
+      "vertices_below_surface_0_01mm": 0
+    },
+    {
+      "model_id": "00489180",
+      "rendered_surface_minus_recorded_mm": [
+        -0.0010213670978975742,
+        -0.0007903435429446048,
+        -0.0005576169316290347
+      ],
+      "vertices_below_surface_0_01mm": 0
+    },
+    {
+      "model_id": "00495463",
+      "rendered_surface_minus_recorded_mm": [
+        -0.0007170741563866656,
+        -0.0004783693459131655,
+        -0.00028579358568592284
+      ],
+      "vertices_below_surface_0_01mm": 0
+    },
+    {
+      "model_id": "00182999",
+      "rendered_surface_minus_recorded_mm": [
+        -0.000884802499451047,
+        -0.0007355907953752669,
+        -0.0006129476499304107
+      ],
+      "vertices_below_surface_0_01mm": 0
+    }
+  ],
+  "camera_depth_and_geometry": {
+    "status": "pass",
+    "samples": [
+      {
+        "model_id": "00269315",
+        "triangles": 412,
+        "max_projection_error_px": 3.9183259875091296e-05,
+        "depth_rays": 30,
+        "depth_convention": "camera-axis Z in meters",
+        "max_ray_distance_difference_m": 0.010177828170198855,
+        "max_axial_depth_error_m": 1.681084640381414e-06,
+        "mask_pixels": 1870,
+        "rigid_pose_and_uniform_scale": "pass"
+      },
+      {
+        "model_id": "00301161",
+        "triangles": 446,
+        "max_projection_error_px": 0.0002231434299089578,
+        "depth_rays": 30,
+        "depth_convention": "camera-axis Z in meters",
+        "max_ray_distance_difference_m": 0.00785457689567337,
+        "max_axial_depth_error_m": 2.32052801862892e-06,
+        "mask_pixels": 11406,
+        "rigid_pose_and_uniform_scale": "pass"
+      },
+      {
+        "model_id": "00489180",
+        "triangles": 584,
+        "max_projection_error_px": 0.00013538192943174314,
+        "depth_rays": 30,
+        "depth_convention": "camera-axis Z in meters",
+        "max_ray_distance_difference_m": 0.005047137882175146,
+        "max_axial_depth_error_m": 1.5645581328271874e-06,
+        "mask_pixels": 11393,
+        "rigid_pose_and_uniform_scale": "pass"
+      },
+      {
+        "model_id": "00495463",
+        "triangles": 48,
+        "max_projection_error_px": 7.767999838439984e-05,
+        "depth_rays": 30,
+        "depth_convention": "camera-axis Z in meters",
+        "max_ray_distance_difference_m": 0.009294179069508468,
+        "max_axial_depth_error_m": 2.414735117639566e-06,
+        "mask_pixels": 2193,
+        "rigid_pose_and_uniform_scale": "pass"
+      },
+      {
+        "model_id": "00182999",
+        "triangles": 44,
+        "max_projection_error_px": 4.064459761068517e-05,
+        "depth_rays": 30,
+        "depth_convention": "camera-axis Z in meters",
+        "max_ray_distance_difference_m": 0.004703774479927758,
+        "max_axial_depth_error_m": 8.626104091025155e-07,
+        "mask_pixels": 2283,
+        "rigid_pose_and_uniform_scale": "pass"
+      }
+    ],
+    "blender_version": "5.2.2 LTS"
+  },
+  "human_review": "pending"
+}

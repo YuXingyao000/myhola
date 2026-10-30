@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "audit_date_utc": "2026-10-29",
+  "scope": "官方论文、官方代码及 GitHub 文件元数据只读核查；不下载权重、不安装依赖、不运行模型。",
+  "decision": {
+    "status": "不推荐把 PhotoWCT 系列直接接入 Step4 正式数据生成",
+    "reason": "它们主要解决照片之间的参考风格迁移，未建立 CG→实拍的材料/光照域转换能力；卷积重建与特征统计变换均不能保证 CAD 轮廓、薄壁和孔槽可见边界不变。现有 LUT 已被用户否定，不应把更强风格化自动当作更真实。",
+    "single_fallback": "若研究问题明确改为“匹配某张实拍参考的局部色调是否有效”，唯一保留的低优先级诊断候选为官方 WCT² 的 sum、仅 encoder 迁移模式（--option_unpool sum -e --cpu），不是生产推荐。",
+    "ready_to_deploy": false,
+    "cad_synthetic_to_real_evidence_found": false,
+    "runtime_validated": false
+  },
+  "local_context": {
+    "read": [
+      "lut_sweep_20261029/human_feedback.json",
+      "light_mix_20261029/assessment.json",
+      "pixlrelight_20261029/research.json"
+    ],
+    "observations": "LUT 用户反馈不如原图；LightGroups 既有 agent 观察为变暗或近似原图，无明确真实感改善。不能据此断言所有风格迁移失败，也不能以未运行的 PhotoWCT 宣称改善。"
+  },
+  "photowct2": {
+    "official_repo": "https://github.com/chiutaiyin/PhotoWCT2",
+    "commit": "834a7701769de1cf0d7b6cee250f583f4cca1e8f",
+    "paper": "https://arxiv.org/html/2110.11995v1",
+    "training": "固定 VGG encoder，在 MS-COCO 自然图像上逐块学习 decoder 的特征/图像重建与感知损失；不要求 CG/真实照片成对样本，也不是以这种成对监督训练。",
+    "inference": "内容 RGB + 任意风格 RGB，四尺度 ZCA 均值/协方差对齐，内容高频残差 skip，decoder 重建 RGB，最后以内容图作为 guide 调用 OpenCV guidedFilter。官方 demo 无语义分割条件。",
+    "weights": {
+      "public_in_repo": true,
+      "conv_bytes_including_indexes": 28052978,
+      "relu_bytes_including_indexes": 28052932,
+      "one_variant_sufficient": true,
+      "measurement": "GitHub recursive tree 文件 size；只读元数据，未下载或检验权重。",
+      "url": "https://github.com/chiutaiyin/PhotoWCT2/tree/834a7701769de1cf0d7b6cee250f583f4cca1e8f/ckpts"
+    },
+    "cpu": {
+      "core_possible": true,
+      "custom_cuda_required": false,
+      "deps": [
+        "TensorFlow 2 / legacy Keras API",
+        "NumPy",
+        "Pillow",
+        "opencv-contrib-python（cv2.ximgproc.guidedFilter）"
+      ],
+      "official_tested_tf": [
+        "2.0.0",
+        "2.4.1"
+      ],
+      "caveats": "官方 notebook 设置 GPU 0；CPU 需在导入 TensorFlow 前禁用 GPU并限制线程。当前 Keras 的旧 checkpoint 与调用签名兼容性未运行核验，不能把 README 的 TF>=2 当作新版本无条件兼容承诺。无需自行编译 CUDA 算子。",
+      "thread_plan": "只若以后执行：CUDA_VISIBLE_DEVICES=-1；TF intra-op 8、inter-op 1；OpenCV 1；OMP/MKL 8。",
+      "latency_seconds": null
+    },
+    "geometry": "没有坐标 warp 不等于输出边界恒定；卷积、上下采样、重建及滤波会改变局部结构外观。demo 将宽高分别向下取到 8 的倍数后 resize，任意尺寸会改变对应关系；当前 512×512 不触发这一缩放。",
+    "guided_filter": "仅利用内容 RGB 局部边缘引导平滑，不读取 CAD、深度、normal、对象 mask、孔洞或拓扑。可抑制失真但不保证恢复真实几何；弱边、窄孔、低对比薄壁可能被平滑或改变对比。",
+    "license": "仓库根目录无 LICENSE，GitHub license=null；utils/photo_gif.py 单独注明 NVIDIA CC BY-NC-SA 4.0。其余代码和 checkpoint 的许可授权未明确，不能标成 MIT/商用可用。",
+    "postprocess_fact": "PhotoWCT2 论文补充说明旧 PhotoWCT guidedFilter 的 eps 未按 0..255 数值域缩放；本 demo 用 (0.02*255)^2、radius=50，并移除旧实现第二轮 CUDA smooth_filter。这是滤波修正，不是几何保证。"
+  },
+  "photowct": {
+    "official_repo": "https://github.com/NVIDIA/FastPhotoStyle",
+    "commit": "af0c8fecce58aa71f76488546231214f6684be02",
+    "paper": "https://arxiv.org/abs/1802.06474",
+    "contract": "内容照片+风格照片，可选两张对应语义分割；四级 autoencoder WCT，再做 photorealistic smoothing。官方教程直述中间结果会有失真。",
+    "training_evidence_limit": "本轮未完整核查原论文训练数据细节；不推断其有 CG→实拍训练。",
+    "weights_bytes": 33410469,
+    "weights_url": "https://github.com/NVIDIA/FastPhotoStyle/blob/af0c8fecce58aa71f76488546231214f6684be02/PhotoWCTModels/photo_wct.pth",
+    "cpu": "WCT 模型本体可 CPU，demo 有 --cuda 0；但 process_stylization.py 顶层无条件导入 smooth_filter，后者依赖 cupy.cuda、pynvrtc 及自定义 CUDA kernel。CPU 分支明确跳过最后平滑。不能称官方完整流水线开箱纯 CPU；另有 scipy.misc 已弃用 API。",
+    "license": "CC BY-NC-SA 4.0；官方代码及权重处于此仓库，未找到单独权重许可。",
+    "decision": "不选；CPU依赖/历史兼容性成本、已知滤波问题和几何风险都高于备选。"
+  },
+  "wct2_only_fallback": {
+    "official_repo": "https://github.com/clovaai/WCT2",
+    "commit": "05d17c02c6eb78a3e0afdbc1cf1d7549d4ad1543",
+    "paper": "https://arxiv.org/html/1903.09760v1",
+    "training": "固定 VGG encoder，COCO 图像上的 decoder 重建和 feature Gram 匹配；不是 CG/实拍 paired 转换。",
+    "input": "内容 RGB + 风格 RGB，可选双方对应语义分割；配对文件名须一致。只有 CAD mask 不足以确定参考照片哪个区域对应金属、桌面、背景。",
+    "chosen_variant": "sum + -e；官方称 low-frequency-only stylization，不显式迁移 skip 高频。encoder 的早层改变仍可影响随后高频，不能宣称像素高频或边界完全不动。",
+    "weights": {
+      "sum_encoder_bytes": 14056715,
+      "sum_decoder_bytes": 14054434,
+      "sum_total_bytes": 28111149,
+      "cat5_total_bytes": 40497379,
+      "url": "https://github.com/clovaai/WCT2/tree/05d17c02c6eb78a3e0afdbc1cf1d7549d4ad1543/model_checkpoints"
+    },
+    "cpu": "官方 --cpu；map_location 到 CPU；标准 torch Conv2d/ConvTranspose2d Haar filters、矩阵乘法和 torch.svd，无 custom CUDA。依赖 PyTorch、torchvision、NumPy、Pillow、tqdm。requirements 锁 torch0.4.1 等旧版本，不宜直接覆盖现有环境；当前依赖兼容和8线程耗时尚未跑。",
+    "geometry": "默认 image_size 缩放后 CenterCrop 到16倍数；512×512 输入可保持画布，任意尺寸需明确 pad/crop 记录。无后处理不代表零失真；输出仍经过 learned decoder，alpha=0 也是 autoencoder 重建而非保证返回原图。",
+    "license": "根 LICENSE 为 MIT；utils/core.py 与 utils/io.py 明确保留 NVIDIA CC BY-NC-SA 4.0 文件头。混合许可须保留出处，不能整体概括为无条件 MIT。权重无另列许可。",
+    "what_it_might_add_over_lut": "多尺度特征统计与可选区域对应允许同色像素因上下文不同而变化，表达力超过单一逐像素3D LUT；这也增加局部纹理和边界被改写的风险。",
+    "why_not_a_photorealism_solution": "匹配参考的特征统计没有材质、光源、法线或视角物理约束；不会确保金属方向高光、孔内反射、接触阴影更符合真实照片。无证据优于本项目原始 Cycles。",
+    "diagnostic_if_explicitly_pursued": "只做固定512×512开发图与一张同类金属桌面实拍参考，保存原图、纯重建、风格输出及CAD轮廓/孔槽叠图；先看结构/材质是否改善再考虑规模化，不做参数大扫。"
+  },
+  "sources": [
+    "https://github.com/chiutaiyin/PhotoWCT2/blob/834a7701769de1cf0d7b6cee250f583f4cca1e8f/conv_demo.ipynb",
+    "https://github.com/chiutaiyin/PhotoWCT2/blob/834a7701769de1cf0d7b6cee250f583f4cca1e8f/utils/model_conv.py",
+    "https://github.com/chiutaiyin/PhotoWCT2/blob/834a7701769de1cf0d7b6cee250f583f4cca1e8f/utils/photo_gif.py",
+    "https://github.com/chiutaiyin/PhotoWCT2/blob/834a7701769de1cf0d7b6cee250f583f4cca1e8f/train.py",
+    "https://github.com/NVIDIA/FastPhotoStyle/blob/af0c8fecce58aa71f76488546231214f6684be02/process_stylization.py",
+    "https://github.com/NVIDIA/FastPhotoStyle/blob/af0c8fecce58aa71f76488546231214f6684be02/smooth_filter.py",
+    "https://github.com/clovaai/WCT2/blob/05d17c02c6eb78a3e0afdbc1cf1d7549d4ad1543/transfer.py",
+    "https://github.com/clovaai/WCT2/blob/05d17c02c6eb78a3e0afdbc1cf1d7549d4ad1543/utils/io.py",
+    "https://github.com/clovaai/WCT2/blob/05d17c02c6eb78a3e0afdbc1cf1d7549d4ad1543/utils/core.py",
+    "https://github.com/clovaai/WCT2/blob/05d17c02c6eb78a3e0afdbc1cf1d7549d4ad1543/model.py"
+  ]
+}

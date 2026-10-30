@@ -1,0 +1,846 @@
+{
+  "date": "2026-10-29",
+  "scope": "current source with explicitly marked pending contract",
+  "nodes": [
+    {
+      "figure": "00-overview",
+      "id": "s1",
+      "title": "生成场景",
+      "role": "agent",
+      "algorithm": "Codex + Blender",
+      "output": "模板包 / room.blend",
+      "frozen_in_this_pipeline": true
+    },
+    {
+      "figure": "00-overview",
+      "id": "s2",
+      "title": "选择点位",
+      "role": "agent",
+      "algorithm": "Agent + 几何检查",
+      "output": "准备场景 / ready.json",
+      "frozen_in_this_pipeline": true
+    },
+    {
+      "figure": "00-overview",
+      "id": "s3",
+      "title": "拍摄零件",
+      "role": "tool",
+      "algorithm": "Cycles + 程序化 PBR",
+      "output": "RGB / mask / depth",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "00-overview",
+      "id": "s4",
+      "title": "整图调色",
+      "role": "model",
+      "algorithm": "Image-Adaptive-3DLUT",
+      "output": "调色 PNG / 配比记录",
+      "frozen_in_this_pipeline": true
+    },
+    {
+      "figure": "00-overview",
+      "id": "dataset_pending",
+      "title": "全点位数据集",
+      "role": "pending",
+      "algorithm": "52,556 CAD × 5 点位；每 CAD 固定尺寸；仅 paired / 0.5",
+      "output": "262,780 拍摄样本 + 同数调色图；按 CAD / 点位组织",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "00-overview",
+      "id": "history",
+      "title": "历史支线",
+      "role": "host",
+      "algorithm": "FLUX 重绘 / 五层合成 / 旧特写模板",
+      "output": "代码仍保留；不在本轮拟用路线",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "01-scene",
+      "id": "inputs",
+      "title": "输入固化",
+      "role": "host",
+      "algorithm": "参数 / 指令 / SHA256",
+      "output": "request.json",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "01-scene",
+      "id": "assets",
+      "title": "素材准备",
+      "role": "host",
+      "algorithm": "adapt 复制 / quality_only 空包",
+      "output": "assets/ + assets.json",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "01-scene",
+      "id": "create",
+      "title": "场景制作",
+      "role": "agent",
+      "algorithm": "Astra / ultra · 新 exec [1]",
+      "output": "脚本 / 视角 / 素材",
+      "frozen_in_this_pipeline": true
+    },
+    {
+      "figure": "01-scene",
+      "id": "build",
+      "title": "独立重建",
+      "role": "tool",
+      "algorithm": "执行脚本 / 依赖与摘要检查",
+      "output": "room.blend / build_report",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "01-scene",
+      "id": "render",
+      "title": "六图渲染",
+      "role": "tool",
+      "algorithm": "Blender Cycles [2]",
+      "output": "6 PNG / preview_report",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "01-scene",
+      "id": "inspect",
+      "title": "看图审阅",
+      "role": "agent",
+      "algorithm": "原会话 resume / 只读多图",
+      "output": "ready / revise / blocked",
+      "frozen_in_this_pipeline": true
+    },
+    {
+      "figure": "01-scene",
+      "id": "repair",
+      "title": "场景返修",
+      "role": "agent",
+      "algorithm": "反馈 + 原会话 resume",
+      "output": "修改脚本 / 素材 / 视角",
+      "frozen_in_this_pipeline": true
+    },
+    {
+      "figure": "01-scene",
+      "id": "budget",
+      "title": "检查预算",
+      "role": "host",
+      "algorithm": "repairs_used < max_repairs",
+      "output": "返修次数 / 待处理反馈",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "01-scene",
+      "id": "ready",
+      "title": "待人审",
+      "role": "host",
+      "algorithm": "ready 且无遗留问题",
+      "output": "ready_for_review",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "01-scene",
+      "id": "incomplete",
+      "title": "未完成",
+      "role": "stop",
+      "algorithm": "保留错误与各轮证据",
+      "output": "incomplete",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "01-scene",
+      "id": "inner_model",
+      "title": "模型判断",
+      "role": "agent",
+      "algorithm": "Astra 推理 [1]",
+      "output": "工具请求 / 最终回复",
+      "frozen_in_this_pipeline": true
+    },
+    {
+      "figure": "01-scene",
+      "id": "inner_tool",
+      "title": "工具执行",
+      "role": "tool",
+      "algorithm": "按阶段许可选择工具",
+      "output": "文件 / 图像 / 日志",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "01-scene",
+      "id": "inner_result",
+      "title": "回传结果",
+      "role": "host",
+      "algorithm": "Codex CLI 管理上下文",
+      "output": "下一轮可用证据",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "02-placement",
+      "id": "describe",
+      "title": "建立索引",
+      "role": "tool",
+      "algorithm": "对象 / AABB / 图像编号",
+      "output": "scene_context.json",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "02-placement",
+      "id": "regions",
+      "title": "选取区域",
+      "role": "agent",
+      "algorithm": "多图判断 · 最多 6 区",
+      "output": "区域 / 支撑 / 可动组",
+      "frozen_in_this_pipeline": true
+    },
+    {
+      "figure": "02-placement",
+      "id": "support",
+      "title": "准备支撑",
+      "role": "tool",
+      "algorithm": "材质位移 → BUMP 副本",
+      "output": "prepared_scene.blend",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "02-placement",
+      "id": "measure",
+      "title": "测量空间",
+      "role": "tool",
+      "algorithm": "BVH 射线 / 1 cm 高度场",
+      "output": "落点 / 占用分类",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "02-placement",
+      "id": "propose",
+      "title": "构图提议",
+      "role": "agent",
+      "algorithm": "Agent + 测量 + 上轮反馈",
+      "output": "落点 / 相机 / 完整移动方案",
+      "frozen_in_this_pipeline": true
+    },
+    {
+      "figure": "02-placement",
+      "id": "preview",
+      "title": "执行检查",
+      "role": "tool",
+      "algorithm": "preview_placement()",
+      "output": "数值报告 / 可用图片",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "02-placement",
+      "id": "inspect",
+      "title": "看图评议",
+      "role": "agent",
+      "algorithm": "图片 + 报告；原会话续接",
+      "output": "keep / revise / drop",
+      "frozen_in_this_pipeline": true
+    },
+    {
+      "figure": "02-placement",
+      "id": "reject",
+      "title": "记录淘汰",
+      "role": "stop",
+      "algorithm": "drop / 末轮未过 / 无表面",
+      "output": "rejected + 原因",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "02-placement",
+      "id": "decide",
+      "title": "合并判定",
+      "role": "host",
+      "algorithm": "数值 ∧ 图片声明 ∧ keep",
+      "output": "候选状态 / 剩余轮次",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "02-placement",
+      "id": "keep",
+      "title": "保留点位",
+      "role": "host",
+      "algorithm": "三项同时满足",
+      "output": "proxy_ready",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "02-placement",
+      "id": "export",
+      "title": "导出点位",
+      "role": "host",
+      "algorithm": "活跃候选为空 / 轮次结束",
+      "output": "ready.json / placements.json",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "02-placement",
+      "id": "move",
+      "title": "执行移动",
+      "role": "tool",
+      "algorithm": "整组 XY 平移 / Z 轴旋转",
+      "output": "终态矩阵 / 移动检查",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "02-placement",
+      "id": "geometry",
+      "title": "检查构图",
+      "role": "tool",
+      "algorithm": "AABB / 保护体 / 支撑 / 投影",
+      "output": "碰撞 / 遮挡 / 入镜报告",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "02-placement",
+      "id": "photo",
+      "title": "前后试拍",
+      "role": "tool",
+      "algorithm": "Cycles / IDMask / Z 反投影",
+      "output": "before / after / 支撑检查",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "03-capture",
+      "id": "sample",
+      "title": "抽取零件",
+      "role": "host",
+      "algorithm": "split 筛选 / STL 摘要去重",
+      "output": "seed 固定的 count 个 CAD",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "03-capture",
+      "id": "assign",
+      "title": "分配机位",
+      "role": "host",
+      "algorithm": "打乱点位 / 轮转分配",
+      "output": "每 CAD 仅 1 点；15–20 cm",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "03-capture",
+      "id": "request",
+      "title": "保存请求",
+      "role": "host",
+      "algorithm": "输入 / 配置 / 源码快照",
+      "output": "request.json / source/",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "03-capture",
+      "id": "open",
+      "title": "打开机位",
+      "role": "tool",
+      "algorithm": "加载准备场景 / 应用变换",
+      "output": "相机 / 材质 / 输出节点",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "03-capture",
+      "id": "place",
+      "title": "导入摆放",
+      "role": "tool",
+      "algorithm": "STL / 平滑法线 / 等比缩放",
+      "output": "XY 居中 / 最低 Z 贴表面",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "03-capture",
+      "id": "check",
+      "title": "检查摆放",
+      "role": "host",
+      "algorithm": "代理包络 / 高度差 / 投影",
+      "output": "接触与完整入镜报告",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "03-capture",
+      "id": "next",
+      "title": "推进拍摄",
+      "role": "host",
+      "algorithm": "遍历机位和该机位任务",
+      "output": "下一件 / 下一机位 / 结束",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "03-capture",
+      "id": "cleanup",
+      "title": "记录清理",
+      "role": "host",
+      "algorithm": "写记录 / 删除本件 CAD",
+      "output": "metadata / renders.jsonl",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "03-capture",
+      "id": "render",
+      "title": "渲染照片",
+      "role": "tool",
+      "algorithm": "Cycles PBR + OIDN [2,3]",
+      "output": "RGB / mask / 全场景深度",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "03-capture",
+      "id": "failed",
+      "title": "记录失败",
+      "role": "stop",
+      "algorithm": "逐件异常捕获；不重试",
+      "output": "错误原因 / 保留部分产物",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "03-capture",
+      "id": "summary",
+      "title": "汇总结果",
+      "role": "host",
+      "algorithm": "退出码 + 完成数 / 计划数",
+      "output": "completed / incomplete",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "03-capture",
+      "id": "pending",
+      "title": "全点位拍摄",
+      "role": "pending",
+      "algorithm": "待改：52,556 ID × 5 点位；按 CAD 固定尺寸；任务键改为 (CAD, 点位)",
+      "output": "待改：按点位命名文件；取消按摘要丢编号；256 samples 尚未设为默认",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "04-retouch",
+      "id": "input",
+      "title": "读取清单",
+      "role": "host",
+      "algorithm": "512² sRGB / SHA256 / 快照",
+      "output": "输入图 I / request.json",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "04-retouch",
+      "id": "load",
+      "title": "加载权重",
+      "role": "host",
+      "algorithm": "官方 sRGB 权重 [4] / CPU",
+      "output": "CNN 参数 + 3 张基础 LUT",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "04-retouch",
+      "id": "predict",
+      "title": "预测配比",
+      "role": "model",
+      "algorithm": "256² 缩略图 → 小 CNN [4]",
+      "output": "每图 3 个配比 w(I)",
+      "frozen_in_this_pipeline": true
+    },
+    {
+      "figure": "04-retouch",
+      "id": "basis",
+      "title": "基础色表",
+      "role": "model",
+      "algorithm": "3 张 33³ RGB 色表 [4]",
+      "output": "固定基础 LUT 参数",
+      "frozen_in_this_pipeline": true
+    },
+    {
+      "figure": "04-retouch",
+      "id": "fuse",
+      "title": "合成色表",
+      "role": "host",
+      "algorithm": "按 w(I) 线性组合",
+      "output": "每图自适应色表 T(I)",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "04-retouch",
+      "id": "lookup",
+      "title": "逐像素调色",
+      "role": "host",
+      "algorithm": "RGB 空间三线性查表",
+      "output": "整图调色结果 T(I)[I]",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "04-retouch",
+      "id": "next",
+      "title": "切换输入",
+      "role": "host",
+      "algorithm": "先遍历图片，再切权重组",
+      "output": "下一图 / 下一组 / 结束",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "04-retouch",
+      "id": "save",
+      "title": "保存结果",
+      "role": "host",
+      "algorithm": "PNG / 配比 / 截断率 / 用时",
+      "output": "图片 / results.jsonl",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "04-retouch",
+      "id": "mix",
+      "title": "原图混合",
+      "role": "host",
+      "algorithm": "sRGB 数值混合 / 裁剪量化",
+      "output": "J = (1−m) I + m T(I)[I]",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "04-retouch",
+      "id": "summary",
+      "title": "汇总对照",
+      "role": "host",
+      "algorithm": "所有图和权重组结束",
+      "output": "对照图 / summary.json",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "04-retouch",
+      "id": "abort",
+      "title": "中止运行",
+      "role": "stop",
+      "algorithm": "摘要 / 尺寸 / 非有限异常",
+      "output": "保留已有文件；无自动重试",
+      "frozen_in_this_pipeline": false
+    },
+    {
+      "figure": "04-retouch",
+      "id": "selected",
+      "title": "仅留选定版",
+      "role": "pending",
+      "algorithm": "当前入口：paired / unpaired × mix 0.5 / 1.0，共四版；用户选定：paired × 0.5",
+      "output": "CNN 与基础 LUT 冻结；每张图预测的配比、组合色表会变化。全图变色，XY 像素坐标不变。",
+      "frozen_in_this_pipeline": false
+    }
+  ],
+  "transitions": [
+    {
+      "figure": "00-overview",
+      "id": "s1_s2",
+      "condition": "场景产物齐备"
+    },
+    {
+      "figure": "00-overview",
+      "id": "s2_s3",
+      "condition": "有效点位非空"
+    },
+    {
+      "figure": "00-overview",
+      "id": "s3_s4",
+      "condition": "图片清单导出"
+    },
+    {
+      "figure": "01-scene",
+      "id": "input_assets",
+      "condition": "输入有效"
+    },
+    {
+      "figure": "01-scene",
+      "id": "assets_create",
+      "condition": "准备完成"
+    },
+    {
+      "figure": "01-scene",
+      "id": "create_build",
+      "condition": "制作回合完成"
+    },
+    {
+      "figure": "01-scene",
+      "id": "build_render",
+      "condition": "构建通过"
+    },
+    {
+      "figure": "01-scene",
+      "id": "render_inspect",
+      "condition": "六图齐备"
+    },
+    {
+      "figure": "01-scene",
+      "id": "inspect_ready",
+      "condition": "ready"
+    },
+    {
+      "figure": "01-scene",
+      "id": "technical_failure",
+      "condition": "技术失败"
+    },
+    {
+      "figure": "01-scene",
+      "id": "render_failure",
+      "condition": "渲染失败"
+    },
+    {
+      "figure": "01-scene",
+      "id": "revise",
+      "condition": "revise"
+    },
+    {
+      "figure": "01-scene",
+      "id": "budget_repair",
+      "condition": "有预算"
+    },
+    {
+      "figure": "01-scene",
+      "id": "repair_build",
+      "condition": "返修完成"
+    },
+    {
+      "figure": "01-scene",
+      "id": "exhausted",
+      "condition": "预算耗尽"
+    },
+    {
+      "figure": "01-scene",
+      "id": "blocked",
+      "condition": "blocked"
+    },
+    {
+      "figure": "01-scene",
+      "id": "tool_call",
+      "condition": "需要工具"
+    },
+    {
+      "figure": "01-scene",
+      "id": "tool_result",
+      "condition": "工具结束"
+    },
+    {
+      "figure": "01-scene",
+      "id": "inner_loop",
+      "condition": "带工具结果继续判断"
+    },
+    {
+      "figure": "01-scene",
+      "id": "inner_return",
+      "condition": "最终回复"
+    },
+    {
+      "figure": "02-placement",
+      "id": "prep_0",
+      "condition": "索引就绪"
+    },
+    {
+      "figure": "02-placement",
+      "id": "prep_1",
+      "condition": "候选合法"
+    },
+    {
+      "figure": "02-placement",
+      "id": "prep_2",
+      "condition": "副本就绪"
+    },
+    {
+      "figure": "02-placement",
+      "id": "measured",
+      "condition": "measured 的候选进入循环"
+    },
+    {
+      "figure": "02-placement",
+      "id": "proposed",
+      "condition": "方案齐全"
+    },
+    {
+      "figure": "02-placement",
+      "id": "previewed",
+      "condition": "检查结束"
+    },
+    {
+      "figure": "02-placement",
+      "id": "review_done",
+      "condition": "结构化意见返回"
+    },
+    {
+      "figure": "02-placement",
+      "id": "keep_result",
+      "condition": "三项满足"
+    },
+    {
+      "figure": "02-placement",
+      "id": "reject_result",
+      "condition": "drop /\n末轮未过"
+    },
+    {
+      "figure": "02-placement",
+      "id": "retry",
+      "condition": "其余 + 有轮次：反馈后重试"
+    },
+    {
+      "figure": "02-placement",
+      "id": "unmeasured",
+      "condition": "无有效支撑表面"
+    },
+    {
+      "figure": "02-placement",
+      "id": "reject_export",
+      "condition": "全部候选结束"
+    },
+    {
+      "figure": "02-placement",
+      "id": "keep_export",
+      "condition": "全部候选结束"
+    },
+    {
+      "figure": "02-placement",
+      "id": "move_geometry",
+      "condition": "移动合法"
+    },
+    {
+      "figure": "02-placement",
+      "id": "geometry_photo",
+      "condition": "数值通过"
+    },
+    {
+      "figure": "03-capture",
+      "id": "sample_assign",
+      "condition": "数量足够"
+    },
+    {
+      "figure": "03-capture",
+      "id": "assign_request",
+      "condition": "任务已定"
+    },
+    {
+      "figure": "03-capture",
+      "id": "request_open",
+      "condition": "启动 Blender 子进程"
+    },
+    {
+      "figure": "03-capture",
+      "id": "open_place",
+      "condition": "机位就绪"
+    },
+    {
+      "figure": "03-capture",
+      "id": "place_check",
+      "condition": "模型已放"
+    },
+    {
+      "figure": "03-capture",
+      "id": "check_render",
+      "condition": "检查通过"
+    },
+    {
+      "figure": "03-capture",
+      "id": "render_record",
+      "condition": "mask 非空"
+    },
+    {
+      "figure": "03-capture",
+      "id": "record_next",
+      "condition": "本件结束"
+    },
+    {
+      "figure": "03-capture",
+      "id": "next_cad",
+      "condition": "本机位还有 CAD"
+    },
+    {
+      "figure": "03-capture",
+      "id": "next_view",
+      "condition": "还有机位"
+    },
+    {
+      "figure": "03-capture",
+      "id": "failure",
+      "condition": "导入 / 摆放 / 渲染异常"
+    },
+    {
+      "figure": "03-capture",
+      "id": "failure_cleanup",
+      "condition": "失败也清理"
+    },
+    {
+      "figure": "03-capture",
+      "id": "finished",
+      "condition": "没有剩余任务"
+    },
+    {
+      "figure": "04-retouch",
+      "id": "load_inputs",
+      "condition": "清单有效"
+    },
+    {
+      "figure": "04-retouch",
+      "id": "infer",
+      "condition": "本组已加载"
+    },
+    {
+      "figure": "04-retouch",
+      "id": "parameters",
+      "condition": "加载所得参数"
+    },
+    {
+      "figure": "04-retouch",
+      "id": "weights_fuse",
+      "condition": "配比已预测"
+    },
+    {
+      "figure": "04-retouch",
+      "id": "basis_fuse",
+      "condition": "基础表齐备"
+    },
+    {
+      "figure": "04-retouch",
+      "id": "fuse_lookup",
+      "condition": "组合完成"
+    },
+    {
+      "figure": "04-retouch",
+      "id": "lookup_mix",
+      "condition": "输出有限"
+    },
+    {
+      "figure": "04-retouch",
+      "id": "mix_save",
+      "condition": "每个 mix"
+    },
+    {
+      "figure": "04-retouch",
+      "id": "save_next",
+      "condition": "两档均保存"
+    },
+    {
+      "figure": "04-retouch",
+      "id": "next_image",
+      "condition": "本组仍有输入图"
+    },
+    {
+      "figure": "04-retouch",
+      "id": "next_variant",
+      "condition": "本组结束，仍有权重组"
+    },
+    {
+      "figure": "04-retouch",
+      "id": "all_done",
+      "condition": "全部循环结束"
+    }
+  ],
+  "freeze_semantics": "No training in this pipeline; managed LLM checkpoint is not pinned locally.",
+  "references": [
+    {
+      "id": 1,
+      "title": "Codex non-interactive mode",
+      "url": "https://learn.chatgpt.com/docs/non-interactive-mode"
+    },
+    {
+      "id": 2,
+      "title": "Blender Cycles",
+      "url": "https://www.blender.org/features/rendering/"
+    },
+    {
+      "id": 3,
+      "title": "Intel Open Image Denoise",
+      "url": "https://www.openimagedenoise.org/"
+    },
+    {
+      "id": 4,
+      "title": "Image-Adaptive-3DLUT",
+      "url": "https://github.com/HuiZeng/Image-Adaptive-3DLUT",
+      "paper": "https://arxiv.org/abs/2009.14468",
+      "source_revision": "b491f6df64a588864739a157db271e5c848e1805"
+    }
+  ]
+}

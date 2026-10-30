@@ -1,0 +1,1 @@
+A candid documentary photograph of the existing office interior. Natural fine surface texture, subdued reflections, diffuse window daylight and ordinary ceiling illumination. Neutral white balance, balanced exposure, clear midtones and moderate contrast. Believable everyday indoor materials and clear photographic detail throughout.
