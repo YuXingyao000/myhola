@@ -12,7 +12,6 @@ import torch
 import trimesh
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-import open3d as o3d
 from scipy.spatial.transform import Rotation
 from shared.common_utils import export_point_cloud, check_dir
 
@@ -91,54 +90,6 @@ class Dummy_dataset(torch.utils.data.Dataset):
 
 
 # Input pc range from [-1,1]
-def crop_pc(v_pc, v_min_points=1000):
-    while True:
-        num_points = v_pc.shape[0]
-        index = np.arange(num_points)
-        np.random.shuffle(index)
-        pc_index = np.random.randint(0, num_points - 1)
-        center_pos = v_pc[pc_index, :3]
-        length_xyz = np.random.rand(3) * 1.0
-        obb = o3d.geometry.AxisAlignedBoundingBox(center_pos - length_xyz / 2, center_pos + length_xyz / 2)
-        pcd = o3d.geometry.PointCloud()
-        pcd.points = o3d.utility.Vector3dVector(v_pc[:, :3])
-        pcd.normals = o3d.utility.Vector3dVector(v_pc[:, 3:])
-        inliers_indices = obb.get_point_indices_within_bounding_box(pcd.points)
-        cropped = pcd.select_by_index(inliers_indices, invert=True)
-        result = np.concatenate((np.asarray(cropped.points), np.asarray(cropped.normals)), axis=-1)
-        if result.shape[0] > v_min_points:
-            result = result[index % result.shape[0]]
-            return result
-
-
-def rotate_pc(v_pc, v_angle):
-    matrix = Rotation.from_euler('xyz', v_angle).as_matrix()
-    points = v_pc[:, :3]
-    normals = v_pc[:, 3:]
-    points1 = (matrix @ points.T).T
-
-    ft = points + normals
-    ft1 = (matrix @ ft.T).T
-
-    fn1 = ft1 - points1
-
-    fn1 = fn1 / (1e-6 + np.linalg.norm(fn1, axis=-1, keepdims=True))
-    points = points1
-    normals = fn1
-    return np.concatenate((points, normals), axis=-1)
-
-
-def noisy_pc(v_pc, v_length=0.02):
-    noise = np.random.randn(*v_pc.shape) * v_length
-    return v_pc + noise
-
-
-def downsample_pc(v_pc, v_num_points):
-    index = np.arange(v_pc.shape[0])
-    np.random.shuffle(index)
-    return v_pc[index[:v_num_points]]
-
-
 def _load_real_photo_flux(cond_dir: Path, rotation_id: int) -> np.ndarray:
     real_photo_path = cond_dir / "real_photo.npz"
     with np.load(real_photo_path) as real_photo_data:
@@ -168,12 +119,9 @@ def has_required_condition_files(condition_name, cond_dir: Path, cached_conditio
     if condition_name == "txt":
         raise NotImplementedError("txt conditioning is disabled until the new dataset format is defined.")
     if condition_name == "natural_img":
-        raise NotImplementedError("natural_img/natural.npz is legacy data; use real_photo.npz with single_img or sketch.")
+        raise NotImplementedError("natural_img/natural.npz is legacy data; use real_photo.npz with single_img.")
 
-    if condition_name == "pc" and not (cond_dir / "pc.ply").is_file():
-        return False
-
-    if condition_name == "single_img" or condition_name == "sketch":
+    if condition_name == "single_img":
         if cached_condition:
             if real_photo_ratio > 0:
                 raise ValueError("real_photo_ratio > 0 is not supported with cached_condition=True")
@@ -198,36 +146,28 @@ def prepare_condition(v_condition_names, v_cond_root, v_folder_path, rotation_id
     if "txt" in v_condition_names:
         raise NotImplementedError("txt conditioning is disabled until the new dataset format is defined.")
     if "natural_img" in v_condition_names:
-        raise NotImplementedError("natural_img/natural.npz is legacy data; use real_photo.npz with single_img or sketch.")
+        raise NotImplementedError("natural_img/natural.npz is legacy data; use real_photo.npz with single_img.")
 
     rotation_id = int(rotation_id)
     if rotation_id < 0 or rotation_id >= NUM_CUBE24_VIEWS:
         raise ValueError(f"rotation_id must be in [0, 23], got {rotation_id}")
 
-    if "single_img" in v_condition_names or "sketch" in v_condition_names:
+    if "single_img" in v_condition_names:
         cond_dir = v_cond_root / v_folder_path
 
         if v_cache_data:
             if v_real_photo_ratio > 0:
                 raise ValueError("real_photo_ratio > 0 is not supported with cached_condition=True")
             ori_data = np.load(v_cond_root / v_folder_path / "img_feature_dinov2.npy")
-            if "single_img" in v_condition_names:
-                img_features = torch.from_numpy(ori_data[rotation_id][None, :]).float()
-                img_id = np.array([0], dtype=np.int64)
-            else:
-                img_features = torch.from_numpy(ori_data[rotation_id + NUM_CUBE24_VIEWS][None, :]).float()
-                img_id = np.array([0], dtype=np.int64)
+            img_features = torch.from_numpy(ori_data[rotation_id][None, :]).float()
+            img_id = np.array([0], dtype=np.int64)
 
             condition["img_id"] = torch.from_numpy(img_id)
             condition["img_features"] = img_features
         else:
             ori_data = np.load(v_cond_root / v_folder_path / "imgs.npz")
-            if "single_img" in v_condition_names:
-                imgs = ori_data["svr_imgs"][rotation_id]
-                img_id = np.array([0], dtype=np.int64)
-            else:
-                imgs = ori_data["sketch_imgs"][rotation_id]
-                img_id = np.array([0], dtype=np.int64)
+            imgs = ori_data["svr_imgs"][rotation_id]
+            img_id = np.array([0], dtype=np.int64)
 
             if v_real_photo_ratio > 0:
                 real_photo = _load_real_photo_flux(cond_dir, rotation_id)
@@ -238,11 +178,6 @@ def prepare_condition(v_condition_names, v_cond_root, v_folder_path, rotation_id
             condition["ori_imgs"] = torch.from_numpy(imgs)
             condition["imgs"] = transformed_imgs
         condition["img_id"] = torch.from_numpy(img_id)
-    if "pc" in v_condition_names:
-        pc = o3d.io.read_point_cloud(str(v_cond_root / v_folder_path / "pc.ply"))
-        points = np.concatenate((np.asarray(pc.points), np.asarray(pc.normals)), axis=-1)
-        assert points.shape[0] == 10000
-        condition["points"] = torch.from_numpy(points).float()[None,]
     return condition
 
 
@@ -713,7 +648,7 @@ class Diffusion_dataset(torch.utils.data.Dataset):
         # --- Condition Names ---
         self.condition_name         = self.conf["condition_name"]
         self.condition_data_root  = Path(self.conf["condition_data_root"])
-        if self.condition_name == "single_img" or self.condition_name == "sketch":
+        if self.condition_name == "single_img":
             self.img_transform = T.Compose([
                 T.ToPILImage(),
                 T.Resize((224, 224)),
@@ -761,17 +696,10 @@ class Diffusion_dataset(torch.utils.data.Dataset):
     def _visibility_path(self, model_id, rotation_id):
         return self.visibility_root / model_id / f"view_{int(rotation_id):03d}" / "visibility.npz"
 
-    def _load_pc_points(self, folder_path):
-        pc = o3d.io.read_point_cloud(str(self.condition_data_root / folder_path / "pc.ply"))
-        points = np.concatenate((np.asarray(pc.points), np.asarray(pc.normals)), axis=-1)
-        assert points.shape[0] == 10000
-        return torch.from_numpy(points).float()[None,]
-
     def _load_imgs(self, folder_path, rotation_id):
-        image_key = "svr_imgs" if self.condition_name == "single_img" else "sketch_imgs"
         imgs = load_image_view(
             self.condition_data_root / folder_path / "imgs.npz",
-            image_key,
+            "svr_imgs",
             rotation_id,
             read_single_view=self.read_single_image_view,
         )
@@ -848,11 +776,7 @@ class Diffusion_dataset(torch.utils.data.Dataset):
 
         if self.condition_name is None:
             condition = {}
-        elif self.condition_name == "pc":
-            condition = {
-                "points": self._load_pc_points(model_id)
-            }
-        elif self.condition_name == "single_img" or self.condition_name == "sketch":
+        elif self.condition_name == "single_img":
             imgs, img_id = self._load_imgs(model_id, rotation_id)
             # 训练可省略未消费的原图，减少 worker IPC、pin memory 与 H2D。
             condition = {"ori_imgs": torch.from_numpy(imgs)} if self.return_original_images else {}
@@ -908,133 +832,3 @@ class Diffusion_dataset(torch.utils.data.Dataset):
         if face_adj_batch is not None:
             result["face_adj"] = face_adj_batch
         return result
-
-
-class Diffusion_dataset_mm(Diffusion_dataset):
-    def __init__(self, training_mode, config):
-        super(Diffusion_dataset_mm, self).__init__(training_mode, config)
-        self.cond_prob = list(self.conf["cond_prob"])
-        self.cond_prob_acc = np.cumsum(self.cond_prob)
-        return
-
-    def __getitem__(self, idx):
-        # idx = 0
-        folder_path = self.data_folders[idx]
-        if self.is_aug != 0:
-            rotation_id = int(np.random.randint(0, NUM_CUBE24_VIEWS))
-        else:
-            rotation_id = 0
-        data_npz = np.load(self.latent_root / (folder_path + f"_{rotation_id}") / "features.npy")
-        latent_stats = torch.from_numpy(data_npz)
-        num_faces = latent_stats.shape[0]
-
-        if self.padding == "zero":
-            cached_latent_stats = torch.zeros((self.max_faces, latent_stats.shape[-1]), dtype=latent_stats.dtype)
-            cached_latent_stats[:num_faces] = latent_stats
-            face_mask = torch.zeros((self.max_faces,), dtype=torch.bool)
-            face_mask[:num_faces] = True
-        elif self.padding == "random":
-            positions = torch.arange(self.max_faces, device=latent_stats.device)
-            mandatory_mask = positions < num_faces
-            random_indices = (
-                    torch.rand((self.max_faces,), device=latent_stats.device) * num_faces).long()
-            indices = torch.where(mandatory_mask, positions, random_indices)
-            r_indices = torch.argsort(torch.rand((self.max_faces,), device=latent_stats.device), dim=0)
-            index = indices.gather(0, r_indices)
-            cached_latent_stats = latent_stats[index]
-            face_mask = torch.ones((self.max_faces,), dtype=torch.bool)
-        else:
-            raise ValueError("Invalid padding method")
-
-        sampled_prob = np.random.rand()
-        idx = self.cond_prob_acc.shape[0] - (sampled_prob < self.cond_prob_acc).sum(axis=-1)
-        used_condition = []
-        if self.condition_names[idx] == "mm":
-            available_condition = [item for item in self.condition_names if item != "uncond" and item != "mm"]
-            num_condition = len(available_condition)
-            rand_onehot = np.random.rand(num_condition) > 0.5
-            used_condition = [available_condition[i] for i in range(num_condition) if rand_onehot[i]]
-        else:
-            used_condition.append(self.condition_names[idx])
-
-        condition = prepare_condition(used_condition, self.conditional_data_root, folder_path, rotation_id,
-                                      self.cached_condition, self.transform, self.conf["num_points"],
-                                      v_real_photo_ratio=self.real_photo_ratio)
-        condition["name"] = self.condition_names[idx]
-
-        return (
-            folder_path,
-            cached_latent_stats,
-            face_mask,
-            condition,
-            rotation_id
-        )
-
-    @staticmethod
-    def collate_fn(batch):
-        (
-            v_prefix, v_cached_latent_stats, face_mask, conditions, rotation_id
-        ) = zip(*batch)
-
-        cached_latent_stats = torch.stack(v_cached_latent_stats, dim=0)
-        face_mask = torch.stack(face_mask, dim=0)
-        rotation_id = torch.tensor(rotation_id)
-
-        condition_out = {
-            "names"       : [],
-            "points"      : [],
-
-            "img_features": [],
-            "img_id"      : [],
-            "ori_imgs"    : [],
-            "imgs"        : [],
-        }
-
-        id_condition = {
-            "pc"            : [],
-            "single_img"    : [],
-            "sketch"        : [],
-            "single_img_rec": [],
-            "sketch_rec"    : [],
-        }
-        for id_batch, condition in enumerate(conditions):
-            condition_out["names"].append(condition["name"])
-            if condition["name"] == "pc":
-                condition_out["points"].append(condition["points"])
-                id_condition["pc"].append(id_batch)
-            elif condition["name"] in ["single_img", "sketch"]:
-                if "img_features" in condition:
-                    id_cur = sum([item.shape[0] for item in condition_out["img_features"]])
-                    condition_out["img_features"].append(condition["img_features"])
-                else:
-                    id_cur = sum([item.shape[0] for item in condition_out["ori_imgs"]])
-                    condition_out["ori_imgs"].append(condition["ori_imgs"])
-                    condition_out["imgs"].append(condition["imgs"])
-                if condition["name"] == "single_img":
-                    id_condition["single_img"].append(id_batch)
-                    id_condition["single_img_rec"].append(id_cur)
-                elif condition["name"] == "sketch":
-                    id_condition["sketch"].append(id_batch)
-                    id_condition["sketch_rec"].append(id_cur)
-                condition_out["img_id"].append(condition["img_id"])
-            elif condition["name"] == "mm":
-                continue
-
-        if len(condition_out["points"]) > 0:
-            condition_out["points"] = torch.concatenate(condition_out["points"], dim=0)
-        if len(condition_out["img_features"]) > 0:
-            condition_out["img_features"] = torch.concatenate(condition_out["img_features"], dim=0)
-        if len(condition_out["ori_imgs"]) > 0:
-            condition_out["ori_imgs"] = torch.concatenate(condition_out["ori_imgs"], dim=0)
-        if len(condition_out["imgs"]) > 0:
-            condition_out["imgs"] = torch.concatenate(condition_out["imgs"], dim=0)
-        if len(condition_out["img_id"]) > 0:
-            condition_out["img_id"] = torch.concatenate(condition_out["img_id"], dim=0)
-        condition_out["id_batch"] = id_condition
-        return {
-            "v_prefix"           : v_prefix,
-            "cached_latent_stats": cached_latent_stats,
-            "face_mask"          : face_mask,
-            "conditions"         : condition_out,
-            "rotation_id"         : rotation_id,
-        }

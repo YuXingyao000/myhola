@@ -105,7 +105,6 @@ def dataset_config(tmp_path):
         np.savez_compressed(
             image_dir / "imgs.npz",
             svr_imgs=generator.integers(0, 256, shape, dtype=np.uint8),
-            sketch_imgs=generator.integers(0, 256, shape, dtype=np.uint8),
         )
         np.savez_compressed(
             image_dir / "real_photo.npz", flux=generator.integers(0, 256, shape, dtype=np.uint8)
@@ -143,7 +142,7 @@ def assert_same_batch(actual, expected, *, include_original):
             assert actual[key] == expected[key], key
 
 
-@pytest.mark.parametrize("condition_name", ["single_img", "sketch"])
+@pytest.mark.parametrize("condition_name", ["single_img"])
 @pytest.mark.parametrize("padding", ["random", "zero"])
 @pytest.mark.parametrize("is_aug", [False, True])
 @pytest.mark.parametrize("real_photo_ratio", [0.0, 0.5])

@@ -3,7 +3,6 @@ import sys
 import os.path
 from pathlib import Path
 import numpy as np
-import open3d as o3d
 import ray
 from PIL import Image
 from tqdm import tqdm
@@ -16,39 +15,14 @@ from src.brepnet.post.construct_brep import construct_brep_from_datanpz
 import torch
 from lightning_fabric import seed_everything
 
-os.environ["HTTP_PROXY"] = "http://172.31.178.126:7890"
-os.environ["HTTPS_PROXY"] = "http://172.31.178.126:7890"
-
-
-def normalize_condition_type(condition: str) -> str:
-    aliases = {
-        "pc": "point_cloud",
-    }
-    return aliases.get(condition, condition)
-
-
-def condition_dataset_name(condition_type: str) -> str:
-    names = {
-        "point_cloud": "pc",
-    }
-    return names.get(condition_type, condition_type)
 
 
 def build_condition_conf(condition_type: str) -> dict:
     return {
         "type": condition_type,
-        "dataset_names": [condition_dataset_name(condition_type)],
+        "dataset_names": [condition_type],
         "cached_features": False,
         "output_dim": 1024,
-        "image": {
-            "backbone": "dinov2",
-            "depth_anything_v2_ckpt": None,
-            "augment_probability": 0.0,
-        },
-        "point_cloud": {
-            "encoder": "pointnet",
-            "augment_probability": 0.0,
-        },
     }
 
 
@@ -134,15 +108,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='Inference')
     parser.add_argument('--autoencoder-weights', type=str, required=True)
     parser.add_argument('--diffusion-weights', type=str, required=True)
-    parser.add_argument('--condition', type=str, required=True)
+    parser.add_argument('--condition', type=str, required=True, choices=['single_img'])
     parser.add_argument('--input', nargs='+', type=str, required=True)
     parser.add_argument('--output-dir', type=str, default="./inference_output")
     parser.add_argument('--num-samples', type=int, default=32)
 
     args = parser.parse_args()
-    condition_type = normalize_condition_type(args.condition)
-    if condition_type in {"multi_img", "text", "txt"}:
-        raise NotImplementedError(f"{condition_type} conditioning is disabled in the single-view runtime.")
+    condition_type = args.condition
     model_conf = build_model_conf(args.autoencoder_weights)
     condition_conf = build_condition_conf(condition_type)
 
@@ -166,36 +138,7 @@ if __name__ == '__main__':
             }
         }
         num_proposals = args.num_samples
-        if condition_type == "point_cloud":
-            input_file = Path(fileitem)
-            name = input_file.stem
-            if not input_file.exists():
-                print(f"File {input_file} not found.")
-                exit(1)
-
-            pcd = o3d.io.read_point_cloud(str(input_file))
-            points = np.array(pcd.points)
-            if pcd.has_normals():
-                normals = np.array(pcd.normals)
-            else:
-                normals = np.zeros_like(points)
-
-            # Normalize
-            bbox_min = np.min(points, axis=0)
-            bbox_max = np.max(points, axis=0)
-            center = (bbox_min + bbox_max) / 2
-            points -= center
-            scale = np.max(bbox_max - bbox_min)
-            points /= scale
-            points *= 0.9 * 2
-
-            points = np.concatenate([points, normals], axis=1)
-            num_sample = 8192
-            index = np.random.choice(points.shape[0], num_sample, replace=False)
-            points = points[index]
-            points_tensor = torch.tensor(points, dtype=torch.float32).to(device)
-            data["conditions"]["points"] = points_tensor[None, None, :, :].repeat(num_proposals, 1, 1, 1)
-        elif condition_type in ("single_img", "sketch"):
+        if condition_type == "single_img":
             input_file = Path(fileitem)
             name = input_file.stem
             if not input_file.exists():
