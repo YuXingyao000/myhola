@@ -15,7 +15,7 @@ paired / unpaired **sRGB** 预训练权重；不是 HDRNet，也不是 iPhone IS
 ```bash
 CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=4 PYTHONDONTWRITEBYTECODE=1 \
 /mnt/d/anaconda3/envs/generate/bin/python \
-  /mnt/d/python_room_generation/packages/cad_scene_factory/step4/retouch/workflow.py \
+  /mnt/d/python_room_generation/src/datagen/step4/retouch/workflow.py \
   --inputs /mnt/d/python_room_generation/checkpoints/image_generation/codex_scene_factory/enhancement/phone_retouch/inputs.json \
   --output_dir /mnt/d/data/cad_scene_enhancements/office_phone_lut_NEW_RUN \
   --model_dir /mnt/d/model/Image_Adaptive_3DLUT \

@@ -68,8 +68,14 @@ def imported_modules(path: Path, package: str) -> set[str]:
                 base = ".".join(anchor + ([base] if base else []))
             found.add(base)
             found.update(f"{base}.{alias.name}" for alias in node.names)
-        elif isinstance(node, ast.Constant) and isinstance(node.value, str) and node.value.startswith("src."):
-            found.add(node.value)
+        elif isinstance(node, ast.Constant) and isinstance(node.value, str):
+            if node.value.startswith("src."):
+                found.add(node.value)
+            elif node.value.endswith(".py") and "/" not in node.value:
+                # A sibling script launched by path, e.g. `blender --python HERE / "scene.py"`.
+                found.add(f"{package}.{node.value[:-3]}")
+    # Script-style sibling imports (`from camera import ...`) resolve next to the file.
+    found.update(f"{package}.{name}" for name in list(found) if "." not in name)
     return found
 
 
@@ -102,7 +108,8 @@ def check_dead_modules() -> list[str]:
         edges[name] = targets
     roots = {name for name in modules if name in ENTRY_POINTS or name in DYNAMIC_MODULES}
     roots |= {name for name, path in modules.items()
-              if name.startswith(("tests.", "tools.")) or (name.startswith("src.") and has_main_guard(path))}
+              if name.startswith(("tests.", "tools.")) or path.name == "__main__.py"
+              or (name.startswith("src.") and has_main_guard(path))}
     reached, stack = set(), list(roots)
     while stack:
         name = stack.pop()

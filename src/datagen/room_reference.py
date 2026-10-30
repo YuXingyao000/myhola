@@ -15,10 +15,7 @@ from pathlib import Path
 import shutil
 
 
-REFERENCE_GUIDE = (
-    Path(__file__).resolve().parents[2]
-    / "checkpoints/image_generation/codex_scene_factory/room_workflow/REFERENCE.md"
-)
+REFERENCE_GUIDE = Path(__file__).resolve().parent / "prompts" / "room" / "REFERENCE.md"
 
 
 def file_sha256(path: Path) -> str:

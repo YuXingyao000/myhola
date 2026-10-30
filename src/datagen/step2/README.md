@@ -64,7 +64,7 @@ Step 3 要求这项验收存在且通过，旧 ready 必须重新验收后再使
 命名，且必须对应同一版基础场景。选区使用原图像素；编号图保持原分辨率。
 
 ```bash
-python packages/cad_scene_factory/step2/workflow.py \
+python src/datagen/step2/workflow.py \
   --base_scene /path/to/build/room.blend \
   --views_file /path/to/views.json \
   --overview_dir /path/to/renders \
@@ -74,7 +74,7 @@ python packages/cad_scene_factory/step2/workflow.py \
   --sandbox danger-full-access
 ```
 
-也可以 `python -m packages.cad_scene_factory.step2 ...`。
+也可以 `python -m src.datagen.step2 ...`。
 添加 `--prepare_only` 只做场景索引和编号图，不调用 Agent、不渲染。正式运行使用新输出
 目录。可选 `--user_prompt_file /path/request.md` 补充拍摄偏好；阈值通过独立 `--config`
 JSON 显式设置。没有恢复/锁/自动修复配置层；故障直接抛出，日志及已完成记录留在目录里。

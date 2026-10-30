@@ -28,7 +28,7 @@
 
 ```bash
 /mnt/d/anaconda3/envs/generate/bin/python \
-  /mnt/d/python_room_generation/packages/cad_scene_factory/step4/workflow.py \
+  /mnt/d/python_room_generation/src/datagen/step4/workflow.py \
   --render_dir /mnt/d/data/cad_scene_renders/office_step3_100_support_fix_20261027_001 \
   --scene_id office_20261023_001 \
   --output_dir /mnt/d/data/cad_scene_enhancements/office_100_NEW_RUN \
@@ -48,7 +48,7 @@
 
 ```bash
 /mnt/d/anaconda3/envs/generate/bin/python \
-  /mnt/d/python_room_generation/packages/cad_scene_factory/step4/workflow.py \
+  /mnt/d/python_room_generation/src/datagen/step4/workflow.py \
   --run_request /path/to/run/request.json
 ```
 

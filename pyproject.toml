@@ -85,3 +85,15 @@ ignore_imports = [
     "src.datasets.preference -> src.models.diffusion.image_loading",
     "src.datasets.brep -> src.models.diffusion.image_loading",
 ]
+
+[[tool.importlinter.contracts]]
+name = "Training stack does not import dataset generation"
+type = "forbidden"
+source_modules = ["src.train", "src.inference", "src.evaluate", "src.eval", "src.preference", "src.postprocess", "src.datasets", "src.preprocess", "src.common"]
+forbidden_modules = ["src.datagen"]
+
+[[tool.importlinter.contracts]]
+name = "Dataset generation does not import the training stack"
+type = "forbidden"
+source_modules = ["src.datagen"]
+forbidden_modules = ["src.train", "src.inference", "src.evaluate", "src.eval", "src.preference", "src.postprocess", "src.datasets", "src.preprocess", "src.models"]

@@ -38,7 +38,7 @@
 ## 运行
 
 ```bash
-python packages/cad_scene_factory/step3/workflow.py \
+python src/datagen/step3/workflow.py \
   --ready_file /mnt/d/data/cad_scene_placements/office_step2_support_fix_20261026_001/ready.json \
   --stl_dir /mnt/d/data/deepcad_stl_total \
   --output_dir /mnt/d/data/cad_scene_renders/office_parts_001 \

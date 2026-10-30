@@ -37,12 +37,12 @@ Blender 从脚本重新构建并渲染六个环境视角，再由 Codex 对照�
 包含首个场景的预览位置、验收证据和已知限制。
 
 ```bash
-python packages/cad_scene_factory/room_reference.py \
+python src/datagen/room_reference.py \
   --reference_dir /mnt/d/data/cad_scene_references/the_shed \
   --output_dir /mnt/d/data/cad_scene_references/the_shed/room_reference
 
-python packages/cad_scene_factory/room_workflow.py \
-  --user_prompt_file packages/cad_scene_factory/prompts/room/PROMPT.EXAMPLE.md \
+python src/datagen/room_workflow.py \
+  --user_prompt_file src/datagen/prompts/room/PROMPT.EXAMPLE.md \
   --reference_file /mnt/d/data/cad_scene_references/the_shed/room_reference/reference.json \
   --output_dir /mnt/d/data/cad_scene_templates/workshop_room_001 \
   --blender /mnt/d/natural/blender-5.2.2-linux-x64/blender \
@@ -61,10 +61,10 @@ Codex 内置指令、工具说明、当前任务和参考资料属于实际上�
 
 ```python
 from pathlib import Path
-from packages.cad_scene_factory.room_workflow import generate_room
+from src.datagen.room_workflow import generate_room
 
 result = generate_room(
-    user_prompt=Path("packages/cad_scene_factory/prompts/room/PROMPT.EXAMPLE.md").read_text(),
+    user_prompt=Path("src/datagen/prompts/room/PROMPT.EXAMPLE.md").read_text(),
     reference_file=Path("/mnt/d/data/cad_scene_references/the_shed/room_reference/reference.json"),
     output_dir=Path("/mnt/d/data/cad_scene_templates/workshop_room_001"),
     blender=Path("/mnt/d/natural/blender-5.2.2-linux-x64/blender"),
@@ -81,7 +81,7 @@ result = generate_room(
 如外部审阅发现问题，保存文字反馈后继续明确的原会话：
 
 ```bash
-python packages/cad_scene_factory/room_workflow.py \
+python src/datagen/room_workflow.py \
   --output_dir /mnt/d/data/cad_scene_templates/workshop_room_001 \
   --resume --feedback_file /path/to/feedback.md --max_repairs 4
 ```
@@ -95,7 +95,7 @@ python packages/cad_scene_factory/room_workflow.py \
 先从现有参考导出纯图片包，去掉基础工程、原场景布局和审计路径：
 
 ```bash
-python packages/cad_scene_factory/room_reference.py \
+python src/datagen/room_reference.py \
   --quality_reference_file /mnt/d/data/cad_scene_references/the_shed/room_reference/reference.json \
   --output_dir /mnt/d/data/cad_scene_references/the_shed/quality_reference
 ```
@@ -104,8 +104,8 @@ python packages/cad_scene_factory/room_reference.py \
 所有卡都运行训练时提前启动制作阶段。
 
 ```bash
-python packages/cad_scene_factory/room_workflow.py \
-  --user_prompt_file packages/cad_scene_factory/prompts/room/PROMPT.FACTORY.EXAMPLE.md \
+python src/datagen/room_workflow.py \
+  --user_prompt_file src/datagen/prompts/room/PROMPT.FACTORY.EXAMPLE.md \
   --reference_file /mnt/d/data/cad_scene_references/the_shed/quality_reference/reference.json \
   --reference_mode quality_only \
   --asset_cache /mnt/d/data/cad_scene_assets \
@@ -206,7 +206,7 @@ Python API 使用同名 `reference_mode`、`asset_cache` 和可选 `asset_catalo
 PythonOCC。路径均显式提供，输出必须使用新目录。
 
 ```bash
-python packages/cad_scene_factory/prepare_stl.py \
+python src/datagen/prepare_stl.py \
   --data_roots /path/to/deepcad_v6 /path/to/deepcad_v6_cond \
   --training_list src/preprocess/splits/deduplicated_deepcad_training_7_30.txt \
   --validation_list src/preprocess/splits/deduplicated_deepcad_validation_7_30.txt \
@@ -230,8 +230,8 @@ python packages/cad_scene_factory/prepare_stl.py \
 在普通 Python 环境中运行，使用已登录的本地 Codex：
 
 ```bash
-python packages/cad_scene_factory/workflow.py \
-  --user_prompt_file packages/cad_scene_factory/prompts/PROMPT.EXAMPLE.md \
+python src/datagen/workflow.py \
+  --user_prompt_file src/datagen/prompts/PROMPT.EXAMPLE.md \
   --output_dir /path/to/template \
   --model gpt-6-astra --reasoning_effort ultra \
   --blender /path/to/blender \
@@ -284,11 +284,11 @@ Python中的旧 `call_llm()` 函数保留一次生成包装，不负责外围检
 ## 固定预览
 
 ```bash
-python packages/cad_scene_factory/preview.py \
+python src/datagen/preview.py \
   --template_dir /path/to/template \
   --blender /path/to/blender \
   --stl_dir /path/to/deepcad_stl_total \
-  --panel_file packages/cad_scene_factory/review_models.json \
+  --panel_file src/datagen/review_models.json \
   --preset quick
 ```
 
@@ -308,7 +308,7 @@ quick 使用低、中、高面数各一件、64 samples；改为 review 则使�
 ## 构建场景
 
 ```bash
-blender --background --python-exit-code 1 --python packages/cad_scene_factory/build.py -- \
+blender --background --python-exit-code 1 --python src/datagen/build.py -- \
   --scene_script /path/to/template/build_scene.py \
   --material_script /path/to/template/build_material.py \
   --output_blend /path/to/template/scene.blend
@@ -345,7 +345,7 @@ blender --background --python-exit-code 1 --python packages/cad_scene_factory/bu
 ## 批量拍摄
 
 ```bash
-blender --background --python-exit-code 1 --python packages/cad_scene_factory/render.py -- \
+blender --background --python-exit-code 1 --python src/datagen/render.py -- \
   --scene_file /path/to/template/scene.blend \
   --model_files /path/to/part_a.stl /path/to/part_b.obj \
   --output_dir /path/to/new_render_batch \
@@ -384,7 +384,7 @@ STL 导入后按相邻面夹角生成着色法线：小夹角平滑，大于 30�
 约定提供，不必在 User 提示词里重新填写。先只组装输入，查看模板目录里的 `request.json`：
 
 ```bash
-scene_factory=/mnt/d/python/packages/cad_scene_factory
+scene_factory=/mnt/d/python/src/datagen
 scene_template=/mnt/d/data/cad_scene_templates/workshop_workflow_001
 scene_blender=/mnt/d/natural/blender-5.2.2-linux-x64/blender
 
