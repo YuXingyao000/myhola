@@ -17,7 +17,7 @@ import time
 
 from src.eval.photo_baseline import METHODS, evaluate_one, gpu_worker, initialize_cpu
 from src.eval.preference_compare import _verify_evaluation, comparison_lock
-from tools.vae_compare_post import atomic_json, fingerprint, read_json, sha256_file
+from src.common.io import atomic_json, fingerprint, read_json, sha256_file
 
 
 def frozen_protocol(path: Path) -> dict:

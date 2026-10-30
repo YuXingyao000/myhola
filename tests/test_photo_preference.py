@@ -17,7 +17,7 @@ from src.preference.selection import SelectionConfig
 from src.preference.source import (
     image_path, is_photo, load_condition, retain_native_validity, source_protocol,
 )
-from tools.vae_compare_post import read_json, sha256_file
+from src.common.io import read_json, sha256_file
 
 
 def config_fixture(root):

@@ -28,6 +28,10 @@ import traceback
 from typing import Any
 
 
+from src.common.io import atomic_json, fingerprint, read_json, sha256_file  # noqa: E402
+from src.common.step_io import read_step_at_precision  # noqa: E402
+from src.postprocess.cpu_runtime import configure_cpu, preload_cpu_dependencies  # noqa: E402
+
 METHODS = ("legacy", "joint")
 CANDIDATE_METHODS = ("joint", "intersection", "local", "conditioned", "point_feedback",
                      "encoder_edge_value", "encoder_gat_control")
@@ -67,56 +71,6 @@ def stable_seed(sample_id: str, stage: str) -> int:
     return int.from_bytes(hashlib.sha256(f"42:{sample_id}:{stage}".encode()).digest()[:4], "little")
 
 
-def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def fingerprint(value: Any) -> str:
-    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
-
-
-def atomic_json(path: Path, value: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile(mode="w", dir=path.parent, prefix=path.name + ".", suffix=".tmp", delete=False) as handle:
-        temporary = Path(handle.name)
-        json.dump(value, handle, indent=2, allow_nan=False)
-        handle.write("\n")
-    os.replace(temporary, path)
-
-
-def read_json(path: Path) -> dict:
-    try:
-        return json.loads(path.read_text())
-    except FileNotFoundError:
-        return {}
-
-
-def configure_cpu() -> None:
-    # Set before importing numerical libraries, and before any child is forked.
-    for name in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "NUMEXPR_NUM_THREADS"):
-        os.environ[name] = "1"
-    os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
-
-def preload_cpu_dependencies() -> None:
-    configure_cpu()
-    import torch
-    torch.set_num_threads(1)
-    try:
-        torch.set_num_interop_threads(1)
-    except RuntimeError:
-        pass
-    # Import once in the single-threaded parent: every job still gets its own
-    # process and OCC state, without paying thousands of heavyweight imports.
-    from src.postprocess.construct_brep import construct_brep_for_sample  # noqa: F401
-    from scipy.spatial import cKDTree  # noqa: F401
-    import trimesh  # noqa: F401
-
-
 def squared_chamfer(predicted, target) -> dict[str, float]:
     import numpy as np
     from scipy.spatial import cKDTree
@@ -129,26 +83,6 @@ def squared_chamfer(predicted, target) -> dict[str, float]:
     accuracy = float(np.mean(forward ** 2))
     completeness = float(np.mean(backward ** 2))
     return {"accuracy": accuracy, "completeness": completeness, "cd": accuracy + completeness}
-
-
-def read_step_at_precision(path: Path, mode: int = 0, precision: float = 0.1):
-    """Do not let validity.py's import-time STEP settings alter native reads."""
-    from OCC.Core.Interface import Interface_Static
-    from OCC.Extend.DataExchange import read_step_file
-    if not path.is_file():
-        raise FileNotFoundError(path)
-    old_mode = Interface_Static.IVal("read.precision.mode")
-    old_precision = Interface_Static.RVal("read.precision.val")
-    try:
-        Interface_Static.SetIVal("read.precision.mode", mode)
-        Interface_Static.SetRVal("read.precision.val", precision)
-        shape = read_step_file(str(path), as_compound=False, verbosity=False)
-        if shape is None or shape.IsNull():
-            raise ValueError(f"No readable shape: {path}")
-        return shape
-    finally:
-        Interface_Static.SetIVal("read.precision.mode", old_mode)
-        Interface_Static.SetRVal("read.precision.val", old_precision)
 
 
 def native_validity(shape) -> dict[str, Any]:

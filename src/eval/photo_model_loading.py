@@ -9,7 +9,7 @@ from torch import nn
 
 from src.models.diffusion.photo_baseline import load_photo_svr
 from src.models.diffusion.spatial_model import load_spatial_photo
-from tools.vae_compare_post import sha256_file
+from src.common.io import sha256_file
 
 
 def apply_photo_preference_state(legacy, state: dict) -> dict:

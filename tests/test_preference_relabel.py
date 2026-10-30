@@ -12,7 +12,7 @@ import pytest
 
 from src.preference import relabel
 from src.preference.observation_selection import SelectionConfig
-from tools.vae_compare_post import atomic_json, fingerprint, read_json, sha256_file
+from src.common.io import atomic_json, fingerprint, read_json, sha256_file
 
 
 def _config():

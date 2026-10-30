@@ -11,7 +11,7 @@ import shutil
 import subprocess
 import sys
 
-from tools.vae_compare_post import atomic_json, fingerprint, read_json, sha256_file
+from src.common.io import atomic_json, fingerprint, read_json, sha256_file
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -41,7 +41,7 @@ def source_hashes() -> dict[str, str]:
         *REPO_ROOT.glob("src/models/diffusion/preference_geometry.py"),
         REPO_ROOT / "src/eval/preference.py",
         *REPO_ROOT.glob("src/postprocess/**/*.py"),
-        REPO_ROOT / "tools/vae_compare_post.py",
+        REPO_ROOT / "src/common/io.py",
         REPO_ROOT / "src/common/occ_utils.py",
         REPO_ROOT / "src/common/common_utils.py",
     ]

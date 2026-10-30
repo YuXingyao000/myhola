@@ -14,7 +14,7 @@ import sys
 import time
 import traceback
 
-from tools.vae_compare_post import atomic_json, fingerprint, read_json, sha256_file
+from src.common.io import atomic_json, fingerprint, read_json, sha256_file
 
 
 METHODS = ("original_svr", "photo_val_best", "photo_latest")
@@ -57,7 +57,7 @@ def prepare(config: dict) -> dict:
     sources = [Path(__file__), repo / "src/models/diffusion/photo_baseline.py",
                repo / "src/models/diffusion/legacy.py", repo / "src/models/diffusion/preference.py",
                repo / "src/datasets/photo.py", repo / "src/eval/preference.py",
-               repo / "tools/vae_compare_post.py", *sorted((repo / "src/postprocess").glob("*.py"))]
+               repo / "src/common/io.py", *sorted((repo / "src/postprocess").glob("*.py"))]
     protocol = {"version": "photo_baseline_validation100_v1", "config": config,
                 "identities": ids, "checkpoint_sha256": checkpoints, "input_sha256": inputs,
                 "source_sha256": {str(p): sha256_file(p) for p in sources},
@@ -151,7 +151,7 @@ def gpu_worker(protocol: dict, gpu: int, ids: list[str]) -> None:
 
 
 def initialize_cpu():
-    from tools.vae_compare_post import preload_cpu_dependencies
+    from src.postprocess.cpu_runtime import preload_cpu_dependencies
     preload_cpu_dependencies()
 
 

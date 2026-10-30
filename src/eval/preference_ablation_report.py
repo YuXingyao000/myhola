@@ -20,7 +20,7 @@ import numpy as np
 from src.eval.preference_report import (
     RAW_METRICS, POST_METRICS, VALIDITIES, finite_number, load_rows, paired_statistics,
 )
-from tools.vae_compare_post import atomic_json, fingerprint, sha256_file
+from src.common.io import atomic_json, fingerprint, sha256_file
 
 
 VERSION = "svr_observation_dpo_ablation_report_v1"

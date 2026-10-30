@@ -272,7 +272,7 @@ def write_report(rows: list[dict], output: Path, *, font: Path | None = None) ->
     if audit_protocol_path.is_file():
         audit_protocol = json.loads(audit_protocol_path.read_text())
         comparison_path = Path(audit_protocol["config"]["comparison_run"]) / "metadata/protocol.json"
-        from tools.vae_compare_post import sha256_file
+        from src.common.io import sha256_file
         if sha256_file(comparison_path) != audit_protocol["comparison_protocol_sha256"]:
             raise ValueError("Comparison protocol changed before writing the audit report")
         comparison = json.loads(comparison_path.read_text())

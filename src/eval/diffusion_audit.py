@@ -18,7 +18,7 @@ import sys
 import time
 import traceback
 
-from tools.vae_compare_post import atomic_json, fingerprint, read_json, sha256_file
+from src.common.io import atomic_json, fingerprint, read_json, sha256_file
 
 
 VERSION = "single_view_diffusion_audit_v1"
@@ -54,7 +54,7 @@ def comparison_cases(run: Path, methods: list[str]) -> list[dict]:
 
 
 def _initialize_worker() -> None:
-    from tools.vae_compare_post import preload_cpu_dependencies
+    from src.postprocess.cpu_runtime import preload_cpu_dependencies
     preload_cpu_dependencies()
     # Preload in the CPU-only parent; each bounded child gets separate OCC state.
     from src.eval import failure_analysis, failure_geometry  # noqa: F401
@@ -234,7 +234,7 @@ def main() -> None:
                *[Path(__file__).parent / "metrics" / name for name in ("observation.py", "conditional_diversity.py")]]
     repo = Path(__file__).resolve().parents[2]
     sources.extend(repo / name for name in (
-        "tools/legacy_failure_geometry.py", "tools/vae_compare_post.py",
+        "src/eval/occ_diagnostics.py", "src/common/io.py", "src/common/step_io.py", "src/postprocess/cpu_runtime.py",
         "src/preprocess/extract_visibility.py", "src/models/diffusion/image_loading.py",
         "src/eval/io.py", "src/eval/preference_report.py"))
     import OCC

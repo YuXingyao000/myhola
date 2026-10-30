@@ -27,7 +27,7 @@ import time
 import traceback
 import uuid
 
-from tools.vae_compare_post import atomic_json, fingerprint, read_json, sha256_file
+from src.common.io import atomic_json, fingerprint, read_json, sha256_file
 from src.preference.observation_selection import SelectionConfig, select_pair_with_report
 
 
@@ -75,7 +75,7 @@ def build_protocol(args: argparse.Namespace) -> dict:
         "src/preference/observation_selection.py",
         "src/preprocess/extract_visibility.py", "src/preprocess/rotations.py",
         "src/models/diffusion/image_loading.py", "src/eval/metrics/observation.py",
-        "src/common/occ_utils.py", "src/common/common_utils.py", "tools/vae_compare_post.py",
+        "src/common/occ_utils.py", "src/common/common_utils.py", "src/common/io.py", "src/postprocess/cpu_runtime.py",
     ]
     from OCC import VERSION as occ_version
     protocol = {

@@ -11,7 +11,7 @@ from unittest.mock import patch
 from src.preference import io
 from src.preference import generate as generation
 from src.preference.selection import SelectionConfig
-from tools.vae_compare_post import atomic_json, sha256_file
+from src.common.io import atomic_json, sha256_file
 
 
 class PreferenceRuntimeRevisionTests(unittest.TestCase):

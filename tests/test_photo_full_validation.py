@@ -4,7 +4,7 @@ import pytest
 
 from src.preference.generate import candidate_seed
 from src.eval.photo_full_validation import verify_generation
-from tools.vae_compare_post import atomic_json, sha256_file
+from src.common.io import atomic_json, sha256_file
 
 
 def test_generation_reuse_rejects_changed_input_and_artifact(tmp_path):

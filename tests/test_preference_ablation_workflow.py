@@ -10,7 +10,7 @@ import unittest
 from unittest.mock import patch
 
 from src.eval import preference_ablation as workflow
-from tools.vae_compare_post import atomic_json, fingerprint, read_json, sha256_file
+from src.common.io import atomic_json, fingerprint, read_json, sha256_file
 
 
 class PreferenceAblationWorkflowTests(unittest.TestCase):

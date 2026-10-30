@@ -12,7 +12,7 @@ import numpy as np
 
 from src.eval.photo_baseline import METHODS
 from src.eval.preference_report import EVALUATION_TERMINAL, finite_number, statistics
-from tools.vae_compare_post import atomic_json, read_json
+from src.common.io import atomic_json, read_json
 
 
 LABELS = ("原始 SVR → 照片", "照片 4,553 步\n最低验证 loss", "照片 310,000 步\n最后完整权重")

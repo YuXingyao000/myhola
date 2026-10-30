@@ -22,7 +22,7 @@ from uuid import uuid4
 from src.preference.io import read_ids
 from src.eval.preference_compare import build_protocol, validate_reuse_protocol
 from src.eval.preference_ablation_report import compare_protocols, load_protocol
-from tools.vae_compare_post import atomic_json, fingerprint, read_json, sha256_file
+from src.common.io import atomic_json, fingerprint, read_json, sha256_file
 
 
 REPO = Path(__file__).resolve().parents[2]

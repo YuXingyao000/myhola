@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 from src.eval import preference_ablation_report as report
-from tools.vae_compare_post import atomic_json, fingerprint, sha256_file
+from src.common.io import atomic_json, fingerprint, sha256_file
 
 
 IDS = ["cad_b", "cad_a", "cad_c"]

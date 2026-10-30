@@ -13,7 +13,7 @@ import numpy as np
 from src.preference.generate import _check_files, finish_image
 from src.preference.io import prepare_run
 from src.preference.selection import SelectionConfig
-from tools.vae_compare_post import sha256_file
+from src.common.io import sha256_file
 
 
 def record(candidate_id: str, validity: str, face_cd: float = 1.) -> dict:

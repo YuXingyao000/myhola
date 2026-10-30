@@ -177,8 +177,8 @@ def measure_raw_consistency(raw_path: Path, *, distance_threshold: float = .01) 
 
 def inspect_saved_step(step_path: Path) -> dict[str, Any]:
     """Read native STEP topology without healing, tessellation, or overwriting."""
-    from tools.legacy_failure_geometry import native_diagnostics
-    from tools.vae_compare_post import read_step_at_precision
+    from src.eval.occ_diagnostics import native_diagnostics
+    from src.common.step_io import read_step_at_precision
 
     shape = read_step_at_precision(Path(step_path), mode=0)
     diagnostics, _, _ = native_diagnostics(shape)

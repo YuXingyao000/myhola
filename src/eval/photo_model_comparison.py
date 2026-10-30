@@ -15,7 +15,7 @@ import traceback
 
 from src.eval.photo_baseline import evaluate_one, initialize_cpu
 from src.eval.preference_compare import _verify_evaluation, comparison_lock
-from tools.vae_compare_post import atomic_json, fingerprint, read_json, sha256_file
+from src.common.io import atomic_json, fingerprint, read_json, sha256_file
 
 METHODS = ("photo_baseline", "photo_dpo5000", "spatial_best", "spatial_last")
 NEW_METHODS = METHODS[1:]

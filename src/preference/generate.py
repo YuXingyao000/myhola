@@ -21,7 +21,7 @@ import traceback
 from src.preference.io import append_json, prepare_run
 from src.preference.selection import SelectionConfig, select_pair_with_report
 from src.preference.source import image_path, is_photo, load_condition, load_model, retain_native_validity
-from tools.vae_compare_post import atomic_json, read_json, sha256_file
+from src.common.io import atomic_json, read_json, sha256_file
 
 
 def candidate_seed(seed: int, image_id: str, index: int) -> int:
@@ -207,7 +207,7 @@ def _cpu_worker(index: int, config: dict, run_string: str, jobs, events) -> None
 
     signal.signal(signal.SIGTERM, terminate)
     try:
-        from tools.vae_compare_post import preload_cpu_dependencies
+        from src.postprocess.cpu_runtime import preload_cpu_dependencies
         preload_cpu_dependencies()
         from src.eval.preference import evaluate_candidate
         while True:

@@ -16,7 +16,7 @@ from PIL import Image
 
 from src.models.diffusion.image_loading import load_image_view
 from src.eval.metrics import observation as metrics
-from tools.vae_compare_post import atomic_json, fingerprint, read_json, sha256_file
+from src.common.io import atomic_json, fingerprint, read_json, sha256_file
 
 
 class SourceIntegrityError(ValueError):

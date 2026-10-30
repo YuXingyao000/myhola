@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from tools.vae_compare_post import sha256_file
+from src.common.io import sha256_file
 
 
 def is_photo(config: dict) -> bool:

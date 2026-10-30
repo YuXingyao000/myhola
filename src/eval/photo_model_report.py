@@ -10,7 +10,7 @@ from src.eval.photo_model_comparison import METHODS, checked_protocol, verify_ge
 from src.eval.photo_report import METRICS, paired_delta, setup_plot
 from src.eval.preference_compare import _verify_evaluation
 from src.eval.preference_report import finite_number, statistics
-from tools.vae_compare_post import atomic_json, read_json, sha256_file
+from src.common.io import atomic_json, read_json, sha256_file
 
 LABELS = ("照片 baseline\n310,000 步", "照片310k → DPO\n5,000 步",
           "空间条件 best\n20,930 步", "空间条件 last\n63,700 步")

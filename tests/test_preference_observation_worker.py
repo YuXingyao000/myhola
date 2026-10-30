@@ -8,7 +8,7 @@ from unittest.mock import patch
 import numpy as np
 
 from src.preference.observation_worker import evaluate_image, SourceIntegrityError
-from tools.vae_compare_post import atomic_json, fingerprint, read_json, sha256_file
+from src.common.io import atomic_json, fingerprint, read_json, sha256_file
 
 
 class PreferenceObservationWorkerTests(unittest.TestCase):

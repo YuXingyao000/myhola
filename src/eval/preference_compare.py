@@ -17,7 +17,7 @@ import time
 import traceback
 
 from src.preference.io import read_ids
-from tools.vae_compare_post import atomic_json, fingerprint, read_json, sha256_file
+from src.common.io import atomic_json, fingerprint, read_json, sha256_file
 
 
 METHODS = ("baseline", "dpo_5000")
@@ -336,7 +336,7 @@ def _gpu_worker(config: dict, method: str, gpu: int, identities: list[str]) -> N
 def _initialize_cpu() -> None:
     # Only CPU parents fork isolated OCC children; CUDA has never been initialized.
     os.environ["CUDA_VISIBLE_DEVICES"] = ""
-    from tools.vae_compare_post import preload_cpu_dependencies
+    from src.postprocess.cpu_runtime import preload_cpu_dependencies
     preload_cpu_dependencies()
 
 
@@ -480,7 +480,7 @@ def build_protocol(config: dict, identities: list[str]) -> dict:
                repo / "src/eval/preference.py", repo / "src/eval/preference_report.py",
                repo / "src/eval/metrics/validity.py",
                repo / "src/common/occ_utils.py", repo / "src/common/common_utils.py",
-               repo / "tools/vae_compare_post.py", *sorted((repo / "src/postprocess").rglob("*.py"))]
+               repo / "src/common/io.py", *sorted((repo / "src/postprocess").rglob("*.py"))]
     protocol = {
         "version": "svr_dpo_fixed_validation_v1", "config": config,
         "identities": identities, "split_sha256": sha256_file(Path(config["split_list"])),

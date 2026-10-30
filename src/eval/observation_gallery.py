@@ -19,7 +19,7 @@ from PIL import Image
 
 from src.models.diffusion.image_loading import load_image_view
 from src.eval.diffusion_audit_report import METHOD_LABELS, STAGE_LABELS
-from tools.vae_compare_post import atomic_json, read_json, sha256_file
+from src.common.io import atomic_json, read_json, sha256_file
 
 
 def checked_sources(case: dict, row: dict) -> dict:

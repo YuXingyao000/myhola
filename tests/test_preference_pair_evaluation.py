@@ -11,7 +11,7 @@ from src.eval import diffusion_audit_report as audit_report
 from tests import test_preference_compare_reuse as reuse_fixture
 from tests import test_preference_report as report_fixture
 from tests.test_diffusion_audit import audit_row
-from tools.vae_compare_post import atomic_json, fingerprint, read_json, sha256_file
+from src.common.io import atomic_json, fingerprint, read_json, sha256_file
 
 
 def test_control_slot_loads_its_own_policy_and_both_require_fixed_step():

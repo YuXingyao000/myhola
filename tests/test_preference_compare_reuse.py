@@ -10,7 +10,7 @@ from src.eval.preference_compare import (
     METHODS, build_protocol, comparison_lock, evaluation_jobs, generation_assignments,
     reuse_completed_run, validate_reuse_protocol, verify_completed_comparison,
 )
-from tools.vae_compare_post import atomic_json, fingerprint, read_json, sha256_file
+from src.common.io import atomic_json, fingerprint, read_json, sha256_file
 
 
 class PreferenceCompareReuseTests(unittest.TestCase):

@@ -8,7 +8,7 @@ import unittest
 
 from src.eval.diffusion_audit import _audit_bounded, comparison_cases
 from src.eval.diffusion_audit_report import summarize
-from tools.vae_compare_post import sha256_file
+from src.common.io import sha256_file
 
 
 def audit_row(method, image_id, validity="unknown", *, observation=None, flag=None):
