@@ -1,0 +1,869 @@
+{
+  "date": "2026-10-29",
+  "worktree": "/mnt/d/python_room_generation",
+  "git_head": "e6babb259c94033412c56a26d23972d09d6b2559",
+  "provenance": "Audited working-tree files, including uncommitted changes; SHA256 identifies the read version.",
+  "scope": "Four current selected stages; pending nodes have no implemented state. Historical branches are only inventoried in the overview.",
+  "agent_boundary": "call_llm.py starts the Codex CLI. Its internal tool loop is managed outside this repository; the inset is conceptual, not a local Python implementation.",
+  "files": {
+    "room_workflow.py": {
+      "path": "/mnt/d/python_room_generation/packages/cad_scene_factory/room_workflow.py",
+      "sha256": "ffe066c105a9e50fef9ee817150287cbfc0ff1edb0704925187a1318a79f5fce"
+    },
+    "room_tools.py": {
+      "path": "/mnt/d/python_room_generation/packages/cad_scene_factory/room_tools.py",
+      "sha256": "4f8801f45f77d07ff1925cc4a3d6556b720d3f409a9fba30028ac9b8f61e5bfb"
+    },
+    "call_llm.py": {
+      "path": "/mnt/d/python_room_generation/packages/cad_scene_factory/call_llm.py",
+      "sha256": "4b7e377d3b147a02beb4234513dffbf7d8d953d64648e091adfc863c915656dd"
+    },
+    "step2/scene.py": {
+      "path": "/mnt/d/python_room_generation/packages/cad_scene_factory/step2/scene.py",
+      "sha256": "81c8a4a2b2d7938bae1fa9e3b8dbe9200fb0a86031a9e4ea136bb2f1cf98b255"
+    },
+    "step2/workflow.py": {
+      "path": "/mnt/d/python_room_generation/packages/cad_scene_factory/step2/workflow.py",
+      "sha256": "4bbc4efd2b9c13182af02672d7b01c0146365b4e623a7f23f58d2b0cea79e5f7"
+    },
+    "step2/preview.py": {
+      "path": "/mnt/d/python_room_generation/packages/cad_scene_factory/step2/preview.py",
+      "sha256": "bd893faf3646876213c21573dadf6ec68110b94cd65c841ed928c8e498861146"
+    },
+    "step2/spatial.py": {
+      "path": "/mnt/d/python_room_generation/packages/cad_scene_factory/step2/spatial.py",
+      "sha256": "4acbe2e86e94ed5968b7d0a09ecbb68f41866ce69c17e2f210939bcb43421fdc"
+    },
+    "step2/support.py": {
+      "path": "/mnt/d/python_room_generation/packages/cad_scene_factory/step2/support.py",
+      "sha256": "89d9d8cb9d7fe55bb37eb05125014d8a01c54d0442201dc17a960b8c58bcef12"
+    },
+    "step3/workflow.py": {
+      "path": "/mnt/d/python_room_generation/packages/cad_scene_factory/step3/workflow.py",
+      "sha256": "6c2f29235b296bcfe80e0773122c4358d9a94e3afd5dbb09b65f3a6cc68054a9"
+    },
+    "step3/capture.py": {
+      "path": "/mnt/d/python_room_generation/packages/cad_scene_factory/step3/capture.py",
+      "sha256": "78042f7e1ca2b5e6c87e094210d121d1f8b7017707e0f641c2d70aa0c3869b37"
+    },
+    "step3/part.py": {
+      "path": "/mnt/d/python_room_generation/packages/cad_scene_factory/step3/part.py",
+      "sha256": "d0683c65d72b77bbc30a056902de34faa6d06c51d21d00356876365d599ff5a1"
+    },
+    "step4/retouch/workflow.py": {
+      "path": "/mnt/d/python_room_generation/packages/cad_scene_factory/step4/retouch/workflow.py",
+      "sha256": "e9ea81b46a1e91ce86c47a386a733fe963f9a5263eb15f49033d48ac4e103bcb"
+    },
+    "step4/retouch/model.py": {
+      "path": "/mnt/d/python_room_generation/packages/cad_scene_factory/step4/retouch/model.py",
+      "sha256": "1f01c8444277ba88f55032d14921249bdcc7d594e2c7ee3b47e61e54fd36d564"
+    }
+  },
+  "states": [
+    {
+      "figure": "01-scene",
+      "state": "inputs",
+      "file": "room_workflow.py",
+      "symbols": [
+        {
+          "name": "generate_room",
+          "line": 35,
+          "end_line": 110
+        }
+      ]
+    },
+    {
+      "figure": "01-scene",
+      "state": "assets",
+      "file": "room_workflow.py",
+      "symbols": [
+        {
+          "name": "_stage_assets",
+          "line": 366,
+          "end_line": 391
+        }
+      ]
+    },
+    {
+      "figure": "01-scene",
+      "state": "create",
+      "file": "room_workflow.py",
+      "symbols": [
+        {
+          "name": "_execute_locked",
+          "line": 177,
+          "end_line": 273
+        },
+        {
+          "name": "_finish",
+          "line": 498,
+          "end_line": 502
+        }
+      ]
+    },
+    {
+      "figure": "01-scene",
+      "state": "repair",
+      "file": "room_workflow.py",
+      "symbols": [
+        {
+          "name": "_execute_locked",
+          "line": 177,
+          "end_line": 273
+        },
+        {
+          "name": "_finish",
+          "line": 498,
+          "end_line": 502
+        }
+      ]
+    },
+    {
+      "figure": "01-scene",
+      "state": "budget",
+      "file": "room_workflow.py",
+      "symbols": [
+        {
+          "name": "_execute_locked",
+          "line": 177,
+          "end_line": 273
+        },
+        {
+          "name": "_finish",
+          "line": 498,
+          "end_line": 502
+        }
+      ]
+    },
+    {
+      "figure": "01-scene",
+      "state": "ready",
+      "file": "room_workflow.py",
+      "symbols": [
+        {
+          "name": "_execute_locked",
+          "line": 177,
+          "end_line": 273
+        },
+        {
+          "name": "_finish",
+          "line": 498,
+          "end_line": 502
+        }
+      ]
+    },
+    {
+      "figure": "01-scene",
+      "state": "incomplete",
+      "file": "room_workflow.py",
+      "symbols": [
+        {
+          "name": "_execute_locked",
+          "line": 177,
+          "end_line": 273
+        },
+        {
+          "name": "_finish",
+          "line": 498,
+          "end_line": 502
+        }
+      ]
+    },
+    {
+      "figure": "01-scene",
+      "state": "build",
+      "file": "room_workflow.py",
+      "symbols": [
+        {
+          "name": "preview_room",
+          "line": 276,
+          "end_line": 332
+        },
+        {
+          "name": "_check_template_assets",
+          "line": 418,
+          "end_line": 429
+        }
+      ]
+    },
+    {
+      "figure": "01-scene",
+      "state": "render",
+      "file": "room_workflow.py",
+      "symbols": [
+        {
+          "name": "preview_room",
+          "line": 276,
+          "end_line": 332
+        },
+        {
+          "name": "_check_template_assets",
+          "line": 418,
+          "end_line": 429
+        }
+      ]
+    },
+    {
+      "figure": "01-scene",
+      "state": "build",
+      "file": "room_tools.py",
+      "symbols": [
+        {
+          "name": "build",
+          "line": 123,
+          "end_line": 170
+        },
+        {
+          "name": "dependencies",
+          "line": 43,
+          "end_line": 73
+        }
+      ]
+    },
+    {
+      "figure": "01-scene",
+      "state": "render",
+      "file": "room_tools.py",
+      "symbols": [
+        {
+          "name": "render",
+          "line": 221,
+          "end_line": 288
+        }
+      ]
+    },
+    {
+      "figure": "01-scene",
+      "state": "inspect",
+      "file": "room_workflow.py",
+      "symbols": [
+        {
+          "name": "_inspect",
+          "line": 335,
+          "end_line": 363
+        }
+      ]
+    },
+    {
+      "figure": "01-scene",
+      "state": "inner_model",
+      "file": "call_llm.py",
+      "symbols": [
+        {
+          "name": "_codex_command",
+          "line": 125,
+          "end_line": 168
+        },
+        {
+          "name": "run_codex_turn",
+          "line": 171,
+          "end_line": 266
+        }
+      ]
+    },
+    {
+      "figure": "01-scene",
+      "state": "inner_tool",
+      "file": "call_llm.py",
+      "symbols": [
+        {
+          "name": "_codex_command",
+          "line": 125,
+          "end_line": 168
+        },
+        {
+          "name": "run_codex_turn",
+          "line": 171,
+          "end_line": 266
+        }
+      ]
+    },
+    {
+      "figure": "01-scene",
+      "state": "inner_result",
+      "file": "call_llm.py",
+      "symbols": [
+        {
+          "name": "_codex_command",
+          "line": 125,
+          "end_line": 168
+        },
+        {
+          "name": "run_codex_turn",
+          "line": 171,
+          "end_line": 266
+        }
+      ]
+    },
+    {
+      "figure": "02-placement",
+      "state": "describe",
+      "file": "step2/scene.py",
+      "symbols": [
+        {
+          "name": "describe_scene",
+          "line": 45,
+          "end_line": 74
+        }
+      ]
+    },
+    {
+      "figure": "02-placement",
+      "state": "regions",
+      "file": "step2/workflow.py",
+      "symbols": [
+        {
+          "name": "run_workflow",
+          "line": 132,
+          "end_line": 209
+        },
+        {
+          "name": "ask_agent",
+          "line": 95,
+          "end_line": 108
+        }
+      ]
+    },
+    {
+      "figure": "02-placement",
+      "state": "propose",
+      "file": "step2/workflow.py",
+      "symbols": [
+        {
+          "name": "run_workflow",
+          "line": 132,
+          "end_line": 209
+        },
+        {
+          "name": "ask_agent",
+          "line": 95,
+          "end_line": 108
+        }
+      ]
+    },
+    {
+      "figure": "02-placement",
+      "state": "inspect",
+      "file": "step2/workflow.py",
+      "symbols": [
+        {
+          "name": "run_workflow",
+          "line": 132,
+          "end_line": 209
+        },
+        {
+          "name": "ask_agent",
+          "line": 95,
+          "end_line": 108
+        }
+      ]
+    },
+    {
+      "figure": "02-placement",
+      "state": "decide",
+      "file": "step2/workflow.py",
+      "symbols": [
+        {
+          "name": "run_workflow",
+          "line": 132,
+          "end_line": 209
+        },
+        {
+          "name": "ask_agent",
+          "line": 95,
+          "end_line": 108
+        }
+      ]
+    },
+    {
+      "figure": "02-placement",
+      "state": "keep",
+      "file": "step2/workflow.py",
+      "symbols": [
+        {
+          "name": "run_workflow",
+          "line": 132,
+          "end_line": 209
+        },
+        {
+          "name": "ask_agent",
+          "line": 95,
+          "end_line": 108
+        }
+      ]
+    },
+    {
+      "figure": "02-placement",
+      "state": "reject",
+      "file": "step2/workflow.py",
+      "symbols": [
+        {
+          "name": "run_workflow",
+          "line": 132,
+          "end_line": 209
+        },
+        {
+          "name": "ask_agent",
+          "line": 95,
+          "end_line": 108
+        }
+      ]
+    },
+    {
+      "figure": "02-placement",
+      "state": "support",
+      "file": "step2/scene.py",
+      "symbols": [
+        {
+          "name": "prepare_support_scene",
+          "line": 18,
+          "end_line": 42
+        }
+      ]
+    },
+    {
+      "figure": "02-placement",
+      "state": "measure",
+      "file": "step2/scene.py",
+      "symbols": [
+        {
+          "name": "measure_region",
+          "line": 77,
+          "end_line": 115
+        }
+      ]
+    },
+    {
+      "figure": "02-placement",
+      "state": "preview",
+      "file": "step2/preview.py",
+      "symbols": [
+        {
+          "name": "preview_placement",
+          "line": 127,
+          "end_line": 206
+        }
+      ]
+    },
+    {
+      "figure": "02-placement",
+      "state": "geometry",
+      "file": "step2/preview.py",
+      "symbols": [
+        {
+          "name": "preview_placement",
+          "line": 127,
+          "end_line": 206
+        }
+      ]
+    },
+    {
+      "figure": "02-placement",
+      "state": "photo",
+      "file": "step2/preview.py",
+      "symbols": [
+        {
+          "name": "preview_placement",
+          "line": 127,
+          "end_line": 206
+        }
+      ]
+    },
+    {
+      "figure": "02-placement",
+      "state": "move",
+      "file": "step2/scene.py",
+      "symbols": [
+        {
+          "name": "validate_moves",
+          "line": 123,
+          "end_line": 154
+        },
+        {
+          "name": "apply_moves",
+          "line": 171,
+          "end_line": 184
+        }
+      ]
+    },
+    {
+      "figure": "02-placement",
+      "state": "geometry",
+      "file": "step2/spatial.py",
+      "symbols": [
+        {
+          "name": "SceneGeometry",
+          "line": 50,
+          "end_line": 125
+        },
+        {
+          "name": "check_framing",
+          "line": 162,
+          "end_line": 175
+        }
+      ]
+    },
+    {
+      "figure": "02-placement",
+      "state": "photo",
+      "file": "step2/support.py",
+      "symbols": [
+        {
+          "name": "check_rendered_support",
+          "line": 50,
+          "end_line": 83
+        }
+      ]
+    },
+    {
+      "figure": "02-placement",
+      "state": "export",
+      "file": "step2/workflow.py",
+      "symbols": [
+        {
+          "name": "export_placements",
+          "line": 212,
+          "end_line": 230
+        }
+      ]
+    },
+    {
+      "figure": "03-capture",
+      "state": "sample",
+      "file": "step3/workflow.py",
+      "symbols": [
+        {
+          "name": "read_candidates",
+          "line": 43,
+          "end_line": 51
+        },
+        {
+          "name": "prepare_request",
+          "line": 54,
+          "end_line": 100
+        }
+      ]
+    },
+    {
+      "figure": "03-capture",
+      "state": "assign",
+      "file": "step3/workflow.py",
+      "symbols": [
+        {
+          "name": "prepare_request",
+          "line": 54,
+          "end_line": 100
+        }
+      ]
+    },
+    {
+      "figure": "03-capture",
+      "state": "request",
+      "file": "step3/workflow.py",
+      "symbols": [
+        {
+          "name": "save_request",
+          "line": 103,
+          "end_line": 121
+        },
+        {
+          "name": "launch_blender",
+          "line": 124,
+          "end_line": 139
+        }
+      ]
+    },
+    {
+      "figure": "03-capture",
+      "state": "open",
+      "file": "step3/capture.py",
+      "symbols": [
+        {
+          "name": "prepare_placement",
+          "line": 79,
+          "end_line": 92
+        }
+      ]
+    },
+    {
+      "figure": "03-capture",
+      "state": "place",
+      "file": "step3/part.py",
+      "symbols": [
+        {
+          "name": "load_part",
+          "line": 23,
+          "end_line": 32
+        },
+        {
+          "name": "place_part",
+          "line": 35,
+          "end_line": 61
+        },
+        {
+          "name": "make_material",
+          "line": 13,
+          "end_line": 20
+        }
+      ]
+    },
+    {
+      "figure": "03-capture",
+      "state": "check",
+      "file": "step3/part.py",
+      "symbols": [
+        {
+          "name": "check_support_contact",
+          "line": 70,
+          "end_line": 77
+        }
+      ]
+    },
+    {
+      "figure": "03-capture",
+      "state": "check",
+      "file": "step3/capture.py",
+      "symbols": [
+        {
+          "name": "check_part_framing",
+          "line": 127,
+          "end_line": 134
+        }
+      ]
+    },
+    {
+      "figure": "03-capture",
+      "state": "render",
+      "file": "step3/capture.py",
+      "symbols": [
+        {
+          "name": "add_geometry_outputs",
+          "line": 137,
+          "end_line": 173
+        },
+        {
+          "name": "take_photo",
+          "line": 176,
+          "end_line": 198
+        }
+      ]
+    },
+    {
+      "figure": "03-capture",
+      "state": "next",
+      "file": "step3/capture.py",
+      "symbols": [
+        {
+          "name": "capture_batch",
+          "line": 28,
+          "end_line": 76
+        }
+      ]
+    },
+    {
+      "figure": "03-capture",
+      "state": "cleanup",
+      "file": "step3/capture.py",
+      "symbols": [
+        {
+          "name": "capture_batch",
+          "line": 28,
+          "end_line": 76
+        }
+      ]
+    },
+    {
+      "figure": "03-capture",
+      "state": "failed",
+      "file": "step3/capture.py",
+      "symbols": [
+        {
+          "name": "capture_batch",
+          "line": 28,
+          "end_line": 76
+        }
+      ]
+    },
+    {
+      "figure": "03-capture",
+      "state": "summary",
+      "file": "step3/workflow.py",
+      "symbols": [
+        {
+          "name": "summarize_results",
+          "line": 142,
+          "end_line": 155
+        }
+      ]
+    },
+    {
+      "figure": "04-retouch",
+      "state": "input",
+      "file": "step4/retouch/workflow.py",
+      "symbols": [
+        {
+          "name": "run_workflow",
+          "line": 46,
+          "end_line": 112
+        }
+      ]
+    },
+    {
+      "figure": "04-retouch",
+      "state": "load",
+      "file": "step4/retouch/workflow.py",
+      "symbols": [
+        {
+          "name": "run_workflow",
+          "line": 46,
+          "end_line": 112
+        }
+      ]
+    },
+    {
+      "figure": "04-retouch",
+      "state": "mix",
+      "file": "step4/retouch/workflow.py",
+      "symbols": [
+        {
+          "name": "run_workflow",
+          "line": 46,
+          "end_line": 112
+        }
+      ]
+    },
+    {
+      "figure": "04-retouch",
+      "state": "save",
+      "file": "step4/retouch/workflow.py",
+      "symbols": [
+        {
+          "name": "run_workflow",
+          "line": 46,
+          "end_line": 112
+        }
+      ]
+    },
+    {
+      "figure": "04-retouch",
+      "state": "next",
+      "file": "step4/retouch/workflow.py",
+      "symbols": [
+        {
+          "name": "run_workflow",
+          "line": 46,
+          "end_line": 112
+        }
+      ]
+    },
+    {
+      "figure": "04-retouch",
+      "state": "abort",
+      "file": "step4/retouch/workflow.py",
+      "symbols": [
+        {
+          "name": "run_workflow",
+          "line": 46,
+          "end_line": 112
+        }
+      ]
+    },
+    {
+      "figure": "04-retouch",
+      "state": "load",
+      "file": "step4/retouch/model.py",
+      "symbols": [
+        {
+          "name": "Classifier",
+          "line": 14,
+          "end_line": 38
+        },
+        {
+          "name": "AdaptiveLUT",
+          "line": 56,
+          "end_line": 75
+        }
+      ]
+    },
+    {
+      "figure": "04-retouch",
+      "state": "predict",
+      "file": "step4/retouch/model.py",
+      "symbols": [
+        {
+          "name": "Classifier",
+          "line": 14,
+          "end_line": 38
+        },
+        {
+          "name": "AdaptiveLUT",
+          "line": 56,
+          "end_line": 75
+        }
+      ]
+    },
+    {
+      "figure": "04-retouch",
+      "state": "basis",
+      "file": "step4/retouch/model.py",
+      "symbols": [
+        {
+          "name": "Classifier",
+          "line": 14,
+          "end_line": 38
+        },
+        {
+          "name": "AdaptiveLUT",
+          "line": 56,
+          "end_line": 75
+        }
+      ]
+    },
+    {
+      "figure": "04-retouch",
+      "state": "fuse",
+      "file": "step4/retouch/model.py",
+      "symbols": [
+        {
+          "name": "Classifier",
+          "line": 14,
+          "end_line": 38
+        },
+        {
+          "name": "AdaptiveLUT",
+          "line": 56,
+          "end_line": 75
+        }
+      ]
+    },
+    {
+      "figure": "04-retouch",
+      "state": "lookup",
+      "file": "step4/retouch/model.py",
+      "symbols": [
+        {
+          "name": "apply_lut",
+          "line": 41,
+          "end_line": 53
+        }
+      ]
+    },
+    {
+      "figure": "04-retouch",
+      "state": "summary",
+      "file": "step4/retouch/workflow.py",
+      "symbols": [
+        {
+          "name": "run_workflow",
+          "line": 46,
+          "end_line": 112
+        },
+        {
+          "name": "make_comparisons",
+          "line": 27,
+          "end_line": 43
+        }
+      ]
+    }
+  ]
+}

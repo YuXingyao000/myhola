@@ -1,0 +1,239 @@
+{
+  "blender_version": "5.2.2 LTS",
+  "render_calls": 0,
+  "cycles_device": "CPU",
+  "candidates": [
+    {
+      "model_id": "00301161",
+      "profile": "uniform_silver",
+      "pass": true,
+      "node_count": 2,
+      "link_count": 1,
+      "mm_per_local_unit": [
+        105.8684519363663,
+        105.8684519363663,
+        105.8684519363663
+      ],
+      "world_grain_axis": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "geometry_normals_matrix_sha256": "c741f6e27019ca994c2adb7ea4ac552229079ba76d24a42bd7b3a9cdda9f676c",
+      "world_bbox_mm_error_max": 2.847135202443951e-05
+    },
+    {
+      "model_id": "00301161",
+      "profile": "directional_machined",
+      "pass": true,
+      "node_count": 15,
+      "link_count": 17,
+      "mm_per_local_unit": [
+        105.8684519363663,
+        105.8684519363663,
+        105.8684519363663
+      ],
+      "world_grain_axis": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "geometry_normals_matrix_sha256": "c741f6e27019ca994c2adb7ea4ac552229079ba76d24a42bd7b3a9cdda9f676c",
+      "world_bbox_mm_error_max": 2.847135202443951e-05
+    },
+    {
+      "model_id": "00489180",
+      "profile": "uniform_silver",
+      "pass": true,
+      "node_count": 2,
+      "link_count": 1,
+      "mm_per_local_unit": [
+        97.41221932235287,
+        97.41221932235287,
+        97.41221932235287
+      ],
+      "world_grain_axis": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "geometry_normals_matrix_sha256": "ff48a5c23601a5fbb848b3b95e7217a714b51dcdc9b346fe64bd8390b1e50ffc",
+      "world_bbox_mm_error_max": 0.00010105975889018737
+    },
+    {
+      "model_id": "00489180",
+      "profile": "directional_machined",
+      "pass": true,
+      "node_count": 15,
+      "link_count": 17,
+      "mm_per_local_unit": [
+        97.41221932235287,
+        97.41221932235287,
+        97.41221932235287
+      ],
+      "world_grain_axis": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "geometry_normals_matrix_sha256": "ff48a5c23601a5fbb848b3b95e7217a714b51dcdc9b346fe64bd8390b1e50ffc",
+      "world_bbox_mm_error_max": 0.00010105975889018737
+    },
+    {
+      "model_id": "00495463",
+      "profile": "uniform_silver",
+      "pass": true,
+      "node_count": 2,
+      "link_count": 1,
+      "mm_per_local_unit": [
+        94.46417462294502,
+        94.46417462294502,
+        94.46417462294502
+      ],
+      "world_grain_axis": [
+        0.9999999403953552,
+        0.0,
+        0.0
+      ],
+      "geometry_normals_matrix_sha256": "c8a83557e3d911cc78abf7bc0209f1e6c5d795d9025f92dd0052c4f22b18fa1d",
+      "world_bbox_mm_error_max": 7.554964488942773e-05
+    },
+    {
+      "model_id": "00495463",
+      "profile": "directional_machined",
+      "pass": true,
+      "node_count": 15,
+      "link_count": 17,
+      "mm_per_local_unit": [
+        94.46417462294502,
+        94.46417462294502,
+        94.46417462294502
+      ],
+      "world_grain_axis": [
+        0.9999999403953552,
+        0.0,
+        0.0
+      ],
+      "geometry_normals_matrix_sha256": "c8a83557e3d911cc78abf7bc0209f1e6c5d795d9025f92dd0052c4f22b18fa1d",
+      "world_bbox_mm_error_max": 7.554964488942773e-05
+    },
+    {
+      "model_id": "00182999",
+      "profile": "uniform_silver",
+      "pass": true,
+      "node_count": 2,
+      "link_count": 1,
+      "mm_per_local_unit": [
+        84.17482738227922,
+        84.17482738227922,
+        84.17482738227922
+      ],
+      "world_grain_axis": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "geometry_normals_matrix_sha256": "e7693290e132b27b0a6d93c637a03696661ce9a2708f1ddcb58e6600322ef150",
+      "world_bbox_mm_error_max": 1.2487301351615798e-05
+    },
+    {
+      "model_id": "00182999",
+      "profile": "directional_machined",
+      "pass": true,
+      "node_count": 15,
+      "link_count": 17,
+      "mm_per_local_unit": [
+        84.17482738227922,
+        84.17482738227922,
+        84.17482738227922
+      ],
+      "world_grain_axis": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "geometry_normals_matrix_sha256": "e7693290e132b27b0a6d93c637a03696661ce9a2708f1ddcb58e6600322ef150",
+      "world_bbox_mm_error_max": 1.2487301351615798e-05
+    },
+    {
+      "model_id": "00269315",
+      "profile": "uniform_silver",
+      "pass": true,
+      "node_count": 2,
+      "link_count": 1,
+      "mm_per_local_unit": [
+        96.87228718158661,
+        96.87228718158661,
+        96.87228718158661
+      ],
+      "world_grain_axis": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "geometry_normals_matrix_sha256": "522ddfba279320dd15e7fb007c82a3be0c7afe5b31998dde04bf9460854b7a83",
+      "world_bbox_mm_error_max": 4.0694470882840506e-05
+    },
+    {
+      "model_id": "00269315",
+      "profile": "directional_machined",
+      "pass": true,
+      "node_count": 15,
+      "link_count": 17,
+      "mm_per_local_unit": [
+        96.87228718158661,
+        96.87228718158661,
+        96.87228718158661
+      ],
+      "world_grain_axis": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "geometry_normals_matrix_sha256": "522ddfba279320dd15e7fb007c82a3be0c7afe5b31998dde04bf9460854b7a83",
+      "world_bbox_mm_error_max": 4.0694470882840506e-05
+    },
+    {
+      "model_id": "00320493",
+      "profile": "uniform_silver",
+      "pass": true,
+      "node_count": 2,
+      "link_count": 1,
+      "mm_per_local_unit": [
+        88.93918170833507,
+        88.93918170833507,
+        88.93918170833507
+      ],
+      "world_grain_axis": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "geometry_normals_matrix_sha256": "90b3405c8e63cbbff430ebc32a5af0fb2f973229aaf0fb830e20193575923408",
+      "world_bbox_mm_error_max": 8.95474073843161e-05
+    },
+    {
+      "model_id": "00320493",
+      "profile": "directional_machined",
+      "pass": true,
+      "node_count": 15,
+      "link_count": 17,
+      "mm_per_local_unit": [
+        88.93918170833507,
+        88.93918170833507,
+        88.93918170833507
+      ],
+      "world_grain_axis": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "geometry_normals_matrix_sha256": "90b3405c8e63cbbff430ebc32a5af0fb2f973229aaf0fb830e20193575923408",
+      "world_bbox_mm_error_max": 8.95474073843161e-05
+    }
+  ],
+  "source_sha256": {
+    "surface_material.py": "12f696f5a1634dd21b131ca20e7a2e7e80f138096a89727865dbcd268b9f61ef",
+    "profiles.json": "06e57f8a509ac2454e68db01f3e29125e9a1c4750baddf353f185c5744628b5b"
+  }
+}

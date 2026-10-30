@@ -1,0 +1,56 @@
+[
+  {
+    "model_id": "00301161",
+    "rgb_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_office_surfaces_20261027_001/00301161/strength_0.65/protected.png",
+    "rgb_sha256": "989fae7fe919c13b54ea77f5d154fcae5645c4a252fc92ff34501987111fec48",
+    "mask_file": "/mnt/d/data/cad_scene_renders/office_step3_support_fix_20261026_001/00301161/mask.png",
+    "mask_sha256": "339361138020ca7a8d3d1e18c9388f09fa8257057084dbae06d4366dae15d58d",
+    "original_rgb_file": "/mnt/d/data/cad_scene_renders/office_step3_support_fix_20261026_001/00301161/rgb.png",
+    "input_stage": "depth_office_surfaces protected output"
+  },
+  {
+    "model_id": "00489180",
+    "rgb_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_office_surfaces_20261027_001/00489180/strength_0.65/protected.png",
+    "rgb_sha256": "c9c18d12130c83ab3cb3b22979eac6bbb23e63002023a0127f805e9576c54794",
+    "mask_file": "/mnt/d/data/cad_scene_renders/office_step3_support_fix_20261026_001/00489180/mask.png",
+    "mask_sha256": "7092f30e2a85999048a09fc64c706f2827600add3b1648384964d02376a7bae0",
+    "original_rgb_file": "/mnt/d/data/cad_scene_renders/office_step3_support_fix_20261026_001/00489180/rgb.png",
+    "input_stage": "depth_office_surfaces protected output"
+  },
+  {
+    "model_id": "00495463",
+    "rgb_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_office_surfaces_20261027_001/00495463/strength_0.65/protected.png",
+    "rgb_sha256": "0a01904dad98c78c01dd4f11a1463cde0be569cac3e5eb1a875d734b38be2574",
+    "mask_file": "/mnt/d/data/cad_scene_renders/office_step3_support_fix_20261026_001/00495463/mask.png",
+    "mask_sha256": "197b3d81682293517ecd0cab385db0f513f14ae912531a8862f71fe52e33224d",
+    "original_rgb_file": "/mnt/d/data/cad_scene_renders/office_step3_support_fix_20261026_001/00495463/rgb.png",
+    "input_stage": "depth_office_surfaces protected output"
+  },
+  {
+    "model_id": "00182999",
+    "rgb_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_office_surfaces_20261027_001/00182999/strength_0.65/protected.png",
+    "rgb_sha256": "5f630ddd816af4221d951d6c3f06e503873c474a91d6d7ddc61f33d8f53afcff",
+    "mask_file": "/mnt/d/data/cad_scene_renders/office_step3_support_fix_20261026_001/00182999/mask.png",
+    "mask_sha256": "dc0ba4cde6d310603e9a7363ae8fe18d79b98d15b5312b0659e1ed58a7cb4a68",
+    "original_rgb_file": "/mnt/d/data/cad_scene_renders/office_step3_support_fix_20261026_001/00182999/rgb.png",
+    "input_stage": "depth_office_surfaces protected output"
+  },
+  {
+    "model_id": "00269315",
+    "rgb_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_office_surfaces_20261027_001/00269315/strength_0.65/protected.png",
+    "rgb_sha256": "a4207a60796bdfc84e4322c5ca864f392e81fe01fc73077939bcfc58f6faad6b",
+    "mask_file": "/mnt/d/data/cad_scene_renders/office_step3_support_fix_20261026_001/00269315/mask.png",
+    "mask_sha256": "ff0d16381bfb1173c4b665bc95d9dcab1aa6f934f5a7d038af9b9b9d89585d29",
+    "original_rgb_file": "/mnt/d/data/cad_scene_renders/office_step3_support_fix_20261026_001/00269315/rgb.png",
+    "input_stage": "depth_office_surfaces protected output"
+  },
+  {
+    "model_id": "00320493",
+    "rgb_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_office_surfaces_20261027_001/00320493/strength_0.65/protected.png",
+    "rgb_sha256": "664ba5d4b2cac1b02f05a2c4361e7d2a0fafaed60c63cd98dababe597a6abca7",
+    "mask_file": "/mnt/d/data/cad_scene_renders/office_step3_100_support_fix_20261027_001/00320493/mask.png",
+    "mask_sha256": "93fc38833e4b12a917c43db61cfde614374c38bb9b5b2bde53d4eb446faf3525",
+    "original_rgb_file": "/mnt/d/data/cad_scene_renders/office_step3_100_support_fix_20261027_001/00320493/rgb.png",
+    "input_stage": "depth_office_surfaces protected output"
+  }
+]

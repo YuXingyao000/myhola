@@ -1,0 +1,231 @@
+{
+  "status": "preparation_only_pass",
+  "render_started": false,
+  "gpu_used": false,
+  "records": [
+    {
+      "id": "00301161",
+      "samples": 256,
+      "render_device": "CPU",
+      "camera_matrix_error": 1.1920928955078125e-07,
+      "model_matrix_error": 0.0,
+      "contact": {
+        "bottom_z_m": 0.7634999752044678,
+        "rendered_surface_z_m": 0.7634994198281934,
+        "gap_m": 5.553762744137103e-07,
+        "pass": true
+      },
+      "outputs": {
+        "mask": {
+          "format": "PNG",
+          "channels": "BW",
+          "depth": "8",
+          "save_as_render": false,
+          "linked": true
+        },
+        "depth": {
+          "format": "OPEN_EXR",
+          "channels": "BW",
+          "depth": "32",
+          "save_as_render": false,
+          "linked": true
+        },
+        "radiance": {
+          "format": "OPEN_EXR",
+          "channels": "RGB",
+          "depth": "32",
+          "save_as_render": false,
+          "linked": true
+        }
+      }
+    },
+    {
+      "id": "00489180",
+      "samples": 256,
+      "render_device": "CPU",
+      "camera_matrix_error": 2.384185791015625e-07,
+      "model_matrix_error": 0.0,
+      "contact": {
+        "bottom_z_m": 0.7634999752044678,
+        "rendered_surface_z_m": 0.7634993933570774,
+        "gap_m": 5.818473903795862e-07,
+        "pass": true
+      },
+      "outputs": {
+        "mask": {
+          "format": "PNG",
+          "channels": "BW",
+          "depth": "8",
+          "save_as_render": false,
+          "linked": true
+        },
+        "depth": {
+          "format": "OPEN_EXR",
+          "channels": "BW",
+          "depth": "32",
+          "save_as_render": false,
+          "linked": true
+        },
+        "radiance": {
+          "format": "OPEN_EXR",
+          "channels": "RGB",
+          "depth": "32",
+          "save_as_render": false,
+          "linked": true
+        }
+      }
+    },
+    {
+      "id": "00495463",
+      "samples": 256,
+      "render_device": "CPU",
+      "camera_matrix_error": 1.1920928955078125e-07,
+      "model_matrix_error": 0.0,
+      "contact": {
+        "bottom_z_m": 0.9099999666213989,
+        "rendered_surface_z_m": 0.9099993973980621,
+        "gap_m": 5.692233367993182e-07,
+        "pass": true
+      },
+      "outputs": {
+        "mask": {
+          "format": "PNG",
+          "channels": "BW",
+          "depth": "8",
+          "save_as_render": false,
+          "linked": true
+        },
+        "depth": {
+          "format": "OPEN_EXR",
+          "channels": "BW",
+          "depth": "32",
+          "save_as_render": false,
+          "linked": true
+        },
+        "radiance": {
+          "format": "OPEN_EXR",
+          "channels": "RGB",
+          "depth": "32",
+          "save_as_render": false,
+          "linked": true
+        }
+      }
+    },
+    {
+      "id": "00182999",
+      "samples": 256,
+      "render_device": "CPU",
+      "camera_matrix_error": 2.9802322387695312e-08,
+      "model_matrix_error": 0.0,
+      "contact": {
+        "bottom_z_m": 0.00600004568696022,
+        "rendered_surface_z_m": 0.005999317722300196,
+        "gap_m": 7.279646600244494e-07,
+        "pass": true
+      },
+      "outputs": {
+        "mask": {
+          "format": "PNG",
+          "channels": "BW",
+          "depth": "8",
+          "save_as_render": false,
+          "linked": true
+        },
+        "depth": {
+          "format": "OPEN_EXR",
+          "channels": "BW",
+          "depth": "32",
+          "save_as_render": false,
+          "linked": true
+        },
+        "radiance": {
+          "format": "OPEN_EXR",
+          "channels": "RGB",
+          "depth": "32",
+          "save_as_render": false,
+          "linked": true
+        }
+      }
+    },
+    {
+      "id": "00269315",
+      "samples": 256,
+      "render_device": "CPU",
+      "camera_matrix_error": 2.9802322387695312e-08,
+      "model_matrix_error": 0.0,
+      "contact": {
+        "bottom_z_m": 0.7634999752044678,
+        "rendered_surface_z_m": 0.7634993895600213,
+        "gap_m": 5.856444464935606e-07,
+        "pass": true
+      },
+      "outputs": {
+        "mask": {
+          "format": "PNG",
+          "channels": "BW",
+          "depth": "8",
+          "save_as_render": false,
+          "linked": true
+        },
+        "depth": {
+          "format": "OPEN_EXR",
+          "channels": "BW",
+          "depth": "32",
+          "save_as_render": false,
+          "linked": true
+        },
+        "radiance": {
+          "format": "OPEN_EXR",
+          "channels": "RGB",
+          "depth": "32",
+          "save_as_render": false,
+          "linked": true
+        }
+      }
+    },
+    {
+      "id": "00320493",
+      "samples": 256,
+      "render_device": "CPU",
+      "camera_matrix_error": 2.384185791015625e-07,
+      "model_matrix_error": 0.0,
+      "contact": {
+        "bottom_z_m": 0.7634999752044678,
+        "rendered_surface_z_m": 0.7634993933570774,
+        "gap_m": 5.818473903795862e-07,
+        "pass": true
+      },
+      "outputs": {
+        "mask": {
+          "format": "PNG",
+          "channels": "BW",
+          "depth": "8",
+          "save_as_render": false,
+          "linked": true
+        },
+        "depth": {
+          "format": "OPEN_EXR",
+          "channels": "BW",
+          "depth": "32",
+          "save_as_render": false,
+          "linked": true
+        },
+        "radiance": {
+          "format": "OPEN_EXR",
+          "channels": "RGB",
+          "depth": "32",
+          "save_as_render": false,
+          "linked": true
+        }
+      }
+    }
+  ],
+  "not_verified": [
+    "Actual OptiX rendering",
+    "Saved EXR/PNG file encoding and values",
+    "New 256-sample RGB agreement with prior images"
+  ],
+  "PNG_numeric_reader_matches_Pillow_RGB_bytes": true,
+  "PNG_numeric_reader_reference_file": "/mnt/d/data/cad_scene_renders/office_step3_support_fix_20261026_001/00301161/rgb.png",
+  "PNG_numeric_reader_hash": "935017561b87808808e06816fd5b9bdcb4afb76240fce959906a43869ec05e2b"
+}

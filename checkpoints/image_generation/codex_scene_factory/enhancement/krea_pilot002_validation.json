@@ -1,0 +1,221 @@
+{
+  "created_at_utc": "2026-10-27T07:30:47.067794+00:00",
+  "run_dir": "/mnt/d/data/cad_scene_enhancements/office_krea_pilot_20261027_002",
+  "status": "pass",
+  "planned": 15,
+  "unique_input_models": 5,
+  "records": 15,
+  "reported_success": 15,
+  "reported_failed": 0,
+  "audit_pass": 15,
+  "audit_failed": 0,
+  "missing": 0,
+  "duplicate_result_ids": [],
+  "unexpected_result_ids": [],
+  "errors": [],
+  "runtime_log_checked": true,
+  "runtime_log_file": "/mnt/d/data/cad_scene_enhancements/office_krea_pilot_20261027_002.log",
+  "prompt_snapshot_checked": "/mnt/d/data/cad_scene_enhancements/office_krea_pilot_20261027_002/prompt.md",
+  "actual_steps_by_strength": {
+    "0.25": [
+      10
+    ],
+    "0.35": [
+      14
+    ],
+    "0.45": [
+      18
+    ]
+  },
+  "inference_seconds_recorded_total": 57.79944258276373,
+  "peak_allocated_gib_recorded": 12.744634628295898,
+  "peak_reserved_gib_recorded": 13.23046875,
+  "human_review": "pending",
+  "findings": [
+    {
+      "job_id": "00301161/strength_0_25",
+      "status": "pass",
+      "strength": 0.25,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 5.913574162008375,
+      "actual_steps_recorded": 10,
+      "inference_seconds_recorded": 2.880432373145595,
+      "peak_allocated_bytes_recorded": 13684447232,
+      "peak_reserved_bytes_recorded": 14206107648
+    },
+    {
+      "job_id": "00301161/strength_0_35",
+      "status": "pass",
+      "strength": 0.35,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 7.528713109334616,
+      "actual_steps_recorded": 14,
+      "inference_seconds_recorded": 3.812895772047341,
+      "peak_allocated_bytes_recorded": 13684447232,
+      "peak_reserved_bytes_recorded": 14206107648
+    },
+    {
+      "job_id": "00301161/strength_0_45",
+      "status": "pass",
+      "strength": 0.45,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 9.442285935632091,
+      "actual_steps_recorded": 18,
+      "inference_seconds_recorded": 4.880528610898182,
+      "peak_allocated_bytes_recorded": 13684447232,
+      "peak_reserved_bytes_recorded": 14206107648
+    },
+    {
+      "job_id": "00489180/strength_0_25",
+      "status": "pass",
+      "strength": 0.25,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 5.054850208934746,
+      "actual_steps_recorded": 10,
+      "inference_seconds_recorded": 2.754875116981566,
+      "peak_allocated_bytes_recorded": 13684447232,
+      "peak_reserved_bytes_recorded": 14206107648
+    },
+    {
+      "job_id": "00489180/strength_0_35",
+      "status": "pass",
+      "strength": 0.35,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 6.446087361549868,
+      "actual_steps_recorded": 14,
+      "inference_seconds_recorded": 3.827099682064727,
+      "peak_allocated_bytes_recorded": 13684447232,
+      "peak_reserved_bytes_recorded": 14206107648
+    },
+    {
+      "job_id": "00489180/strength_0_45",
+      "status": "pass",
+      "strength": 0.45,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 8.185090427171794,
+      "actual_steps_recorded": 18,
+      "inference_seconds_recorded": 4.905331338988617,
+      "peak_allocated_bytes_recorded": 13684447232,
+      "peak_reserved_bytes_recorded": 14206107648
+    },
+    {
+      "job_id": "00495463/strength_0_25",
+      "status": "pass",
+      "strength": 0.25,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 4.2041975432465,
+      "actual_steps_recorded": 10,
+      "inference_seconds_recorded": 2.770507021108642,
+      "peak_allocated_bytes_recorded": 13684447232,
+      "peak_reserved_bytes_recorded": 14206107648
+    },
+    {
+      "job_id": "00495463/strength_0_35",
+      "status": "pass",
+      "strength": 0.35,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 5.304892804744289,
+      "actual_steps_recorded": 14,
+      "inference_seconds_recorded": 3.846150412922725,
+      "peak_allocated_bytes_recorded": 13684447232,
+      "peak_reserved_bytes_recorded": 14206107648
+    },
+    {
+      "job_id": "00495463/strength_0_45",
+      "status": "pass",
+      "strength": 0.45,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 6.544712373648728,
+      "actual_steps_recorded": 18,
+      "inference_seconds_recorded": 4.92637645592913,
+      "peak_allocated_bytes_recorded": 13684447232,
+      "peak_reserved_bytes_recorded": 14206107648
+    },
+    {
+      "job_id": "00182999/strength_0_25",
+      "status": "pass",
+      "strength": 0.25,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 3.564935900405029,
+      "actual_steps_recorded": 10,
+      "inference_seconds_recorded": 2.782435297034681,
+      "peak_allocated_bytes_recorded": 13684447232,
+      "peak_reserved_bytes_recorded": 14206107648
+    },
+    {
+      "job_id": "00182999/strength_0_35",
+      "status": "pass",
+      "strength": 0.35,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 4.331263155727791,
+      "actual_steps_recorded": 14,
+      "inference_seconds_recorded": 3.8597251628525555,
+      "peak_allocated_bytes_recorded": 13684447232,
+      "peak_reserved_bytes_recorded": 14206107648
+    },
+    {
+      "job_id": "00182999/strength_0_45",
+      "status": "pass",
+      "strength": 0.45,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 5.161130324692368,
+      "actual_steps_recorded": 18,
+      "inference_seconds_recorded": 4.941194087965414,
+      "peak_allocated_bytes_recorded": 13684447232,
+      "peak_reserved_bytes_recorded": 14206107648
+    },
+    {
+      "job_id": "00269315/strength_0_25",
+      "status": "pass",
+      "strength": 0.25,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 4.887094888898308,
+      "actual_steps_recorded": 10,
+      "inference_seconds_recorded": 2.7895013098604977,
+      "peak_allocated_bytes_recorded": 13684447232,
+      "peak_reserved_bytes_recorded": 14206107648
+    },
+    {
+      "job_id": "00269315/strength_0_35",
+      "status": "pass",
+      "strength": 0.35,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 6.254481253556423,
+      "actual_steps_recorded": 14,
+      "inference_seconds_recorded": 3.8695928410161287,
+      "peak_allocated_bytes_recorded": 13684447232,
+      "peak_reserved_bytes_recorded": 14206107648
+    },
+    {
+      "job_id": "00269315/strength_0_45",
+      "status": "pass",
+      "strength": 0.45,
+      "protected_max_abs_difference": 0,
+      "object_max_abs_difference": 0,
+      "background_mean_abs_difference": 8.046443191641588,
+      "actual_steps_recorded": 18,
+      "inference_seconds_recorded": 4.952797099947929,
+      "peak_allocated_bytes_recorded": 13684447232,
+      "peak_reserved_bytes_recorded": 14206107648
+    }
+  ],
+  "limitations": [
+    "Timing, GPU peaks and step counts are recorded instrumentation, not an independent GPU replay.",
+    "Model weight hashes were not re-read by this audit.",
+    "Background pixel change does not measure photorealism; edited background depth is not certified."
+  ]
+}

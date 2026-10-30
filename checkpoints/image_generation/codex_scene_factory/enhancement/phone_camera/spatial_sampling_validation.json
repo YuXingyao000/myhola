@@ -1,0 +1,1273 @@
+{
+  "status": "pass",
+  "device": "cpu",
+  "model_weights_loaded": false,
+  "source_sha256": "dc055d5c9ab8bc7062ee41c93b04954796afe32bef33d17b5debacc6ab8e7abe",
+  "profile": {
+    "pipeline": "flux_depth",
+    "model_dir": "/mnt/d/model/Flux1_Krea_dev",
+    "transformer_file": "/mnt/d/model/Flux1_Krea_dev_GGUF/flux1-krea-dev-Q8_0.gguf",
+    "prompt": "krea_office_matte.md",
+    "processing_size": 512,
+    "num_inference_steps": 40,
+    "guidance_scale": 4.5,
+    "strengths": [
+      0.65
+    ],
+    "controlnet_dir": "/mnt/d/model/Flux1_ControlNet_Depth",
+    "depth_input_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_inputs_20261027_001",
+    "controlnet_conditioning_scale": 0.5,
+    "sampling_mask": "spatial",
+    "protect_padding_px": 6,
+    "feather_px": 8,
+    "spatial_plan": {
+      "halo_min_px": 24,
+      "halo_fraction": 0.4,
+      "feather_px": 16,
+      "cad_edge_px": 3,
+      "interior_release_sigma": 0.3
+    }
+  },
+  "sample_count": 6,
+  "samples": [
+    {
+      "model_id": "00301161",
+      "resolution": [
+        512,
+        512
+      ],
+      "bbox_max_side_px": 149,
+      "halo_px": 60,
+      "target_pixels": 11406,
+      "protected_pixels": 53120,
+      "background_pixels": 209024,
+      "cad_interior_pixels": 4544,
+      "cad_interior_fraction": 0.3983868139575662,
+      "cad_interior_latent_cells": 71,
+      "release_sigma": 0.3,
+      "material_edit_available": true,
+      "latent_cell_px": 8,
+      "edge_source": "Canny RGB inside CAD; proxy, not geometric truth",
+      "initial_sigma": 0.7771334648132324,
+      "first_open_step": 19,
+      "open_steps": 7,
+      "schedule": [
+        {
+          "step": 0,
+          "current_timestep": 777.1334838867188,
+          "next_sigma": 0.7578311562538147,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 1,
+          "current_timestep": 757.8311767578125,
+          "next_sigma": 0.7379740476608276,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 2,
+          "current_timestep": 737.9740600585938,
+          "next_sigma": 0.7175377607345581,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 3,
+          "current_timestep": 717.5377807617188,
+          "next_sigma": 0.6964967846870422,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 4,
+          "current_timestep": 696.4967651367188,
+          "next_sigma": 0.6748235821723938,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 5,
+          "current_timestep": 674.8236083984375,
+          "next_sigma": 0.652489423751831,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 6,
+          "current_timestep": 652.4894409179688,
+          "next_sigma": 0.6294636130332947,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 7,
+          "current_timestep": 629.463623046875,
+          "next_sigma": 0.605713427066803,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 8,
+          "current_timestep": 605.7134399414062,
+          "next_sigma": 0.5812042951583862,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 9,
+          "current_timestep": 581.2042846679688,
+          "next_sigma": 0.5558990240097046,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 10,
+          "current_timestep": 555.8990478515625,
+          "next_sigma": 0.5297583937644958,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 11,
+          "current_timestep": 529.7584228515625,
+          "next_sigma": 0.5027401447296143,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 12,
+          "current_timestep": 502.7401428222656,
+          "next_sigma": 0.4747995138168335,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 13,
+          "current_timestep": 474.79949951171875,
+          "next_sigma": 0.44588831067085266,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 14,
+          "current_timestep": 445.8883056640625,
+          "next_sigma": 0.4159550964832306,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 15,
+          "current_timestep": 415.9551086425781,
+          "next_sigma": 0.38494473695755005,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 16,
+          "current_timestep": 384.9447326660156,
+          "next_sigma": 0.3527980148792267,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 17,
+          "current_timestep": 352.7980041503906,
+          "next_sigma": 0.31945133209228516,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 18,
+          "current_timestep": 319.4513244628906,
+          "next_sigma": 0.28483617305755615,
+          "cad_open_this_step": false,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 19,
+          "current_timestep": 284.836181640625,
+          "next_sigma": 0.24887879192829132,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 20,
+          "current_timestep": 248.87879943847656,
+          "next_sigma": 0.21149955689907074,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 21,
+          "current_timestep": 211.4995574951172,
+          "next_sigma": 0.17261241376399994,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 22,
+          "current_timestep": 172.61241149902344,
+          "next_sigma": 0.13212427496910095,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 23,
+          "current_timestep": 132.124267578125,
+          "next_sigma": 0.08993417024612427,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 24,
+          "current_timestep": 89.93417358398438,
+          "next_sigma": 0.04593249410390854,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 25,
+          "current_timestep": 45.9324951171875,
+          "next_sigma": 0.0,
+          "cad_open_this_step": true,
+          "cad_open_next_step": false
+        }
+      ]
+    },
+    {
+      "model_id": "00489180",
+      "resolution": [
+        512,
+        512
+      ],
+      "bbox_max_side_px": 125,
+      "halo_px": 50,
+      "target_pixels": 11393,
+      "protected_pixels": 41280,
+      "background_pixels": 220864,
+      "cad_interior_pixels": 8000,
+      "cad_interior_fraction": 0.7021855525322567,
+      "cad_interior_latent_cells": 125,
+      "release_sigma": 0.3,
+      "material_edit_available": true,
+      "latent_cell_px": 8,
+      "edge_source": "Canny RGB inside CAD; proxy, not geometric truth",
+      "initial_sigma": 0.7771334648132324,
+      "first_open_step": 19,
+      "open_steps": 7,
+      "schedule": [
+        {
+          "step": 0,
+          "current_timestep": 777.1334838867188,
+          "next_sigma": 0.7578311562538147,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 1,
+          "current_timestep": 757.8311767578125,
+          "next_sigma": 0.7379740476608276,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 2,
+          "current_timestep": 737.9740600585938,
+          "next_sigma": 0.7175377607345581,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 3,
+          "current_timestep": 717.5377807617188,
+          "next_sigma": 0.6964967846870422,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 4,
+          "current_timestep": 696.4967651367188,
+          "next_sigma": 0.6748235821723938,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 5,
+          "current_timestep": 674.8236083984375,
+          "next_sigma": 0.652489423751831,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 6,
+          "current_timestep": 652.4894409179688,
+          "next_sigma": 0.6294636130332947,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 7,
+          "current_timestep": 629.463623046875,
+          "next_sigma": 0.605713427066803,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 8,
+          "current_timestep": 605.7134399414062,
+          "next_sigma": 0.5812042951583862,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 9,
+          "current_timestep": 581.2042846679688,
+          "next_sigma": 0.5558990240097046,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 10,
+          "current_timestep": 555.8990478515625,
+          "next_sigma": 0.5297583937644958,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 11,
+          "current_timestep": 529.7584228515625,
+          "next_sigma": 0.5027401447296143,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 12,
+          "current_timestep": 502.7401428222656,
+          "next_sigma": 0.4747995138168335,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 13,
+          "current_timestep": 474.79949951171875,
+          "next_sigma": 0.44588831067085266,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 14,
+          "current_timestep": 445.8883056640625,
+          "next_sigma": 0.4159550964832306,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 15,
+          "current_timestep": 415.9551086425781,
+          "next_sigma": 0.38494473695755005,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 16,
+          "current_timestep": 384.9447326660156,
+          "next_sigma": 0.3527980148792267,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 17,
+          "current_timestep": 352.7980041503906,
+          "next_sigma": 0.31945133209228516,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 18,
+          "current_timestep": 319.4513244628906,
+          "next_sigma": 0.28483617305755615,
+          "cad_open_this_step": false,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 19,
+          "current_timestep": 284.836181640625,
+          "next_sigma": 0.24887879192829132,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 20,
+          "current_timestep": 248.87879943847656,
+          "next_sigma": 0.21149955689907074,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 21,
+          "current_timestep": 211.4995574951172,
+          "next_sigma": 0.17261241376399994,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 22,
+          "current_timestep": 172.61241149902344,
+          "next_sigma": 0.13212427496910095,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 23,
+          "current_timestep": 132.124267578125,
+          "next_sigma": 0.08993417024612427,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 24,
+          "current_timestep": 89.93417358398438,
+          "next_sigma": 0.04593249410390854,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 25,
+          "current_timestep": 45.9324951171875,
+          "next_sigma": 0.0,
+          "cad_open_this_step": true,
+          "cad_open_next_step": false
+        }
+      ]
+    },
+    {
+      "model_id": "00495463",
+      "resolution": [
+        512,
+        512
+      ],
+      "bbox_max_side_px": 95,
+      "halo_px": 38,
+      "target_pixels": 2193,
+      "protected_pixels": 18560,
+      "background_pixels": 243584,
+      "cad_interior_pixels": 448,
+      "cad_interior_fraction": 0.20428636570907432,
+      "cad_interior_latent_cells": 7,
+      "release_sigma": 0.3,
+      "material_edit_available": true,
+      "latent_cell_px": 8,
+      "edge_source": "Canny RGB inside CAD; proxy, not geometric truth",
+      "initial_sigma": 0.7771334648132324,
+      "first_open_step": 19,
+      "open_steps": 7,
+      "schedule": [
+        {
+          "step": 0,
+          "current_timestep": 777.1334838867188,
+          "next_sigma": 0.7578311562538147,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 1,
+          "current_timestep": 757.8311767578125,
+          "next_sigma": 0.7379740476608276,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 2,
+          "current_timestep": 737.9740600585938,
+          "next_sigma": 0.7175377607345581,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 3,
+          "current_timestep": 717.5377807617188,
+          "next_sigma": 0.6964967846870422,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 4,
+          "current_timestep": 696.4967651367188,
+          "next_sigma": 0.6748235821723938,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 5,
+          "current_timestep": 674.8236083984375,
+          "next_sigma": 0.652489423751831,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 6,
+          "current_timestep": 652.4894409179688,
+          "next_sigma": 0.6294636130332947,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 7,
+          "current_timestep": 629.463623046875,
+          "next_sigma": 0.605713427066803,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 8,
+          "current_timestep": 605.7134399414062,
+          "next_sigma": 0.5812042951583862,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 9,
+          "current_timestep": 581.2042846679688,
+          "next_sigma": 0.5558990240097046,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 10,
+          "current_timestep": 555.8990478515625,
+          "next_sigma": 0.5297583937644958,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 11,
+          "current_timestep": 529.7584228515625,
+          "next_sigma": 0.5027401447296143,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 12,
+          "current_timestep": 502.7401428222656,
+          "next_sigma": 0.4747995138168335,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 13,
+          "current_timestep": 474.79949951171875,
+          "next_sigma": 0.44588831067085266,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 14,
+          "current_timestep": 445.8883056640625,
+          "next_sigma": 0.4159550964832306,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 15,
+          "current_timestep": 415.9551086425781,
+          "next_sigma": 0.38494473695755005,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 16,
+          "current_timestep": 384.9447326660156,
+          "next_sigma": 0.3527980148792267,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 17,
+          "current_timestep": 352.7980041503906,
+          "next_sigma": 0.31945133209228516,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 18,
+          "current_timestep": 319.4513244628906,
+          "next_sigma": 0.28483617305755615,
+          "cad_open_this_step": false,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 19,
+          "current_timestep": 284.836181640625,
+          "next_sigma": 0.24887879192829132,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 20,
+          "current_timestep": 248.87879943847656,
+          "next_sigma": 0.21149955689907074,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 21,
+          "current_timestep": 211.4995574951172,
+          "next_sigma": 0.17261241376399994,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 22,
+          "current_timestep": 172.61241149902344,
+          "next_sigma": 0.13212427496910095,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 23,
+          "current_timestep": 132.124267578125,
+          "next_sigma": 0.08993417024612427,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 24,
+          "current_timestep": 89.93417358398438,
+          "next_sigma": 0.04593249410390854,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 25,
+          "current_timestep": 45.9324951171875,
+          "next_sigma": 0.0,
+          "cad_open_this_step": true,
+          "cad_open_next_step": false
+        }
+      ]
+    },
+    {
+      "model_id": "00182999",
+      "resolution": [
+        512,
+        512
+      ],
+      "bbox_max_side_px": 94,
+      "halo_px": 38,
+      "target_pixels": 2283,
+      "protected_pixels": 21376,
+      "background_pixels": 240768,
+      "cad_interior_pixels": 0,
+      "cad_interior_fraction": 0.0,
+      "cad_interior_latent_cells": 0,
+      "release_sigma": 0.3,
+      "material_edit_available": false,
+      "latent_cell_px": 8,
+      "edge_source": "Canny RGB inside CAD; proxy, not geometric truth",
+      "initial_sigma": 0.7771334648132324,
+      "first_open_step": null,
+      "open_steps": 0,
+      "schedule": [
+        {
+          "step": 0,
+          "current_timestep": 777.1334838867188,
+          "next_sigma": 0.7578311562538147,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 1,
+          "current_timestep": 757.8311767578125,
+          "next_sigma": 0.7379740476608276,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 2,
+          "current_timestep": 737.9740600585938,
+          "next_sigma": 0.7175377607345581,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 3,
+          "current_timestep": 717.5377807617188,
+          "next_sigma": 0.6964967846870422,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 4,
+          "current_timestep": 696.4967651367188,
+          "next_sigma": 0.6748235821723938,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 5,
+          "current_timestep": 674.8236083984375,
+          "next_sigma": 0.652489423751831,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 6,
+          "current_timestep": 652.4894409179688,
+          "next_sigma": 0.6294636130332947,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 7,
+          "current_timestep": 629.463623046875,
+          "next_sigma": 0.605713427066803,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 8,
+          "current_timestep": 605.7134399414062,
+          "next_sigma": 0.5812042951583862,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 9,
+          "current_timestep": 581.2042846679688,
+          "next_sigma": 0.5558990240097046,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 10,
+          "current_timestep": 555.8990478515625,
+          "next_sigma": 0.5297583937644958,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 11,
+          "current_timestep": 529.7584228515625,
+          "next_sigma": 0.5027401447296143,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 12,
+          "current_timestep": 502.7401428222656,
+          "next_sigma": 0.4747995138168335,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 13,
+          "current_timestep": 474.79949951171875,
+          "next_sigma": 0.44588831067085266,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 14,
+          "current_timestep": 445.8883056640625,
+          "next_sigma": 0.4159550964832306,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 15,
+          "current_timestep": 415.9551086425781,
+          "next_sigma": 0.38494473695755005,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 16,
+          "current_timestep": 384.9447326660156,
+          "next_sigma": 0.3527980148792267,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 17,
+          "current_timestep": 352.7980041503906,
+          "next_sigma": 0.31945133209228516,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 18,
+          "current_timestep": 319.4513244628906,
+          "next_sigma": 0.28483617305755615,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 19,
+          "current_timestep": 284.836181640625,
+          "next_sigma": 0.24887879192829132,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 20,
+          "current_timestep": 248.87879943847656,
+          "next_sigma": 0.21149955689907074,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 21,
+          "current_timestep": 211.4995574951172,
+          "next_sigma": 0.17261241376399994,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 22,
+          "current_timestep": 172.61241149902344,
+          "next_sigma": 0.13212427496910095,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 23,
+          "current_timestep": 132.124267578125,
+          "next_sigma": 0.08993417024612427,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 24,
+          "current_timestep": 89.93417358398438,
+          "next_sigma": 0.04593249410390854,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 25,
+          "current_timestep": 45.9324951171875,
+          "next_sigma": 0.0,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        }
+      ]
+    },
+    {
+      "model_id": "00269315",
+      "resolution": [
+        512,
+        512
+      ],
+      "bbox_max_side_px": 102,
+      "halo_px": 41,
+      "target_pixels": 1870,
+      "protected_pixels": 22592,
+      "background_pixels": 239552,
+      "cad_interior_pixels": 0,
+      "cad_interior_fraction": 0.0,
+      "cad_interior_latent_cells": 0,
+      "release_sigma": 0.3,
+      "material_edit_available": false,
+      "latent_cell_px": 8,
+      "edge_source": "Canny RGB inside CAD; proxy, not geometric truth",
+      "initial_sigma": 0.7771334648132324,
+      "first_open_step": null,
+      "open_steps": 0,
+      "schedule": [
+        {
+          "step": 0,
+          "current_timestep": 777.1334838867188,
+          "next_sigma": 0.7578311562538147,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 1,
+          "current_timestep": 757.8311767578125,
+          "next_sigma": 0.7379740476608276,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 2,
+          "current_timestep": 737.9740600585938,
+          "next_sigma": 0.7175377607345581,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 3,
+          "current_timestep": 717.5377807617188,
+          "next_sigma": 0.6964967846870422,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 4,
+          "current_timestep": 696.4967651367188,
+          "next_sigma": 0.6748235821723938,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 5,
+          "current_timestep": 674.8236083984375,
+          "next_sigma": 0.652489423751831,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 6,
+          "current_timestep": 652.4894409179688,
+          "next_sigma": 0.6294636130332947,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 7,
+          "current_timestep": 629.463623046875,
+          "next_sigma": 0.605713427066803,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 8,
+          "current_timestep": 605.7134399414062,
+          "next_sigma": 0.5812042951583862,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 9,
+          "current_timestep": 581.2042846679688,
+          "next_sigma": 0.5558990240097046,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 10,
+          "current_timestep": 555.8990478515625,
+          "next_sigma": 0.5297583937644958,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 11,
+          "current_timestep": 529.7584228515625,
+          "next_sigma": 0.5027401447296143,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 12,
+          "current_timestep": 502.7401428222656,
+          "next_sigma": 0.4747995138168335,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 13,
+          "current_timestep": 474.79949951171875,
+          "next_sigma": 0.44588831067085266,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 14,
+          "current_timestep": 445.8883056640625,
+          "next_sigma": 0.4159550964832306,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 15,
+          "current_timestep": 415.9551086425781,
+          "next_sigma": 0.38494473695755005,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 16,
+          "current_timestep": 384.9447326660156,
+          "next_sigma": 0.3527980148792267,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 17,
+          "current_timestep": 352.7980041503906,
+          "next_sigma": 0.31945133209228516,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 18,
+          "current_timestep": 319.4513244628906,
+          "next_sigma": 0.28483617305755615,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 19,
+          "current_timestep": 284.836181640625,
+          "next_sigma": 0.24887879192829132,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 20,
+          "current_timestep": 248.87879943847656,
+          "next_sigma": 0.21149955689907074,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 21,
+          "current_timestep": 211.4995574951172,
+          "next_sigma": 0.17261241376399994,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 22,
+          "current_timestep": 172.61241149902344,
+          "next_sigma": 0.13212427496910095,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 23,
+          "current_timestep": 132.124267578125,
+          "next_sigma": 0.08993417024612427,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 24,
+          "current_timestep": 89.93417358398438,
+          "next_sigma": 0.04593249410390854,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 25,
+          "current_timestep": 45.9324951171875,
+          "next_sigma": 0.0,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        }
+      ]
+    },
+    {
+      "model_id": "00320493",
+      "resolution": [
+        512,
+        512
+      ],
+      "bbox_max_side_px": 113,
+      "halo_px": 46,
+      "target_pixels": 2229,
+      "protected_pixels": 22848,
+      "background_pixels": 239296,
+      "cad_interior_pixels": 320,
+      "cad_interior_fraction": 0.14356213548676536,
+      "cad_interior_latent_cells": 5,
+      "release_sigma": 0.3,
+      "material_edit_available": true,
+      "latent_cell_px": 8,
+      "edge_source": "Canny RGB inside CAD; proxy, not geometric truth",
+      "initial_sigma": 0.7771334648132324,
+      "first_open_step": 19,
+      "open_steps": 7,
+      "schedule": [
+        {
+          "step": 0,
+          "current_timestep": 777.1334838867188,
+          "next_sigma": 0.7578311562538147,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 1,
+          "current_timestep": 757.8311767578125,
+          "next_sigma": 0.7379740476608276,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 2,
+          "current_timestep": 737.9740600585938,
+          "next_sigma": 0.7175377607345581,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 3,
+          "current_timestep": 717.5377807617188,
+          "next_sigma": 0.6964967846870422,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 4,
+          "current_timestep": 696.4967651367188,
+          "next_sigma": 0.6748235821723938,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 5,
+          "current_timestep": 674.8236083984375,
+          "next_sigma": 0.652489423751831,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 6,
+          "current_timestep": 652.4894409179688,
+          "next_sigma": 0.6294636130332947,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 7,
+          "current_timestep": 629.463623046875,
+          "next_sigma": 0.605713427066803,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 8,
+          "current_timestep": 605.7134399414062,
+          "next_sigma": 0.5812042951583862,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 9,
+          "current_timestep": 581.2042846679688,
+          "next_sigma": 0.5558990240097046,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 10,
+          "current_timestep": 555.8990478515625,
+          "next_sigma": 0.5297583937644958,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 11,
+          "current_timestep": 529.7584228515625,
+          "next_sigma": 0.5027401447296143,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 12,
+          "current_timestep": 502.7401428222656,
+          "next_sigma": 0.4747995138168335,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 13,
+          "current_timestep": 474.79949951171875,
+          "next_sigma": 0.44588831067085266,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 14,
+          "current_timestep": 445.8883056640625,
+          "next_sigma": 0.4159550964832306,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 15,
+          "current_timestep": 415.9551086425781,
+          "next_sigma": 0.38494473695755005,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 16,
+          "current_timestep": 384.9447326660156,
+          "next_sigma": 0.3527980148792267,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 17,
+          "current_timestep": 352.7980041503906,
+          "next_sigma": 0.31945133209228516,
+          "cad_open_this_step": false,
+          "cad_open_next_step": false
+        },
+        {
+          "step": 18,
+          "current_timestep": 319.4513244628906,
+          "next_sigma": 0.28483617305755615,
+          "cad_open_this_step": false,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 19,
+          "current_timestep": 284.836181640625,
+          "next_sigma": 0.24887879192829132,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 20,
+          "current_timestep": 248.87879943847656,
+          "next_sigma": 0.21149955689907074,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 21,
+          "current_timestep": 211.4995574951172,
+          "next_sigma": 0.17261241376399994,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 22,
+          "current_timestep": 172.61241149902344,
+          "next_sigma": 0.13212427496910095,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 23,
+          "current_timestep": 132.124267578125,
+          "next_sigma": 0.08993417024612427,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 24,
+          "current_timestep": 89.93417358398438,
+          "next_sigma": 0.04593249410390854,
+          "cad_open_this_step": true,
+          "cad_open_next_step": true
+        },
+        {
+          "step": 25,
+          "current_timestep": 45.9324951171875,
+          "next_sigma": 0.0,
+          "cad_open_this_step": true,
+          "cad_open_next_step": false
+        }
+      ]
+    }
+  ],
+  "thin_case": "no_material_cells",
+  "empty_case": "raises_ValueError",
+  "limits": "Checks callback timing and mask packing only; no image-quality or geometry-validity conclusion."
+}

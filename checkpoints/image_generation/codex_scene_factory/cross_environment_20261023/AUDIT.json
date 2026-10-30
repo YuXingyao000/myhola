@@ -1,0 +1,739 @@
+{
+  "observed_at_utc": "2026-10-25T04:55:54.360677+00:00",
+  "scope": "Read-only artifact, provenance and session audit; no scene edits, model calls, renders, or human visual approval.",
+  "usage_policy": "Per-session cumulative token counts are not summed. Failed electronics inspect usage is unknown.",
+  "scenes": {
+    "assembly": {
+      "status": "ready_for_review",
+      "human_review": "pending",
+      "repairs_used": 1,
+      "final_round": 1,
+      "technical_status": "pass",
+      "agent_review": "ready",
+      "agent_review_exists": true,
+      "host_hashes": {
+        "checked": 21,
+        "errors": []
+      },
+      "reference_hashes": {
+        "checked": 4,
+        "errors": []
+      },
+      "final_evidence_hashes": {
+        "checked": 125,
+        "errors": []
+      },
+      "asset_hashes": {
+        "checked": 66,
+        "errors": []
+      },
+      "asset_files": 66,
+      "unique_provider_asset_pairs": [
+        [
+          "polyhaven",
+          "Drill_01"
+        ],
+        [
+          "polyhaven",
+          "beige_wall_001"
+        ],
+        [
+          "polyhaven",
+          "bench_vice_01"
+        ],
+        [
+          "polyhaven",
+          "concrete_floor_worn_001"
+        ],
+        [
+          "polyhaven",
+          "desk_lamp_arm_01"
+        ],
+        [
+          "polyhaven",
+          "metal_stool_02"
+        ],
+        [
+          "polyhaven",
+          "metal_tool_chest"
+        ],
+        [
+          "polyhaven",
+          "ratchet_wrench"
+        ],
+        [
+          "polyhaven",
+          "small_oil_can_01"
+        ],
+        [
+          "polyhaven",
+          "steel_frame_shelves_01"
+        ],
+        [
+          "polyhaven",
+          "tool_cart"
+        ],
+        [
+          "polyhaven",
+          "wood_table_001"
+        ],
+        [
+          "polyhaven",
+          "wood_table_worn"
+        ]
+      ],
+      "asset_licenses": [
+        "CC0-1.0"
+      ],
+      "images": [
+        {
+          "path": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/round_01/preview/renders/room_overview.png",
+          "size": [
+            1200,
+            900
+          ],
+          "valid": true,
+          "sha256": "66cc58d4c058706bc1b4cac8d3cca4cc0206ec0a9368aea4532e67617aac0815"
+        },
+        {
+          "path": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/round_01/preview/renders/room_reverse.png",
+          "size": [
+            1200,
+            900
+          ],
+          "valid": true,
+          "sha256": "68204d3b8e71f7dc34590a115345090528fbd5c5a87bc89ee3828d5f71e992c7"
+        },
+        {
+          "path": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/round_01/preview/renders/workbench_context.png",
+          "size": [
+            1200,
+            900
+          ],
+          "valid": true,
+          "sha256": "09c2909a26bcfb19242ee53707d28cd6b78b6e2f9f5d7bd24b7219a5e612742e"
+        },
+        {
+          "path": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/round_01/preview/renders/workbench_detail.png",
+          "size": [
+            1200,
+            900
+          ],
+          "valid": true,
+          "sha256": "bddd0869e2c60ef0173fcdce46fec8dc93054a0ca0c5991e6fff38f2069e9b02"
+        },
+        {
+          "path": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/round_01/preview/renders/surface_detail.png",
+          "size": [
+            1200,
+            900
+          ],
+          "valid": true,
+          "sha256": "3513971e968af2a83f64b76dd40adb2a8843bd18636b5d728584ca7649b392ae"
+        },
+        {
+          "path": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/round_01/preview/renders/alternate_view.png",
+          "size": [
+            1200,
+            900
+          ],
+          "valid": true,
+          "sha256": "41c5ef6b43f6886cba01e2e6cd51afe3a5d3ef11259fba555605a147cc1d23e6"
+        }
+      ],
+      "expected_six_views": true,
+      "render_settings": {
+        "samples": 128,
+        "seed": 8,
+        "device": "OPTIX",
+        "gpu_index": 0,
+        "planned": 6,
+        "success": 6,
+        "failed": 0
+      },
+      "build_missing_dependencies": [],
+      "build_external_dependencies": [],
+      "request_matches_input": true,
+      "creation_prompt_matches": true,
+      "turns": [
+        {
+          "turn": "workflow/create",
+          "session_id": "01a168ea-58ca-73e2-9b8b-0a5f1542f83a",
+          "requested_session_id": null,
+          "event_thread_ids": [
+            "01a168ea-58ca-73e2-9b8b-0a5f1542f83a"
+          ],
+          "status": "completed",
+          "error": null,
+          "turn_failed_errors": []
+        },
+        {
+          "turn": "workflow/repair_01",
+          "session_id": "01a168ea-58ca-73e2-9b8b-0a5f1542f83a",
+          "requested_session_id": "01a168ea-58ca-73e2-9b8b-0a5f1542f83a",
+          "event_thread_ids": [
+            "01a168ea-58ca-73e2-9b8b-0a5f1542f83a"
+          ],
+          "status": "completed",
+          "error": null,
+          "turn_failed_errors": []
+        },
+        {
+          "turn": "workflow/round_00/inspect",
+          "session_id": "01a168ea-58ca-73e2-9b8b-0a5f1542f83a",
+          "requested_session_id": "01a168ea-58ca-73e2-9b8b-0a5f1542f83a",
+          "event_thread_ids": [
+            "01a168ea-58ca-73e2-9b8b-0a5f1542f83a"
+          ],
+          "status": "completed",
+          "error": null,
+          "turn_failed_errors": []
+        },
+        {
+          "turn": "workflow/round_01/inspect",
+          "session_id": "01a168ea-58ca-73e2-9b8b-0a5f1542f83a",
+          "requested_session_id": "01a168ea-58ca-73e2-9b8b-0a5f1542f83a",
+          "event_thread_ids": [
+            "01a168ea-58ca-73e2-9b8b-0a5f1542f83a"
+          ],
+          "status": "completed",
+          "error": null,
+          "turn_failed_errors": []
+        }
+      ],
+      "all_turns_original_session": true,
+      "matching_final_authored_snapshots": [
+        {
+          "snapshot": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/authored_versions/version_025/snapshot.json",
+          "files": [
+            "assembly_parts.py",
+            "assets.json",
+            "build_scene.py",
+            "scene_plan.md",
+            "views.json"
+          ],
+          "archive_check": {
+            "checked": 5,
+            "errors": []
+          }
+        }
+      ],
+      "state_error": null,
+      "build_dependencies_not_hashed_in_final_evidence": [],
+      "output_dir": "/mnt/d/data/cad_scene_templates/assembly_20261023_001",
+      "rounds": [
+        {
+          "revision": 0,
+          "directory": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/round_00",
+          "status": "pass",
+          "report": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/round_00/preview/preview_report.json",
+          "decision": "revise",
+          "review": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/round_00/review.json"
+        },
+        {
+          "revision": 1,
+          "directory": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/round_01",
+          "status": "pass",
+          "report": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/round_01/preview/preview_report.json",
+          "decision": "ready",
+          "review": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/round_01/review.json"
+        }
+      ],
+      "codex_turns_raw": [
+        {
+          "turn_dir": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/create",
+          "session_id": "01a168ea-58ca-73e2-9b8b-0a5f1542f83a",
+          "status": "completed",
+          "usage": {
+            "input_tokens": 4606802,
+            "cached_input_tokens": 4479232,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 33088,
+            "reasoning_output_tokens": 9173
+          }
+        },
+        {
+          "turn_dir": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/round_00/inspect",
+          "session_id": "01a168ea-58ca-73e2-9b8b-0a5f1542f83a",
+          "status": "completed",
+          "usage": {
+            "input_tokens": 5066148,
+            "cached_input_tokens": 4778240,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 37632,
+            "reasoning_output_tokens": 12370
+          }
+        },
+        {
+          "turn_dir": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/repair_01",
+          "session_id": "01a168ea-58ca-73e2-9b8b-0a5f1542f83a",
+          "status": "completed",
+          "usage": {
+            "input_tokens": 8288719,
+            "cached_input_tokens": 7875712,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 52465,
+            "reasoning_output_tokens": 18798
+          }
+        },
+        {
+          "turn_dir": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/round_01/inspect",
+          "session_id": "01a168ea-58ca-73e2-9b8b-0a5f1542f83a",
+          "status": "completed",
+          "usage": {
+            "input_tokens": 8530213,
+            "cached_input_tokens": 8040064,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 54032,
+            "reasoning_output_tokens": 19235
+          }
+        }
+      ],
+      "final_report": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/round_01/preview/preview_report.json",
+      "final_blend": "/mnt/d/data/cad_scene_templates/assembly_20261023_001/workflow/round_01/preview/room.blend",
+      "gallery": "/mnt/d/data/cad_scene_templates/batch_logs/cross_environment_20261023/review_gallery/assembly_round_01.jpg"
+    },
+    "electronics": {
+      "status": "incomplete",
+      "human_review": "pending",
+      "repairs_used": 0,
+      "final_round": 0,
+      "technical_status": "pass",
+      "agent_review": null,
+      "agent_review_exists": false,
+      "host_hashes": {
+        "checked": 21,
+        "errors": []
+      },
+      "reference_hashes": {
+        "checked": 4,
+        "errors": []
+      },
+      "final_evidence_hashes": {
+        "checked": 99,
+        "errors": []
+      },
+      "asset_hashes": {
+        "checked": 50,
+        "errors": []
+      },
+      "asset_files": 50,
+      "unique_provider_asset_pairs": [
+        [
+          "polyhaven",
+          "boombox"
+        ],
+        [
+          "polyhaven",
+          "desk_lamp_arm_01"
+        ],
+        [
+          "polyhaven",
+          "linoleum_brown"
+        ],
+        [
+          "polyhaven",
+          "metal_office_desk"
+        ],
+        [
+          "polyhaven",
+          "painted_plaster_wall"
+        ],
+        [
+          "polyhaven",
+          "pliers"
+        ],
+        [
+          "polyhaven",
+          "portable_cassette_player"
+        ],
+        [
+          "polyhaven",
+          "screwdrivers_02"
+        ],
+        [
+          "polyhaven",
+          "steel_frame_shelves_01"
+        ]
+      ],
+      "asset_licenses": [
+        "CC0-1.0"
+      ],
+      "images": [
+        {
+          "path": "/mnt/d/data/cad_scene_templates/electronics_20261023_001/workflow/round_00/preview/renders/room_overview.png",
+          "size": [
+            1200,
+            900
+          ],
+          "valid": true,
+          "sha256": "22d176f40a2bb54bf602510ccd7f88cf1fc86611d35c9e6a661c4659e85eaac4"
+        },
+        {
+          "path": "/mnt/d/data/cad_scene_templates/electronics_20261023_001/workflow/round_00/preview/renders/room_reverse.png",
+          "size": [
+            1200,
+            900
+          ],
+          "valid": true,
+          "sha256": "6de4c3e814c023b3dc8abf7d5ab61f4b429d8a9747cf8cbdcda2801b48767f54"
+        },
+        {
+          "path": "/mnt/d/data/cad_scene_templates/electronics_20261023_001/workflow/round_00/preview/renders/workbench_context.png",
+          "size": [
+            1200,
+            900
+          ],
+          "valid": true,
+          "sha256": "ca299f1f81cdb9ecbe2b07039e77a5c1002073c624e59195d262f263ab9eeed1"
+        },
+        {
+          "path": "/mnt/d/data/cad_scene_templates/electronics_20261023_001/workflow/round_00/preview/renders/workbench_detail.png",
+          "size": [
+            1200,
+            900
+          ],
+          "valid": true,
+          "sha256": "6c6861b8fe6e2ab15d8fefbc47e6c40aeffada43520d13f76e5e6d70a8dc2285"
+        },
+        {
+          "path": "/mnt/d/data/cad_scene_templates/electronics_20261023_001/workflow/round_00/preview/renders/surface_detail.png",
+          "size": [
+            1200,
+            900
+          ],
+          "valid": true,
+          "sha256": "ac81709b8a3cb7649aba9824d76e017a0dc83141f9df984429b2f3992793ea93"
+        },
+        {
+          "path": "/mnt/d/data/cad_scene_templates/electronics_20261023_001/workflow/round_00/preview/renders/alternate_view.png",
+          "size": [
+            1200,
+            900
+          ],
+          "valid": true,
+          "sha256": "82d50b8a0d89e459cf891a5db30f65cb81160771d5890d3320e9dae550f4cfb0"
+        }
+      ],
+      "expected_six_views": true,
+      "render_settings": {
+        "samples": 128,
+        "seed": 8,
+        "device": "OPTIX",
+        "gpu_index": 1,
+        "planned": 6,
+        "success": 6,
+        "failed": 0
+      },
+      "build_missing_dependencies": [],
+      "build_external_dependencies": [],
+      "request_matches_input": true,
+      "creation_prompt_matches": true,
+      "turns": [
+        {
+          "turn": "workflow/create",
+          "session_id": "01a168ea-592e-7ee0-9ba3-49b0c55130c3",
+          "requested_session_id": null,
+          "event_thread_ids": [
+            "01a168ea-592e-7ee0-9ba3-49b0c55130c3"
+          ],
+          "status": "completed",
+          "error": null,
+          "turn_failed_errors": []
+        },
+        {
+          "turn": "workflow/round_00/inspect",
+          "session_id": "01a168ea-592e-7ee0-9ba3-49b0c55130c3",
+          "requested_session_id": "01a168ea-592e-7ee0-9ba3-49b0c55130c3",
+          "event_thread_ids": [
+            "01a168ea-592e-7ee0-9ba3-49b0c55130c3"
+          ],
+          "status": "failed",
+          "error": "RuntimeError: You’ve hit your usage limit. Visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Oct 30th, 2026 2:53 AM.",
+          "turn_failed_errors": [
+            {
+              "message": "You’ve hit your usage limit. Visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Oct 30th, 2026 2:53 AM."
+            }
+          ]
+        }
+      ],
+      "all_turns_original_session": true,
+      "matching_final_authored_snapshots": [
+        {
+          "snapshot": "/mnt/d/data/cad_scene_templates/electronics_20261023_001/workflow/authored_versions/version_023/snapshot.json",
+          "files": [
+            "assets.json",
+            "build_scene.py",
+            "scene_components.py",
+            "scene_plan.md",
+            "views.json"
+          ],
+          "archive_check": {
+            "checked": 5,
+            "errors": []
+          }
+        }
+      ],
+      "state_error": "RuntimeError: You’ve hit your usage limit. Visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Oct 30th, 2026 2:53 AM.",
+      "build_dependencies_not_hashed_in_final_evidence": [],
+      "output_dir": "/mnt/d/data/cad_scene_templates/electronics_20261023_001",
+      "rounds": [
+        {
+          "revision": 0,
+          "directory": "/mnt/d/data/cad_scene_templates/electronics_20261023_001/workflow/round_00",
+          "status": "pass",
+          "report": "/mnt/d/data/cad_scene_templates/electronics_20261023_001/workflow/round_00/preview/preview_report.json"
+        }
+      ],
+      "codex_turns_raw": [
+        {
+          "turn_dir": "/mnt/d/data/cad_scene_templates/electronics_20261023_001/workflow/create",
+          "session_id": "01a168ea-592e-7ee0-9ba3-49b0c55130c3",
+          "status": "completed",
+          "usage": {
+            "input_tokens": 5843926,
+            "cached_input_tokens": 5745280,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 70771,
+            "reasoning_output_tokens": 29848
+          }
+        }
+      ],
+      "final_report": "/mnt/d/data/cad_scene_templates/electronics_20261023_001/workflow/round_00/preview/preview_report.json",
+      "final_blend": "/mnt/d/data/cad_scene_templates/electronics_20261023_001/workflow/round_00/preview/room.blend",
+      "gallery": "/mnt/d/data/cad_scene_templates/batch_logs/cross_environment_20261023/review_gallery/electronics_round_00.jpg",
+      "failed_inspect_result": "/mnt/d/data/cad_scene_templates/electronics_20261023_001/workflow/round_00/inspect/result.json"
+    },
+    "office": {
+      "status": "ready_for_review",
+      "human_review": "pending",
+      "repairs_used": 0,
+      "final_round": 0,
+      "technical_status": "pass",
+      "agent_review": "ready",
+      "agent_review_exists": true,
+      "host_hashes": {
+        "checked": 21,
+        "errors": []
+      },
+      "reference_hashes": {
+        "checked": 4,
+        "errors": []
+      },
+      "final_evidence_hashes": {
+        "checked": 97,
+        "errors": []
+      },
+      "asset_hashes": {
+        "checked": 42,
+        "errors": []
+      },
+      "asset_files": 42,
+      "unique_provider_asset_pairs": [
+        [
+          "polyhaven",
+          "desk_lamp_arm_01"
+        ],
+        [
+          "polyhaven",
+          "metal_office_desk"
+        ],
+        [
+          "polyhaven",
+          "oak_veneer_01"
+        ],
+        [
+          "polyhaven",
+          "office_notepads"
+        ],
+        [
+          "polyhaven",
+          "painted_plaster_wall"
+        ],
+        [
+          "polyhaven",
+          "potted_plant_04"
+        ],
+        [
+          "polyhaven",
+          "stationery_supplies"
+        ],
+        [
+          "polyhaven",
+          "wall_clock"
+        ]
+      ],
+      "asset_licenses": [
+        "CC0-1.0"
+      ],
+      "images": [
+        {
+          "path": "/mnt/d/data/cad_scene_templates/office_20261023_001/workflow/round_00/preview/renders/room_overview.png",
+          "size": [
+            1100,
+            825
+          ],
+          "valid": true,
+          "sha256": "401ee6238063434f7b2519de579cb0caf9ae90e57e2d067a8d59049ed5bf8c99"
+        },
+        {
+          "path": "/mnt/d/data/cad_scene_templates/office_20261023_001/workflow/round_00/preview/renders/room_reverse.png",
+          "size": [
+            1100,
+            825
+          ],
+          "valid": true,
+          "sha256": "d1b202cc2e037c66d60593e126c60568df86e5e75df4b83666d096731645ede4"
+        },
+        {
+          "path": "/mnt/d/data/cad_scene_templates/office_20261023_001/workflow/round_00/preview/renders/workbench_context.png",
+          "size": [
+            1100,
+            825
+          ],
+          "valid": true,
+          "sha256": "0db10e8cc034f2bc7c210bd3adc4e24863a44078946b0411deee4cb3908e5715"
+        },
+        {
+          "path": "/mnt/d/data/cad_scene_templates/office_20261023_001/workflow/round_00/preview/renders/workbench_detail.png",
+          "size": [
+            1100,
+            825
+          ],
+          "valid": true,
+          "sha256": "1dcd7cce811c0b596092eddf5cdb63a2f7b1b849be4133d9bce049ca7fb0dc4a"
+        },
+        {
+          "path": "/mnt/d/data/cad_scene_templates/office_20261023_001/workflow/round_00/preview/renders/surface_detail.png",
+          "size": [
+            1100,
+            825
+          ],
+          "valid": true,
+          "sha256": "bea3951947e8ca34a92a96c7592fe751d21e889e11639d3784aa0ae38afb6281"
+        },
+        {
+          "path": "/mnt/d/data/cad_scene_templates/office_20261023_001/workflow/round_00/preview/renders/alternate_view.png",
+          "size": [
+            1100,
+            825
+          ],
+          "valid": true,
+          "sha256": "69595cace54784078b8f950928a7d6e9a9400cfd5b5728cee4b840515ae20241"
+        }
+      ],
+      "expected_six_views": true,
+      "render_settings": {
+        "samples": 128,
+        "seed": 8,
+        "device": "OPTIX",
+        "gpu_index": 2,
+        "planned": 6,
+        "success": 6,
+        "failed": 0
+      },
+      "build_missing_dependencies": [],
+      "build_external_dependencies": [],
+      "request_matches_input": true,
+      "creation_prompt_matches": true,
+      "turns": [
+        {
+          "turn": "workflow/create",
+          "session_id": "01a168ea-59a5-7d61-899d-1f62b159d2d3",
+          "requested_session_id": null,
+          "event_thread_ids": [
+            "01a168ea-59a5-7d61-899d-1f62b159d2d3"
+          ],
+          "status": "completed",
+          "error": null,
+          "turn_failed_errors": []
+        },
+        {
+          "turn": "workflow/round_00/inspect",
+          "session_id": "01a168ea-59a5-7d61-899d-1f62b159d2d3",
+          "requested_session_id": "01a168ea-59a5-7d61-899d-1f62b159d2d3",
+          "event_thread_ids": [
+            "01a168ea-59a5-7d61-899d-1f62b159d2d3"
+          ],
+          "status": "completed",
+          "error": null,
+          "turn_failed_errors": []
+        }
+      ],
+      "all_turns_original_session": true,
+      "matching_final_authored_snapshots": [
+        {
+          "snapshot": "/mnt/d/data/cad_scene_templates/office_20261023_001/workflow/authored_versions/version_016/snapshot.json",
+          "files": [
+            "assets.json",
+            "authored/create_schedule.py",
+            "build_scene.py",
+            "office_chair.py",
+            "office_equipment.py",
+            "scene_plan.md",
+            "views.json"
+          ],
+          "archive_check": {
+            "checked": 7,
+            "errors": []
+          }
+        }
+      ],
+      "state_error": null,
+      "build_dependencies_not_hashed_in_final_evidence": [
+        {
+          "path": "/mnt/d/data/cad_scene_templates/office_20261023_001/authored/office_schedule.png",
+          "sha256_observed_now": "62a9d757c0c1e174404bf11c24ecd9ca2cb9ab1a881444062fead09b683e086f",
+          "kind": "images"
+        }
+      ],
+      "output_dir": "/mnt/d/data/cad_scene_templates/office_20261023_001",
+      "rounds": [
+        {
+          "revision": 0,
+          "directory": "/mnt/d/data/cad_scene_templates/office_20261023_001/workflow/round_00",
+          "status": "pass",
+          "report": "/mnt/d/data/cad_scene_templates/office_20261023_001/workflow/round_00/preview/preview_report.json",
+          "decision": "ready",
+          "review": "/mnt/d/data/cad_scene_templates/office_20261023_001/workflow/round_00/review.json"
+        }
+      ],
+      "codex_turns_raw": [
+        {
+          "turn_dir": "/mnt/d/data/cad_scene_templates/office_20261023_001/workflow/create",
+          "session_id": "01a168ea-59a5-7d61-899d-1f62b159d2d3",
+          "status": "completed",
+          "usage": {
+            "input_tokens": 3314764,
+            "cached_input_tokens": 3234048,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 25051,
+            "reasoning_output_tokens": 4815
+          }
+        },
+        {
+          "turn_dir": "/mnt/d/data/cad_scene_templates/office_20261023_001/workflow/round_00/inspect",
+          "session_id": "01a168ea-59a5-7d61-899d-1f62b159d2d3",
+          "status": "completed",
+          "usage": {
+            "input_tokens": 3894302,
+            "cached_input_tokens": 3664384,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 27760,
+            "reasoning_output_tokens": 6318
+          }
+        }
+      ],
+      "final_report": "/mnt/d/data/cad_scene_templates/office_20261023_001/workflow/round_00/preview/preview_report.json",
+      "final_blend": "/mnt/d/data/cad_scene_templates/office_20261023_001/workflow/round_00/preview/room.blend",
+      "gallery": "/mnt/d/data/cad_scene_templates/batch_logs/cross_environment_20261023/review_gallery/office_round_00.jpg"
+    }
+  },
+  "limitations": [
+    "A ready decision is agent readiness for human review, not human acceptance or a measured photorealism result.",
+    "All six renders exist for electronics, but its inspect call failed on account usage limit and produced no review.json.",
+    "Office authored/office_schedule.png is an actual template-local texture dependency not listed in assets.json or final evidence hashes. Its current hash is recorded here; historical byte identity is not independently proven by the existing host evidence.",
+    "No image-level relocation rerender was performed by this audit."
+  ],
+  "previous_observation": "/mnt/d/data/cad_scene_templates/batch_logs/cross_environment_20261023/office_initial_audit.json"
+}

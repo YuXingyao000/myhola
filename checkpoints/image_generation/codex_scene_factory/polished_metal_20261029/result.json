@@ -1,0 +1,56 @@
+{
+  "planned": 18,
+  "completed": 18,
+  "missing": 0,
+  "failed": 0,
+  "geometry_checks_pass": true,
+  "human_review": "pending",
+  "selected_default": null,
+  "data_dir": "/mnt/d/data/cad_scene_enhancements/polished_metal_20261029_001",
+  "source_inputs_verified": 49,
+  "source_inputs_changed": [],
+  "sum_render_seconds": 682.2118635473307,
+  "max_mask_differing_pixels": 0,
+  "max_old_mask_differing_pixels": 0,
+  "max_depth_error_m": 0.0,
+  "max_case_baseline_vs_old_png_mean_abs_rgb_255": 1.5261294047037761,
+  "difference_metric_note": "Saved 8-bit PNG RGB difference describes visible change, not realism or linear radiance. Baseline vs old PNG mixes 128 vs 64 sample counts; only same-budget new baseline is used in the board.",
+  "texture_increment": [
+    {
+      "scene": "office",
+      "model": "00301161",
+      "target_map_vs_constant_mean_abs_rgb_255": 0.3950160245928445,
+      "target_constant_vs_baseline_mean_abs_rgb_255": 25.449124642989513
+    },
+    {
+      "scene": "office",
+      "model": "00489180",
+      "target_map_vs_constant_mean_abs_rgb_255": 0.31607643443149963,
+      "target_constant_vs_baseline_mean_abs_rgb_255": 12.148522490548569
+    },
+    {
+      "scene": "factory",
+      "model": "00301161",
+      "target_map_vs_constant_mean_abs_rgb_255": 0.906202716550025,
+      "target_constant_vs_baseline_mean_abs_rgb_255": 47.966285128741795
+    },
+    {
+      "scene": "factory",
+      "model": "00489180",
+      "target_map_vs_constant_mean_abs_rgb_255": 0.7369434310256777,
+      "target_constant_vs_baseline_mean_abs_rgb_255": 32.403441092508295
+    },
+    {
+      "scene": "assembly",
+      "model": "00301161",
+      "target_map_vs_constant_mean_abs_rgb_255": 0.9793053829550658,
+      "target_constant_vs_baseline_mean_abs_rgb_255": 61.7588636710489
+    },
+    {
+      "scene": "assembly",
+      "model": "00489180",
+      "target_map_vs_constant_mean_abs_rgb_255": 0.5480985079781469,
+      "target_constant_vs_baseline_mean_abs_rgb_255": 17.003545434839317
+    }
+  ]
+}

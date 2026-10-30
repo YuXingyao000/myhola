@@ -1,0 +1,23 @@
+[
+  {
+    "run": "office_phone_depth_spatial_20261027_001",
+    "planned": 6,
+    "success": 6,
+    "inference_seconds": 45.34003548603505,
+    "peak_memory_gib": 15.74260425567627
+  },
+  {
+    "run": "office_phone_depth_surfaces_20261027_001",
+    "planned": 6,
+    "success": 6,
+    "inference_seconds": 45.31865345570259,
+    "peak_memory_gib": 15.74248218536377
+  },
+  {
+    "run": "office_phone_depth_office_surfaces_20261027_001",
+    "planned": 6,
+    "success": 6,
+    "inference_seconds": 45.35606025881134,
+    "peak_memory_gib": 15.74248218536377
+  }
+]

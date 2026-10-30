@@ -1,0 +1,4304 @@
+{
+  "audit_type": "independent_cpu_technical_artifact_audit",
+  "created_at_utc": "2026-10-27T08:46:11.139393+00:00",
+  "scope": "72 fixed development candidates; image-generation validity only, not realism or training acceptance",
+  "candidate_count_convention": "Each parameter/sample combination counts once. Diffusion generated/protected image pairs are two files for one candidate.",
+  "sample_ids": [
+    "00301161",
+    "00489180",
+    "00495463",
+    "00182999",
+    "00269315",
+    "00320493"
+  ],
+  "diffusion_seed_by_id": {
+    "00301161": 8,
+    "00489180": 9,
+    "00495463": 10,
+    "00182999": 11,
+    "00269315": 12,
+    "00320493": 13
+  },
+  "runs": [
+    {
+      "label": "lut",
+      "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001",
+      "request_sha256": "b94f8e03c8415816eec620cffed2047108fe6797033a1d3e052ae5b3c497f688",
+      "results_sha256": "4e66f85e7961402d966a1467a11f3c97ea1ab6dc813c415872e301c2810799e9",
+      "summary_sha256": "fcb099682e07d766a833a862affd052206604ce97dfd47b70859554b2cd244dc",
+      "counts": {
+        "planned": 24,
+        "success": 24,
+        "failed": 0,
+        "missing": 0,
+        "duplicate_records": 0,
+        "unexpected_records": 0
+      },
+      "checks": {
+        "fixed_six_inputs_in_order": true,
+        "all_source_hashes_and_paths_match": true,
+        "full_unique_coverage": true,
+        "all_record_status_success": true,
+        "summary_matches_records": true,
+        "all_frozen_source_hashes_match": true,
+        "all_output_hashes_and_dimensions_match": true
+      },
+      "frozen_source_hash_checks": {
+        "validate.py": true,
+        "model.py": true,
+        "workflow.py": true
+      },
+      "input_checks": [
+        {
+          "model_id": "00301161",
+          "rgb_sha256": "667c789dde9c7787c58f09a45de1c9d6d9db1923d417988651f9a5c11deec0a3",
+          "mask_sha256": "339361138020ca7a8d3d1e18c9388f09fa8257057084dbae06d4366dae15d58d",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00489180",
+          "rgb_sha256": "beb1bdff246ae6e99ca4ef1e21daac25911b28eeb5233add4361271c5af45145",
+          "mask_sha256": "7092f30e2a85999048a09fc64c706f2827600add3b1648384964d02376a7bae0",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00495463",
+          "rgb_sha256": "296e288b7dba9061d853238dfa5dba7bcd1fd48394841558fa3a17f4125eaf97",
+          "mask_sha256": "197b3d81682293517ecd0cab385db0f513f14ae912531a8862f71fe52e33224d",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00182999",
+          "rgb_sha256": "5f71311750821a46928fc9fc547b5f40d92f8dfcb91ac9bc6cf3194bce1bc2b4",
+          "mask_sha256": "dc0ba4cde6d310603e9a7363ae8fe18d79b98d15b5312b0659e1ed58a7cb4a68",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00269315",
+          "rgb_sha256": "825f5d125f9b1ed50fc6cafc167897ef18bbe3b72d4a4cf2a45ce277bda56cbb",
+          "mask_sha256": "ff0d16381bfb1173c4b665bc95d9dcab1aa6f934f5a7d038af9b9b9d89585d29",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00320493",
+          "rgb_sha256": "9a8e1096f5db8a4a4b725e53ce05dc968f4b3285ba3bd665f6a39c0592a45097",
+          "mask_sha256": "93fc38833e4b12a917c43db61cfde614374c38bb9b5b2bde53d4eb446faf3525",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        }
+      ],
+      "output_files": [
+        {
+          "model_id": "00301161",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00301161/paired_mix_0.5.png",
+          "sha256": "cc0d902e2f11103ef7f7cda7f774f5077dc7a4a258a1e79c220d74146216d83f",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00301161",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00301161/paired_mix_1.0.png",
+          "sha256": "c98e9ec38c0a38d7b0ca58c3799e26e7e2518673d776a84b30caad9b6bf012f3",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00489180/paired_mix_0.5.png",
+          "sha256": "763aca3dcfc980045fb7b62f15b2c3920111349bc579bcee8c49ca4992ac486d",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00489180/paired_mix_1.0.png",
+          "sha256": "b30c4e00127d745f5f17ba47f809d9af3b0219acd9a2e6c3df7cd8986e20281b",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00495463/paired_mix_0.5.png",
+          "sha256": "8586e570ead5311acb0eb3870b4b66e5f05ba3a2a2abcb99808f3987bca218ac",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00495463/paired_mix_1.0.png",
+          "sha256": "aa416ae1686f4e4046759066d129156db51b1d9b93b6d99ac0c2c38d55844452",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00182999/paired_mix_0.5.png",
+          "sha256": "f4b4da3af366baf10a11f1281afb1f23551ae9c860441e5bc160c82e5fb12f0e",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00182999/paired_mix_1.0.png",
+          "sha256": "b2111afcf665a7ea585ed824d4c17c7941dcaa862c875ed9150579c95134e3c5",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00269315/paired_mix_0.5.png",
+          "sha256": "99be99ff52cd366be0eb1852dc562f40fb63762bb7132ad92aab0c644b9aa525",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00269315/paired_mix_1.0.png",
+          "sha256": "7c7a02a68c7c1c41268b75c446454877b3ec455044690ec7f081fa6f50679439",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00320493/paired_mix_0.5.png",
+          "sha256": "b2bfec2518205e624737cf2c1e9a4b9f7174c2ebb338aef4b000b054245f4445",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00320493/paired_mix_1.0.png",
+          "sha256": "fdade35ba8d1bb350da207478ea7c77ab96f64b0359d7d167f1b2506150b5ac4",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00301161",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00301161/unpaired_mix_0.5.png",
+          "sha256": "97528b5750b992b45b9acbd9df9e4ceaeccb1f562313f8c68f2227d7cc0f6a67",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00301161",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00301161/unpaired_mix_1.0.png",
+          "sha256": "92510ec9785b3b912749ee57ff083e99ae0b2b9a91f7bf4a0dcc1fc0721d8be3",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00489180/unpaired_mix_0.5.png",
+          "sha256": "ceb30aac405ce4bd2a2dd50a8ae5e0b2907560350827255bc0fb650a0cc3b141",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00489180/unpaired_mix_1.0.png",
+          "sha256": "816a08a0963403657a79f1f83261ff6e6159229018b588b7e70b8d8a370e47d4",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00495463/unpaired_mix_0.5.png",
+          "sha256": "4ed571ccf12803a18780797876a5308163a73b300666851b55c8549a01784f32",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00495463/unpaired_mix_1.0.png",
+          "sha256": "f3c9206bc3f4d6fe01fff238eb79db3ee5d9ab90061a9940a6b0a62fae418f0a",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00182999/unpaired_mix_0.5.png",
+          "sha256": "89d514c3869a948eedacbd68de65319f8f79dded010a048847acdd61dd9049f8",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00182999/unpaired_mix_1.0.png",
+          "sha256": "9d24755db33bc972e4c776b1df7ad36a2af52ccef8c981b6178cc663a61d0804",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00269315/unpaired_mix_0.5.png",
+          "sha256": "c72f7c7e369dc919b170b6b44c59413be8359d63b5053bad3e1cb17b071ca2e4",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00269315/unpaired_mix_1.0.png",
+          "sha256": "124a9dc874c2d94a934074ef79113723a59cfb25a40fe06fbe6a82a5d8dcf8af",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00320493/unpaired_mix_0.5.png",
+          "sha256": "b1f7c6136dd3672806ece5d308d75c1fe3bad81282b04c6b80368415303ae12c",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "output",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_lut_20261027_001/00320493/unpaired_mix_1.0.png",
+          "sha256": "53bd2e07c23606f1b706f003f35cb1fb08d53c88a44feaa7956e39cb2c0beb4d",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        }
+      ],
+      "config": null,
+      "candidate_role": "development_only_not_accepted",
+      "human_review": "pending",
+      "issues": [],
+      "model_weights_rehashed": false,
+      "technical_status": "pass"
+    },
+    {
+      "label": "kontext",
+      "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_kontext_20261027_001",
+      "request_sha256": "f64da73d0eca38ca468797fd8a878cb68577e509dba375357053fb191688f6c5",
+      "results_sha256": "6be4b7add07b9b84fc31ab8d050c6ea15d1f8d4fced84381ff965269f606642c",
+      "summary_sha256": "258a5a226459006d5999a9e422401601ba168312b6fb4ec868ede5c0cc3c95ea",
+      "counts": {
+        "planned": 6,
+        "success": 6,
+        "failed": 0,
+        "missing": 0,
+        "duplicate_records": 0,
+        "unexpected_records": 0
+      },
+      "checks": {
+        "fixed_six_inputs_in_order": true,
+        "all_source_hashes_and_paths_match": true,
+        "full_unique_coverage": true,
+        "all_record_status_success": true,
+        "summary_matches_records": true,
+        "all_frozen_source_hashes_match": true,
+        "all_output_hashes_and_dimensions_match": true,
+        "diffusion_seeds_match_8_through_13": true,
+        "protected_pixels_and_composites_exact": true,
+        "actual_steps_and_resolution_match": true,
+        "frozen_prompt_matches_request": true,
+        "frozen_profile_matches_effective_config": true
+      },
+      "frozen_source_hash_checks": {
+        "README.md": true,
+        "masks.py": true,
+        "model.py": true,
+        "workflow.py": true,
+        "config.json": true,
+        "report.py": true,
+        "retouch/validate.py": true,
+        "retouch/model.py": true,
+        "retouch/workflow.py": true,
+        "prompts/assembly.md": true,
+        "prompts/woodworking.md": true,
+        "prompts/home_kitchen.md": true,
+        "prompts/workshop.md": true,
+        "prompts/auto_repair.md": true,
+        "prompts/scenes.json": true,
+        "prompts/electronics.md": true,
+        "prompts/office.md": true,
+        "prompts/factory.md": true
+      },
+      "input_checks": [
+        {
+          "model_id": "00301161",
+          "rgb_sha256": "667c789dde9c7787c58f09a45de1c9d6d9db1923d417988651f9a5c11deec0a3",
+          "mask_sha256": "339361138020ca7a8d3d1e18c9388f09fa8257057084dbae06d4366dae15d58d",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00489180",
+          "rgb_sha256": "beb1bdff246ae6e99ca4ef1e21daac25911b28eeb5233add4361271c5af45145",
+          "mask_sha256": "7092f30e2a85999048a09fc64c706f2827600add3b1648384964d02376a7bae0",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00495463",
+          "rgb_sha256": "296e288b7dba9061d853238dfa5dba7bcd1fd48394841558fa3a17f4125eaf97",
+          "mask_sha256": "197b3d81682293517ecd0cab385db0f513f14ae912531a8862f71fe52e33224d",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00182999",
+          "rgb_sha256": "5f71311750821a46928fc9fc547b5f40d92f8dfcb91ac9bc6cf3194bce1bc2b4",
+          "mask_sha256": "dc0ba4cde6d310603e9a7363ae8fe18d79b98d15b5312b0659e1ed58a7cb4a68",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00269315",
+          "rgb_sha256": "825f5d125f9b1ed50fc6cafc167897ef18bbe3b72d4a4cf2a45ce277bda56cbb",
+          "mask_sha256": "ff0d16381bfb1173c4b665bc95d9dcab1aa6f934f5a7d038af9b9b9d89585d29",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00320493",
+          "rgb_sha256": "9a8e1096f5db8a4a4b725e53ce05dc968f4b3285ba3bd665f6a39c0592a45097",
+          "mask_sha256": "93fc38833e4b12a917c43db61cfde614374c38bb9b5b2bde53d4eb446faf3525",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        }
+      ],
+      "output_files": [
+        {
+          "model_id": "00301161",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_kontext_20261027_001/00301161/strength_1/generated.png",
+          "sha256": "a4c85f88bb60f7a87f5aa022925939c4ca24f69d529e0f529c634f241e67f7b1",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00301161",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_kontext_20261027_001/00301161/strength_1/protected.png",
+          "sha256": "038ba4724a81b6d39c7fa2b160bb514689166ec4a76b696d4980a512e4dd334a",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_kontext_20261027_001/00489180/strength_1/generated.png",
+          "sha256": "3599725ef3a81ef1a70b141cbe7adeb0ba356b39c42937c54d446eca9e5e22f8",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_kontext_20261027_001/00489180/strength_1/protected.png",
+          "sha256": "afd91dca182f68919273bc4dfc28769a40639478eaff00f55ace030e86335759",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_kontext_20261027_001/00495463/strength_1/generated.png",
+          "sha256": "21d16335b9e468afc89ef3a6fb948b7f09b09d2736930339ba4f128206749a2f",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_kontext_20261027_001/00495463/strength_1/protected.png",
+          "sha256": "fd97f4ee2547676ec31c695ce7b9b1feec0c2abf419718129653e6b271a1d993",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_kontext_20261027_001/00182999/strength_1/generated.png",
+          "sha256": "0d2c54bd8cf6cd6131cf85b91e3440d29786448ebe3001bed1e9ae0bbf8caab5",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_kontext_20261027_001/00182999/strength_1/protected.png",
+          "sha256": "793876b9a86a8116fc9e2a2c3a9a780ee6efee982e9c291f8ac9fbc67de667db",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_kontext_20261027_001/00269315/strength_1/generated.png",
+          "sha256": "3f2523b1a3326360bcc158c63acfd0bee07bf27212278adcb2df9f63768b291e",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_kontext_20261027_001/00269315/strength_1/protected.png",
+          "sha256": "4a6f0bf317f2a42b505be18c231cf2e1653b667506810b1b479550a8d81f0ded",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_kontext_20261027_001/00320493/strength_1/generated.png",
+          "sha256": "3a8ecb381384a7d6893472df4966859ba52a0a9c37660e1ba8c76d93b6b7feb0",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_kontext_20261027_001/00320493/strength_1/protected.png",
+          "sha256": "43517859a752dbfff3826e35ac0d7ed9bc3fa83da9176a568fe807d755057a8c",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        }
+      ],
+      "config": {
+        "pipeline": "kontext_edit",
+        "processing_size": 1024,
+        "num_inference_steps": 28,
+        "guidance_scale": 2.5,
+        "strengths": [
+          1.0
+        ],
+        "resident_model": true,
+        "max_sequence_length": 512,
+        "protect_padding_px": 2,
+        "feather_px": 4
+      },
+      "candidate_role": "development_only_not_accepted",
+      "human_review": "pending",
+      "issues": [],
+      "protection_checks": [
+        {
+          "model_id": "00301161",
+          "strength": 1.0,
+          "protection_region": "silhouette",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 12589,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00489180",
+          "strength": 1.0,
+          "protection_region": "silhouette",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 12385,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00495463",
+          "strength": 1.0,
+          "protection_region": "silhouette",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 2913,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00182999",
+          "strength": 1.0,
+          "protection_region": "silhouette",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 3068,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00269315",
+          "strength": 1.0,
+          "protection_region": "silhouette",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 2637,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00320493",
+          "strength": 1.0,
+          "protection_region": "silhouette",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 2869,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        }
+      ],
+      "inference_checks": [
+        {
+          "model_id": "00301161",
+          "strength": 1.0,
+          "seed": 8,
+          "actual_steps": 28,
+          "expected_steps": 28,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 1.0,
+          "sampling_mask_from_frozen_config": "silhouette",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00489180",
+          "strength": 1.0,
+          "seed": 9,
+          "actual_steps": 28,
+          "expected_steps": 28,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 1.0,
+          "sampling_mask_from_frozen_config": "silhouette",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00495463",
+          "strength": 1.0,
+          "seed": 10,
+          "actual_steps": 28,
+          "expected_steps": 28,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 1.0,
+          "sampling_mask_from_frozen_config": "silhouette",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00182999",
+          "strength": 1.0,
+          "seed": 11,
+          "actual_steps": 28,
+          "expected_steps": 28,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 1.0,
+          "sampling_mask_from_frozen_config": "silhouette",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00269315",
+          "strength": 1.0,
+          "seed": 12,
+          "actual_steps": 28,
+          "expected_steps": 28,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 1.0,
+          "sampling_mask_from_frozen_config": "silhouette",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00320493",
+          "strength": 1.0,
+          "seed": 13,
+          "actual_steps": 28,
+          "expected_steps": 28,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 1.0,
+          "sampling_mask_from_frozen_config": "silhouette",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        }
+      ],
+      "prompt_sha256": "46dd193ba1ecd6e86dbd710e6e3d228a33beb8dc6043a6f66ad9d8604c1e8629",
+      "frozen_compare_script_sha256": "6987b011691557e5fda149ff09d409d4d4daf8c8702fc1a7d3dc0d9b41782266",
+      "frozen_model_sha256": "0744bcfaca396984a407f85943fcdd47e535348e5af861a8d90def5613a63afc",
+      "frozen_masks_sha256": "4d95be65044319e702a1b6324ae8b8ce87d3eab86a49c216aaf66ffdb802a8e1",
+      "current_workspace_model_differs": true,
+      "current_workspace_masks_differ": true,
+      "model_manifest_file_count": 20,
+      "model_manifest_paths_and_sizes_match": true,
+      "model_weights_rehashed": false,
+      "technical_status": "pass"
+    },
+    {
+      "label": "krea",
+      "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001",
+      "request_sha256": "9e8e9f2cc990fd11731ac98f760831b09869f2c5ff4afce70739f9fa9bb7f7c2",
+      "results_sha256": "609dffb2f43e9a4d1d4364be1363bacd4a40660c65e7388c05e38065102c9acd",
+      "summary_sha256": "2ca3a7de45a99d23010bb109ee68512558055b09ad7917c88992306aeb1da67e",
+      "counts": {
+        "planned": 12,
+        "success": 12,
+        "failed": 0,
+        "missing": 0,
+        "duplicate_records": 0,
+        "unexpected_records": 0
+      },
+      "checks": {
+        "fixed_six_inputs_in_order": true,
+        "all_source_hashes_and_paths_match": true,
+        "full_unique_coverage": true,
+        "all_record_status_success": true,
+        "summary_matches_records": true,
+        "all_frozen_source_hashes_match": true,
+        "all_output_hashes_and_dimensions_match": true,
+        "diffusion_seeds_match_8_through_13": true,
+        "protected_pixels_and_composites_exact": true,
+        "actual_steps_and_resolution_match": true,
+        "frozen_prompt_matches_request": true,
+        "frozen_profile_matches_effective_config": true
+      },
+      "frozen_source_hash_checks": {
+        "README.md": true,
+        "masks.py": true,
+        "model.py": true,
+        "workflow.py": true,
+        "config.json": true,
+        "report.py": true,
+        "retouch/validate.py": true,
+        "retouch/model.py": true,
+        "retouch/workflow.py": true,
+        "prompts/assembly.md": true,
+        "prompts/woodworking.md": true,
+        "prompts/home_kitchen.md": true,
+        "prompts/workshop.md": true,
+        "prompts/auto_repair.md": true,
+        "prompts/scenes.json": true,
+        "prompts/electronics.md": true,
+        "prompts/office.md": true,
+        "prompts/factory.md": true
+      },
+      "input_checks": [
+        {
+          "model_id": "00301161",
+          "rgb_sha256": "667c789dde9c7787c58f09a45de1c9d6d9db1923d417988651f9a5c11deec0a3",
+          "mask_sha256": "339361138020ca7a8d3d1e18c9388f09fa8257057084dbae06d4366dae15d58d",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00489180",
+          "rgb_sha256": "beb1bdff246ae6e99ca4ef1e21daac25911b28eeb5233add4361271c5af45145",
+          "mask_sha256": "7092f30e2a85999048a09fc64c706f2827600add3b1648384964d02376a7bae0",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00495463",
+          "rgb_sha256": "296e288b7dba9061d853238dfa5dba7bcd1fd48394841558fa3a17f4125eaf97",
+          "mask_sha256": "197b3d81682293517ecd0cab385db0f513f14ae912531a8862f71fe52e33224d",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00182999",
+          "rgb_sha256": "5f71311750821a46928fc9fc547b5f40d92f8dfcb91ac9bc6cf3194bce1bc2b4",
+          "mask_sha256": "dc0ba4cde6d310603e9a7363ae8fe18d79b98d15b5312b0659e1ed58a7cb4a68",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00269315",
+          "rgb_sha256": "825f5d125f9b1ed50fc6cafc167897ef18bbe3b72d4a4cf2a45ce277bda56cbb",
+          "mask_sha256": "ff0d16381bfb1173c4b665bc95d9dcab1aa6f934f5a7d038af9b9b9d89585d29",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00320493",
+          "rgb_sha256": "9a8e1096f5db8a4a4b725e53ce05dc968f4b3285ba3bd665f6a39c0592a45097",
+          "mask_sha256": "93fc38833e4b12a917c43db61cfde614374c38bb9b5b2bde53d4eb446faf3525",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        }
+      ],
+      "output_files": [
+        {
+          "model_id": "00301161",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00301161/strength_0.25/generated.png",
+          "sha256": "3b39cf579fee8c119b4cab0532e78685a6469dab07b6f952865adf703a4056f6",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00301161",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00301161/strength_0.25/protected.png",
+          "sha256": "5b902cd5eef1a1e0252d48c7a33e1b27b30dffd3f99989d3811d204dffb342b6",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00301161",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00301161/strength_0.35/generated.png",
+          "sha256": "67d002f18a27b3ba1bc0c5d25e0c00baa5663a190e592669149aefd98b704e46",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00301161",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00301161/strength_0.35/protected.png",
+          "sha256": "4d799d8e0995918b9f75a4739b55c393c06ff11d5d36ef755be35b60831035e4",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00489180/strength_0.25/generated.png",
+          "sha256": "18825c91d18a0743045bd5835bbdc232c7af19136b7811b560ef3dcf0a24c935",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00489180/strength_0.25/protected.png",
+          "sha256": "350a4e67ab9bb7813a88778bdda7ba6509994c1819a4465da21173d33cac3686",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00489180/strength_0.35/generated.png",
+          "sha256": "a4210a49ac219997a5273cef9db5ea191346c9a8bea3aea9723af6a73316279f",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00489180/strength_0.35/protected.png",
+          "sha256": "509d1a2abde63448e02ae6698ae2bb3c192af29265ed39f1eae43d446e855077",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00495463/strength_0.25/generated.png",
+          "sha256": "135762295ec6b24301f578d2a8e00b51fd01de772f001e7de1ec0b21a5687afb",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00495463/strength_0.25/protected.png",
+          "sha256": "b37df6f7e6b85b90ebabfc23fdf88cf999298b7fdaf1ac171f5ded06171f79a0",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00495463/strength_0.35/generated.png",
+          "sha256": "c6c793a3a27054be09750fe249a93bd62e2da031e3aba6413e8239eea617151e",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00495463/strength_0.35/protected.png",
+          "sha256": "1fdae80752e2e9880726080209e0d0b88925d69e75a9b7b5b6a649966f3ae48f",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00182999/strength_0.25/generated.png",
+          "sha256": "49f860d62ad8a577a14cf06543f1ff7306586e4fd6a2985b4ebd1b973683e92c",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00182999/strength_0.25/protected.png",
+          "sha256": "d0726dcec9d4537debe1fc114ac015b33f670530a439d97a7bbbce1a8ef66d9d",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00182999/strength_0.35/generated.png",
+          "sha256": "90283f9a246072c990957bc74677dbc6774086dab2d61e0247830470a84cbd2d",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00182999/strength_0.35/protected.png",
+          "sha256": "f0f6955892a3b11bef09cd87100aa3da26b65b32ffdcd9579a45a5e4bbf6b75d",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00269315/strength_0.25/generated.png",
+          "sha256": "16597c60ec6a01f19531052349d3e0f63e06818283b74ba01a0fc0997c5b5011",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00269315/strength_0.25/protected.png",
+          "sha256": "f9e8ae4185026e6b0866f48739c2eed1bd9adab74a7bdbc016810d347be0666e",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00269315/strength_0.35/generated.png",
+          "sha256": "318849542c309d868028d29b8839374122135a861c3c9563ec6194f15fbb8098",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00269315/strength_0.35/protected.png",
+          "sha256": "1ab8d4216fad791b247066bb8e9937a2a8bdbb99e1ff8d7fec6596c934d08db3",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00320493/strength_0.25/generated.png",
+          "sha256": "eead64f0f823806b72aa132dd0d291d6bf998d598c39df63e462024ba1104196",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00320493/strength_0.25/protected.png",
+          "sha256": "ec0ed1fcdbdbc0f3ac5663234411b638da92e01efe14a800339797a41afa8632",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00320493/strength_0.35/generated.png",
+          "sha256": "a1533921e9d70a68bc570a963a45969e18e6c59995a9210c34d8436480314472",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001/00320493/strength_0.35/protected.png",
+          "sha256": "804f675205ea707d0df34ee92961b9e589bbe9a84810fdb586ca5727cc92045a",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        }
+      ],
+      "config": {
+        "pipeline": "flux",
+        "processing_size": 1024,
+        "num_inference_steps": 40,
+        "guidance_scale": 2.5,
+        "strengths": [
+          0.25,
+          0.35
+        ],
+        "resident_model": true,
+        "max_sequence_length": 512,
+        "protect_padding_px": 2,
+        "feather_px": 4
+      },
+      "candidate_role": "development_only_not_accepted",
+      "human_review": "pending",
+      "issues": [],
+      "protection_checks": [
+        {
+          "model_id": "00301161",
+          "strength": 0.25,
+          "protection_region": "silhouette",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 12589,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00301161",
+          "strength": 0.35,
+          "protection_region": "silhouette",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 12589,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00489180",
+          "strength": 0.25,
+          "protection_region": "silhouette",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 12385,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00489180",
+          "strength": 0.35,
+          "protection_region": "silhouette",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 12385,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00495463",
+          "strength": 0.25,
+          "protection_region": "silhouette",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 2913,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00495463",
+          "strength": 0.35,
+          "protection_region": "silhouette",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 2913,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00182999",
+          "strength": 0.25,
+          "protection_region": "silhouette",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 3068,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00182999",
+          "strength": 0.35,
+          "protection_region": "silhouette",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 3068,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00269315",
+          "strength": 0.25,
+          "protection_region": "silhouette",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 2637,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00269315",
+          "strength": 0.35,
+          "protection_region": "silhouette",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 2637,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00320493",
+          "strength": 0.25,
+          "protection_region": "silhouette",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 2869,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00320493",
+          "strength": 0.35,
+          "protection_region": "silhouette",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 2869,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        }
+      ],
+      "inference_checks": [
+        {
+          "model_id": "00301161",
+          "strength": 0.25,
+          "seed": 8,
+          "actual_steps": 10,
+          "expected_steps": 10,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.5128441452980042,
+          "sampling_mask_from_frozen_config": "silhouette",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00301161",
+          "strength": 0.35,
+          "seed": 8,
+          "actual_steps": 14,
+          "expected_steps": 14,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.6297071576118469,
+          "sampling_mask_from_frozen_config": "silhouette",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00489180",
+          "strength": 0.25,
+          "seed": 9,
+          "actual_steps": 10,
+          "expected_steps": 10,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.5128441452980042,
+          "sampling_mask_from_frozen_config": "silhouette",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00489180",
+          "strength": 0.35,
+          "seed": 9,
+          "actual_steps": 14,
+          "expected_steps": 14,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.6297071576118469,
+          "sampling_mask_from_frozen_config": "silhouette",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00495463",
+          "strength": 0.25,
+          "seed": 10,
+          "actual_steps": 10,
+          "expected_steps": 10,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.5128441452980042,
+          "sampling_mask_from_frozen_config": "silhouette",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00495463",
+          "strength": 0.35,
+          "seed": 10,
+          "actual_steps": 14,
+          "expected_steps": 14,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.6297071576118469,
+          "sampling_mask_from_frozen_config": "silhouette",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00182999",
+          "strength": 0.25,
+          "seed": 11,
+          "actual_steps": 10,
+          "expected_steps": 10,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.5128441452980042,
+          "sampling_mask_from_frozen_config": "silhouette",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00182999",
+          "strength": 0.35,
+          "seed": 11,
+          "actual_steps": 14,
+          "expected_steps": 14,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.6297071576118469,
+          "sampling_mask_from_frozen_config": "silhouette",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00269315",
+          "strength": 0.25,
+          "seed": 12,
+          "actual_steps": 10,
+          "expected_steps": 10,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.5128441452980042,
+          "sampling_mask_from_frozen_config": "silhouette",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00269315",
+          "strength": 0.35,
+          "seed": 12,
+          "actual_steps": 14,
+          "expected_steps": 14,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.6297071576118469,
+          "sampling_mask_from_frozen_config": "silhouette",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00320493",
+          "strength": 0.25,
+          "seed": 13,
+          "actual_steps": 10,
+          "expected_steps": 10,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.5128441452980042,
+          "sampling_mask_from_frozen_config": "silhouette",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00320493",
+          "strength": 0.35,
+          "seed": 13,
+          "actual_steps": 14,
+          "expected_steps": 14,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.6297071576118469,
+          "sampling_mask_from_frozen_config": "silhouette",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        }
+      ],
+      "prompt_sha256": "42715530fa3c4e365d1ff3239ac6a52d18c8b1e51e3bc3401a6c1c3d1cf976a7",
+      "frozen_compare_script_sha256": "662a30f761d4c63c8b8523766543f45b1cd680f4889bf1de14afa08f49aae930",
+      "frozen_model_sha256": "0744bcfaca396984a407f85943fcdd47e535348e5af861a8d90def5613a63afc",
+      "frozen_masks_sha256": "4d95be65044319e702a1b6324ae8b8ce87d3eab86a49c216aaf66ffdb802a8e1",
+      "current_workspace_model_differs": true,
+      "current_workspace_masks_differ": true,
+      "model_manifest_file_count": 20,
+      "model_manifest_paths_and_sizes_match": true,
+      "model_weights_rehashed": false,
+      "technical_status": "pass"
+    },
+    {
+      "label": "depth_off",
+      "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_off_20261027_001",
+      "request_sha256": "9d6f9d0418aeed009d3b602adf85dbdee057b10044f5d82f6de11d2e787f4970",
+      "results_sha256": "9c1befbb8751ed135a5ce7613ef3d0c270c8bc3d2b7c33c7c71c5be991a04794",
+      "summary_sha256": "258a5a226459006d5999a9e422401601ba168312b6fb4ec868ede5c0cc3c95ea",
+      "counts": {
+        "planned": 6,
+        "success": 6,
+        "failed": 0,
+        "missing": 0,
+        "duplicate_records": 0,
+        "unexpected_records": 0
+      },
+      "checks": {
+        "fixed_six_inputs_in_order": true,
+        "all_source_hashes_and_paths_match": true,
+        "full_unique_coverage": true,
+        "all_record_status_success": true,
+        "summary_matches_records": true,
+        "all_frozen_source_hashes_match": true,
+        "all_output_hashes_and_dimensions_match": true,
+        "diffusion_seeds_match_8_through_13": true,
+        "protected_pixels_and_composites_exact": true,
+        "actual_steps_and_resolution_match": true,
+        "frozen_prompt_matches_request": true,
+        "frozen_profile_matches_effective_config": true,
+        "depth_inputs_match_frozen_request": true
+      },
+      "frozen_source_hash_checks": {
+        "README.md": true,
+        "masks.py": true,
+        "model.py": true,
+        "workflow.py": true,
+        "config.json": true,
+        "report.py": true,
+        "retouch/validate.py": true,
+        "retouch/README.md": true,
+        "retouch/model.py": true,
+        "retouch/workflow.py": true,
+        "retouch/LICENSE": true,
+        "prompts/assembly.md": true,
+        "prompts/woodworking.md": true,
+        "prompts/home_kitchen.md": true,
+        "prompts/workshop.md": true,
+        "prompts/auto_repair.md": true,
+        "prompts/scenes.json": true,
+        "prompts/electronics.md": true,
+        "prompts/office.md": true,
+        "prompts/factory.md": true
+      },
+      "input_checks": [
+        {
+          "model_id": "00301161",
+          "rgb_sha256": "667c789dde9c7787c58f09a45de1c9d6d9db1923d417988651f9a5c11deec0a3",
+          "mask_sha256": "339361138020ca7a8d3d1e18c9388f09fa8257057084dbae06d4366dae15d58d",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00489180",
+          "rgb_sha256": "beb1bdff246ae6e99ca4ef1e21daac25911b28eeb5233add4361271c5af45145",
+          "mask_sha256": "7092f30e2a85999048a09fc64c706f2827600add3b1648384964d02376a7bae0",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00495463",
+          "rgb_sha256": "296e288b7dba9061d853238dfa5dba7bcd1fd48394841558fa3a17f4125eaf97",
+          "mask_sha256": "197b3d81682293517ecd0cab385db0f513f14ae912531a8862f71fe52e33224d",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00182999",
+          "rgb_sha256": "5f71311750821a46928fc9fc547b5f40d92f8dfcb91ac9bc6cf3194bce1bc2b4",
+          "mask_sha256": "dc0ba4cde6d310603e9a7363ae8fe18d79b98d15b5312b0659e1ed58a7cb4a68",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00269315",
+          "rgb_sha256": "825f5d125f9b1ed50fc6cafc167897ef18bbe3b72d4a4cf2a45ce277bda56cbb",
+          "mask_sha256": "ff0d16381bfb1173c4b665bc95d9dcab1aa6f934f5a7d038af9b9b9d89585d29",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00320493",
+          "rgb_sha256": "9a8e1096f5db8a4a4b725e53ce05dc968f4b3285ba3bd665f6a39c0592a45097",
+          "mask_sha256": "93fc38833e4b12a917c43db61cfde614374c38bb9b5b2bde53d4eb446faf3525",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        }
+      ],
+      "output_files": [
+        {
+          "model_id": "00301161",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_off_20261027_001/00301161/strength_0.65/generated.png",
+          "sha256": "755862d9592974ac28e6f214a3c8ba3a4d4db9414ee1bc7fbaa027a59d4ac509",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00301161",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_off_20261027_001/00301161/strength_0.65/protected.png",
+          "sha256": "88c8762b394e76ef06c816f9f4991cce6742ea14cecb5f4df9a8c2e85d45c84e",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_off_20261027_001/00489180/strength_0.65/generated.png",
+          "sha256": "c5cb81e5897f506134c93106340f27239c9b4a10978a4f854e935995bd40a999",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_off_20261027_001/00489180/strength_0.65/protected.png",
+          "sha256": "04c2b6f66b860dae7c77505a1b1e000c066f773a64cb3abe14c6c386a054a154",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_off_20261027_001/00495463/strength_0.65/generated.png",
+          "sha256": "45c8cd606f183ff4ca69cf7707f8df19009c4ce3f7d6e01bc519510e1faf6cad",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_off_20261027_001/00495463/strength_0.65/protected.png",
+          "sha256": "bc5857014e2e68874221f8711c6f0170856275e8170460d1f98379a00b3f4acb",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_off_20261027_001/00182999/strength_0.65/generated.png",
+          "sha256": "36275b1c21321b00c4438131db5e1cbb271cd90953d706bbce73a468e7805718",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_off_20261027_001/00182999/strength_0.65/protected.png",
+          "sha256": "eebbb66b8da00fbf0f7e511d47fdd86bce0093f2efa72d0013bc1daf6997b1b8",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_off_20261027_001/00269315/strength_0.65/generated.png",
+          "sha256": "eb49441068a17d14082f88f6761b00c0c6f33a034ac31cd9f03c793b543795d2",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_off_20261027_001/00269315/strength_0.65/protected.png",
+          "sha256": "e56cab1bda3d361d579ab44923ec1016df81af4da68dcda00c8326f77bb02184",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_off_20261027_001/00320493/strength_0.65/generated.png",
+          "sha256": "5b1a8062f16903e10ae793bc24189d236211a05ae9972780d915cbb8ac877b19",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_off_20261027_001/00320493/strength_0.65/protected.png",
+          "sha256": "7b6365c74ca739a20bcbc907837798c0df2c7697f301289e365e3f08c817f9ca",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        }
+      ],
+      "config": {
+        "pipeline": "flux_depth",
+        "processing_size": 512,
+        "num_inference_steps": 40,
+        "guidance_scale": 4.5,
+        "strengths": [
+          0.65
+        ],
+        "controlnet_dir": "/mnt/d/model/Flux1_ControlNet_Depth",
+        "controlnet_conditioning_scale": 0.0,
+        "depth_input_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_inputs_20261027_001",
+        "sampling_mask": "full_frame",
+        "resident_model": true,
+        "max_sequence_length": 512,
+        "protect_padding_px": 2,
+        "feather_px": 4
+      },
+      "candidate_role": "development_only_not_accepted",
+      "human_review": "pending",
+      "issues": [],
+      "protection_checks": [
+        {
+          "model_id": "00301161",
+          "strength": 0.65,
+          "protection_region": "full_frame",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 12589,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00489180",
+          "strength": 0.65,
+          "protection_region": "full_frame",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 12385,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00495463",
+          "strength": 0.65,
+          "protection_region": "full_frame",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 2913,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00182999",
+          "strength": 0.65,
+          "protection_region": "full_frame",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 3068,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00269315",
+          "strength": 0.65,
+          "protection_region": "full_frame",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 2637,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00320493",
+          "strength": 0.65,
+          "protection_region": "full_frame",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 2869,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        }
+      ],
+      "inference_checks": [
+        {
+          "model_id": "00301161",
+          "strength": 0.65,
+          "seed": 8,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "full_frame",
+          "masked_sampling_field_interpretation": "Pipeline class flag only; true does not imply CAD is masked when sampling_mask=full_frame."
+        },
+        {
+          "model_id": "00489180",
+          "strength": 0.65,
+          "seed": 9,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "full_frame",
+          "masked_sampling_field_interpretation": "Pipeline class flag only; true does not imply CAD is masked when sampling_mask=full_frame."
+        },
+        {
+          "model_id": "00495463",
+          "strength": 0.65,
+          "seed": 10,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "full_frame",
+          "masked_sampling_field_interpretation": "Pipeline class flag only; true does not imply CAD is masked when sampling_mask=full_frame."
+        },
+        {
+          "model_id": "00182999",
+          "strength": 0.65,
+          "seed": 11,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "full_frame",
+          "masked_sampling_field_interpretation": "Pipeline class flag only; true does not imply CAD is masked when sampling_mask=full_frame."
+        },
+        {
+          "model_id": "00269315",
+          "strength": 0.65,
+          "seed": 12,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "full_frame",
+          "masked_sampling_field_interpretation": "Pipeline class flag only; true does not imply CAD is masked when sampling_mask=full_frame."
+        },
+        {
+          "model_id": "00320493",
+          "strength": 0.65,
+          "seed": 13,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "full_frame",
+          "masked_sampling_field_interpretation": "Pipeline class flag only; true does not imply CAD is masked when sampling_mask=full_frame."
+        }
+      ],
+      "prompt_sha256": "42715530fa3c4e365d1ff3239ac6a52d18c8b1e51e3bc3401a6c1c3d1cf976a7",
+      "frozen_compare_script_sha256": "61f06820693da3be422d7f7428efa19532d9ac37184ffa0c998c3d87b4e33939",
+      "frozen_model_sha256": "b9b564586228a24f4457d8a9599873dff46b884f53a327ed3cc8e1ab43261c38",
+      "frozen_masks_sha256": "4d95be65044319e702a1b6324ae8b8ce87d3eab86a49c216aaf66ffdb802a8e1",
+      "current_workspace_model_differs": false,
+      "current_workspace_masks_differ": true,
+      "depth_input_hash_checks": {
+        "00301161": true,
+        "00489180": true,
+        "00495463": true,
+        "00182999": true,
+        "00269315": true,
+        "00320493": true
+      },
+      "model_manifest_file_count": 20,
+      "model_manifest_paths_and_sizes_match": true,
+      "model_weights_rehashed": false,
+      "technical_status": "pass"
+    },
+    {
+      "label": "depth_on",
+      "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_on_20261027_001",
+      "request_sha256": "2e44abb0b21fbb9461f90355e3940859c1fdbb197c4d7408f800e4130b323b2a",
+      "results_sha256": "76b13500c4c0bd1a141e7bbef39d3b20a5bb88647156cbbbd2e9eb9b3adade33",
+      "summary_sha256": "258a5a226459006d5999a9e422401601ba168312b6fb4ec868ede5c0cc3c95ea",
+      "counts": {
+        "planned": 6,
+        "success": 6,
+        "failed": 0,
+        "missing": 0,
+        "duplicate_records": 0,
+        "unexpected_records": 0
+      },
+      "checks": {
+        "fixed_six_inputs_in_order": true,
+        "all_source_hashes_and_paths_match": true,
+        "full_unique_coverage": true,
+        "all_record_status_success": true,
+        "summary_matches_records": true,
+        "all_frozen_source_hashes_match": true,
+        "all_output_hashes_and_dimensions_match": true,
+        "diffusion_seeds_match_8_through_13": true,
+        "protected_pixels_and_composites_exact": true,
+        "actual_steps_and_resolution_match": true,
+        "frozen_prompt_matches_request": true,
+        "frozen_profile_matches_effective_config": true,
+        "depth_inputs_match_frozen_request": true
+      },
+      "frozen_source_hash_checks": {
+        "README.md": true,
+        "masks.py": true,
+        "model.py": true,
+        "workflow.py": true,
+        "config.json": true,
+        "report.py": true,
+        "retouch/validate.py": true,
+        "retouch/README.md": true,
+        "retouch/model.py": true,
+        "retouch/workflow.py": true,
+        "retouch/LICENSE": true,
+        "prompts/assembly.md": true,
+        "prompts/woodworking.md": true,
+        "prompts/home_kitchen.md": true,
+        "prompts/workshop.md": true,
+        "prompts/auto_repair.md": true,
+        "prompts/scenes.json": true,
+        "prompts/electronics.md": true,
+        "prompts/office.md": true,
+        "prompts/factory.md": true
+      },
+      "input_checks": [
+        {
+          "model_id": "00301161",
+          "rgb_sha256": "667c789dde9c7787c58f09a45de1c9d6d9db1923d417988651f9a5c11deec0a3",
+          "mask_sha256": "339361138020ca7a8d3d1e18c9388f09fa8257057084dbae06d4366dae15d58d",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00489180",
+          "rgb_sha256": "beb1bdff246ae6e99ca4ef1e21daac25911b28eeb5233add4361271c5af45145",
+          "mask_sha256": "7092f30e2a85999048a09fc64c706f2827600add3b1648384964d02376a7bae0",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00495463",
+          "rgb_sha256": "296e288b7dba9061d853238dfa5dba7bcd1fd48394841558fa3a17f4125eaf97",
+          "mask_sha256": "197b3d81682293517ecd0cab385db0f513f14ae912531a8862f71fe52e33224d",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00182999",
+          "rgb_sha256": "5f71311750821a46928fc9fc547b5f40d92f8dfcb91ac9bc6cf3194bce1bc2b4",
+          "mask_sha256": "dc0ba4cde6d310603e9a7363ae8fe18d79b98d15b5312b0659e1ed58a7cb4a68",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00269315",
+          "rgb_sha256": "825f5d125f9b1ed50fc6cafc167897ef18bbe3b72d4a4cf2a45ce277bda56cbb",
+          "mask_sha256": "ff0d16381bfb1173c4b665bc95d9dcab1aa6f934f5a7d038af9b9b9d89585d29",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00320493",
+          "rgb_sha256": "9a8e1096f5db8a4a4b725e53ce05dc968f4b3285ba3bd665f6a39c0592a45097",
+          "mask_sha256": "93fc38833e4b12a917c43db61cfde614374c38bb9b5b2bde53d4eb446faf3525",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        }
+      ],
+      "output_files": [
+        {
+          "model_id": "00301161",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_on_20261027_001/00301161/strength_0.65/generated.png",
+          "sha256": "d65930c419cfefec615e8f6251ae910980e7d420e83971837ed3bdab844c8870",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00301161",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_on_20261027_001/00301161/strength_0.65/protected.png",
+          "sha256": "8e34dc9461b3d74a5ea12a06eadcce843052feb030ccf20c645651cb5434be80",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_on_20261027_001/00489180/strength_0.65/generated.png",
+          "sha256": "1a7e2adde236e51ea52e26fdb329aab16d4e6519e7e35635e61c41834ba999a2",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_on_20261027_001/00489180/strength_0.65/protected.png",
+          "sha256": "cecb3770466eafb00d8d5fefd4e0908148024da4f2e29020bed040ef4eb30e04",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_on_20261027_001/00495463/strength_0.65/generated.png",
+          "sha256": "03a78f81b2c7149dc807dba2cd4a443f8cdabccb87d5f2fd2bd040ed6cd5fe47",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_on_20261027_001/00495463/strength_0.65/protected.png",
+          "sha256": "0066962c7ae5641154ab0f29f35bfb919af949915a73ad2f70338d8663b4d9ad",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_on_20261027_001/00182999/strength_0.65/generated.png",
+          "sha256": "695064c60d3f5fd500541ed9b6598809e9d8a5521f3af975782850b1494f6d2d",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_on_20261027_001/00182999/strength_0.65/protected.png",
+          "sha256": "4c6015b8765d69606b91a764ff4d026a9d9635dc8efa7ea4f11ec3523a87a7af",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_on_20261027_001/00269315/strength_0.65/generated.png",
+          "sha256": "da9a0709c5f37499af6b10a6e23d1c90deb07e707396fad87249bdd87eda3fa0",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_on_20261027_001/00269315/strength_0.65/protected.png",
+          "sha256": "68ce3a6e76e92f884f28ea6886d9cd1defeb40589618175d37c41d87b73c7059",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_on_20261027_001/00320493/strength_0.65/generated.png",
+          "sha256": "7caf00446f2e4ac07deba7f0322afe6f62fcce2e9f3638b050513a3608dea650",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_on_20261027_001/00320493/strength_0.65/protected.png",
+          "sha256": "38be2d1c7cdb827651be34c745101a7933330a1e47ac97af466c375ae24a8cef",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        }
+      ],
+      "config": {
+        "pipeline": "flux_depth",
+        "processing_size": 512,
+        "num_inference_steps": 40,
+        "guidance_scale": 4.5,
+        "strengths": [
+          0.65
+        ],
+        "controlnet_dir": "/mnt/d/model/Flux1_ControlNet_Depth",
+        "controlnet_conditioning_scale": 0.5,
+        "depth_input_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_inputs_20261027_001",
+        "sampling_mask": "full_frame",
+        "resident_model": true,
+        "max_sequence_length": 512,
+        "protect_padding_px": 2,
+        "feather_px": 4
+      },
+      "candidate_role": "development_only_not_accepted",
+      "human_review": "pending",
+      "issues": [],
+      "protection_checks": [
+        {
+          "model_id": "00301161",
+          "strength": 0.65,
+          "protection_region": "full_frame",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 12589,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00489180",
+          "strength": 0.65,
+          "protection_region": "full_frame",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 12385,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00495463",
+          "strength": 0.65,
+          "protection_region": "full_frame",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 2913,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00182999",
+          "strength": 0.65,
+          "protection_region": "full_frame",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 3068,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00269315",
+          "strength": 0.65,
+          "protection_region": "full_frame",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 2637,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        },
+        {
+          "model_id": "00320493",
+          "strength": 0.65,
+          "protection_region": "full_frame",
+          "protected_mask_file": null,
+          "mask_evidence": "reconstructed_from_frozen_config_and_input_silhouette",
+          "saved_mask_sha256_at_audit": null,
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 2869,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true
+        }
+      ],
+      "inference_checks": [
+        {
+          "model_id": "00301161",
+          "strength": 0.65,
+          "seed": 8,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "full_frame",
+          "masked_sampling_field_interpretation": "Pipeline class flag only; true does not imply CAD is masked when sampling_mask=full_frame."
+        },
+        {
+          "model_id": "00489180",
+          "strength": 0.65,
+          "seed": 9,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "full_frame",
+          "masked_sampling_field_interpretation": "Pipeline class flag only; true does not imply CAD is masked when sampling_mask=full_frame."
+        },
+        {
+          "model_id": "00495463",
+          "strength": 0.65,
+          "seed": 10,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "full_frame",
+          "masked_sampling_field_interpretation": "Pipeline class flag only; true does not imply CAD is masked when sampling_mask=full_frame."
+        },
+        {
+          "model_id": "00182999",
+          "strength": 0.65,
+          "seed": 11,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "full_frame",
+          "masked_sampling_field_interpretation": "Pipeline class flag only; true does not imply CAD is masked when sampling_mask=full_frame."
+        },
+        {
+          "model_id": "00269315",
+          "strength": 0.65,
+          "seed": 12,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "full_frame",
+          "masked_sampling_field_interpretation": "Pipeline class flag only; true does not imply CAD is masked when sampling_mask=full_frame."
+        },
+        {
+          "model_id": "00320493",
+          "strength": 0.65,
+          "seed": 13,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "full_frame",
+          "masked_sampling_field_interpretation": "Pipeline class flag only; true does not imply CAD is masked when sampling_mask=full_frame."
+        }
+      ],
+      "prompt_sha256": "42715530fa3c4e365d1ff3239ac6a52d18c8b1e51e3bc3401a6c1c3d1cf976a7",
+      "frozen_compare_script_sha256": "61f06820693da3be422d7f7428efa19532d9ac37184ffa0c998c3d87b4e33939",
+      "frozen_model_sha256": "b9b564586228a24f4457d8a9599873dff46b884f53a327ed3cc8e1ab43261c38",
+      "frozen_masks_sha256": "4d95be65044319e702a1b6324ae8b8ce87d3eab86a49c216aaf66ffdb802a8e1",
+      "current_workspace_model_differs": false,
+      "current_workspace_masks_differ": true,
+      "depth_input_hash_checks": {
+        "00301161": true,
+        "00489180": true,
+        "00495463": true,
+        "00182999": true,
+        "00269315": true,
+        "00320493": true
+      },
+      "model_manifest_file_count": 20,
+      "model_manifest_paths_and_sizes_match": true,
+      "model_weights_rehashed": false,
+      "technical_status": "pass"
+    },
+    {
+      "label": "depth_guard",
+      "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001",
+      "request_sha256": "ef6a0f8e7a291a8f476bf6b308e1183a381c316a8d92bacbce9cdb3a0ba8caef",
+      "results_sha256": "f8f7980923eed769d9c1777aba08790611835eae475572d65b12ecc4b6217f36",
+      "summary_sha256": "258a5a226459006d5999a9e422401601ba168312b6fb4ec868ede5c0cc3c95ea",
+      "counts": {
+        "planned": 6,
+        "success": 6,
+        "failed": 0,
+        "missing": 0,
+        "duplicate_records": 0,
+        "unexpected_records": 0
+      },
+      "checks": {
+        "fixed_six_inputs_in_order": true,
+        "all_source_hashes_and_paths_match": true,
+        "full_unique_coverage": true,
+        "all_record_status_success": true,
+        "summary_matches_records": true,
+        "all_frozen_source_hashes_match": true,
+        "all_output_hashes_and_dimensions_match": true,
+        "diffusion_seeds_match_8_through_13": true,
+        "protected_pixels_and_composites_exact": true,
+        "guard_masks_cover_actual_holes_and_convex_hull": true,
+        "actual_steps_and_resolution_match": true,
+        "frozen_prompt_matches_request": true,
+        "frozen_profile_matches_effective_config": true,
+        "depth_inputs_match_frozen_request": true
+      },
+      "frozen_source_hash_checks": {
+        "README.md": true,
+        "masks.py": true,
+        "model.py": true,
+        "workflow.py": true,
+        "config.json": true,
+        "report.py": true,
+        "retouch/validate.py": true,
+        "retouch/README.md": true,
+        "retouch/model.py": true,
+        "retouch/workflow.py": true,
+        "retouch/LICENSE": true,
+        "prompts/assembly.md": true,
+        "prompts/woodworking.md": true,
+        "prompts/home_kitchen.md": true,
+        "prompts/workshop.md": true,
+        "prompts/auto_repair.md": true,
+        "prompts/scenes.json": true,
+        "prompts/electronics.md": true,
+        "prompts/office.md": true,
+        "prompts/factory.md": true
+      },
+      "input_checks": [
+        {
+          "model_id": "00301161",
+          "rgb_sha256": "667c789dde9c7787c58f09a45de1c9d6d9db1923d417988651f9a5c11deec0a3",
+          "mask_sha256": "339361138020ca7a8d3d1e18c9388f09fa8257057084dbae06d4366dae15d58d",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00489180",
+          "rgb_sha256": "beb1bdff246ae6e99ca4ef1e21daac25911b28eeb5233add4361271c5af45145",
+          "mask_sha256": "7092f30e2a85999048a09fc64c706f2827600add3b1648384964d02376a7bae0",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00495463",
+          "rgb_sha256": "296e288b7dba9061d853238dfa5dba7bcd1fd48394841558fa3a17f4125eaf97",
+          "mask_sha256": "197b3d81682293517ecd0cab385db0f513f14ae912531a8862f71fe52e33224d",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00182999",
+          "rgb_sha256": "5f71311750821a46928fc9fc547b5f40d92f8dfcb91ac9bc6cf3194bce1bc2b4",
+          "mask_sha256": "dc0ba4cde6d310603e9a7363ae8fe18d79b98d15b5312b0659e1ed58a7cb4a68",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00269315",
+          "rgb_sha256": "825f5d125f9b1ed50fc6cafc167897ef18bbe3b72d4a4cf2a45ce277bda56cbb",
+          "mask_sha256": "ff0d16381bfb1173c4b665bc95d9dcab1aa6f934f5a7d038af9b9b9d89585d29",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00320493",
+          "rgb_sha256": "9a8e1096f5db8a4a4b725e53ce05dc968f4b3285ba3bd665f6a39c0592a45097",
+          "mask_sha256": "93fc38833e4b12a917c43db61cfde614374c38bb9b5b2bde53d4eb446faf3525",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        }
+      ],
+      "output_files": [
+        {
+          "model_id": "00301161",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001/00301161/strength_0.65/generated.png",
+          "sha256": "bd916c5058d842cffe38d1af3d2199569e8929c5074f73c905b954165593f953",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00301161",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001/00301161/strength_0.65/protected.png",
+          "sha256": "b902501d61b703fed22d914366e918462d83e850d16970d1e1bbe6de477a352d",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001/00489180/strength_0.65/generated.png",
+          "sha256": "d1536feec1371d8b427b429838393cf35ea5674d1ae333d21f1fdecae839d29d",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001/00489180/strength_0.65/protected.png",
+          "sha256": "a180510f26f0520aeb45ae845c3d22ddc243c70e34fc0725356872caaee253f2",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001/00495463/strength_0.65/generated.png",
+          "sha256": "37344ca53462821a8824fbfc53ea6bbf2f918a77db0fc3161c1ea0df44f3a1d7",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001/00495463/strength_0.65/protected.png",
+          "sha256": "d03112534f8cdd1b0ce61e01b62e83dd9571b5331f916fdc9e311fc3673590a5",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001/00182999/strength_0.65/generated.png",
+          "sha256": "5891791def55b94cc30bd4db652f28b708a885e71bd02c8ad64b45651f8871f7",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001/00182999/strength_0.65/protected.png",
+          "sha256": "8bfe03b56a1b659f68aa1018abc08706933d06d432996bf33a263037de1495b4",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001/00269315/strength_0.65/generated.png",
+          "sha256": "cdfad15aaad43715bf5ff4891fd07a708c0fe3a34b99f49c0af6dce1f099bb04",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001/00269315/strength_0.65/protected.png",
+          "sha256": "285b03c37f67d385a0c6df7ba36b75af383b432d3193fb65fea990aa4dbf6d51",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001/00320493/strength_0.65/generated.png",
+          "sha256": "1a094859aedd34fe09ba863707a4f782463aae4b8d8fa3c1094351a3d3a5df77",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001/00320493/strength_0.65/protected.png",
+          "sha256": "0515b2e139f9e74cc5337fba7da2fc0504eb7cc16a6bca0576bd728498c81124",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        }
+      ],
+      "config": {
+        "pipeline": "flux_depth",
+        "processing_size": 512,
+        "num_inference_steps": 40,
+        "guidance_scale": 4.5,
+        "strengths": [
+          0.65
+        ],
+        "controlnet_dir": "/mnt/d/model/Flux1_ControlNet_Depth",
+        "controlnet_conditioning_scale": 0.5,
+        "depth_input_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_inputs_20261027_001",
+        "sampling_mask": "convex_hull",
+        "protect_padding_px": 6,
+        "feather_px": 8,
+        "resident_model": true,
+        "max_sequence_length": 512
+      },
+      "candidate_role": "development_only_not_accepted",
+      "human_review": "pending",
+      "issues": [],
+      "protection_checks": [
+        {
+          "model_id": "00301161",
+          "strength": 0.65,
+          "protection_region": "convex_hull",
+          "protected_mask_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001/00301161/strength_0.65/protected_mask.png",
+          "mask_evidence": "saved_mask",
+          "saved_mask_sha256_at_audit": "97063544ec83d6cfab6349aec75ee79cce5aafa32041ef307919ff14c4b97870",
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 16015,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true,
+          "saved_mask_exists": true,
+          "convex_hull_interior_pixels": 12593,
+          "convex_hull_background_pixels": 1187,
+          "all_convex_hull_interior_protected": true,
+          "enclosed_original_hole_pixels": 0,
+          "all_enclosed_holes_protected": true
+        },
+        {
+          "model_id": "00489180",
+          "strength": 0.65,
+          "protection_region": "convex_hull",
+          "protected_mask_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001/00489180/strength_0.65/protected_mask.png",
+          "mask_evidence": "saved_mask",
+          "saved_mask_sha256_at_audit": "87f02367adf97f907f49a004ac6580833a9b9fab0e68fada586ce73b6f0ce050",
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 14496,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true,
+          "saved_mask_exists": true,
+          "convex_hull_interior_pixels": 11393,
+          "convex_hull_background_pixels": 0,
+          "all_convex_hull_interior_protected": true,
+          "enclosed_original_hole_pixels": 0,
+          "all_enclosed_holes_protected": true
+        },
+        {
+          "model_id": "00495463",
+          "strength": 0.65,
+          "protection_region": "convex_hull",
+          "protected_mask_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001/00495463/strength_0.65/protected_mask.png",
+          "mask_evidence": "saved_mask",
+          "saved_mask_sha256_at_audit": "38573525964c0d5559690bf0fd34fb00090ae04786bdf23e549e2d016beaffae",
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 4668,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true,
+          "saved_mask_exists": true,
+          "convex_hull_interior_pixels": 2530,
+          "convex_hull_background_pixels": 337,
+          "all_convex_hull_interior_protected": true,
+          "enclosed_original_hole_pixels": 0,
+          "all_enclosed_holes_protected": true
+        },
+        {
+          "model_id": "00182999",
+          "strength": 0.65,
+          "protection_region": "convex_hull",
+          "protected_mask_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001/00182999/strength_0.65/protected_mask.png",
+          "mask_evidence": "saved_mask",
+          "saved_mask_sha256_at_audit": "bd7a1dea492b95424d333a259da3310e169718716e0ae1526705c0983051a29c",
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 6976,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true,
+          "saved_mask_exists": true,
+          "convex_hull_interior_pixels": 4678,
+          "convex_hull_background_pixels": 2395,
+          "all_convex_hull_interior_protected": true,
+          "enclosed_original_hole_pixels": 0,
+          "all_enclosed_holes_protected": true
+        },
+        {
+          "model_id": "00269315",
+          "strength": 0.65,
+          "protection_region": "convex_hull",
+          "protected_mask_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001/00269315/strength_0.65/protected_mask.png",
+          "mask_evidence": "saved_mask",
+          "saved_mask_sha256_at_audit": "fda3c776534ebe5cbc844547d93ffafa1bccc264dc68efedb08bd9db84de0662",
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 6037,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true,
+          "saved_mask_exists": true,
+          "convex_hull_interior_pixels": 3784,
+          "convex_hull_background_pixels": 1914,
+          "all_convex_hull_interior_protected": true,
+          "enclosed_original_hole_pixels": 0,
+          "all_enclosed_holes_protected": true
+        },
+        {
+          "model_id": "00320493",
+          "strength": 0.65,
+          "protection_region": "convex_hull",
+          "protected_mask_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001/00320493/strength_0.65/protected_mask.png",
+          "mask_evidence": "saved_mask",
+          "saved_mask_sha256_at_audit": "fa15d51926388d0067d76d4d2051eea0bd7631d39b406bfa3af99258b7b28756",
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 4270,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true,
+          "saved_mask_exists": true,
+          "convex_hull_interior_pixels": 2244,
+          "convex_hull_background_pixels": 15,
+          "all_convex_hull_interior_protected": true,
+          "enclosed_original_hole_pixels": 0,
+          "all_enclosed_holes_protected": true
+        }
+      ],
+      "inference_checks": [
+        {
+          "model_id": "00301161",
+          "strength": 0.65,
+          "seed": 8,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "convex_hull",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00489180",
+          "strength": 0.65,
+          "seed": 9,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "convex_hull",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00495463",
+          "strength": 0.65,
+          "seed": 10,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "convex_hull",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00182999",
+          "strength": 0.65,
+          "seed": 11,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "convex_hull",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00269315",
+          "strength": 0.65,
+          "seed": 12,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "convex_hull",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00320493",
+          "strength": 0.65,
+          "seed": 13,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "convex_hull",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        }
+      ],
+      "prompt_sha256": "3284da0f3ae2f1caed9bc471262eca47f1a4c077cca40e32cd592f155959ff2c",
+      "frozen_compare_script_sha256": "b73793eab1df2f06fdfaf0899c9ef816a538e7220c63cf2ead4341309ad9ec70",
+      "frozen_model_sha256": "b9b564586228a24f4457d8a9599873dff46b884f53a327ed3cc8e1ab43261c38",
+      "frozen_masks_sha256": "8a2bbe78bfaa79ffab18e8502506172eda79248ba98845c0338945ed4591aeac",
+      "current_workspace_model_differs": false,
+      "current_workspace_masks_differ": false,
+      "depth_input_hash_checks": {
+        "00301161": true,
+        "00489180": true,
+        "00495463": true,
+        "00182999": true,
+        "00269315": true,
+        "00320493": true
+      },
+      "model_manifest_file_count": 20,
+      "model_manifest_paths_and_sizes_match": true,
+      "model_weights_rehashed": false,
+      "technical_status": "pass"
+    },
+    {
+      "label": "depth_guard_1024",
+      "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001",
+      "request_sha256": "ea26c4ddf706c624643864de9ae2def592cc2440f494f8e397550cd7df375f35",
+      "results_sha256": "a57e343a5255806b968c729a75124513a5b727a02d80dee8f5ac2334a7369b88",
+      "summary_sha256": "258a5a226459006d5999a9e422401601ba168312b6fb4ec868ede5c0cc3c95ea",
+      "counts": {
+        "planned": 6,
+        "success": 6,
+        "failed": 0,
+        "missing": 0,
+        "duplicate_records": 0,
+        "unexpected_records": 0
+      },
+      "checks": {
+        "fixed_six_inputs_in_order": true,
+        "all_source_hashes_and_paths_match": true,
+        "full_unique_coverage": true,
+        "all_record_status_success": true,
+        "summary_matches_records": true,
+        "all_frozen_source_hashes_match": true,
+        "all_output_hashes_and_dimensions_match": true,
+        "diffusion_seeds_match_8_through_13": true,
+        "protected_pixels_and_composites_exact": true,
+        "guard_masks_cover_actual_holes_and_convex_hull": true,
+        "actual_steps_and_resolution_match": true,
+        "frozen_prompt_matches_request": true,
+        "frozen_profile_matches_effective_config": true,
+        "depth_inputs_match_frozen_request": true
+      },
+      "frozen_source_hash_checks": {
+        "README.md": true,
+        "masks.py": true,
+        "model.py": true,
+        "workflow.py": true,
+        "config.json": true,
+        "report.py": true,
+        "retouch/validate.py": true,
+        "retouch/README.md": true,
+        "retouch/model.py": true,
+        "retouch/workflow.py": true,
+        "retouch/LICENSE": true,
+        "prompts/assembly.md": true,
+        "prompts/woodworking.md": true,
+        "prompts/home_kitchen.md": true,
+        "prompts/workshop.md": true,
+        "prompts/auto_repair.md": true,
+        "prompts/scenes.json": true,
+        "prompts/electronics.md": true,
+        "prompts/office.md": true,
+        "prompts/factory.md": true
+      },
+      "input_checks": [
+        {
+          "model_id": "00301161",
+          "rgb_sha256": "667c789dde9c7787c58f09a45de1c9d6d9db1923d417988651f9a5c11deec0a3",
+          "mask_sha256": "339361138020ca7a8d3d1e18c9388f09fa8257057084dbae06d4366dae15d58d",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00489180",
+          "rgb_sha256": "beb1bdff246ae6e99ca4ef1e21daac25911b28eeb5233add4361271c5af45145",
+          "mask_sha256": "7092f30e2a85999048a09fc64c706f2827600add3b1648384964d02376a7bae0",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00495463",
+          "rgb_sha256": "296e288b7dba9061d853238dfa5dba7bcd1fd48394841558fa3a17f4125eaf97",
+          "mask_sha256": "197b3d81682293517ecd0cab385db0f513f14ae912531a8862f71fe52e33224d",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00182999",
+          "rgb_sha256": "5f71311750821a46928fc9fc547b5f40d92f8dfcb91ac9bc6cf3194bce1bc2b4",
+          "mask_sha256": "dc0ba4cde6d310603e9a7363ae8fe18d79b98d15b5312b0659e1ed58a7cb4a68",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00269315",
+          "rgb_sha256": "825f5d125f9b1ed50fc6cafc167897ef18bbe3b72d4a4cf2a45ce277bda56cbb",
+          "mask_sha256": "ff0d16381bfb1173c4b665bc95d9dcab1aa6f934f5a7d038af9b9b9d89585d29",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00320493",
+          "rgb_sha256": "9a8e1096f5db8a4a4b725e53ce05dc968f4b3285ba3bd665f6a39c0592a45097",
+          "mask_sha256": "93fc38833e4b12a917c43db61cfde614374c38bb9b5b2bde53d4eb446faf3525",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        }
+      ],
+      "output_files": [
+        {
+          "model_id": "00301161",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001/00301161/strength_0.5/generated.png",
+          "sha256": "eb92412f15d3e00fda4299416fd49288a02397db865a4056b15b7e49395e0e7f",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00301161",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001/00301161/strength_0.5/protected.png",
+          "sha256": "63a1e4207b1b2e78d621927c6eacdfbe5b1bd53d556d371c7c58ee938c55f931",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001/00489180/strength_0.5/generated.png",
+          "sha256": "b8a3ba2f7fee5a22ec1c72c18f461fcd9d449b1aecdf90b1b191ceb50dea18eb",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001/00489180/strength_0.5/protected.png",
+          "sha256": "41a8c4325621088f8aa7ac2f2a61310637a5a8862ed03aedf4a5a8beac77b8a2",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001/00495463/strength_0.5/generated.png",
+          "sha256": "d09f14ef2990650b3fc2fda11e00cd12158d6c04843282d23cc709c33c2f8cb5",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001/00495463/strength_0.5/protected.png",
+          "sha256": "314801291555caef0c10d1ec0ba5a6263dd6b209247f2b67a7a477c193017f2e",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001/00182999/strength_0.5/generated.png",
+          "sha256": "872aef681044b7778b4d5fb80d6b2fc46c0c5db890d2465c9d68f9677c6b2d3e",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001/00182999/strength_0.5/protected.png",
+          "sha256": "0aa252ffbc7d441b383ebbe087bad02ec03c69e2c0f02fb9c78cb1d4ec33990c",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001/00269315/strength_0.5/generated.png",
+          "sha256": "47df0c4c95c8a35476f2c901b9e098a678d3a7fdd7d80bcddde4cd783f4f489c",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001/00269315/strength_0.5/protected.png",
+          "sha256": "beb531e9bb1680b03c2b2b6af135d66b94b70a8b39ce9724ed53542e3680e600",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001/00320493/strength_0.5/generated.png",
+          "sha256": "7c9d44d203cb3f4b77fa99b2fd51d929ffe5bbd7a6ed566da52163b8f63c3c17",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001/00320493/strength_0.5/protected.png",
+          "sha256": "4b545c1a3f3a081e6c1a1964269bc0688d4edeb1528a18970f9e09a25ae03f3d",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        }
+      ],
+      "config": {
+        "pipeline": "flux_depth",
+        "processing_size": 1024,
+        "num_inference_steps": 40,
+        "guidance_scale": 4.5,
+        "strengths": [
+          0.5
+        ],
+        "controlnet_dir": "/mnt/d/model/Flux1_ControlNet_Depth",
+        "controlnet_conditioning_scale": 0.5,
+        "depth_input_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_inputs_20261027_001",
+        "sampling_mask": "convex_hull",
+        "protect_padding_px": 6,
+        "feather_px": 8,
+        "resident_model": true,
+        "max_sequence_length": 512
+      },
+      "candidate_role": "development_only_not_accepted",
+      "human_review": "pending",
+      "issues": [],
+      "protection_checks": [
+        {
+          "model_id": "00301161",
+          "strength": 0.5,
+          "protection_region": "convex_hull",
+          "protected_mask_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001/00301161/strength_0.5/protected_mask.png",
+          "mask_evidence": "saved_mask",
+          "saved_mask_sha256_at_audit": "97063544ec83d6cfab6349aec75ee79cce5aafa32041ef307919ff14c4b97870",
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 16015,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true,
+          "saved_mask_exists": true,
+          "convex_hull_interior_pixels": 12593,
+          "convex_hull_background_pixels": 1187,
+          "all_convex_hull_interior_protected": true,
+          "enclosed_original_hole_pixels": 0,
+          "all_enclosed_holes_protected": true
+        },
+        {
+          "model_id": "00489180",
+          "strength": 0.5,
+          "protection_region": "convex_hull",
+          "protected_mask_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001/00489180/strength_0.5/protected_mask.png",
+          "mask_evidence": "saved_mask",
+          "saved_mask_sha256_at_audit": "87f02367adf97f907f49a004ac6580833a9b9fab0e68fada586ce73b6f0ce050",
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 14496,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true,
+          "saved_mask_exists": true,
+          "convex_hull_interior_pixels": 11393,
+          "convex_hull_background_pixels": 0,
+          "all_convex_hull_interior_protected": true,
+          "enclosed_original_hole_pixels": 0,
+          "all_enclosed_holes_protected": true
+        },
+        {
+          "model_id": "00495463",
+          "strength": 0.5,
+          "protection_region": "convex_hull",
+          "protected_mask_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001/00495463/strength_0.5/protected_mask.png",
+          "mask_evidence": "saved_mask",
+          "saved_mask_sha256_at_audit": "38573525964c0d5559690bf0fd34fb00090ae04786bdf23e549e2d016beaffae",
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 4668,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true,
+          "saved_mask_exists": true,
+          "convex_hull_interior_pixels": 2530,
+          "convex_hull_background_pixels": 337,
+          "all_convex_hull_interior_protected": true,
+          "enclosed_original_hole_pixels": 0,
+          "all_enclosed_holes_protected": true
+        },
+        {
+          "model_id": "00182999",
+          "strength": 0.5,
+          "protection_region": "convex_hull",
+          "protected_mask_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001/00182999/strength_0.5/protected_mask.png",
+          "mask_evidence": "saved_mask",
+          "saved_mask_sha256_at_audit": "bd7a1dea492b95424d333a259da3310e169718716e0ae1526705c0983051a29c",
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 6976,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true,
+          "saved_mask_exists": true,
+          "convex_hull_interior_pixels": 4678,
+          "convex_hull_background_pixels": 2395,
+          "all_convex_hull_interior_protected": true,
+          "enclosed_original_hole_pixels": 0,
+          "all_enclosed_holes_protected": true
+        },
+        {
+          "model_id": "00269315",
+          "strength": 0.5,
+          "protection_region": "convex_hull",
+          "protected_mask_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001/00269315/strength_0.5/protected_mask.png",
+          "mask_evidence": "saved_mask",
+          "saved_mask_sha256_at_audit": "fda3c776534ebe5cbc844547d93ffafa1bccc264dc68efedb08bd9db84de0662",
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 6037,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true,
+          "saved_mask_exists": true,
+          "convex_hull_interior_pixels": 3784,
+          "convex_hull_background_pixels": 1914,
+          "all_convex_hull_interior_protected": true,
+          "enclosed_original_hole_pixels": 0,
+          "all_enclosed_holes_protected": true
+        },
+        {
+          "model_id": "00320493",
+          "strength": 0.5,
+          "protection_region": "convex_hull",
+          "protected_mask_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_1024_20261027_001/00320493/strength_0.5/protected_mask.png",
+          "mask_evidence": "saved_mask",
+          "saved_mask_sha256_at_audit": "fa15d51926388d0067d76d4d2051eea0bd7631d39b406bfa3af99258b7b28756",
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 4270,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true,
+          "saved_mask_exists": true,
+          "convex_hull_interior_pixels": 2244,
+          "convex_hull_background_pixels": 15,
+          "all_convex_hull_interior_protected": true,
+          "enclosed_original_hole_pixels": 0,
+          "all_enclosed_holes_protected": true
+        }
+      ],
+      "inference_checks": [
+        {
+          "model_id": "00301161",
+          "strength": 0.5,
+          "seed": 8,
+          "actual_steps": 20,
+          "expected_steps": 20,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7595109343528748,
+          "sampling_mask_from_frozen_config": "convex_hull",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00489180",
+          "strength": 0.5,
+          "seed": 9,
+          "actual_steps": 20,
+          "expected_steps": 20,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7595109343528748,
+          "sampling_mask_from_frozen_config": "convex_hull",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00495463",
+          "strength": 0.5,
+          "seed": 10,
+          "actual_steps": 20,
+          "expected_steps": 20,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7595109343528748,
+          "sampling_mask_from_frozen_config": "convex_hull",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00182999",
+          "strength": 0.5,
+          "seed": 11,
+          "actual_steps": 20,
+          "expected_steps": 20,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7595109343528748,
+          "sampling_mask_from_frozen_config": "convex_hull",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00269315",
+          "strength": 0.5,
+          "seed": 12,
+          "actual_steps": 20,
+          "expected_steps": 20,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7595109343528748,
+          "sampling_mask_from_frozen_config": "convex_hull",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00320493",
+          "strength": 0.5,
+          "seed": 13,
+          "actual_steps": 20,
+          "expected_steps": 20,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7595109343528748,
+          "sampling_mask_from_frozen_config": "convex_hull",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        }
+      ],
+      "prompt_sha256": "3284da0f3ae2f1caed9bc471262eca47f1a4c077cca40e32cd592f155959ff2c",
+      "frozen_compare_script_sha256": "b73793eab1df2f06fdfaf0899c9ef816a538e7220c63cf2ead4341309ad9ec70",
+      "frozen_model_sha256": "b9b564586228a24f4457d8a9599873dff46b884f53a327ed3cc8e1ab43261c38",
+      "frozen_masks_sha256": "8a2bbe78bfaa79ffab18e8502506172eda79248ba98845c0338945ed4591aeac",
+      "current_workspace_model_differs": false,
+      "current_workspace_masks_differ": false,
+      "depth_input_hash_checks": {
+        "00301161": true,
+        "00489180": true,
+        "00495463": true,
+        "00182999": true,
+        "00269315": true,
+        "00320493": true
+      },
+      "model_manifest_file_count": 20,
+      "model_manifest_paths_and_sizes_match": true,
+      "model_weights_rehashed": false,
+      "technical_status": "pass"
+    },
+    {
+      "label": "depth_guard_matte",
+      "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001",
+      "request_sha256": "737a5758e1295a492a05084e65009a283c64468a4a78000fb22aaddb4e74e067",
+      "results_sha256": "543b6186d7eef93e147e59f9cd9ab541984d4a9af8d338b64a0814058bef1c2e",
+      "summary_sha256": "258a5a226459006d5999a9e422401601ba168312b6fb4ec868ede5c0cc3c95ea",
+      "counts": {
+        "planned": 6,
+        "success": 6,
+        "failed": 0,
+        "missing": 0,
+        "duplicate_records": 0,
+        "unexpected_records": 0
+      },
+      "checks": {
+        "fixed_six_inputs_in_order": true,
+        "all_source_hashes_and_paths_match": true,
+        "full_unique_coverage": true,
+        "all_record_status_success": true,
+        "summary_matches_records": true,
+        "all_frozen_source_hashes_match": true,
+        "all_output_hashes_and_dimensions_match": true,
+        "diffusion_seeds_match_8_through_13": true,
+        "protected_pixels_and_composites_exact": true,
+        "guard_masks_cover_actual_holes_and_convex_hull": true,
+        "actual_steps_and_resolution_match": true,
+        "frozen_prompt_matches_request": true,
+        "frozen_profile_matches_effective_config": true,
+        "depth_inputs_match_frozen_request": true
+      },
+      "frozen_source_hash_checks": {
+        "README.md": true,
+        "masks.py": true,
+        "model.py": true,
+        "workflow.py": true,
+        "config.json": true,
+        "report.py": true,
+        "retouch/validate.py": true,
+        "retouch/README.md": true,
+        "retouch/model.py": true,
+        "retouch/workflow.py": true,
+        "retouch/LICENSE": true,
+        "prompts/assembly.md": true,
+        "prompts/woodworking.md": true,
+        "prompts/home_kitchen.md": true,
+        "prompts/workshop.md": true,
+        "prompts/auto_repair.md": true,
+        "prompts/scenes.json": true,
+        "prompts/electronics.md": true,
+        "prompts/office.md": true,
+        "prompts/factory.md": true
+      },
+      "input_checks": [
+        {
+          "model_id": "00301161",
+          "rgb_sha256": "667c789dde9c7787c58f09a45de1c9d6d9db1923d417988651f9a5c11deec0a3",
+          "mask_sha256": "339361138020ca7a8d3d1e18c9388f09fa8257057084dbae06d4366dae15d58d",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00489180",
+          "rgb_sha256": "beb1bdff246ae6e99ca4ef1e21daac25911b28eeb5233add4361271c5af45145",
+          "mask_sha256": "7092f30e2a85999048a09fc64c706f2827600add3b1648384964d02376a7bae0",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00495463",
+          "rgb_sha256": "296e288b7dba9061d853238dfa5dba7bcd1fd48394841558fa3a17f4125eaf97",
+          "mask_sha256": "197b3d81682293517ecd0cab385db0f513f14ae912531a8862f71fe52e33224d",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00182999",
+          "rgb_sha256": "5f71311750821a46928fc9fc547b5f40d92f8dfcb91ac9bc6cf3194bce1bc2b4",
+          "mask_sha256": "dc0ba4cde6d310603e9a7363ae8fe18d79b98d15b5312b0659e1ed58a7cb4a68",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00269315",
+          "rgb_sha256": "825f5d125f9b1ed50fc6cafc167897ef18bbe3b72d4a4cf2a45ce277bda56cbb",
+          "mask_sha256": "ff0d16381bfb1173c4b665bc95d9dcab1aa6f934f5a7d038af9b9b9d89585d29",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        },
+        {
+          "model_id": "00320493",
+          "rgb_sha256": "9a8e1096f5db8a4a4b725e53ce05dc968f4b3285ba3bd665f6a39c0592a45097",
+          "mask_sha256": "93fc38833e4b12a917c43db61cfde614374c38bb9b5b2bde53d4eb446faf3525",
+          "rgb_matches_request": true,
+          "rgb_matches_fixed_reference": true,
+          "mask_matches_fixed_reference": true,
+          "rgb_path_matches_fixed_reference": true,
+          "mask_path_matches_fixed_reference": true
+        }
+      ],
+      "output_files": [
+        {
+          "model_id": "00301161",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001/00301161/strength_0.65/generated.png",
+          "sha256": "0303990989e69a9c4168459175d782836829e43154424a17cb4d93449eb33281",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00301161",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001/00301161/strength_0.65/protected.png",
+          "sha256": "170016878ef3a60af12e45554bd10f91b84d94fce125302b50997d8e949c6daa",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001/00489180/strength_0.65/generated.png",
+          "sha256": "8a4e8787022145a738b522028f49afccdb5e038016a91a784c25f13f6b2f7858",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00489180",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001/00489180/strength_0.65/protected.png",
+          "sha256": "27b3bd1feb5a0b84f5bf5e4804c330835c2184d2dfdfa3082985381ed95ac474",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001/00495463/strength_0.65/generated.png",
+          "sha256": "d980ffd45cdec400ddc1c61f6f54cba38419a5032b2ceca870351d655785ad58",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00495463",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001/00495463/strength_0.65/protected.png",
+          "sha256": "21ce3c3d897e579c3300532ca1a9adc393493aa05620fcd56207e1b90e8982cc",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001/00182999/strength_0.65/generated.png",
+          "sha256": "2c931964b6a26e997c939df4a163079108f37397ff50721bd3401c9a7d2d9712",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00182999",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001/00182999/strength_0.65/protected.png",
+          "sha256": "fae900bbd4bdf8b912dcb56cfa0d632a7098220f02ff338407c102bdb5bc86ed",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001/00269315/strength_0.65/generated.png",
+          "sha256": "4d62a16fac1caeabd301105410242853f68937811fb57f0e38ac3d0fe2348b6e",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00269315",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001/00269315/strength_0.65/protected.png",
+          "sha256": "f3a7c508334c2713ee2c7bcda85e92ef8617db5b0ad959a4df702727d4a640a4",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "generated_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001/00320493/strength_0.65/generated.png",
+          "sha256": "9a1ea35e09f3f2cf54846ce960b3180dace800d8d644e04f2bd39e7a6e3b570c",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        },
+        {
+          "model_id": "00320493",
+          "role": "protected_file",
+          "path": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001/00320493/strength_0.65/protected.png",
+          "sha256": "5444bcde08bb525b7badb44b64fb1f612ca599c523d30e650e5d3a95efaff772",
+          "hash_matches_record": true,
+          "shape": [
+            512,
+            512,
+            3
+          ],
+          "shape_pass": true
+        }
+      ],
+      "config": {
+        "pipeline": "flux_depth",
+        "processing_size": 512,
+        "num_inference_steps": 40,
+        "guidance_scale": 4.5,
+        "strengths": [
+          0.65
+        ],
+        "controlnet_dir": "/mnt/d/model/Flux1_ControlNet_Depth",
+        "controlnet_conditioning_scale": 0.5,
+        "depth_input_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_inputs_20261027_001",
+        "sampling_mask": "convex_hull",
+        "protect_padding_px": 6,
+        "feather_px": 8,
+        "resident_model": true,
+        "max_sequence_length": 512
+      },
+      "candidate_role": "development_only_not_accepted",
+      "human_review": "pending",
+      "issues": [],
+      "protection_checks": [
+        {
+          "model_id": "00301161",
+          "strength": 0.65,
+          "protection_region": "convex_hull",
+          "protected_mask_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001/00301161/strength_0.65/protected_mask.png",
+          "mask_evidence": "saved_mask",
+          "saved_mask_sha256_at_audit": "97063544ec83d6cfab6349aec75ee79cce5aafa32041ef307919ff14c4b97870",
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 16015,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true,
+          "saved_mask_exists": true,
+          "convex_hull_interior_pixels": 12593,
+          "convex_hull_background_pixels": 1187,
+          "all_convex_hull_interior_protected": true,
+          "enclosed_original_hole_pixels": 0,
+          "all_enclosed_holes_protected": true
+        },
+        {
+          "model_id": "00489180",
+          "strength": 0.65,
+          "protection_region": "convex_hull",
+          "protected_mask_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001/00489180/strength_0.65/protected_mask.png",
+          "mask_evidence": "saved_mask",
+          "saved_mask_sha256_at_audit": "87f02367adf97f907f49a004ac6580833a9b9fab0e68fada586ce73b6f0ce050",
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 14496,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true,
+          "saved_mask_exists": true,
+          "convex_hull_interior_pixels": 11393,
+          "convex_hull_background_pixels": 0,
+          "all_convex_hull_interior_protected": true,
+          "enclosed_original_hole_pixels": 0,
+          "all_enclosed_holes_protected": true
+        },
+        {
+          "model_id": "00495463",
+          "strength": 0.65,
+          "protection_region": "convex_hull",
+          "protected_mask_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001/00495463/strength_0.65/protected_mask.png",
+          "mask_evidence": "saved_mask",
+          "saved_mask_sha256_at_audit": "38573525964c0d5559690bf0fd34fb00090ae04786bdf23e549e2d016beaffae",
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 4668,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true,
+          "saved_mask_exists": true,
+          "convex_hull_interior_pixels": 2530,
+          "convex_hull_background_pixels": 337,
+          "all_convex_hull_interior_protected": true,
+          "enclosed_original_hole_pixels": 0,
+          "all_enclosed_holes_protected": true
+        },
+        {
+          "model_id": "00182999",
+          "strength": 0.65,
+          "protection_region": "convex_hull",
+          "protected_mask_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001/00182999/strength_0.65/protected_mask.png",
+          "mask_evidence": "saved_mask",
+          "saved_mask_sha256_at_audit": "bd7a1dea492b95424d333a259da3310e169718716e0ae1526705c0983051a29c",
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 6976,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true,
+          "saved_mask_exists": true,
+          "convex_hull_interior_pixels": 4678,
+          "convex_hull_background_pixels": 2395,
+          "all_convex_hull_interior_protected": true,
+          "enclosed_original_hole_pixels": 0,
+          "all_enclosed_holes_protected": true
+        },
+        {
+          "model_id": "00269315",
+          "strength": 0.65,
+          "protection_region": "convex_hull",
+          "protected_mask_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001/00269315/strength_0.65/protected_mask.png",
+          "mask_evidence": "saved_mask",
+          "saved_mask_sha256_at_audit": "fda3c776534ebe5cbc844547d93ffafa1bccc264dc68efedb08bd9db84de0662",
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 6037,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true,
+          "saved_mask_exists": true,
+          "convex_hull_interior_pixels": 3784,
+          "convex_hull_background_pixels": 1914,
+          "all_convex_hull_interior_protected": true,
+          "enclosed_original_hole_pixels": 0,
+          "all_enclosed_holes_protected": true
+        },
+        {
+          "model_id": "00320493",
+          "strength": 0.65,
+          "protection_region": "convex_hull",
+          "protected_mask_file": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001/00320493/strength_0.65/protected_mask.png",
+          "mask_evidence": "saved_mask",
+          "saved_mask_sha256_at_audit": "fa15d51926388d0067d76d4d2051eea0bd7631d39b406bfa3af99258b7b28756",
+          "saved_mask_matches_configured_region": true,
+          "all_original_cad_pixels_protected": true,
+          "protected_pixels": 4270,
+          "maximum_original_pixel_error_in_protection": 0,
+          "maximum_original_cad_pixel_error": 0,
+          "entire_composite_max_error_from_independent_recomposition": 0,
+          "recorded_protected_pixels_match": true,
+          "recorded_protected_error_match": true,
+          "recorded_raw_target_mae_match": true,
+          "saved_mask_exists": true,
+          "convex_hull_interior_pixels": 2244,
+          "convex_hull_background_pixels": 15,
+          "all_convex_hull_interior_protected": true,
+          "enclosed_original_hole_pixels": 0,
+          "all_enclosed_holes_protected": true
+        }
+      ],
+      "inference_checks": [
+        {
+          "model_id": "00301161",
+          "strength": 0.65,
+          "seed": 8,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "convex_hull",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00489180",
+          "strength": 0.65,
+          "seed": 9,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "convex_hull",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00495463",
+          "strength": 0.65,
+          "seed": 10,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "convex_hull",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00182999",
+          "strength": 0.65,
+          "seed": 11,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "convex_hull",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00269315",
+          "strength": 0.65,
+          "seed": 12,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "convex_hull",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        },
+        {
+          "model_id": "00320493",
+          "strength": 0.65,
+          "seed": 13,
+          "actual_steps": 26,
+          "expected_steps": 26,
+          "steps_match": true,
+          "processing_resolution_matches_config": true,
+          "initial_sigma": 0.7771334648132324,
+          "sampling_mask_from_frozen_config": "convex_hull",
+          "masked_sampling_field_interpretation": "Pipeline class flag; effective region follows frozen mask configuration."
+        }
+      ],
+      "prompt_sha256": "11d558c9fcfddfad0335902c49a8611443f009e8b6542339aad37ea101b0d7ba",
+      "frozen_compare_script_sha256": "b73793eab1df2f06fdfaf0899c9ef816a538e7220c63cf2ead4341309ad9ec70",
+      "frozen_model_sha256": "b9b564586228a24f4457d8a9599873dff46b884f53a327ed3cc8e1ab43261c38",
+      "frozen_masks_sha256": "8a2bbe78bfaa79ffab18e8502506172eda79248ba98845c0338945ed4591aeac",
+      "current_workspace_model_differs": false,
+      "current_workspace_masks_differ": false,
+      "depth_input_hash_checks": {
+        "00301161": true,
+        "00489180": true,
+        "00495463": true,
+        "00182999": true,
+        "00269315": true,
+        "00320493": true
+      },
+      "model_manifest_file_count": 20,
+      "model_manifest_paths_and_sizes_match": true,
+      "model_weights_rehashed": false,
+      "technical_status": "pass"
+    }
+  ],
+  "not_verified": [
+    "Large model weights were not rehashed in this audit; stored weight manifests and paths/sizes were inspected. Prior download/hash verification is not repeated here.",
+    "No inference was rerun. Runtime CUDA/RNG execution cannot be reconstructed solely from saved images; frozen execution source, requests and recorded inference fields were checked.",
+    "No geometric correctness, hole/topology preservation, photorealism, iPhone ISP correspondence, or downstream training utility is certified.",
+    "Visual interpretation remains separate from this technical audit; all candidates remain unaccepted development outputs.",
+    "All six source binary object masks have zero enclosed 2D background holes, so the enclosed-hole coverage predicate is vacuous on this panel. Convex-hull background coverage is nonvacuous, including 1,914 pixels inside the arch region of 00269315; this does not constitute a separate drilled-hole geometry test."
+  ],
+  "totals": {
+    "planned": 72,
+    "success": 72,
+    "failed": 0,
+    "missing": 0,
+    "duplicate_records": 0,
+    "unexpected_records": 0,
+    "verified_candidate_output_image_files": 120
+  },
+  "status": "technical_pass_only",
+  "errors": [],
+  "photographic_goal": "not_demonstrated_by_this_audit",
+  "training_data_acceptance": "not_accepted_development_candidates",
+  "evidence_interpretation": [
+    "Guard saved masks cover original CAD, enclosed holes and the convex-hull interior. This is a compositing guarantee for those pixels, not a guarantee of unchanged geometry outside the protection region.",
+    "No-record or absent summary would be reported as incomplete rather than inferred complete from elapsed time. All eight run summaries were present at audit time.",
+    "RGB difference, clipping, successful generation and exact pasted pixels do not measure realism.",
+    "Kontext and Krea comparisons differ in generation mechanism and prompts; they are candidate comparisons rather than a single-factor model ablation.",
+    "depth_off and depth_on use the same pipeline/full-frame sampling, fixed source/seed/prompt and differ only in conditioning scale. Later guard and matte runs are sequential development, not frozen independent evaluation."
+  ],
+  "depth_control_pair": {
+    "config_differences": {
+      "controlnet_conditioning_scale": [
+        0.0,
+        0.5
+      ]
+    },
+    "prompt_equal": true,
+    "samples_equal": true,
+    "frozen_model_equal": true,
+    "frozen_masks_equal": true,
+    "large_weight_manifests_equal": true,
+    "controlnet_manifests_equal": true
+  }
+}

@@ -1,0 +1,382 @@
+{
+  "schema_version": 1,
+  "audited_at_utc": "2026-10-23T07:14:29.572564+00:00",
+  "status": "evidence_and_usage_verified",
+  "scope": "只读核对现存证据、文件摘要、图像尺寸及会话 metadata/token 记录；未运行模型或 Blender，未读取 reasoning 正文。唯一写入为本报告。",
+  "template_dir": "/mnt/d/data/cad_scene_templates/factory_20261023_001",
+  "workflow": {
+    "status": "ready_for_review",
+    "round_00_technical_status": "pass",
+    "round_00_agent_decision": "ready",
+    "human_review": "pending",
+    "repairs_used": 0,
+    "max_repairs": 3,
+    "model": "gpt-6-astra",
+    "reasoning_effort": "ultra",
+    "reference_mode": "quality_only",
+    "quality_reference_has_no_base_project_fields": true
+  },
+  "hash_checks": {
+    "host_files": {
+      "checked": 18,
+      "passed": true,
+      "mismatches": []
+    },
+    "reference_files": {
+      "checked": 4,
+      "passed": true,
+      "mismatches": []
+    },
+    "host_snapshot_files": {
+      "checked": 18,
+      "passed": true,
+      "mismatches": []
+    },
+    "round_00_evidence_files": {
+      "checked": 95,
+      "passed": true,
+      "mismatches": []
+    },
+    "asset_files": {
+      "checked": 61,
+      "passed": true,
+      "mismatches": []
+    },
+    "host_manifest_equals_request": true,
+    "authored_snapshot_files": {
+      "checked": 14,
+      "passed": true,
+      "mismatches": []
+    },
+    "version_002_matches_round_00": true,
+    "formal_render_matches_request": true,
+    "formal_images_valid": true,
+    "usage_consistent": true
+  },
+  "source_manifests": {
+    "request": {
+      "path": "/mnt/d/data/cad_scene_templates/factory_20261023_001/request.json",
+      "sha256": "4c87876d4982cebeba7bed1657f80ac5e3dbd388111ecff594ec902d473a28e6"
+    },
+    "evidence": {
+      "path": "/mnt/d/data/cad_scene_templates/factory_20261023_001/workflow/round_00/evidence.json",
+      "sha256": "cf56f12402b0cb4a683464760218f5eaa8e64ea2c2786462e54bb5ad4afbbbc1"
+    },
+    "host_manifest": {
+      "path": "/mnt/d/data/cad_scene_templates/factory_20261023_001/workflow/host_source/manifest.json",
+      "sha256": "e8a65aa8087ae93a15fd5fe3428e7794a9d3729e2fed52567e5f5948f568e47c"
+    }
+  },
+  "authored_version": {
+    "directory": "/mnt/d/data/cad_scene_templates/factory_20261023_001/workflow/authored_versions/version_002",
+    "observed_at_utc": "2026-10-23T07:03:03.186579+00:00",
+    "files": [
+      {
+        "name": "build_scene.py",
+        "sha256": "3517df2dacfe4721caa3eb170efe8ea58a05fa833ab3aa66bfc30ec456ffcc26",
+        "matches_round_00_evidence": true,
+        "matches_snapshot_manifest": true,
+        "matches_current_template": true
+      },
+      {
+        "name": "views.json",
+        "sha256": "cebe0b19d7d985344ce2babc047c1e43dad16106c36a672b3559771bb0e0e751",
+        "matches_round_00_evidence": true,
+        "matches_snapshot_manifest": true,
+        "matches_current_template": true
+      },
+      {
+        "name": "scene_plan.md",
+        "sha256": "8f5c388721ff643396bdaf973cb19612daed22f5ea5e209d0cab869e97268893",
+        "matches_round_00_evidence": true,
+        "matches_snapshot_manifest": true,
+        "matches_current_template": true
+      },
+      {
+        "name": "assets.json",
+        "sha256": "1126d7e5f560b33d5f7a62efcb04244bdd8ac93891fa7a2537e9bcb86e09a6b9",
+        "matches_round_00_evidence": true,
+        "matches_snapshot_manifest": true,
+        "matches_current_template": true
+      }
+    ],
+    "retention_note": "authored_versions 是运行中发现逐版源码留存缺口后新增的外部不可变快照；不改变冻结宿主源码或场景。首版 builder/views 从 item_38 字面 heredoc 恢复，不宣称首版完整 manifest/plan 快照。"
+  },
+  "assets": {
+    "asset_count": 11,
+    "file_count": 61,
+    "bytes": 156778605,
+    "providers": [
+      "ambientcg",
+      "polyhaven"
+    ],
+    "licenses": [
+      "CC0-1.0"
+    ],
+    "all_inside_template": true
+  },
+  "formal_render": {
+    "report": "/mnt/d/data/cad_scene_templates/factory_20261023_001/workflow/round_00/preview/renders/render_report.json",
+    "status": "pass",
+    "planned": 6,
+    "success": 6,
+    "failed": 0,
+    "samples": 128,
+    "seed": 8,
+    "device": "OPTIX",
+    "gpu_index": 0,
+    "devices": [
+      "NVIDIA GeForce RTX 4090"
+    ],
+    "blender_version": "5.2.2 LTS",
+    "elapsed_seconds": 34.671051468933,
+    "color_management": {
+      "view_transform": "AgX",
+      "look": "AgX - Medium High Contrast",
+      "exposure": 0.0,
+      "gamma": 1.0
+    },
+    "views": [
+      {
+        "id": "room_overview",
+        "path": "/mnt/d/data/cad_scene_templates/factory_20261023_001/workflow/round_00/preview/renders/room_overview.png",
+        "status": "success",
+        "resolution": [
+          1200,
+          900
+        ],
+        "matches_camera_resolution": true,
+        "sha256": "192b385d475860ccc4c2d8518c59e171be80ef5f5a7e8375599727939e048fb7",
+        "matches_evidence": true
+      },
+      {
+        "id": "room_reverse",
+        "path": "/mnt/d/data/cad_scene_templates/factory_20261023_001/workflow/round_00/preview/renders/room_reverse.png",
+        "status": "success",
+        "resolution": [
+          1200,
+          900
+        ],
+        "matches_camera_resolution": true,
+        "sha256": "134852c5f8e82d6ab987f276fbf33daef54d18a8b8e959d8728dc7848ed28f1e",
+        "matches_evidence": true
+      },
+      {
+        "id": "workbench_context",
+        "path": "/mnt/d/data/cad_scene_templates/factory_20261023_001/workflow/round_00/preview/renders/workbench_context.png",
+        "status": "success",
+        "resolution": [
+          1200,
+          900
+        ],
+        "matches_camera_resolution": true,
+        "sha256": "feafd00a89d7a16204b7b47bb2041d6691a9a172080ac77e296a96bd2cd474b6",
+        "matches_evidence": true
+      },
+      {
+        "id": "workbench_detail",
+        "path": "/mnt/d/data/cad_scene_templates/factory_20261023_001/workflow/round_00/preview/renders/workbench_detail.png",
+        "status": "success",
+        "resolution": [
+          1200,
+          900
+        ],
+        "matches_camera_resolution": true,
+        "sha256": "adaf10a198494e56a443af0019e04664fa01699260797dccc789c9cc91aeb830",
+        "matches_evidence": true
+      },
+      {
+        "id": "surface_detail",
+        "path": "/mnt/d/data/cad_scene_templates/factory_20261023_001/workflow/round_00/preview/renders/surface_detail.png",
+        "status": "success",
+        "resolution": [
+          1200,
+          900
+        ],
+        "matches_camera_resolution": true,
+        "sha256": "d0ae59968e64e5372d0ffaa1fa7d582a7bebd65590a9b7a0148600d76938d566",
+        "matches_evidence": true
+      },
+      {
+        "id": "alternate_view",
+        "path": "/mnt/d/data/cad_scene_templates/factory_20261023_001/workflow/round_00/preview/renders/alternate_view.png",
+        "status": "success",
+        "resolution": [
+          1200,
+          900
+        ],
+        "matches_camera_resolution": true,
+        "sha256": "afa9d01c237c0d22348974724b3a32bed86d57e0de18138c1733a26e09d5ce79",
+        "matches_evidence": true
+      }
+    ],
+    "build_status": "pass",
+    "dependency_count": 62,
+    "missing_dependencies": [],
+    "external_dependencies": [],
+    "relocation_build": "本审计未执行；由主控另行记录。"
+  },
+  "internal_renders": [
+    {
+      "report": "/mnt/d/data/cad_scene_templates/factory_20261023_001/previews/render_01/render_report.json",
+      "samples": 48,
+      "seed": 8,
+      "success": 6,
+      "failed": 0,
+      "elapsed_seconds": 22.39949312398676
+    },
+    {
+      "report": "/mnt/d/data/cad_scene_templates/factory_20261023_001/previews/render_02/render_report.json",
+      "samples": 64,
+      "seed": 8,
+      "success": 6,
+      "failed": 0,
+      "elapsed_seconds": 30.08155798004009
+    },
+    {
+      "report": "/mnt/d/data/cad_scene_templates/factory_20261023_001/previews/render_03/render_report.json",
+      "samples": 64,
+      "seed": 8,
+      "success": 6,
+      "failed": 0,
+      "elapsed_seconds": 30.56545480596833
+    }
+  ],
+  "protocol_deviations": [
+    {
+      "item": "first_internal_preview_samples",
+      "planned": 64,
+      "actual": 48,
+      "source": "/mnt/d/data/cad_scene_templates/factory_20261023_001/previews/render_01/render_report.json",
+      "note": "后续内部 render_02/render_03 为 64，正式 round_00 为 128；保留首轮偏差。"
+    }
+  ],
+  "usage": {
+    "source": "/root/.codex/sessions/2026/10/23/rollout-2026-10-23T06-37-49-01a1677a-e314-7e02-a721-9eb70a5831cd.jsonl",
+    "session_metadata": {
+      "id": "01a1677a-e314-7e02-a721-9eb70a5831cd",
+      "timestamp": "2026-10-23T06:37:49.206Z",
+      "cwd": "/mnt/d/data/cad_scene_templates/factory_20261023_001",
+      "originator": "codex_exec",
+      "cli_version": "0.160.1",
+      "model_provider": "openai",
+      "source": "exec"
+    },
+    "method": "按 (thread_id, response_id) 去重，逐 response payload.usage 求和；逐回合按 turn_id 分组，并核对最终 turn_token_usage 与 CLI 累计差值。",
+    "unique_response_count": 42,
+    "duplicate_record_count": 0,
+    "conflicting_duplicate_count": 0,
+    "turns": [
+      {
+        "stage": "create",
+        "turn_id": "01a1677a-e359-7260-85ee-747378ecd65d",
+        "result_file": "/mnt/d/data/cad_scene_templates/factory_20261023_001/workflow/create/result.json",
+        "status": "completed",
+        "returncode": 0,
+        "actual_model": {
+          "model": "gpt-6-astra",
+          "effort": "ultra",
+          "cwd": "/mnt/d/data/cad_scene_templates/factory_20261023_001"
+        },
+        "timing": {
+          "started_at_utc": "2026-10-23T06:37:49.277Z",
+          "start_event_ordinal": 1,
+          "completed_at_utc": "2026-10-23T07:04:16.982Z",
+          "completion_event_ordinal": 349,
+          "duration_ms": 1587706,
+          "time_to_first_token_ms": 6023
+        },
+        "unique_response_count": 39,
+        "incremental_usage": {
+          "input_tokens": 3102230,
+          "cached_input_tokens": 3007360,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 32503,
+          "reasoning_output_tokens": 10906,
+          "total_tokens": 3134733
+        },
+        "noncached_input_tokens": 94870,
+        "cli_cumulative_usage": {
+          "input_tokens": 3102230,
+          "cached_input_tokens": 3007360,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 32503,
+          "reasoning_output_tokens": 10906
+        },
+        "unique_usage_equals_final_turn_token_usage": true,
+        "cli_usage_equals_thread_cumulative": true,
+        "cli_delta_equals_unique_response_sum": true
+      },
+      {
+        "stage": "inspect",
+        "turn_id": "01a16794-4c2d-7121-9af3-dff0fd6c29a4",
+        "result_file": "/mnt/d/data/cad_scene_templates/factory_20261023_001/workflow/round_00/inspect/result.json",
+        "status": "completed",
+        "returncode": 0,
+        "actual_model": {
+          "model": "gpt-6-astra",
+          "effort": "ultra",
+          "cwd": "/mnt/d/data/cad_scene_templates/factory_20261023_001"
+        },
+        "timing": {
+          "started_at_utc": "2026-10-23T07:05:34.516Z",
+          "start_event_ordinal": 352,
+          "completed_at_utc": "2026-10-23T07:11:05.968Z",
+          "completion_event_ordinal": 390,
+          "duration_ms": 331452,
+          "time_to_first_token_ms": 81259
+        },
+        "unique_response_count": 3,
+        "incremental_usage": {
+          "input_tokens": 460682,
+          "cached_input_tokens": 301568,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 3284,
+          "reasoning_output_tokens": 2247,
+          "total_tokens": 463966
+        },
+        "noncached_input_tokens": 159114,
+        "cli_cumulative_usage": {
+          "input_tokens": 3562912,
+          "cached_input_tokens": 3308928,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 35787,
+          "reasoning_output_tokens": 13153
+        },
+        "unique_usage_equals_final_turn_token_usage": true,
+        "cli_usage_equals_thread_cumulative": true,
+        "cli_delta_equals_unique_response_sum": true
+      }
+    ],
+    "session_total": {
+      "input_tokens": 3562912,
+      "cached_input_tokens": 3308928,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 35787,
+      "reasoning_output_tokens": 13153,
+      "total_tokens": 3598699
+    },
+    "session_noncached_input_tokens": 253984,
+    "semantics": [
+      "CLI inspect result.usage 为同一 session 的累计值，不能与 create result.usage 再相加。",
+      "cached_input_tokens 是 input_tokens 的子集；reasoning_output_tokens 是 output_tokens 的子集；total_tokens=input_tokens+output_tokens。",
+      "这是 ChatGPT 账号下的 token 用量，不是实际 credits、订阅额度或美元账单；没有按 API 单价估算费用。"
+    ]
+  },
+  "timing": {
+    "method": "取会话 task_started/task_complete 的 UTC 事件时间和显式 duration_ms；未使用文件 mtime。",
+    "first_turn_started_at_utc": "2026-10-23T06:37:49.277Z",
+    "last_turn_completed_at_utc": "2026-10-23T07:11:05.968Z",
+    "first_start_to_last_completion_seconds": 1996.691,
+    "sum_turn_duration_seconds": 1919.158,
+    "between_turns_seconds": 77.534,
+    "host_formal_render_report_seconds": 34.671051468933,
+    "build_process_seconds": null,
+    "limits": "回合耗时包含该回合工具调用；首尾跨度覆盖两回合及中间独立构建/渲染间隔，不等于模型纯计算耗时。没有可核验的外围进程启动/结束或构建进程独立计时，故未推算。"
+  },
+  "remaining_limits": [
+    "ready_for_review 和 Agent ready 不等于人工接受；human_review 仍为 pending。",
+    "host_source 不是独立完整 Python 包：call_llm.py 顶层读取的 prompts/DEVELOPER_INSTRUCTIONS.md 未列入冻结 host_files；恢复完整宿主仍需结合 git.json 中 commit 和 tracked.diff。",
+    "本审计验证文件、参数与溯源一致性，不把技术通过当作视觉质量结论。"
+  ]
+}

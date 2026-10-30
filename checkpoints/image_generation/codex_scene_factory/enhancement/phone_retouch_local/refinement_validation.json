@@ -1,0 +1,35 @@
+{
+  "status": "pass",
+  "planned_outputs": 12,
+  "complete_outputs": 12,
+  "source_hashes_unchanged": true,
+  "mask_hashes_unchanged": true,
+  "all_shapes": [
+    512,
+    512,
+    3
+  ],
+  "maximum_projection_recompute_error_255": 0,
+  "reviewed_all_six": true,
+  "device": "cpu",
+  "threads": 4,
+  "new_model_download": false,
+  "runtime": {
+    "planned_images": 12,
+    "success_images": 12,
+    "failed": 0,
+    "missing": 0,
+    "parameter_count": 1715779,
+    "inference_seconds": 1.7587539819069207,
+    "projection_seconds": 1.611851589055732,
+    "human_review": "pending",
+    "realism_gain": "not_established"
+  },
+  "source": {
+    "run.py": "910a71f7559c6816686afab28d1060638a11efacb7957874bdf42e0e2775a5bd",
+    "refinement_metrics.py": "d3a364f79acae266531c367c0aae6a4d6189b220a69d44fc73508c4f4a535f22",
+    "REFINEMENT_SPEC.md": "22f98a8b15c2b20815b40c0ceffecf8a5209f189b6b2b9667974c91ec003a793",
+    "refinement_samples.json": "db8490b95c6184f6191b6dfb96614d2486c7a772da4dae2171fb314ecf8eeba8"
+  },
+  "quality_status": "no_clear_benefit; not_default; human_pending"
+}

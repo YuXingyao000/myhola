@@ -1,0 +1,48 @@
+{
+  "type": "object",
+  "properties": {
+    "reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "region_id": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "keep",
+              "revise",
+              "drop"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "suggested_change": {
+            "type": "string"
+          },
+          "inspected_images": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "region_id",
+          "decision",
+          "reason",
+          "suggested_change",
+          "inspected_images"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "reviews"
+  ],
+  "additionalProperties": false
+}

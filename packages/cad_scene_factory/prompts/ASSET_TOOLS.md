@@ -79,9 +79,14 @@ workshop_003/
 
 `2k` is the asset variant directory. Sketchfab and local assets use `original`, retaining their existing file resolution; `--resolution` does not resample them. Multiple resolutions can coexist.
 
-The template contains actual files, not symlinks to a shared cache. Build scripts should resolve relative asset paths from `Path(__file__).resolve().parent`. Append objects or materials from Poly Haven `.blend` files rather than creating external library links. Import Sketchfab's `scene.gltf` through Blender. Keep model files, textures, and supporting binary files inside the package.
+The template contains actual files, not symlinks to a shared cache. **Room builders must resolve asset paths from the `template_dir` argument passed to `build_scene(template_dir)`**, for example `template_dir / "assets/polyhaven/..."`. Do not use the current working directory, an absolute cache path, or assume the script lives next to the supplied assets. Legacy template builders without this argument resolve paths from `Path(__file__).resolve().parent`. Append objects or materials from Poly Haven `.blend` files rather than creating external library links. Import Sketchfab's `scene.gltf` through Blender. Keep model files, textures, and supporting binary files inside the package.
 
-`assets.json` is a **flat list of per-file records**, compatible with the existing `build.py`. Each record includes a relative `path`, the actual `sha256`, `provider`, `asset_id`, `variant`, source page, license, and known author. The build stage rechecks file digests and packs resources such as textures actually used by the scene.
+`assets.json` supports both existing formats:
+
+- A **flat list of per-file records**, used by the original `build.py`. When no manifest exists, `fetch` creates this format.
+- A **room manifest object containing a `files` list**, such as `{"reference_id": "...", "source": {...}, "files": [...]}`. `fetch` merges into `files` and preserves every other top-level field; it does not replace the room's source metadata with the newly fetched asset's source.
+
+In either format, merging uses each file's relative `path`. Existing records for other files and custom fields on matching records remain intact. The tool refreshes the matching file's checksum and acquisition fields from the verified cache. Each fetched record includes the actual `sha256`, `provider`, `asset_id`, `variant`, source page, license, and known author. The build stage rechecks file digests and packs resources such as textures actually used by the scene. Do not flatten a room manifest or rewrite its reference/source metadata after fetching an additional asset.
 
 Cached variants do not automatically follow upstream updates. If a template file with the same name has been edited manually, the tool refuses to overwrite it from the cache. Preserve the edited version and record its new digest. A corrupted cache also produces an error. The current script is designed for single-process use: do not run concurrent `fetch` operations against the same template or cache variant.
 

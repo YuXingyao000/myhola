@@ -1,0 +1,106 @@
+{
+  "reviewer": "independent_assistant_visual_inspection",
+  "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_20261027_001",
+  "scope": {
+    "planned_samples": 6,
+    "inspected_samples": 6,
+    "views": [
+      "all six comparison.jpg files",
+      "both CAD inspection pages",
+      "full generated image of 00489180"
+    ],
+    "human_review": "pending"
+  },
+  "conclusion": {
+    "target_preservation": "主体和开放区域明显改善，但保护范围外仍出现附加几何。",
+    "photographic_gain": "背景摄影化收益存在，尤以木纹尺度、表面细节、自然明暗为主；未形成全六件稳定合格结果。",
+    "batch_acceptance": "not_accepted_candidate_batch",
+    "clear_failures": [
+      "00489180",
+      "00495463",
+      "00182999"
+    ],
+    "other_samples": "00301161、00269315、00320493保留待人工审阅；未被宣称合格。",
+    "summary": "凸包保护挡住了目标替换和拱形填充，但薄片外新棱条、十字下新底座仍可出现在保护范围外。背景玻璃/塑料片伪影亦存在。高光泽材料本身不作为错误，具体形状、反射和接触关系需要一起判断。"
+  },
+  "observations": [
+    {
+      "model_id": "00301161",
+      "target": "主体、底部缺口与顶部可见孔保留，没有被换成手机。",
+      "photographic_gain": "桌面纹理尺度、磨耗和光泽比原来更像摄影，键盘较完整。",
+      "remaining": "桌面新增强镜面反射，风格偏厚涂层/漆面；原目标外观仍均匀平淡，与周围细节不统一。单凭更光亮不能判定物理不可能。",
+      "protected": "未见前轮手机残余，回贴没有明显内部新孔；接触暗区/反射仍需人工核对。",
+      "flags": [
+        "strong_reflective_surface_style",
+        "target_background_material_gap"
+      ],
+      "decision": "human_review_needed"
+    },
+    {
+      "model_id": "00489180",
+      "target": "圆盘外形及内部无孔状态保留，比whole-frame深度版本好。",
+      "photographic_gain": "桌面和地面的细节更像照片，材质有明显变化。",
+      "remaining": "笔记本附近出现半透明折叠板/浮起几何形状，黑线穿过；显示器底座也有扭曲的多层片状形态。",
+      "protected": "原圆盘恢复不影响这些背景伪影。",
+      "flags": [
+        "transparent_notebook_prop_artifact",
+        "monitor_base_shape_review_needed"
+      ],
+      "decision": "reject_visible_prop_artifact"
+    },
+    {
+      "model_id": "00495463",
+      "target": "原薄片保留，不再整件换成金属杯。",
+      "photographic_gain": "台面、打印机外壳和光照纹理有摄影化变化。",
+      "remaining": "薄片后上方出现透明/银色棱条，底部有亮金属片状附加物；这些在保护范围外仍改变目标的视觉形状。",
+      "protected": "附加棱条和底片仍在，不能视为合格。",
+      "flags": [
+        "new_structure_around_target",
+        "generated_metal_fragment_at_contact"
+      ],
+      "decision": "reject_target_adjacent_geometry_artifact"
+    },
+    {
+      "model_id": "00182999",
+      "target": "十字主体保留，横臂没有前轮那种明显延长。",
+      "photographic_gain": "地面更细致且带强光泽；柜子、地面明暗比原图丰富。",
+      "remaining": "十字脚下生成明显圆形金属底座，周围还有反射/亮形状，改变支撑关系。",
+      "protected": "原十字回贴仍立在新增底座上；目标主体像素不变不足以保证几何。",
+      "flags": [
+        "new_metal_base_under_target",
+        "support_relationship_changed"
+      ],
+      "decision": "reject_target_adjacent_geometry_artifact"
+    },
+    {
+      "model_id": "00269315",
+      "target": "拱形主体与内部开放空间均保留；未出现之前的透明填板。",
+      "photographic_gain": "木纹、设备和金属杯表面有摄影感，整体背景更自然。",
+      "remaining": "原杯变成带复杂连接件的金属杯/套筒，形体功能需人工核对；桌面新增强亮斑，原CAD仍偏平。",
+      "protected": "开放空间保留，未见与目标直接重叠的新大物件。",
+      "flags": [
+        "background_metal_vessel_review_needed",
+        "target_background_material_gap"
+      ],
+      "decision": "human_review_needed"
+    },
+    {
+      "model_id": "00320493",
+      "target": "平片保留在原处，没有消失。",
+      "photographic_gain": "木纹、地面和局部反射明显比原图接近照片。",
+      "remaining": "鼠标改成金属圆柱、主机外壳与键盘按键改样；圆柱基本可解释为另一道具，但键盘形状和反射需看。平片仍保留原始均匀材质。",
+      "protected": "没有明显目标直接叠合残余；可保留待人工审阅。",
+      "flags": [
+        "keyboard_detail_review_needed",
+        "target_background_material_gap"
+      ],
+      "decision": "human_review_needed"
+    }
+  ],
+  "limits": [
+    "同此前depth-on相比同时改变prompt与mask策略，不能将全部变化归因于凸包保护。",
+    "背景道具允许合理重画，不按像素或原物品身份一致性判定。",
+    "检查关注整个目标及其周边，不以原mask内像素不变代替几何检查。",
+    "这仍是助手开发审查，不是用户最终人审或实拍域评估。"
+  ]
+}

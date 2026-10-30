@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "date_utc": "2026-10-29",
+  "scope": "只读官方网页、已下载材质文件和PNG像素；只读打开官方blend核验节点，无渲染/保存/修改资产。",
+  "source": {
+    "asset": "Metal050A",
+    "official_url": "https://ambientcg.com/view?id=Metal050A",
+    "license": "CC0-1.0",
+    "official_technique": "Prodedural（官网原文拼写，程序生成）",
+    "official_tags": [
+      "Aluminum",
+      "Clean",
+      "Metal",
+      "Smooth"
+    ],
+    "png_creator": "Substance Designer",
+    "physical_calibration": "未提供实测BRDF或粗糙度标定证据；不是已确认的扫描铝材。",
+    "physical_tile_size_m": null
+  },
+  "roughness_statistics": {
+    "path": "/mnt/d/data/cad_scene_assets/ambientcg/Metal050A/1k/files/Metal050A_1K-PNG_Roughness.png",
+    "sha256": "6a825b6657262733dc943b6425f8c0b8190f4798d9fc1957508b7eaaedaaa7a7",
+    "mode": "L",
+    "shape": [
+      1024,
+      1024
+    ],
+    "encoding": "8-bit scalar data /255, no sRGB decoding, no inversion",
+    "min_u8": 9,
+    "max_u8": 22,
+    "mean_u8": 14.010856628417969,
+    "std_u8": 1.5185582697349258,
+    "quantiles_u8": {
+      "p01": 11.0,
+      "p10": 12.0,
+      "p50": 14.0,
+      "p90": 16.0,
+      "p99": 18.0
+    },
+    "mean": 0.05494453579771756,
+    "std": 0.0059551304695487275,
+    "histogram_u8": {
+      "9": 44,
+      "10": 2785,
+      "11": 28348,
+      "12": 127462,
+      "13": 254099,
+      "14": 272657,
+      "15": 194675,
+      "16": 106701,
+      "17": 43668,
+      "18": 13866,
+      "19": 3489,
+      "20": 663,
+      "21": 109,
+      "22": 10
+    }
+  },
+  "semantic_evidence": {
+    "mtlx": "float tiledimage Roughness直接连接open_pbr_surface.specular_roughness，无减法/反相/gamma/remap；只有Color文件声明srgb_texture。",
+    "tres": "roughness_texture直接引用Roughness.png，roughness_texture_channel=4（Godot GRAYSCALE）；没有glossiness反相。",
+    "blend": "两个官方Metal050A材质都将Roughness设为Non-Color，Image Color直接连接Principled Roughness，无中间计算；因此应在本实验直接读取/255数据，不能应用sRGB EOTF或1-r。",
+    "definition_refs": [
+      "https://docs.godotengine.org/en/4.6/classes/class_basematerial3d.html",
+      "https://academysoftwarefoundation.github.io/OpenPBR/index.html"
+    ]
+  },
+  "setup_scaling": {
+    "uv": "mtlx uvtiling=(1,1)；blend由UV经Mapping Scale=(1,1,1)到所有贴图。这只定义UV重复，无米制尺寸。PNG DPI和8192来源元数据不能作为物理纹理尺度。",
+    "normal_displacement": "mtlx normal scale=1、displacement scale=1；Godot heightmap_scale=1且启用；实际blend displacement版本Midlevel=.5、Scale=0，normal版本Strength=1。导出模板参数并不一致，不能自动解释为真实高度。",
+    "for_this_hypothesis": "仅使用roughness图；保留原BaseColor、Metallic=1、各向异性、Normal/Displacement和照明/显示设置。不要整套导入官方材质后把综合色差归因于roughness。",
+    "mapping": "STL无UV，若选三平面/box投影，固定并记录实际米制tile大小和blend；没有校准大小时应明确为实验选择。"
+  },
+  "other_map_checks": {
+    "displacement_u16": [
+      32613,
+      32750
+    ],
+    "normal_gl_u8_ranges": [
+      [
+        127,
+        128
+      ],
+      [
+        127,
+        128
+      ],
+      [
+        255,
+        255
+      ]
+    ],
+    "palette_note": "Metalness与Color是P模式PNG，必须先convert(RGB/L)再读颜色；直接np.asarray得到索引，不是材质值。",
+    "metalness_decoded_rgb_u8_range": [
+      248,
+      255
+    ],
+    "metalness_decoded_mean": 0.9999865288827934,
+    "color_decoded_rgb_mean_u8": [
+      246.49213123321533,
+      247.45259380340576,
+      247.45231342315674
+    ]
+  },
+  "comparison_recommendation": {
+    "decision": "原始roughness对同均值常量是合理的纹理增量诊断；保留旧.32常量才能另识别平均roughness变化的效果。",
+    "controls": [
+      {
+        "name": "existing_constant",
+        "roughness": 0.32
+      },
+      {
+        "name": "asset_mean_constant",
+        "roughness": 0.05494453579771756
+      },
+      {
+        "name": "asset_raw_map",
+        "roughness": "official non-color scalar texture, no remap"
+      }
+    ],
+    "interpretation": "旧常量vs资产均值常量主要检验整体表面是否过粗；同均值常量vs原图检验固定映射下roughness空间变化的增量。不能把.32与raw图的总差直接归功于新纹理。",
+    "nonlinearity": "Cycles isotropic GGX内部alpha=r²。同均值r不等于严格同均值alpha，更不等于同BRDF；本贴图E[r²]相对E[r]²仅高约1.17%，可明确记录而不为此增加一轮大扫。",
+    "alpha_stats": {
+      "mean_map_alpha": 0.0030543655929360105,
+      "constant_mean_alpha": 0.0030189020140266665,
+      "relative_difference": 0.011747177862869978,
+      "rms_r": 0.05526631517421811,
+      "baseline_alpha": 0.1024
+    },
+    "sampling_limit": "全tile算术均值不是必然的可见面/像素加权均值；投影、缩放和滤波会改变采样分布。初步对照仍有解释力，结果应限定于固定映射，不宣称严格等BRDF。",
+    "realism": "更清晰环境反射只是可检验机制；roughness≈.055也可能让零件像抛光镜面，不自动等于更可信的加工铝材。判断照片感须看图，不由素材名称或参数大小判定。"
+  },
+  "local_evidence_files": {
+    "Metal050A_1K-PNG.mtlx": "e63fa66017572164b586c0f6032136f54b028db5ef3c7dce1c01380ed2e15c8b",
+    "Metal050A_1K-PNG.tres": "fa77fe4ab44cf3ecab1ded9e583666a78c0393dc74d65998276f1d30c183216a",
+    "Metal050A_1K-PNG.blend": "e59439d92a5d55781f50b6b5825b57821a08df710fce4bf0e5412061956d84e0"
+  },
+  "cycles_source": "/mnt/d/natural/blender-5.2.2-linux-x64/5.2/scripts/addons_core/cycles/source/kernel/svm/closure.h:306",
+  "rendered": false
+}

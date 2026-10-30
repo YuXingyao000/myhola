@@ -1,5 +1,159 @@
 # CAD 布景模板的构建与拍摄
 
+## 四个阶段
+
+- **Step 1：生成场景。** `step1.py` 调用现有 `room_workflow.py`。原实现与提示词路径保留，
+  避免改变历史任务的宿主校验和续跑入口。
+- **Step 2：选位、局部挪物、方体试拍。** 新实现集中在 [`step2/`](step2/README.md)，从
+  `step2/workflow.py` 的 `run_workflow()` 阅读主循环。提示词在 `step2/prompts/`，参数在
+  `step2/config.json`。本阶段暂不导入真实 CAD。
+- **Step 3：替换零件并批量摄影。** [`step3/`](step3/README.md) 读取 Step 2 的位置与相机，
+  从 STL 清单抽样，循环导入、摆放、赋予 PBR 材质、渲染，输出 RGB / mask / depth 和溯源记录。
+  不调用 Agent。
+- **Step 4：增强环境真实质感。** [`step4/`](step4/README.md) 使用 RGB 与零件 mask，
+  按场景固定提示词执行本地 FLUX 图生图，再合成回原始零件像素。保存参数、模型摘要、
+  原始生成结果和对照图；输入输出均为 512×512，无逐图 Agent 调用。
+
+四步独立启动；后一步读取前一步的文件，不依赖当前 GUI 对话。
+
+## 当前入口：先制作独立环境
+
+`room_workflow.py` 是新环境制作入口：读参考图片与可选基础工程，Codex 编写场景，
+Blender 从脚本重新构建并渲染六个环境视角，再由 Codex 对照审阅、有限返修。
+`reference_mode=adapt` 改编基础工程，`quality_only` 从单体素材搭建独立空间。
+此阶段没有目标 CAD、中央预留区或固定产品机位。下面保留的 `workflow.py`
+属于旧零件特写流程，两套合同不能混用。
+
+代码分工：`room_reference.py` 准备紧凑参考包；`room_workflow.py` 管理任务；
+`room_tools.py` 在 Blender 内构建／检查／渲染。提示词位于 `prompts/room/`。
+首个示例基于 The Shed 的 CC0 工程进行实际改编，明确记录继承的资产与修改，
+不把导入原场景或更换机位当作独立生成能力。
+
+阅读代码从 `room_workflow.py` 的 `generate_room()` 开始，再看
+`_execute_locked()` 中的制作、重建、审阅与返修循环。
+[算法说明](../../checkpoints/image_generation/codex_scene_factory/room_workflow/ALGORITHM.md)
+解释各文件和数据的关系；
+[实际运行记录](../../checkpoints/image_generation/codex_scene_factory/room_workflow/NOTE.md)
+包含首个场景的预览位置、验收证据和已知限制。
+
+```bash
+python packages/cad_scene_factory/room_reference.py \
+  --reference_dir /mnt/d/data/cad_scene_references/the_shed \
+  --output_dir /mnt/d/data/cad_scene_references/the_shed/room_reference
+
+python packages/cad_scene_factory/room_workflow.py \
+  --user_prompt_file packages/cad_scene_factory/prompts/room/PROMPT.EXAMPLE.md \
+  --reference_file /mnt/d/data/cad_scene_references/the_shed/room_reference/reference.json \
+  --output_dir /mnt/d/data/cad_scene_templates/workshop_room_001 \
+  --blender /mnt/d/natural/blender-5.2.2-linux-x64/blender \
+  --model gpt-6-astra --reasoning_effort ultra \
+  --device OPTIX --gpu_index 0 --samples 128 --max_repairs 3 \
+  --sandbox danger-full-access
+```
+
+`danger-full-access` 是本机 bwrap 无法创建 namespace 时使用的显式选择，
+具有当前用户权限；只读评审依赖指令与文件摘要检查，并非 OS 隔离。
+调用沿用 Codex 的 ChatGPT 登录，移除 API key 环境变量，不切换成按 API key 认证。
+扣额／额外 credits 规则仍由账号侧决定。个人规则、记忆、插件与自动 skill 不载入；
+Codex 内置指令、工具说明、当前任务和参考资料属于实际上下文。
+
+从仓库根目录也可以调用 Python API：
+
+```python
+from pathlib import Path
+from packages.cad_scene_factory.room_workflow import generate_room
+
+result = generate_room(
+    user_prompt=Path("packages/cad_scene_factory/prompts/room/PROMPT.EXAMPLE.md").read_text(),
+    reference_file=Path("/mnt/d/data/cad_scene_references/the_shed/room_reference/reference.json"),
+    output_dir=Path("/mnt/d/data/cad_scene_templates/workshop_room_001"),
+    blender=Path("/mnt/d/natural/blender-5.2.2-linux-x64/blender"),
+    sandbox="danger-full-access",
+)
+```
+
+模板包含 `build_scene.py`、`views.json`、`scene_plan.md`、`assets/` 和 `assets.json`。
+各轮实际 `.blend`、PNG、相机与检查报告在 `workflow/round_XX/preview/`；
+调用原始记录、会话 ID、反馈与用量一并保留。`workflow_result.json` 的
+`room_blend`、`last_report` 指向通过版本。`ready_for_review` 仍保留 human_review=pending。
+脚本可重建不自动证明视觉质量；最终应查看全景、中景和近景实际图片。
+
+如外部审阅发现问题，保存文字反馈后继续明确的原会话：
+
+```bash
+python packages/cad_scene_factory/room_workflow.py \
+  --output_dir /mnt/d/data/cad_scene_templates/workshop_room_001 \
+  --resume --feedback_file /path/to/feedback.md --max_repairs 4
+```
+
+返修上限是任务累计次数；记录不覆盖。独占任务锁防止同一模板同时启动两个外围进程。
+遇到长时间调用先确认原进程状态，不因为观察超时就重启。若原进程异常退出而其子进程
+仍活跃，应先处理原子进程，再恢复；锁本身不构成跨进程树的作业管理系统。
+
+## 工厂测试：只给需求、质量图片和素材工具
+
+先从现有参考导出纯图片包，去掉基础工程、原场景布局和审计路径：
+
+```bash
+python packages/cad_scene_factory/room_reference.py \
+  --quality_reference_file /mnt/d/data/cad_scene_references/the_shed/room_reference/reference.json \
+  --output_dir /mnt/d/data/cad_scene_references/the_shed/quality_reference
+```
+
+确认 GPU 0 空闲后，以新的输出目录启动。Agent 会自行调用 Blender，不能在
+所有卡都运行训练时提前启动制作阶段。
+
+```bash
+python packages/cad_scene_factory/room_workflow.py \
+  --user_prompt_file packages/cad_scene_factory/prompts/room/PROMPT.FACTORY.EXAMPLE.md \
+  --reference_file /mnt/d/data/cad_scene_references/the_shed/quality_reference/reference.json \
+  --reference_mode quality_only \
+  --asset_cache /mnt/d/data/cad_scene_assets \
+  --output_dir /mnt/d/data/cad_scene_templates/factory_20261023_001 \
+  --blender /mnt/d/natural/blender-5.2.2-linux-x64/blender \
+  --model gpt-6-astra --reasoning_effort ultra \
+  --device OPTIX --gpu_index 0 --samples 128 --seed 8 --max_repairs 3 \
+  --sandbox danger-full-access
+```
+
+Python API 使用同名 `reference_mode`、`asset_cache` 和可选 `asset_catalog` 参数。
+`quality_only` 接受含 `id`、`images` 和可选 `documents` 的参考 JSON；每项图片／说明
+提供 `path`，制作时冻结其摘要。这个模式不接受带基础工程字段的旧参考包。
+若使用已下载的本地素材目录，可通过 `--asset_catalog` 传入素材工具支持的 JSON。
+
+素材工具、操作指南和缓存路径会显式交给 Agent；下载内容必须复制进模板，
+在外围构建前核对清单摘要。机床等关键资源不可用时保留具体缺口，不能用简陋替代物
+宣称完成。原 Shed 示例仍使用默认 `adapt`。修改后的工具与提示词会生成新快照，
+旧任务继续保留原版本，不能静默以新代码续跑。
+
+工厂协议与运行记录见 [factory_generalization](../../checkpoints/image_generation/codex_scene_factory/factory_generalization/)。
+最终六图交给用户判断，`human_review` 保持 pending；后续意见写入独立反馈文件，
+通过 `--resume --feedback_file` 追加修订，不覆盖首次候选与原审阅。
+
+另外提供三份 `quality_only` 场景需求，可替换上面命令的 `--user_prompt_file`，
+并为每个任务指定新输出目录：
+
+| 场景 | 用户需求示例 |
+| --- | --- |
+| 机械装配车间 | [PROMPT.ASSEMBLY.EXAMPLE.md](prompts/room/PROMPT.ASSEMBLY.EXAMPLE.md) |
+| 电子维修工作室 | [PROMPT.ELECTRONICS.EXAMPLE.md](prompts/room/PROMPT.ELECTRONICS.EXAMPLE.md) |
+| 普通办公室 | [PROMPT.OFFICE.EXAMPLE.md](prompts/room/PROMPT.OFFICE.EXAMPLE.md) |
+| 汽车维修工位 | [PROMPT.AUTO_REPAIR.EXAMPLE.md](prompts/room/PROMPT.AUTO_REPAIR.EXAMPLE.md) |
+| 木工工作室 | [PROMPT.WOODWORKING.EXAMPLE.md](prompts/room/PROMPT.WOODWORKING.EXAMPLE.md) |
+| 家庭餐厨空间 | [PROMPT.HOME_KITCHEN.EXAMPLE.md](prompts/room/PROMPT.HOME_KITCHEN.EXAMPLE.md) |
+
+三场景批次的实际输入、设备分配和命令见
+[运行记录](../../checkpoints/image_generation/codex_scene_factory/cross_environment_20261023/NOTE.md)。
+并发运行时使用不同 GPU，共享缓存的 `fetch` 需通过同一 `flock` 串行化；
+该批次的具体要求保存在其 `EXECUTION.md` 和实际输入中。
+
+新增汽车、木工与家庭餐厨环境的参数和实际状态见
+[扩展批次记录](../../checkpoints/image_generation/codex_scene_factory/cross_environment_20261025/NOTE.md)，
+[八场景清单](../../checkpoints/image_generation/codex_scene_factory/cross_environment_20261025/SCENES.json)
+区分已经有完整六图的场景与尚在生成的任务；列入清单不等于已经验收。
+
+## 旧入口：固定零件特写模板
+
 先用普通 Python 执行 `workflow.py`：Codex 制作模板，外围程序预览，Codex 看图审阅，
 有问题则有界返修，最后提交给人检查。原 `call_llm.py` 命令行入口转到同一流程。
 模板依然是 `build_scene.py` 和 `build_material.py`；构建与拍摄使用 Blender 5.2.2 LTS。

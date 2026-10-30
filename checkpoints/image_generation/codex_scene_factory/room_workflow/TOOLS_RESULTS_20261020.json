@@ -1,0 +1,148 @@
+{
+  "status": "pass",
+  "scope": "真实 Blender 工具及六视角接口；不评价场景真实感",
+  "output_dir": "/tmp/room_tools_png_regression_20261020",
+  "checks": [
+    {
+      "name": "create_fixture_exit_code",
+      "pass": true,
+      "evidence": 0
+    },
+    {
+      "name": "build_exit_code",
+      "pass": true,
+      "evidence": 0
+    },
+    {
+      "name": "build_udim",
+      "pass": true,
+      "evidence": [
+        1001,
+        1002
+      ]
+    },
+    {
+      "name": "render_moved_exit_code",
+      "pass": true,
+      "evidence": 0
+    },
+    {
+      "name": "moved_render",
+      "pass": true,
+      "evidence": null
+    },
+    {
+      "name": "landscape_vertical_fov",
+      "pass": true,
+      "evidence": 45.00000240668388
+    },
+    {
+      "name": "landscape_image_size",
+      "pass": true,
+      "evidence": [
+        64,
+        48
+      ]
+    },
+    {
+      "name": "portrait_vertical_fov",
+      "pass": true,
+      "evidence": 45.00000240668388
+    },
+    {
+      "name": "portrait_image_size",
+      "pass": true,
+      "evidence": [
+        48,
+        64
+      ]
+    },
+    {
+      "name": "source_exposure_preserved",
+      "pass": true,
+      "evidence": null
+    },
+    {
+      "name": "rebuild_moved_exit_code",
+      "pass": true,
+      "evidence": 0
+    },
+    {
+      "name": "missing_tile_exit_code",
+      "pass": true,
+      "evidence": 1
+    },
+    {
+      "name": "missing_udim_rejected",
+      "pass": true,
+      "evidence": null
+    },
+    {
+      "name": "external_dependency_exit_code",
+      "pass": true,
+      "evidence": 1
+    },
+    {
+      "name": "external_dependency_rejected",
+      "pass": true,
+      "evidence": null
+    },
+    {
+      "name": "partial_render_exit_code",
+      "pass": true,
+      "evidence": 1
+    },
+    {
+      "name": "partial_failure_denominator",
+      "pass": true,
+      "evidence": null
+    },
+    {
+      "name": "workflow_six_view_contract",
+      "pass": true,
+      "evidence": {
+        "status": "pass",
+        "planned": 6,
+        "success": 6,
+        "failed": 0,
+        "errors": []
+      }
+    },
+    {
+      "name": "workflow_partial_failure_details",
+      "pass": true,
+      "evidence": null
+    },
+    {
+      "name": "workflow_missing_dependency_details",
+      "pass": true,
+      "evidence": null
+    },
+    {
+      "name": "shed_inspect_exit_code",
+      "pass": true,
+      "evidence": 0
+    },
+    {
+      "name": "shed_readonly",
+      "pass": true,
+      "evidence": "fe6294a84839e2225f2d9702a05ff5bc4472ff78743daabbcc60a7a95761c6e1"
+    },
+    {
+      "name": "shed_dependencies_present",
+      "pass": true,
+      "evidence": null
+    }
+  ],
+  "room_tools_sha256": "4f8801f45f77d07ff1925cc4a3d6556b720d3f409a9fba30028ac9b8f61e5bfb",
+  "workflow_sha256": "4c9dd890cf0fd694220197b32039421b08d5d897d96a031fcdcb72000a434714",
+  "shed": {
+    "sha256": "fe6294a84839e2225f2d9702a05ff5bc4472ff78743daabbcc60a7a95761c6e1",
+    "blender_version": "5.2.2 LTS",
+    "objects": 1103,
+    "materials": 124,
+    "lights": 4,
+    "dependencies": 425
+  },
+  "elapsed_seconds": 14.458400808973238
+}

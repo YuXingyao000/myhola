@@ -1,0 +1,536 @@
+{
+  "created_at_utc": "2026-10-27T09:11:55.245906+00:00",
+  "audit": "independent_cpu_continuation_technical_audit",
+  "baseline_run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_guard_matte_20261027_001",
+  "baseline_request_sha256": "737a5758e1295a492a05084e65009a283c64468a4a78000fb22aaddb4e74e067",
+  "runs": [
+    {
+      "label": "depth_surfaces",
+      "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_surfaces_20261027_001",
+      "status": "technical_pass_only",
+      "counts": {
+        "planned": 6,
+        "success": 6,
+        "failed": 0,
+        "missing": 0,
+        "duplicates": 0
+      },
+      "checks": {
+        "config_identical_to_matte": true,
+        "samples_identical_to_matte": true,
+        "model_weight_manifests_identical_to_matte": true,
+        "controlnet_weight_manifests_identical_to_matte": true,
+        "depth_inputs_identical_to_matte": true,
+        "software_versions_identical_to_matte": true,
+        "frozen_prompt_file_matches_request": true,
+        "prompt_is_changed": true,
+        "all_frozen_source_hashes_match": true,
+        "all_depth_hashes_match": true,
+        "all_six_completed": true,
+        "summary_present_and_matches": true
+      },
+      "errors": [],
+      "source_hash_checks": {
+        "README.md": true,
+        "masks.py": true,
+        "model.py": true,
+        "workflow.py": true,
+        "config.json": true,
+        "report.py": true,
+        "retouch/validate.py": true,
+        "retouch/README.md": true,
+        "retouch/model.py": true,
+        "retouch/workflow.py": true,
+        "retouch/LICENSE": true,
+        "prompts/assembly.md": true,
+        "prompts/woodworking.md": true,
+        "prompts/home_kitchen.md": true,
+        "prompts/workshop.md": true,
+        "prompts/auto_repair.md": true,
+        "prompts/scenes.json": true,
+        "prompts/electronics.md": true,
+        "prompts/office.md": true,
+        "prompts/factory.md": true
+      },
+      "depth_hash_checks": {
+        "00301161": true,
+        "00489180": true,
+        "00495463": true,
+        "00182999": true,
+        "00269315": true,
+        "00320493": true
+      },
+      "request_sha256": "a82c73b23bc8a9b545109688c48ea29091d6676a872ec752679411c421462754",
+      "frozen_model_sha256": "1f26a097d8a2ec146b9acf93806b63c85319d34e16782db6c915e7583b703e42",
+      "frozen_masks_sha256": "8a2bbe78bfaa79ffab18e8502506172eda79248ba98845c0338945ed4591aeac",
+      "frozen_compare_sha256": "4f4676a63b7e168e8c142b2172a9020346dd040960c9ddbf2340423ce79fa98c",
+      "prompt": "A candid documentary photograph of the existing office interior. Natural fine surface texture, subdued reflections, diffuse window daylight and ordinary ceiling illumination. Neutral white balance, balanced exposure, clear midtones and moderate contrast. Believable everyday indoor materials and clear photographic detail throughout.",
+      "prompt_sha256": "e5e2d723b90d01299d1cc57e86b2157c97520ef508d7072812a36b613f3b8fbe",
+      "records": [
+        {
+          "model_id": "00301161",
+          "status": "pass",
+          "checks": {
+            "source_rgb_and_mask_match_fixed_hashes": true,
+            "seed_matches_reference_and_matte": true,
+            "source_record_identical_to_fixed_reference": true,
+            "output_sizes": true,
+            "output_hashes_match": true,
+            "protected_mask_binary_and_dimensions": true,
+            "protection_mask_identical_to_matte": true,
+            "protection_matches_convex_hull_and_padding": true,
+            "all_target_and_hull_pixels_protected": true,
+            "protected_pixels_original_exact": true,
+            "entire_composite_independently_matches": true,
+            "recorded_protection_metrics_match": true,
+            "inference_protocol_identical_to_matte": true,
+            "no_spatial_branch_outputs": true
+          },
+          "errors": [],
+          "output_sha256": {
+            "generated.png": "b04d8fa33ee60cfa182ff5c9f27844ed0af558cf19a02a48ed0340afc4495ebe",
+            "protected.png": "fde4c330de9d3ba4ef0a2e0157e733358ea1d2d4b94f7cf5c226bfbeee2f1304",
+            "protected_mask.png": "97063544ec83d6cfab6349aec75ee79cce5aafa32041ef307919ff14c4b97870"
+          },
+          "original_protected_max_error": 0,
+          "seed": 8,
+          "actual_steps": 26,
+          "initial_sigma": 0.7771334648132324
+        },
+        {
+          "model_id": "00489180",
+          "status": "pass",
+          "checks": {
+            "source_rgb_and_mask_match_fixed_hashes": true,
+            "seed_matches_reference_and_matte": true,
+            "source_record_identical_to_fixed_reference": true,
+            "output_sizes": true,
+            "output_hashes_match": true,
+            "protected_mask_binary_and_dimensions": true,
+            "protection_mask_identical_to_matte": true,
+            "protection_matches_convex_hull_and_padding": true,
+            "all_target_and_hull_pixels_protected": true,
+            "protected_pixels_original_exact": true,
+            "entire_composite_independently_matches": true,
+            "recorded_protection_metrics_match": true,
+            "inference_protocol_identical_to_matte": true,
+            "no_spatial_branch_outputs": true
+          },
+          "errors": [],
+          "output_sha256": {
+            "generated.png": "14c68526d54526408d63ab8f86b8960b2cab6c332c70cdde16d7b42f73a4877a",
+            "protected.png": "3cdd78506ac9c6a5c7a636c5230f6041973719fab451edf758e9b77b15055463",
+            "protected_mask.png": "87f02367adf97f907f49a004ac6580833a9b9fab0e68fada586ce73b6f0ce050"
+          },
+          "original_protected_max_error": 0,
+          "seed": 9,
+          "actual_steps": 26,
+          "initial_sigma": 0.7771334648132324
+        },
+        {
+          "model_id": "00495463",
+          "status": "pass",
+          "checks": {
+            "source_rgb_and_mask_match_fixed_hashes": true,
+            "seed_matches_reference_and_matte": true,
+            "source_record_identical_to_fixed_reference": true,
+            "output_sizes": true,
+            "output_hashes_match": true,
+            "protected_mask_binary_and_dimensions": true,
+            "protection_mask_identical_to_matte": true,
+            "protection_matches_convex_hull_and_padding": true,
+            "all_target_and_hull_pixels_protected": true,
+            "protected_pixels_original_exact": true,
+            "entire_composite_independently_matches": true,
+            "recorded_protection_metrics_match": true,
+            "inference_protocol_identical_to_matte": true,
+            "no_spatial_branch_outputs": true
+          },
+          "errors": [],
+          "output_sha256": {
+            "generated.png": "a9ba87d9a0a28b19a301af04f18949bb7f5d2273a7c3b581e586f91c41c922d5",
+            "protected.png": "8ef32be9af33d8060d3c1f1dfcc0169e742544f025d99bd03a59789325b95149",
+            "protected_mask.png": "38573525964c0d5559690bf0fd34fb00090ae04786bdf23e549e2d016beaffae"
+          },
+          "original_protected_max_error": 0,
+          "seed": 10,
+          "actual_steps": 26,
+          "initial_sigma": 0.7771334648132324
+        },
+        {
+          "model_id": "00182999",
+          "status": "pass",
+          "checks": {
+            "source_rgb_and_mask_match_fixed_hashes": true,
+            "seed_matches_reference_and_matte": true,
+            "source_record_identical_to_fixed_reference": true,
+            "output_sizes": true,
+            "output_hashes_match": true,
+            "protected_mask_binary_and_dimensions": true,
+            "protection_mask_identical_to_matte": true,
+            "protection_matches_convex_hull_and_padding": true,
+            "all_target_and_hull_pixels_protected": true,
+            "protected_pixels_original_exact": true,
+            "entire_composite_independently_matches": true,
+            "recorded_protection_metrics_match": true,
+            "inference_protocol_identical_to_matte": true,
+            "no_spatial_branch_outputs": true
+          },
+          "errors": [],
+          "output_sha256": {
+            "generated.png": "9a7beee19b55e21bacddcc0f87e01b7d4dae064c084a668511087c5039e81aa8",
+            "protected.png": "dca3245511d98b19f11b1bd46609a10fe2486081f517b8602a9df8c89ca39bb7",
+            "protected_mask.png": "bd7a1dea492b95424d333a259da3310e169718716e0ae1526705c0983051a29c"
+          },
+          "original_protected_max_error": 0,
+          "seed": 11,
+          "actual_steps": 26,
+          "initial_sigma": 0.7771334648132324
+        },
+        {
+          "model_id": "00269315",
+          "status": "pass",
+          "checks": {
+            "source_rgb_and_mask_match_fixed_hashes": true,
+            "seed_matches_reference_and_matte": true,
+            "source_record_identical_to_fixed_reference": true,
+            "output_sizes": true,
+            "output_hashes_match": true,
+            "protected_mask_binary_and_dimensions": true,
+            "protection_mask_identical_to_matte": true,
+            "protection_matches_convex_hull_and_padding": true,
+            "all_target_and_hull_pixels_protected": true,
+            "protected_pixels_original_exact": true,
+            "entire_composite_independently_matches": true,
+            "recorded_protection_metrics_match": true,
+            "inference_protocol_identical_to_matte": true,
+            "no_spatial_branch_outputs": true
+          },
+          "errors": [],
+          "output_sha256": {
+            "generated.png": "e74202942237df56a34ecf35606132499147e99f1a36b8b1c4be15a2cc7de605",
+            "protected.png": "205b1cf318fa957842d416c3e9ff80b640281d30e0f05bbe8942f4ad04d87dc4",
+            "protected_mask.png": "fda3c776534ebe5cbc844547d93ffafa1bccc264dc68efedb08bd9db84de0662"
+          },
+          "original_protected_max_error": 0,
+          "seed": 12,
+          "actual_steps": 26,
+          "initial_sigma": 0.7771334648132324
+        },
+        {
+          "model_id": "00320493",
+          "status": "pass",
+          "checks": {
+            "source_rgb_and_mask_match_fixed_hashes": true,
+            "seed_matches_reference_and_matte": true,
+            "source_record_identical_to_fixed_reference": true,
+            "output_sizes": true,
+            "output_hashes_match": true,
+            "protected_mask_binary_and_dimensions": true,
+            "protection_mask_identical_to_matte": true,
+            "protection_matches_convex_hull_and_padding": true,
+            "all_target_and_hull_pixels_protected": true,
+            "protected_pixels_original_exact": true,
+            "entire_composite_independently_matches": true,
+            "recorded_protection_metrics_match": true,
+            "inference_protocol_identical_to_matte": true,
+            "no_spatial_branch_outputs": true
+          },
+          "errors": [],
+          "output_sha256": {
+            "generated.png": "a7cb6748ec00bb367cb124170efac19e98f57678b5f5c8a0be326329f047a41c",
+            "protected.png": "285271d7b5b622ead82af82bec1013540653d6f4d10e6c8ff2ae4152989884f2",
+            "protected_mask.png": "fa15d51926388d0067d76d4d2051eea0bd7631d39b406bfa3af99258b7b28756"
+          },
+          "original_protected_max_error": 0,
+          "seed": 13,
+          "actual_steps": 26,
+          "initial_sigma": 0.7771334648132324
+        }
+      ],
+      "code_comparison": {
+        "model_byte_identical_to_matte": false,
+        "masks_byte_identical_to_matte": true,
+        "compare_byte_identical_to_matte": false,
+        "model_source_diff": "--- matte/source/model.py\n+++ depth_surfaces/source/model.py\n@@ -97,6 +97,7 @@\n     def enhance(\n         self, image: Image.Image, edit_mask: Image.Image, strength: float, seed: int,\n         depth_image: Image.Image | None = None,\n+        step_callback=None,\n     ) -> tuple[Image.Image, dict]:\n         \"\"\"白色 mask 区域可修改；标准 Kontext 整图编辑忽略 mask/strength。\n \n@@ -104,6 +105,7 @@\n         Kontext 将原图作为参考条件；普通 FLUX 从原图加噪后去噪。\n         flux_depth 额外接收已转换为近白远黑的深度图，不能直接传入米制 Z。\n         processing_size 控制模型内部尺寸；最终交给外围合成的图片始终是 512×512。\n+        step_callback 供独立实验逐步调整编辑 mask；默认不改变原采样流程。\n         \"\"\"\n         torch.cuda.synchronize()\n         torch.cuda.reset_peak_memory_stats()\n@@ -130,6 +132,11 @@\n             )\n         else:\n             editing_options[\"true_cfg_scale\"] = 1.0\n+        if step_callback is not None:\n+            editing_options.update(\n+                callback_on_step_end=step_callback,\n+                callback_on_step_end_tensor_inputs=[\"mask\"],\n+            )\n         pixels = self.pipe(\n             image=image,\n             prompt_embeds=self.prompt_embeds,\n",
+        "effective_path_assessment": "Only added optional step_callback parameter/conditional and spatial driver branch. Both current runs have sampling_mask=convex_hull; driver initializes callback=None, skips spatial branch, and no callback keywords are forwarded. Masks and effective FLUX arguments remain identical except cached prompt embeddings. No model/RNG operation is added on the active path.",
+        "claim_boundary": "Prompt-only in effective configuration and execution path; not a byte-identical code snapshot."
+      }
+    },
+    {
+      "label": "depth_office_surfaces",
+      "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_depth_office_surfaces_20261027_001",
+      "status": "technical_pass_only",
+      "counts": {
+        "planned": 6,
+        "success": 6,
+        "failed": 0,
+        "missing": 0,
+        "duplicates": 0
+      },
+      "checks": {
+        "config_identical_to_matte": true,
+        "samples_identical_to_matte": true,
+        "model_weight_manifests_identical_to_matte": true,
+        "controlnet_weight_manifests_identical_to_matte": true,
+        "depth_inputs_identical_to_matte": true,
+        "software_versions_identical_to_matte": true,
+        "frozen_prompt_file_matches_request": true,
+        "prompt_is_changed": true,
+        "all_frozen_source_hashes_match": true,
+        "all_depth_hashes_match": true,
+        "all_six_completed": true,
+        "summary_present_and_matches": true
+      },
+      "errors": [],
+      "source_hash_checks": {
+        "README.md": true,
+        "masks.py": true,
+        "model.py": true,
+        "workflow.py": true,
+        "config.json": true,
+        "report.py": true,
+        "retouch/validate.py": true,
+        "retouch/README.md": true,
+        "retouch/model.py": true,
+        "retouch/workflow.py": true,
+        "retouch/LICENSE": true,
+        "prompts/assembly.md": true,
+        "prompts/woodworking.md": true,
+        "prompts/home_kitchen.md": true,
+        "prompts/workshop.md": true,
+        "prompts/auto_repair.md": true,
+        "prompts/scenes.json": true,
+        "prompts/electronics.md": true,
+        "prompts/office.md": true,
+        "prompts/factory.md": true
+      },
+      "depth_hash_checks": {
+        "00301161": true,
+        "00489180": true,
+        "00495463": true,
+        "00182999": true,
+        "00269315": true,
+        "00320493": true
+      },
+      "request_sha256": "e5002d552752ca0d6518e71d91b7ed947919f6a8eb7e8c1d934b4bbc4ea42182",
+      "frozen_model_sha256": "1f26a097d8a2ec146b9acf93806b63c85319d34e16782db6c915e7583b703e42",
+      "frozen_masks_sha256": "8a2bbe78bfaa79ffab18e8502506172eda79248ba98845c0338945ed4591aeac",
+      "frozen_compare_sha256": "4f4676a63b7e168e8c142b2172a9020346dd040960c9ddbf2340423ce79fa98c",
+      "prompt": "A candid documentary photograph of the existing office interior. Low-sheen oak wood surfaces with fine grain, matte off-white painted walls, gray low-pile carpet tiles with a dry fibrous surface. Soft window daylight and ordinary ceiling illumination, neutral white balance, balanced exposure, moderate contrast and clear photographic detail. Natural everyday indoor surface materials.",
+      "prompt_sha256": "be5f8933f99ccabac5b7f25139aff7639598f852cb2e350fc64425c6b25aa5d3",
+      "records": [
+        {
+          "model_id": "00301161",
+          "status": "pass",
+          "checks": {
+            "source_rgb_and_mask_match_fixed_hashes": true,
+            "seed_matches_reference_and_matte": true,
+            "source_record_identical_to_fixed_reference": true,
+            "output_sizes": true,
+            "output_hashes_match": true,
+            "protected_mask_binary_and_dimensions": true,
+            "protection_mask_identical_to_matte": true,
+            "protection_matches_convex_hull_and_padding": true,
+            "all_target_and_hull_pixels_protected": true,
+            "protected_pixels_original_exact": true,
+            "entire_composite_independently_matches": true,
+            "recorded_protection_metrics_match": true,
+            "inference_protocol_identical_to_matte": true,
+            "no_spatial_branch_outputs": true
+          },
+          "errors": [],
+          "output_sha256": {
+            "generated.png": "d9876f8fc92164cc76eb72466183d5ef14006a4161354f283f4924c3de128dad",
+            "protected.png": "989fae7fe919c13b54ea77f5d154fcae5645c4a252fc92ff34501987111fec48",
+            "protected_mask.png": "97063544ec83d6cfab6349aec75ee79cce5aafa32041ef307919ff14c4b97870"
+          },
+          "original_protected_max_error": 0,
+          "seed": 8,
+          "actual_steps": 26,
+          "initial_sigma": 0.7771334648132324
+        },
+        {
+          "model_id": "00489180",
+          "status": "pass",
+          "checks": {
+            "source_rgb_and_mask_match_fixed_hashes": true,
+            "seed_matches_reference_and_matte": true,
+            "source_record_identical_to_fixed_reference": true,
+            "output_sizes": true,
+            "output_hashes_match": true,
+            "protected_mask_binary_and_dimensions": true,
+            "protection_mask_identical_to_matte": true,
+            "protection_matches_convex_hull_and_padding": true,
+            "all_target_and_hull_pixels_protected": true,
+            "protected_pixels_original_exact": true,
+            "entire_composite_independently_matches": true,
+            "recorded_protection_metrics_match": true,
+            "inference_protocol_identical_to_matte": true,
+            "no_spatial_branch_outputs": true
+          },
+          "errors": [],
+          "output_sha256": {
+            "generated.png": "28b5b039a7602c56207adc37ccafd7350824e85c043baadb9e93a66fe179cf6d",
+            "protected.png": "c9c18d12130c83ab3cb3b22979eac6bbb23e63002023a0127f805e9576c54794",
+            "protected_mask.png": "87f02367adf97f907f49a004ac6580833a9b9fab0e68fada586ce73b6f0ce050"
+          },
+          "original_protected_max_error": 0,
+          "seed": 9,
+          "actual_steps": 26,
+          "initial_sigma": 0.7771334648132324
+        },
+        {
+          "model_id": "00495463",
+          "status": "pass",
+          "checks": {
+            "source_rgb_and_mask_match_fixed_hashes": true,
+            "seed_matches_reference_and_matte": true,
+            "source_record_identical_to_fixed_reference": true,
+            "output_sizes": true,
+            "output_hashes_match": true,
+            "protected_mask_binary_and_dimensions": true,
+            "protection_mask_identical_to_matte": true,
+            "protection_matches_convex_hull_and_padding": true,
+            "all_target_and_hull_pixels_protected": true,
+            "protected_pixels_original_exact": true,
+            "entire_composite_independently_matches": true,
+            "recorded_protection_metrics_match": true,
+            "inference_protocol_identical_to_matte": true,
+            "no_spatial_branch_outputs": true
+          },
+          "errors": [],
+          "output_sha256": {
+            "generated.png": "5fdf89a2962f19931d75c5feb894bf80c055fcf6f33604d3747505cc4866fbf8",
+            "protected.png": "0a01904dad98c78c01dd4f11a1463cde0be569cac3e5eb1a875d734b38be2574",
+            "protected_mask.png": "38573525964c0d5559690bf0fd34fb00090ae04786bdf23e549e2d016beaffae"
+          },
+          "original_protected_max_error": 0,
+          "seed": 10,
+          "actual_steps": 26,
+          "initial_sigma": 0.7771334648132324
+        },
+        {
+          "model_id": "00182999",
+          "status": "pass",
+          "checks": {
+            "source_rgb_and_mask_match_fixed_hashes": true,
+            "seed_matches_reference_and_matte": true,
+            "source_record_identical_to_fixed_reference": true,
+            "output_sizes": true,
+            "output_hashes_match": true,
+            "protected_mask_binary_and_dimensions": true,
+            "protection_mask_identical_to_matte": true,
+            "protection_matches_convex_hull_and_padding": true,
+            "all_target_and_hull_pixels_protected": true,
+            "protected_pixels_original_exact": true,
+            "entire_composite_independently_matches": true,
+            "recorded_protection_metrics_match": true,
+            "inference_protocol_identical_to_matte": true,
+            "no_spatial_branch_outputs": true
+          },
+          "errors": [],
+          "output_sha256": {
+            "generated.png": "22d4442a6fb3ebd76560c25b39a956073cd6306fb491827146c02a69997431ae",
+            "protected.png": "5f630ddd816af4221d951d6c3f06e503873c474a91d6d7ddc61f33d8f53afcff",
+            "protected_mask.png": "bd7a1dea492b95424d333a259da3310e169718716e0ae1526705c0983051a29c"
+          },
+          "original_protected_max_error": 0,
+          "seed": 11,
+          "actual_steps": 26,
+          "initial_sigma": 0.7771334648132324
+        },
+        {
+          "model_id": "00269315",
+          "status": "pass",
+          "checks": {
+            "source_rgb_and_mask_match_fixed_hashes": true,
+            "seed_matches_reference_and_matte": true,
+            "source_record_identical_to_fixed_reference": true,
+            "output_sizes": true,
+            "output_hashes_match": true,
+            "protected_mask_binary_and_dimensions": true,
+            "protection_mask_identical_to_matte": true,
+            "protection_matches_convex_hull_and_padding": true,
+            "all_target_and_hull_pixels_protected": true,
+            "protected_pixels_original_exact": true,
+            "entire_composite_independently_matches": true,
+            "recorded_protection_metrics_match": true,
+            "inference_protocol_identical_to_matte": true,
+            "no_spatial_branch_outputs": true
+          },
+          "errors": [],
+          "output_sha256": {
+            "generated.png": "551aa29b35a615eb9d2a850c60eeeee474cc05214185b2076952184a819f5de7",
+            "protected.png": "a4207a60796bdfc84e4322c5ca864f392e81fe01fc73077939bcfc58f6faad6b",
+            "protected_mask.png": "fda3c776534ebe5cbc844547d93ffafa1bccc264dc68efedb08bd9db84de0662"
+          },
+          "original_protected_max_error": 0,
+          "seed": 12,
+          "actual_steps": 26,
+          "initial_sigma": 0.7771334648132324
+        },
+        {
+          "model_id": "00320493",
+          "status": "pass",
+          "checks": {
+            "source_rgb_and_mask_match_fixed_hashes": true,
+            "seed_matches_reference_and_matte": true,
+            "source_record_identical_to_fixed_reference": true,
+            "output_sizes": true,
+            "output_hashes_match": true,
+            "protected_mask_binary_and_dimensions": true,
+            "protection_mask_identical_to_matte": true,
+            "protection_matches_convex_hull_and_padding": true,
+            "all_target_and_hull_pixels_protected": true,
+            "protected_pixels_original_exact": true,
+            "entire_composite_independently_matches": true,
+            "recorded_protection_metrics_match": true,
+            "inference_protocol_identical_to_matte": true,
+            "no_spatial_branch_outputs": true
+          },
+          "errors": [],
+          "output_sha256": {
+            "generated.png": "b4c409cfa3fe74656e01f06ec4548cd472cd2a6124c41f590ae9f2c1434b2002",
+            "protected.png": "664ba5d4b2cac1b02f05a2c4361e7d2a0fafaed60c63cd98dababe597a6abca7",
+            "protected_mask.png": "fa15d51926388d0067d76d4d2051eea0bd7631d39b406bfa3af99258b7b28756"
+          },
+          "original_protected_max_error": 0,
+          "seed": 13,
+          "actual_steps": 26,
+          "initial_sigma": 0.7771334648132324
+        }
+      ],
+      "code_comparison": {
+        "model_byte_identical_to_matte": false,
+        "masks_byte_identical_to_matte": true,
+        "compare_byte_identical_to_matte": false,
+        "model_source_diff": "--- matte/source/model.py\n+++ depth_office_surfaces/source/model.py\n@@ -97,6 +97,7 @@\n     def enhance(\n         self, image: Image.Image, edit_mask: Image.Image, strength: float, seed: int,\n         depth_image: Image.Image | None = None,\n+        step_callback=None,\n     ) -> tuple[Image.Image, dict]:\n         \"\"\"白色 mask 区域可修改；标准 Kontext 整图编辑忽略 mask/strength。\n \n@@ -104,6 +105,7 @@\n         Kontext 将原图作为参考条件；普通 FLUX 从原图加噪后去噪。\n         flux_depth 额外接收已转换为近白远黑的深度图，不能直接传入米制 Z。\n         processing_size 控制模型内部尺寸；最终交给外围合成的图片始终是 512×512。\n+        step_callback 供独立实验逐步调整编辑 mask；默认不改变原采样流程。\n         \"\"\"\n         torch.cuda.synchronize()\n         torch.cuda.reset_peak_memory_stats()\n@@ -130,6 +132,11 @@\n             )\n         else:\n             editing_options[\"true_cfg_scale\"] = 1.0\n+        if step_callback is not None:\n+            editing_options.update(\n+                callback_on_step_end=step_callback,\n+                callback_on_step_end_tensor_inputs=[\"mask\"],\n+            )\n         pixels = self.pipe(\n             image=image,\n             prompt_embeds=self.prompt_embeds,\n",
+        "effective_path_assessment": "Only added optional step_callback parameter/conditional and spatial driver branch. Both current runs have sampling_mask=convex_hull; driver initializes callback=None, skips spatial branch, and no callback keywords are forwarded. Masks and effective FLUX arguments remain identical except cached prompt embeddings. No model/RNG operation is added on the active path.",
+        "claim_boundary": "Prompt-only in effective configuration and execution path; not a byte-identical code snapshot."
+      }
+    }
+  ],
+  "limitations": [
+    "Large model files were not rehashed; frozen weight manifests were compared.",
+    "No GPU inference was rerun. Static optional-branch analysis establishes equivalent pipeline arguments for these convex_hull runs, not whole-program byte identity.",
+    "Protected original pixels and technical completeness do not establish no new geometry outside the protected mask, photorealism or training acceptance.",
+    "The new prompts intentionally remove target/prop descriptions. This is sequential development on the same six inputs, not a held-out evaluation."
+  ],
+  "human_review": "pending",
+  "training_acceptance": "not_accepted_development_candidates",
+  "photographic_goal": "not_verified_by_technical_audit",
+  "totals": {
+    "planned": 12,
+    "success": 12,
+    "failed": 0,
+    "missing": 0,
+    "duplicates": 0
+  },
+  "status": "technical_pass_only",
+  "between_new_runs_source_hashes_equal": {
+    "frozen_model_sha256": true,
+    "frozen_masks_sha256": true,
+    "frozen_compare_sha256": true
+  }
+}

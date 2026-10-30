@@ -1,0 +1,11 @@
+{
+  "source_template": "/mnt/d/data/cad_scene_templates/factory_20261023_001",
+  "relocated_template": "/mnt/d/data/cad_scene_templates/factory_20261023_001_portability",
+  "report": "/mnt/d/data/cad_scene_templates/factory_20261023_001_portability/verification/build_report.json",
+  "status": "pass",
+  "missing_dependencies": 0,
+  "external_dependencies": 0,
+  "build_from_scripts": true,
+  "original_blend_copied": false,
+  "render_repeated": false
+}

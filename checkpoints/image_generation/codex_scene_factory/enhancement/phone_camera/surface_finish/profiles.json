@@ -1,0 +1,52 @@
+{
+  "uniform_silver": {
+    "name": "surface_finish_uniform_silver",
+    "surface_mode": "uniform",
+    "base_color_linear": [0.8, 0.81, 0.82, 1.0],
+    "metallic": 1.0,
+    "roughness": 0.32,
+    "anisotropic": 0.0,
+    "anisotropic_rotation": 0.0,
+    "ior": 1.5,
+    "specular_ior_level": 0.5,
+    "specular_tint_linear": [1.0, 1.0, 1.0, 1.0],
+    "alpha": 1.0,
+    "subsurface_weight": 0.0,
+    "coat_weight": 0.0,
+    "sheen_weight": 0.0,
+    "transmission_weight": 0.0,
+    "emission_strength": 0.0,
+    "thin_film_thickness": 0.0
+  },
+  "directional_machined": {
+    "name": "surface_finish_directional_machined",
+    "surface_mode": "directional",
+    "base_color_linear": [0.8, 0.81, 0.82, 1.0],
+    "metallic": 1.0,
+    "roughness": 0.32,
+    "roughness_amplitude": 0.02,
+    "anisotropic": 0.3,
+    "anisotropic_rotation": 0.0,
+    "ior": 1.5,
+    "specular_ior_level": 0.5,
+    "specular_tint_linear": [1.0, 1.0, 1.0, 1.0],
+    "alpha": 1.0,
+    "subsurface_weight": 0.0,
+    "coat_weight": 0.0,
+    "sheen_weight": 0.0,
+    "transmission_weight": 0.0,
+    "emission_strength": 0.0,
+    "thin_film_thickness": 0.0,
+    "noise": {
+      "dimensions": "3D",
+      "noise_type": "FBM",
+      "normalize": true,
+      "scale": 1.0,
+      "detail": 1.0,
+      "roughness": 0.5,
+      "lacunarity": 2.0,
+      "distortion": 0.0,
+      "wavelengths_mm": [20.0, 0.25, 0.25]
+    }
+  }
+}

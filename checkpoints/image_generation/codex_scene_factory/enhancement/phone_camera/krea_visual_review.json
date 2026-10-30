@@ -1,0 +1,162 @@
+{
+  "reviewer": "independent_assistant_visual_inspection",
+  "run_dir": "/mnt/d/data/cad_scene_enhancements/office_phone_krea_20261027_001",
+  "scope": {
+    "planned_candidates": 12,
+    "inspected_candidates": 12,
+    "sample_count": 6,
+    "strengths": [
+      0.25,
+      0.35
+    ],
+    "views": [
+      "six full comparison.jpg files containing both strengths",
+      "all four inspection crop pages"
+    ],
+    "raw_and_protected_inspected": true
+  },
+  "conclusion": {
+    "phone_photograph_goal": "not_demonstrated",
+    "consistent_photorealism_improvement": false,
+    "training_data_acceptance": "not_accepted_candidate_batch",
+    "human_review": "pending",
+    "summary": "1024 Krea让木纹更平滑并重画背景商品/家具细节，但无一致手机摄影收益。.25和.35都延长十字横臂；.35在拱形件的开放空隙生成透明面板。回贴原CAD像素不能移除原mask之外新增的零件形状。",
+    "preference": ".25较少强烈重画，但仍含明确结构失败，不能作为已合格版本；不建议扩大批量。"
+  },
+  "observations": [
+    {
+      "model_id": "00301161",
+      "strength": 0.25,
+      "photo_gain": "weak_not_demonstrated",
+      "cad": "零件主体大体保留，材质基本未改善。",
+      "background": "木纹被平滑/重写，键帽与显示器内容变化；设备边缘稍清楚但仍CG。",
+      "protected": "未见强烈接缝，仍是原CAD材质。",
+      "flags": []
+    },
+    {
+      "model_id": "00301161",
+      "strength": 0.35,
+      "photo_gain": "weak_not_demonstrated",
+      "cad": "零件主体大体保留；外部接触暗部有变化。",
+      "background": "键盘、笔/纸、显示器内容和小主机细节进一步重画；没有相应明显照片感收益。",
+      "protected": "未见同等级明显接缝；原物体塑料感仍在。",
+      "flags": []
+    },
+    {
+      "model_id": "00489180",
+      "strength": 0.25,
+      "photo_gain": "none_clear",
+      "cad": "圆盘未见Kontext那种新增黑孔；外观仍均匀米色。",
+      "background": "显示器底座、主机与鼠标改样；桌后侧新小灰色椭圆块来源不明确，需人工看其合理性。",
+      "protected": "没有修复目标材质；周围光色尚无强烈接缝。",
+      "flags": [
+        "new_small_background_patch_review_needed"
+      ]
+    },
+    {
+      "model_id": "00489180",
+      "strength": 0.35,
+      "photo_gain": "none_clear",
+      "cad": "圆盘主体大体保留。",
+      "background": "原笔消失，笔记本出现小方贴片；家具五金、主机和显示器底座改样。变化本身不自动判失败，但没换来清晰摄影收益。",
+      "protected": "无助于目标原材质；保留这些背景改动。",
+      "flags": [
+        "pen_removed_and_notebook_detail_replaced"
+      ]
+    },
+    {
+      "model_id": "00495463",
+      "strength": 0.25,
+      "photo_gain": "none_clear",
+      "cad": "薄片主体保留，原来低对比米色外观仍在。",
+      "background": "桌纹更平滑、柜门把手变形，打印机仍显简化。",
+      "protected": "没有Kontext强对比版那样明显亮边，材质仍原样。",
+      "flags": [
+        "cabinet_hardware_rewritten"
+      ]
+    },
+    {
+      "model_id": "00495463",
+      "strength": 0.35,
+      "photo_gain": "none_clear",
+      "cad": "薄片主体大体保留，底端周围出现新暗部。",
+      "background": "把手被移除或替为不清楚的小矩形，台面纹理更平滑；整体仍CG。",
+      "protected": "接触周围的新暗部保留；没有明显照片收益。",
+      "flags": [
+        "cabinet_hardware_removed_or_replaced"
+      ]
+    },
+    {
+      "model_id": "00182999",
+      "strength": 0.25,
+      "photo_gain": "not_useful",
+      "cad": "十字横臂在原轮廓外明显延长，接触阴影重画。",
+      "background": "地面明显变平滑，细纹减少；柜子底座/抽屉细节有改写。",
+      "protected": "回贴截断原轮廓外生成部分，却保留左侧分离灰色端块和新阴影，形成更明显的伪影。",
+      "flags": [
+        "cad_external_extension",
+        "protected_detached_end_fragment"
+      ]
+    },
+    {
+      "model_id": "00182999",
+      "strength": 0.35,
+      "photo_gain": "not_useful",
+      "cad": "横臂继续伸长并出现端头/支脚样结构，几何含义改变。",
+      "background": "地面平滑、阴影改写，原本简单物体变成带底脚外观。",
+      "protected": "两端碎块及底部生成结构/阴影仍在，不能因保护像素相同认为合格。",
+      "flags": [
+        "cad_external_extension",
+        "new_foot_like_feature",
+        "protected_detached_fragments"
+      ]
+    },
+    {
+      "model_id": "00269315",
+      "strength": 0.25,
+      "photo_gain": "none_clear",
+      "cad": "拱形件空隙仍在，目标外观基本保留。",
+      "background": "主机、线缆略改，杯下阴影改变，木纹被抹平；整体CG感未解决。",
+      "protected": "未见明显新增面板；材质无明显改善。",
+      "flags": []
+    },
+    {
+      "model_id": "00269315",
+      "strength": 0.35,
+      "photo_gain": "not_useful",
+      "cad": "原拱形件中间的空隙被填成半透明板，带亮点/螺钉样细节。",
+      "background": "显示器、主机和杯子细节重写，不能补偿目标的结构失败。",
+      "protected": "新增面板位于原CAD mask以外，因此回贴后完整保留，明确破坏开放空间。",
+      "flags": [
+        "cad_open_space_filled",
+        "new_panel_and_fastener_like_features"
+      ]
+    },
+    {
+      "model_id": "00320493",
+      "strength": 0.25,
+      "photo_gain": "weak_not_demonstrated",
+      "cad": "平片大体保留，没有明显材质收益。",
+      "background": "笔仍正常，主机面板、显示器底座改样，木纹更平滑；仍不能称为手机照片。",
+      "protected": "未见同等级强接缝；目标原材质保留。",
+      "flags": []
+    },
+    {
+      "model_id": "00320493",
+      "strength": 0.35,
+      "photo_gain": "weak_not_demonstrated",
+      "cad": "平片主体大体保留。",
+      "background": "主机被重构为另一圆角设备，键盘按键/鼠标/屏幕支架改样；单纯替换合理物品不作为几何拒绝，但部分按键不规整且收益弱。",
+      "protected": "未见强接缝，原材质仍在。",
+      "flags": [
+        "keyboard_detail_review_needed"
+      ]
+    }
+  ],
+  "interpretation_limits": [
+    "背景换成另一个合理物件本身不自动判失败；本记录将合理变动与伪影/目标外部新增结构分开。",
+    "全部为助手视觉审查，未替代人工最终验收。",
+    "原mask是输入定位信息，不是编辑后分割真值；像素保护不等价于结构保持。",
+    "与旧512配置同时改变内部尺寸、sigma、guidance和提示词，不能将任何变化单归因于分辨率。"
+  ]
+}

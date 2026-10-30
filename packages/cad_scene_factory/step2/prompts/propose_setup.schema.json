@@ -1,0 +1,100 @@
+{
+  "type": "object",
+  "properties": {
+    "setups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "region_id": {
+            "type": "string"
+          },
+          "support_point_world": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "camera_position_world": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "look_at_world": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "moves": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "group_id": {
+                  "type": "string"
+                },
+                "pivot_world": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 3,
+                  "maxItems": 3
+                },
+                "translation_xy_m": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "yaw_degrees": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "group_id",
+                "pivot_world",
+                "translation_xy_m",
+                "yaw_degrees"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "retain_in_frame": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "region_id",
+          "support_point_world",
+          "camera_position_world",
+          "look_at_world",
+          "moves",
+          "retain_in_frame",
+          "reason"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "setups"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,54 @@
+{
+  "recorded_utc": "2026-10-23T06:38:33.779628+00:00",
+  "status": "pass",
+  "suites": [
+    {
+      "name": "existing_workflow",
+      "passed": 19,
+      "scope": "Mocked Agent/Blender state machine; source and evidence checks."
+    },
+    {
+      "name": "factory_workflow",
+      "passed": 11,
+      "scope": "Quality-only inputs, adapt compatibility, runtime injection and actual prebuild asset hash gate; mocked Agent/Blender."
+    },
+    {
+      "name": "asset_bridge",
+      "passed": 7,
+      "scope": "Actual local catalog file copies, cache and both manifest schemas; no network."
+    }
+  ],
+  "network_check": "NETWORK_ASSET_CHECK.json",
+  "dry_run": {
+    "reference_mode": "quality_only",
+    "instruction_files": [
+      "CONTRACT.md",
+      "GUIDE.md",
+      "ASSET_TOOLS.md"
+    ],
+    "reference_files": 4,
+    "no_base_scene_in_reference": true
+  },
+  "host_files": {
+    "/mnt/d/python_room_generation/packages/cad_scene_factory/room_workflow.py": "ffe066c105a9e50fef9ee817150287cbfc0ff1edb0704925187a1318a79f5fce",
+    "/mnt/d/python_room_generation/packages/cad_scene_factory/room_tools.py": "4f8801f45f77d07ff1925cc4a3d6556b720d3f409a9fba30028ac9b8f61e5bfb",
+    "/mnt/d/python_room_generation/packages/cad_scene_factory/call_llm.py": "4b7e377d3b147a02beb4234513dffbf7d8d953d64648e091adfc863c915656dd",
+    "/mnt/d/python_room_generation/packages/cad_scene_factory/assets.py": "85ac2c46c5ab6e441490ad87c05829562d8ccd50d8dc222dfef5876eba0651b1",
+    "/mnt/d/python_room_generation/packages/cad_scene_factory/render.py": "803dc216c568a5435ba5416a4bd24fa8d215c4eabde54f13d69baf48ac22467e",
+    "/mnt/d/python_room_generation/packages/cad_scene_factory/geometry.py": "e45d88dce0b2dda6f7de26db7242f906d42b983a914d00d05b01180ba6f2632a",
+    "/mnt/d/python_room_generation/packages/cad_scene_factory/visibility.py": "883720219f7e1416b0c8acaf7978597f2cd50f97dba3a99d907e95fe4d3b0df9",
+    "/mnt/d/python_room_generation/packages/cad_scene_factory/prompts/ASSET_TOOLS.md": "30b740cf30298253fdaa9f90e7440892eb950c660c20a0f274c16b58c289377c",
+    "/mnt/d/python_room_generation/packages/cad_scene_factory/prompts/room/CONTRACT.md": "3fbc096b98856b7cd28948f18ec7ecc17bb0a31581d0e21358deb6891711fd27",
+    "/mnt/d/python_room_generation/packages/cad_scene_factory/prompts/room/GUIDE.md": "4856f83492b129f2002e6eed6fd25842eaafee13942e91fe24a39c0691f46a11",
+    "/mnt/d/python_room_generation/packages/cad_scene_factory/prompts/room/PROMPT.EXAMPLE.md": "28fcfe4ec9c546f2c10a54cd4dc572bc33c3d70315fbc5d2242ddbac1c870feb",
+    "/mnt/d/python_room_generation/packages/cad_scene_factory/prompts/room/PROMPT.FACTORY.EXAMPLE.md": "7640e612388c7555b7938d111086fccea8e2d4894c2eee11bd76ba3e80785848",
+    "/mnt/d/python_room_generation/packages/cad_scene_factory/prompts/room/QUALITY_REFERENCE.md": "f05a69b8cab03bba0ee9eddad1826d5bcac821a708ce1989295cc75c232fe3b4",
+    "/mnt/d/python_room_generation/packages/cad_scene_factory/prompts/room/create.md": "312d581351330a6bfe0565377691fc73f2578411db484e08cc140706e645d77b",
+    "/mnt/d/python_room_generation/packages/cad_scene_factory/prompts/room/inspect.md": "f7528e1398ad590fcaa6267489ade4ae52a5b7317243d43b3061a913fe0936b9",
+    "/mnt/d/python_room_generation/packages/cad_scene_factory/prompts/room/repair.md": "922b34c2fb324f991bcb2e10ad15b2cd6ed54efb459221bfa1ca24686b93dd87",
+    "/mnt/d/python_room_generation/packages/cad_scene_factory/prompts/room/resume_create.md": "ddf6989dceb83386661583a456b753bd45bb7218c26483c117359ec92b755352",
+    "/mnt/d/python_room_generation/packages/cad_scene_factory/prompts/room/review.schema.json": "150c192b9f3b886bd4f45289d3a496fe2e6c6fcf34682015819f9d7732a60dc6"
+  },
+  "production_run": "/mnt/d/data/cad_scene_templates/factory_20261023_001",
+  "human_review": "pending"
+}

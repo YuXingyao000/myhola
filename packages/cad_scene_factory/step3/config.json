@@ -1,0 +1,14 @@
+{
+  "split": "training",
+  "seed": 8,
+  "samples": 64,
+  "threads": 8,
+  "longest_side_m": [0.15, 0.20],
+  "smooth_angle_degrees": 30,
+  "material": {
+    "name": "satin_metal",
+    "base_color_linear": [0.55, 0.57, 0.60, 1.0],
+    "metallic": 1.0,
+    "roughness": 0.32
+  }
+}

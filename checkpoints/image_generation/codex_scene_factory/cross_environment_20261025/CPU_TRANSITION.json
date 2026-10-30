@@ -1,0 +1,109 @@
+{
+  "authorization": "改用 CPU 渲染，接受明显更慢",
+  "runs": [
+    {
+      "name": "auto_repair",
+      "pid": 315068,
+      "command": [
+        "/mnt/d/anaconda3/bin/python",
+        "-u",
+        "/mnt/d/python_room_generation/checkpoints/image_generation/codex_scene_factory/cross_environment_20261025/resume_cpu.py",
+        "--template_dir",
+        "/mnt/d/data/cad_scene_templates/auto_repair_20261025_001",
+        "--cpu_offset",
+        "0"
+      ],
+      "log": "/root/cad_scene_scratch/cross_environment_20261025/auto_repair.resume_cpu_01.log",
+      "cpu_offset": 0,
+      "started_at_utc": "2026-10-25T06:14:26.120321+00:00",
+      "observer_pid": 315880,
+      "observer_command": [
+        "/mnt/d/anaconda3/bin/python",
+        "-u",
+        "/mnt/d/python_room_generation/checkpoints/image_generation/codex_scene_factory/factory_generalization/capture_versions.py",
+        "/mnt/d/data/cad_scene_templates/auto_repair_20261025_001"
+      ],
+      "observer_log": "/root/cad_scene_scratch/cross_environment_20261025/auto_repair.cpu_observer.log"
+    },
+    {
+      "name": "woodworking",
+      "pid": 315070,
+      "command": [
+        "/mnt/d/anaconda3/bin/python",
+        "-u",
+        "/mnt/d/python_room_generation/checkpoints/image_generation/codex_scene_factory/cross_environment_20261025/resume_cpu.py",
+        "--template_dir",
+        "/mnt/d/data/cad_scene_templates/woodworking_20261025_001",
+        "--cpu_offset",
+        "8"
+      ],
+      "log": "/root/cad_scene_scratch/cross_environment_20261025/woodworking.resume_cpu_01.log",
+      "cpu_offset": 8,
+      "started_at_utc": "2026-10-25T06:14:26.121121+00:00",
+      "observer_pid": 315881,
+      "observer_command": [
+        "/mnt/d/anaconda3/bin/python",
+        "-u",
+        "/mnt/d/python_room_generation/checkpoints/image_generation/codex_scene_factory/factory_generalization/capture_versions.py",
+        "/mnt/d/data/cad_scene_templates/woodworking_20261025_001"
+      ],
+      "observer_log": "/root/cad_scene_scratch/cross_environment_20261025/woodworking.cpu_observer.log"
+    }
+  ],
+  "transitions": {
+    "auto_repair": {
+      "at_utc": "2026-10-25T06:14:26.352686+00:00",
+      "authorization": "User selected CPU rendering, accepting slower completion.",
+      "before_sha256": "88d84a5296d2e274dbf35c69d4e38a3935c1b692b2d0cbd7b0ad5d455256b87d",
+      "after_sha256": "6fe09bc8ecd6b337d30fd9e16c3fee99d616cbf2a60aa5374c27a733468bceaa",
+      "changes": [
+        "runtime.device",
+        "instruction_files.CPU_RUNTIME.md",
+        "developer_instructions"
+      ],
+      "cpu_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "nice": 10,
+      "cuda_visible_devices": "",
+      "session_id": "01a1717f-ea7e-7b22-a2ff-131ddadb0f21",
+      "repairs_used": 1,
+      "max_repairs": 3,
+      "host_source_unchanged": true
+    },
+    "woodworking": {
+      "at_utc": "2026-10-25T06:14:26.352652+00:00",
+      "authorization": "User selected CPU rendering, accepting slower completion.",
+      "before_sha256": "bbe843ff504acd6f9462c3907da5f825d7b05cbcbb8e2c69d770a6facc5fe8b4",
+      "after_sha256": "91b79662df771298dfef923e2cc279edc6c9b8501d5a4a2142089e02ed21b873",
+      "changes": [
+        "runtime.device",
+        "instruction_files.CPU_RUNTIME.md",
+        "developer_instructions"
+      ],
+      "cpu_ids": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "nice": 10,
+      "cuda_visible_devices": "",
+      "session_id": "01a17184-a4ff-7c92-9104-69be7f14693c",
+      "repairs_used": 1,
+      "max_repairs": 3,
+      "host_source_unchanged": true
+    }
+  }
+}
