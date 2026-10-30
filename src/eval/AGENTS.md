@@ -20,16 +20,15 @@ python -m src.evaluate \
 ```
 
 - `protocol.py`：样本 ID 与预测/GT 目录定位。
-- `run.py`、`parallel.py`、`io.py`：指标调度、并行和结果保存。
+- `src/evaluate.py`（原 `eval/run.py`）、`parallel.py`、`io.py`：指标调度、并行和结果保存。
 - `metrics/condition.py`：面/边/点 CD、匹配 F1、面边/边点拓扑指标。
 - `metrics/visible_condition.py`：使用 GT 可见性缓存的条件指标。
 - `metrics/validity.py`：STEP 读取、solid 类型和内核有效性。
 - `metrics/complexity.py`、`uniqueness.py`、`lfd.py`：结构统计、图重复性与 LFD。
-- `quality_metrics.py`：生成照片的 SAM2 轮廓 IoU、DINO、CLIP 辅助指标，独立于重建评估入口。
 - `adapters/`、`baseline_preprocess/`：历史 baseline 输出适配；协议必须按具体方法核对。
 
-`metrics/point_cloud_set.py` 存在不代表 `run.py` 已提供相应 CLI 指标；以入口 dispatch 为准。
-不要使用 `legacy/` 或硬编码路径的旧 shell 脚本作为新实验入口；旧 `train_diffusion.py`、`model.py` 路径不再代表当前架构。
+`metrics/point_cloud_set.py` 存在不代表 `src/evaluate.py` 已提供相应 CLI 指标；以入口 dispatch 为准。
+旧 `legacy/` 评估副本与硬编码路径的 shell 脚本已删除；旧 `train_diffusion.py`、`model.py` 路径不再代表当前架构。原生 STEP 合法性、采样 CD 与 OCC 诊断在 `step_metrics.py`、`occ_diagnostics.py`。
 
 ## 输入与阶段
 
@@ -78,7 +77,7 @@ CD 当前在同类 primitive 的合并点集上计算；Hungarian 匹配用于 p
 
 结果缓存当前优先读取 `eval_condition.npz`，也兼容旧 `eval.npz`；默认跳过已有结果。
 改变预测、GT、split 或指标协议时使用新输出目录或明确重算，并记录版本；旧缓存不能混作新结果。
-`quality_metrics.py` 的轮廓分割误差与几何失真须区分；DINO/CLIP 分数不能认证孔槽保持或照片真实性。
+生成图片的质量筛查（SAM2／DINO／CLIP）须区分轮廓分割误差与几何失真；这些分数不能认证孔槽保持或照片真实性。旧 `quality_metrics.py` 已随旧 datagen 删除。
 生成数据的验收不应仅依赖待评估重建模型，以免筛选出该模型偏好的测试分布。
 修改指标实现时验证已知几何差异、缺失输出及坐标错误等有区分力的案例；文档修改不触发批量 CAD 评估。
-冻结清单、指标设置、后处理设置和逐件结果；本轮 joint-boundary 记录与产物写入 `checkpoints/`，遵循根目录 `AGENTS.md`，不追加历史 `experiments/`。
+冻结清单、指标设置、后处理设置和逐件结果；记录写入 `/mnt/d/hola_research/<主题>/`、运行产物写入 `/mnt/d/hola_runs/`，遵循根目录 `AGENTS.md`。

@@ -42,7 +42,7 @@
 当前默认采用 Krea Q8、原生512、strength=0.25，40时间表步数实际执行10步。
 这是在办公室五件开发样本上选定的保守增强配置，视觉改善有限，其他七个场景的提示词仅已准备，
 尚未验证效果。办公室100张全量技术通过，但固定抽查10张中发现2张背景道具变化/伪影，
-本批是尚未验收的候选图，不直接视为合格训练数据；详见 [试验记录](../../../checkpoints/image_generation/codex_scene_factory/enhancement/NOTE.md)。
+本批是尚未验收的候选图，不直接视为合格训练数据；详见 [试验记录](/mnt/d/hola_research/image_generation/codex_scene_factory/enhancement/NOTE.md)。
 
 加 `--prepare_only` 只检查输入并保存请求，不初始化 CUDA。之后执行：
 
@@ -105,5 +105,5 @@ run/
 
 新增 [CPU自适应3DLUT修图](retouch/README.md)，以及标准Kontext整图编辑、Krea1024和
 DepthControlNet的机制比较。实验入口、固定六件和全部候选见
-[研究记录](../../../checkpoints/image_generation/codex_scene_factory/enhancement/phone_camera/NOTE.md)。
+[研究记录](/mnt/d/hola_research/image_generation/codex_scene_factory/enhancement/phone_camera/NOTE.md)。
 它们是独立研究候选，不更改本页旧100件的默认配置；目前没有获验收的手机摄影增强版本。

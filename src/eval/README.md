@@ -2,9 +2,9 @@
 
 ## 入口
 
-固定 validation 的新旧 DPO 对照使用 `python -m src.eval.preference_ablation`：只生成新 DPO，复用已完成原 SVR 结果，并接续观测 audit 与跨 run 配对报告。支持 CPU-only `--check-only` 与同协议 `--resume`；实验配置和手动命令见 [fidelity_uncertainty/README](../../../checkpoints/diffusion/fidelity_uncertainty/README.md)。独立汇总入口为 `python -m src.eval.preference_ablation_report`，各参数通过 `--help` 查看。
+固定 validation 的新旧 DPO 对照使用 `python -m src.eval.preference_ablation`：只生成新 DPO，复用已完成原 SVR 结果，并接续观测 audit 与跨 run 配对报告。支持 CPU-only `--check-only` 与同协议 `--resume`；实验配置和手动命令见 [fidelity_uncertainty/README](/mnt/d/hola_research/diffusion/fidelity_uncertainty/README.md)。独立汇总入口为 `python -m src.eval.preference_ablation_report`，各参数通过 `--help` 查看。
 
-同起点的继续 DPO / 几何辅助 DPO 对照使用 `preference_compare --baseline-preference-checkpoint <控制组step5000> --preference-checkpoint <几何组step5000>`。此模式使用独立协议版本，baseline 槽加载控制组 policy；报告从协议读取两组真实标签，不将控制组称为原 SVR。完整两阶段入口和固定设置见 [geometry/EVALUATION_SPEC](../../../checkpoints/diffusion/fidelity_uncertainty/geometry/EVALUATION_SPEC.md)。
+同起点的继续 DPO / 几何辅助 DPO 对照使用 `preference_compare --baseline-preference-checkpoint <控制组step5000> --preference-checkpoint <几何组step5000>`。此模式使用独立协议版本，baseline 槽加载控制组 policy；报告从协议读取两组真实标签，不将控制组称为原 SVR。完整两阶段入口和固定设置见 [geometry/EVALUATION_SPEC](/mnt/d/hola_research/diffusion/fidelity_uncertainty/geometry/EVALUATION_SPEC.md)。
 
 普通STEP结果目录的通用入口是 `run.py`：
 
@@ -63,19 +63,6 @@ python -m src.evaluate \
     --metrics unique \
     --use-ray
 ```
-
-### FLUX 数据集质量 (单独脚本)
-
-```bash
-cd /tmp && PYTHONPATH=/mnt/d/python python -m src.eval.quality_metrics \
-    --condition-root /mnt/d/data/deepcad_v6_cond \
-    --model-list /mnt/d/python/src/brepnet/data/list/test.txt \
-    --sam2-checkpoint /mnt/d/model/sam2.1_hiera_large.pt \
-    --compute-dino --compute-clip \
-    --output quality_report.json
-```
-
-注意：必须从 `/tmp` 运行（避免 configs/ 和 SAM2 Hydra 冲突）。
 
 ## 参数说明
 
@@ -170,16 +157,15 @@ src/eval/
 │   ├── observation.py      # 同相机轮廓、可见表面CD与深度
 │   ├── conditional_diversity.py # raw指纹重复度与同图候选差异
 │   └── point_cloud_set.py  # MMD, COV, JSD (分布指标)
-├── quality_metrics.py      # FLUX 数据集质量 (SAM2 IoU, DINO, CLIP)
+├── step_metrics.py         # 原生 STEP 合法性、逐图元采样与 CD
+├── occ_diagnostics.py      # as-read STEP 的拓扑与 BRepCheck 诊断
 ├── adapters/               # Point2CAD, ComplexGen, NVDNet 格式适配
-├── legacy/                 # ⚠️ 废弃代码, 仅作备份, 不要使用
 ├── METRICS_TAXONOMY.md     # 指标分类与论文对应关系
 ├── SINGLE_VIEW_EVALUATION.md # 单视图分析协议、接口与命令
 └── README.md               # 本文件
 ```
 
-## 不要使用
+## 已删除
 
-- `legacy/` 下的所有脚本 — 接口不匹配当前 pipeline
-- `eval_cd.sh` / `eval_condition.sh` — 旧 shell 脚本，路径硬编码
-- `sample_points.py` / `sample_points_gt.py` — 旧点云采样，路径硬编码
+旧 `legacy/` 评估副本、`eval_cd.sh`／`eval_condition.sh`、`sample_points*.py`、`select_cases.py`、`quality_metrics.py` 已于 2026-10-30 删除；评估入口是 `python -m src.evaluate`。
+

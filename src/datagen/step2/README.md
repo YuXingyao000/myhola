@@ -128,4 +128,4 @@ new_placement_run/
 - 原 blend 摘要用于溯源与检测意外修改，提示词不是文件系统权限隔离。
   真实 CAD 的接触、实际轮廓、孔槽可见性和材质检查留给下一阶段。
 
-验证记录见 `checkpoints/image_generation/codex_scene_factory/placement_workflow/NOTE.md`。
+验证记录见 `/mnt/d/hola_research/image_generation/codex_scene_factory/placement_workflow/NOTE.md`。

@@ -93,4 +93,4 @@ RGB、mask、depth 来自同一次渲染。`mask.png` 不包括零件投下的�
 逐件仅保留一个异常捕获，坏样本记失败后继续；Blender 整体崩溃时剩余样本记
 `not_run`。总分母是请求清单，不能把仅成功子集当作全量完成。
 
-实验约定与验证见 `checkpoints/image_generation/codex_scene_factory/batch_capture/`。
+实验约定与验证见 `/mnt/d/hola_research/image_generation/codex_scene_factory/batch_capture/`。

@@ -13,9 +13,8 @@ python -m src.evaluate \
 ```
 
 - Post-processing: `python -m src.postprocess.construct_brep --data_root ... --out_root ...`; `recon_brep.step` may be a compound fallback, so `success.txt` is not a validity check.
-- Modules: `protocol.py` (ID and directory resolution), `run.py`/`parallel.py`/`io.py` (dispatch, parallelism, output), `metrics/{condition,visible_condition,validity,complexity,uniqueness,lfd}.py`.
-- `quality_metrics.py` evaluates generated images (SAM2 silhouette IoU, DINO, CLIP) and is independent of reconstruction evaluation.
-- The CLI dispatch in `run.py` is the source of truth: a metric module existing does not mean the metric is exposed. Do not use `legacy/` or hard-coded-path shell scripts as new entry points.
+- Modules: `protocol.py` (ID and directory resolution), `src/evaluate.py` + `parallel.py`/`io.py` (dispatch, parallelism, output), `metrics/{condition,visible_condition,validity,complexity,uniqueness,lfd}.py`.
+- The CLI dispatch in `src/evaluate.py` is the source of truth: a metric module existing does not mean the metric is exposed. Native STEP validity, sampled CD and OCC diagnostics live in `step_metrics.py` and `occ_diagnostics.py`.
 
 ## Reporting Rules
 
@@ -45,5 +44,5 @@ python -m src.evaluate \
 ## Caches and Records
 
 - Result caches prefer `eval_condition.npz` and also accept `eval.npz`; existing results are skipped by default. A change to predictions, GT, split, or metric protocol requires a new output directory or explicit recompute.
-- New protocols and results go under `checkpoints/`; `experiments/` is historical. Freeze the split list, metric settings, post-processing settings, and per-item results.
+- New protocols and results go under `/mnt/d/hola_research/<topic>/`, run outputs under `/mnt/d/hola_runs/`. Freeze the split list, metric settings, post-processing settings, and per-item results.
 - When changing metric implementations, validate on cases with known discriminating behavior (geometric differences, missing outputs, coordinate errors). Documentation changes do not trigger batch CAD evaluation.

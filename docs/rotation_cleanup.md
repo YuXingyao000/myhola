@@ -1,3 +1,5 @@
+> 历史记录（原 `src/brepnet/data/ROTATION_CLEANUP.md`）。其中 identity 在 18 的约定与删除计划已过时，不能照单执行；当前语义以 `src/preprocess/rotations.py` 为准。
+
 # 旋转相关代码清单 (待数据迁移后清理)
 
 ## 现状总结

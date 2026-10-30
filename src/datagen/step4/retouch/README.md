@@ -16,7 +16,7 @@ paired / unpaired **sRGB** 预训练权重；不是 HDRNet，也不是 iPhone IS
 CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=4 PYTHONDONTWRITEBYTECODE=1 \
 /mnt/d/anaconda3/envs/generate/bin/python \
   /mnt/d/python_room_generation/src/datagen/step4/retouch/workflow.py \
-  --inputs /mnt/d/python_room_generation/checkpoints/image_generation/codex_scene_factory/enhancement/phone_retouch/inputs.json \
+  --inputs /mnt/d/hola_research/image_generation/codex_scene_factory/enhancement/phone_retouch/inputs.json \
   --output_dir /mnt/d/data/cad_scene_enhancements/office_phone_lut_NEW_RUN \
   --model_dir /mnt/d/model/Image_Adaptive_3DLUT \
   --threads 4
@@ -27,4 +27,4 @@ CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=4 PYTHONDONTWRITEBYTECODE=1 \
 
 首轮6张输入得到24张结果，已逐图检查。主要变化为对比度和暖色增强，整体 CG 感没有显著解决；
 mix1在若干金属/木桌上增加黄调且压暗黑色道具，不推荐直接作为“手机照片”增强结果。
-详细结果见 [研究记录](../../../../checkpoints/image_generation/codex_scene_factory/enhancement/phone_retouch/NOTE.md)。
+详细结果见 [研究记录](/mnt/d/hola_research/image_generation/codex_scene_factory/enhancement/phone_retouch/NOTE.md)。

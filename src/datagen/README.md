@@ -31,9 +31,9 @@ Blender 从脚本重新构建并渲染六个环境视角，再由 Codex 对照�
 
 阅读代码从 `room_workflow.py` 的 `generate_room()` 开始，再看
 `_execute_locked()` 中的制作、重建、审阅与返修循环。
-[算法说明](../../checkpoints/image_generation/codex_scene_factory/room_workflow/ALGORITHM.md)
+[算法说明](/mnt/d/hola_research/image_generation/codex_scene_factory/room_workflow/ALGORITHM.md)
 解释各文件和数据的关系；
-[实际运行记录](../../checkpoints/image_generation/codex_scene_factory/room_workflow/NOTE.md)
+[实际运行记录](/mnt/d/hola_research/image_generation/codex_scene_factory/room_workflow/NOTE.md)
 包含首个场景的预览位置、验收证据和已知限制。
 
 ```bash
@@ -126,7 +126,7 @@ Python API 使用同名 `reference_mode`、`asset_cache` 和可选 `asset_catalo
 宣称完成。原 Shed 示例仍使用默认 `adapt`。修改后的工具与提示词会生成新快照，
 旧任务继续保留原版本，不能静默以新代码续跑。
 
-工厂协议与运行记录见 [factory_generalization](../../checkpoints/image_generation/codex_scene_factory/factory_generalization/)。
+工厂协议与运行记录见 [factory_generalization](/mnt/d/hola_research/image_generation/codex_scene_factory/factory_generalization/)。
 最终六图交给用户判断，`human_review` 保持 pending；后续意见写入独立反馈文件，
 通过 `--resume --feedback_file` 追加修订，不覆盖首次候选与原审阅。
 
@@ -143,13 +143,13 @@ Python API 使用同名 `reference_mode`、`asset_cache` 和可选 `asset_catalo
 | 家庭餐厨空间 | [PROMPT.HOME_KITCHEN.EXAMPLE.md](prompts/room/PROMPT.HOME_KITCHEN.EXAMPLE.md) |
 
 三场景批次的实际输入、设备分配和命令见
-[运行记录](../../checkpoints/image_generation/codex_scene_factory/cross_environment_20261023/NOTE.md)。
+[运行记录](/mnt/d/hola_research/image_generation/codex_scene_factory/cross_environment_20261023/NOTE.md)。
 并发运行时使用不同 GPU，共享缓存的 `fetch` 需通过同一 `flock` 串行化；
 该批次的具体要求保存在其 `EXECUTION.md` 和实际输入中。
 
 新增汽车、木工与家庭餐厨环境的参数和实际状态见
-[扩展批次记录](../../checkpoints/image_generation/codex_scene_factory/cross_environment_20261025/NOTE.md)，
-[八场景清单](../../checkpoints/image_generation/codex_scene_factory/cross_environment_20261025/SCENES.json)
+[扩展批次记录](/mnt/d/hola_research/image_generation/codex_scene_factory/cross_environment_20261025/NOTE.md)，
+[八场景清单](/mnt/d/hola_research/image_generation/codex_scene_factory/cross_environment_20261025/SCENES.json)
 区分已经有完整六图的场景与尚在生成的任务；列入清单不等于已经验收。
 
 ## 旧入口：固定零件特写模板

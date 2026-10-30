@@ -5,7 +5,7 @@ description: Maintain or extend the HoLa-BRep diffusion implementation in src/mo
 
 # Diffusion 模块维护
 
-当前实现与形状见 [README](../../../checkpoints/diffusion/README.md)，研究范围和历史 baseline 见 [PLAN](../../../checkpoints/diffusion/PLAN.md)。
+当前实现与形状见 [README](/mnt/d/hola_research/diffusion/README.md)，研究范围和历史 baseline 见 [PLAN](/mnt/d/hola_research/diffusion/PLAN.md)。
 以当前源码、配置和两级 `AGENTS.md` 为准；本文件不要求延续旧架构。
 
 ## 实现入口
@@ -39,4 +39,4 @@ Cache 的后半维是 **std**，不是 log-variance。random padding 复制并�
 结构调整应解释要解决的失败机制，画清层、张量、残差和训练/推理可用信息；不把这份实现地图当作禁止重设计的要求。
 
 按改动检查实际形状、梯度、采样和加载合同。单图以外接口保留不等于已做能力验证。
-[VALIDATION.json](../../../checkpoints/diffusion/VALIDATION.json) 是旧模块拆分记录；当前接口验证为 [LAYERWISE_VALIDATION.json](../../../checkpoints/diffusion/LAYERWISE_VALIDATION.json)，二者都不构成重建质量结论。
+[VALIDATION.json](/mnt/d/hola_research/diffusion/VALIDATION.json) 是旧模块拆分记录；当前接口验证为 [LAYERWISE_VALIDATION.json](/mnt/d/hola_research/diffusion/LAYERWISE_VALIDATION.json)，二者都不构成重建质量结论。

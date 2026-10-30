@@ -78,9 +78,9 @@
 | Hidden Knowledge | 在哪里 | 坑点 |
 |-----------------|--------|------|
 | `rotation_id=0` 是 identity | `data/rotations.py` | 运行时统一使用 identity-first cube24 |
-| `imgs.npz` 运行时只应有 24 个视角 | `tools/migrate_64_to_24.py` | 旧 Euler64 数据只能在迁移/调试工具里出现 |
+| `imgs.npz` 运行时只应有 24 个视角 | 旧 `tools/migrate_64_to_24.py`（已删除，见 tag `archive/pre-cleanup-20261030/main`） | 旧 Euler64 数据只能在迁移/调试工具里出现 |
 | cached latent 文件名包含 rotation_id | `ae_cache/{model}_{rotation_id}/` | 必须使用迁移后的 24-id cache |
-| `eval_brep.py` 读 `recon_face/*.stl`，当前 pipeline 不输出这个 | `post/legacy/eval_brep.py` | 用了就得到全 0 结果 |
+| `eval_brep.py` 读 `recon_face/*.stl`，当前 pipeline 不输出这个 | 旧 `post/legacy/eval_brep.py`（已删除） | 用了就得到全 0 结果 |
 | `condition.py` 的 F1 阈值是硬编码的 | `metrics/condition.py` | 不同论文用不同 τ |
 
 ---
@@ -110,7 +110,7 @@ python -m src.evaluate \
     ↓
 迁移 cached latent (以 24 旋转命名)
     ↓
-修改 dataset.py (cube_id 直接对应 latent 文件)
+修改 datasets/brep.py (cube_id 直接对应 latent 文件)
     ↓
 inference 默认 identity 条件
     ↓

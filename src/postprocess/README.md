@@ -17,9 +17,9 @@ python -m src.postprocess.construct_brep
 - 旧后处理与候选使用相同输入信息和预定总预算，新增 fallback、容差尝试及重试均计入成本。保留原始 split 和历史结果。
 - ABC 最终评估子集在方案、代码／配置、checkpoint 与协议冻结后使用，不据其结果或失败样本调规则、阈值或挑版本。开展 ABC 工作时明确具体子集，并核对与 DeepCAD 等开发数据的 CAD／几何重叠；不同数据集名称本身不证明独立性。
 
-本轮已按上述规则完成原 Intersection refinement VAE 的3495件validation对照：`recover_v1`原生合法率88.01%→90.04%，新增71件、原有成功件无退步。它保留为显式可选策略，默认仍为`legacy`。几何退步、较大内部容差与组环结构差异均单列，详见[图文总览](../../../checkpoints/postprocess_refinement/README.md)与[结果报告](../../../checkpoints/postprocess_refinement/validation_20261016/REPORT.md)。
+本轮已按上述规则完成原 Intersection refinement VAE 的3495件validation对照：`recover_v1`原生合法率88.01%→90.04%，新增71件、原有成功件无退步。它保留为显式可选策略，默认仍为`legacy`。几何退步、较大内部容差与组环结构差异均单列，详见[图文总览](/mnt/d/hola_research/postprocess_refinement/README.md)与[结果报告](/mnt/d/hola_research/postprocess_refinement/validation_20261016/REPORT.md)。
 
-固定同一方案的[2417件test评估](../../../checkpoints/postprocess_refinement/test_20261016/REPORT.md)也已完成：87.34%→89.16%，新增44件、零退步；未按test结果修改规则，后续失败原因分析仍使用validation。
+固定同一方案的[2417件test评估](/mnt/d/hola_research/postprocess_refinement/test_20261016/REPORT.md)也已完成：87.34%→89.16%，新增44件、零退步；未按test结果修改规则，后续失败原因分析仍使用validation。
 
 ## 圆柱面表示与特殊处理（2026-10-16 核对）
 
@@ -27,7 +27,7 @@ python -m src.postprocess.construct_brep
 
 当前源码能确认的约定：
 
-- [提取器](../data/extract_brep_from_step_half_structure.py) 对 face 的 UV 参数范围使用包含两端的 `linspace`，采样为 `16×16` 矩形网格；不按孔或裁剪边界逐点过滤。覆盖完整周期时，首末采样可在空间中重合。此事本身不能证明或否定重建曲面的自相交。
+- [提取器](../preprocess/extract_brep_from_step_half_structure.py) 对 face 的 UV 参数范围使用包含两端的 `linspace`，采样为 `16×16` 矩形网格；不按孔或裁剪边界逐点过滤。覆盖完整周期时，首末采样可在空间中重合。此事本身不能证明或否定重建曲面的自相交。
 - 提取器主动跳过同一面两侧的 seam，因此预测边并非完整 OCC 边界的直接副本。
 - [拟合](occ_fit.py) 生成一般 B-spline 曲面，并尝试设置周期性，没有重新建立解析圆柱；[构面](occ_topology.py) 的特殊分支采用该拟合曲面的完整自然 wire。
 - 修改相关分支前，应先保留并验证已有完整 loop 行为；不能只凭失败子集中的残差变化断定该设计应被移除。具体自相交形态和历史实验效果仍属于用户报告，当前源码核对未独立复现它们，也不认证所有已有数据均由此版提取器生成。
@@ -221,19 +221,7 @@ out_root/
 - `utils.py`：兼容层。旧代码仍可从这里导入 `Shape`、`create_surface`、`get_solid` 等符号，但实际实现已经移动到上述模块。
 - `chamferdist_torch.py`：`chamferdist` 不可用时的 PyTorch fallback。
 
-辅助工具放在 `tools/`：
-
-- `tools/construct_face.py`：单独检查 trimmed face 构造有效性的工具。
-- `tools/move.py`：历史整理/检查脚本，用于移动、统计、筛选失败样本。
-
-历史代码放在 `legacy/`：
-
-- `legacy/eval_brep.py`：历史评价脚本。它更接近 eval 逻辑，保留在 post legacy 中作为旧实验入口。
-- `legacy/brepgen_with_our_post.py`：历史批处理入口，直接调用 `construct_brep_from_datanpz(...)`。
-- `legacy/check_brep.py`：简单统计 `success.txt` 的工具。
-- `legacy/geom_optimization.py`：面和边的几何优化实验代码，当前主流程不直接依赖。
-- `legacy/optimization.py`：旧优化相关代码，当前不是主入口。
-- `legacy/move_test.py`：历史测试/临时脚本。
+原 `tools/construct_face.py`、`tools/move.py` 与 `legacy/` 历史脚本已于 2026-10-30 删除（见 tag `archive/pre-cleanup-20261030/main`）。
 
 ## 重构边界
 

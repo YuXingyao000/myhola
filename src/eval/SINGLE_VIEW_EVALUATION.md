@@ -17,16 +17,16 @@
 | 普通STEP结果目录：原有condition、validity、complexity等指标 | `python -m src.evaluate`，见[通用说明](README.md) |
 
 从仓库根目录运行，使用项目已有环境。STEP读取和三角化需要PythonOCC；数值部分使用
-NumPy、SciPy，图表使用Matplotlib。公开入口与主体代码位于`src/eval/`，
-目前仍复用`tools/vae_compare_post.py`、`tools/legacy_failure_geometry.py`的文件、进程及
-STEP检查函数；因此需要完整仓库，尚不能只复制`eval/`目录作为独立安装包使用。
+NumPy、SciPy，图表使用Matplotlib。公开入口与主体代码位于`src/eval/`；
+STEP 读取、合法性、采样与 OCC 诊断在 `src/eval/step_metrics.py`、`src/eval/occ_diagnostics.py`、`src/common/`，
+进程隔离在 `src/postprocess/cpu_runtime.py`。
 
 ## 1. 已完成对照的完整分析
 
 ```bash
 python -m src.eval.diffusion_audit \
-  --comparison-run checkpoints/diffusion/preference_eval/20261023T090834Z \
-  --output-dir checkpoints/diffusion/failure_analysis/runs/full_validation_audit \
+  --comparison-run /mnt/d/hola_runs/diffusion/preference_eval/20261023T090834Z \
+  --output-dir /mnt/d/hola_runs/diffusion/failure_analysis/runs/full_validation_audit \
   --methods baseline dpo_5000 \
   --workers 16 \
   --timeout 120 \
@@ -105,7 +105,7 @@ audit_output/
 
 ```bash
 python -m src.eval.diffusion_audit_report \
-  --audit-dir checkpoints/diffusion/failure_analysis/runs/full_validation_audit \
+  --audit-dir /mnt/d/hola_runs/diffusion/failure_analysis/runs/full_validation_audit \
   --font /path/to/SourceHanSansSC-Regular.otf
 ```
 
