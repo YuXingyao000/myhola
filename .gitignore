@@ -217,3 +217,7 @@ env.txt
 /checkpoints/diffusion/photo_preference_data/
 /checkpoints/diffusion/preference_eval/
 /checkpoints/diffusion/failure_analysis/runs/
+
+# Research records and runs live outside this repository (2026-10-30 cleanup)
+/checkpoints/
+/experiments/

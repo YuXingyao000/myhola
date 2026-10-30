@@ -1,6 +1,6 @@
 # Frozen photo step310000; full validation then full train, disjoint manifests.
 model_source: photo
-checkpoint: /mnt/d/python/checkpoints/diffusion/photo_baseline/evaluation_20261026/weights/photo_latest.ckpt
+checkpoint: /mnt/d/hola_runs/diffusion/photo_baseline/evaluation_20261026/weights/photo_latest.ckpt
 original_checkpoint: /mnt/d/ckpt/HoLa/Diffusion_svr_sq30_1500k.ckpt
 expected_global_step: 310000
 dino_repo: /root/.cache/torch/hub/facebookresearch_dinov2_main

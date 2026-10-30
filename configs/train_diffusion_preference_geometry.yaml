@@ -4,7 +4,7 @@ defaults:
   - _self_
 
 model:
-  init_preference_checkpoint: /mnt/d/python/checkpoints/diffusion_preference_svr/20261023T030527Z/weights/steps/step=00005000.ckpt
+  init_preference_checkpoint: /mnt/d/hola_runs/diffusion_preference_svr/20261023T030527Z/weights/steps/step=00005000.ckpt
   geometry:
     enabled: true
     # Fixed train-only epsilon-gradient calibration: about 10% of DDPM at initialization.

@@ -1,8 +1,0 @@
-model_id,status,num_faces,num_boundaries,num_closed,closed_phase_used,max_reciprocal_residual,error
-00005083,failed,,,,,,"ValueError: shared boundary sample '00005083': face pair (14, 15) reciprocal residual 0.01024832 exceeds 0.01"
-00005807,failed,,,,,,"ValueError: shared boundary sample '00005807': face pair (3, 5) reciprocal residual 0.014630707 exceeds 0.01"
-00250107,failed,,,,,,"ValueError: shared boundary sample '00250107': face pair (0, 6) reciprocal residual 0.015414997 exceeds 0.01"
-00273866,failed,,,,,,"ValueError: shared boundary sample '00273866': face pair (5, 9) reciprocal residual 0.012235554 exceeds 0.01"
-00413192,failed,,,,,,"ValueError: shared boundary sample '00413192': face pair (3, 11) reciprocal residual 0.01001386 exceeds 0.01"
-00714815,failed,,,,,,"ValueError: shared boundary sample '00714815': face pair (11, 12) reciprocal residual 0.011218512 exceeds 0.01"
-00734376,failed,,,,,,"ValueError: shared boundary sample '00734376': face pair (5, 7) reciprocal residual 0.048402088 exceeds 0.01"

@@ -41,6 +41,6 @@ resume_from_checkpoint: null
 init_from_checkpoint: null
 evaluate: false
 test_output_dir: null
-output_dir: ./checkpoints
+output_dir: ${oc.env:HOLA_RUNS_ROOT,/mnt/d/hola_runs}
 run_dir: null
 exp_name: default

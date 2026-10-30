@@ -14,7 +14,7 @@ condition: null
 
 dataset:
   name: src.brepnet.data.photo_dataset.PhotoFeatureDataset
-  cache_root: /mnt/d/python/checkpoints/diffusion/photo_baseline/cache_v1
+  cache_root: /mnt/d/hola_runs/diffusion/photo_baseline/cache_v1
   epoch_scale_factor: 50
 
 trainer:

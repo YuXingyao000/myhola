@@ -1,7 +1,0 @@
-__pycache__/
-raw_predictions/
-metadata/
-smoke/
-conditional_best415/
-conditional_last5395/
-*.log

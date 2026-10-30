@@ -1,7 +1,0 @@
-{
-  "command": "OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 /mnt/d/anaconda3/envs/torch/bin/python -m pytest src/brepnet/test/test_intersection_evaluate_inference.py src/brepnet/test/test_vae_compare_metrics.py src/brepnet/test/test_vae_compare_post.py -q",
-  "passed": 41,
-  "failed": 0,
-  "seconds": 13.56,
-  "notes": "strict checkpoint, runtime init skipped, method identities, paired metric direction, historical conditioned rows and source hashes preserved"
-}

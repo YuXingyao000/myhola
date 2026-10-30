@@ -1,8 +1,0 @@
-{
-  "source_run": "/mnt/d/python/checkpoints/diffusion/photo_baseline/evaluation_20261026",
-  "reused_per_method": 100,
-  "verified_artifact_count": 1501,
-  "source_protocol": "cc2e945eea72f77b4bf64610be44b3ee9aaa8fa2e0bd218133ac5ab9831fe45e",
-  "all_original_results_preserved": true,
-  "published_csv_agrees_with_records": true
-}

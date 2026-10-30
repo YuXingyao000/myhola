@@ -1,1 +1,0 @@
-{"_runtime": 53526.374674493, "_step": 2711, "_timestamp": 1793237678.159724, "_wandb.runtime": 53526, "epoch": 70, "lr-Adam": 0.0001, "train/ddpm_loss": 0.031677503138780594, "train/loss_epoch": 0.031677503138780594, "train/loss_step_local": 0.03326389566063881, "trainer/global_step": 64299, "val/ddpm_loss": 0.051549091935157776, "val/loss": 0.051549091935157776}

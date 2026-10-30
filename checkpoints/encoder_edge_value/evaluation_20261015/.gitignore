@@ -1,7 +1,0 @@
-# Reproducible per-object tables and hashes stay local; compact audits are versioned.
-**/raw_metrics/*/per_object.csv
-/owner_per_object.csv
-/input_hashes.jsonl
-# Historical STEP references are recreated by the evaluation runner.
-**/post/fit_only/conditioned
-**/post/optimized/conditioned

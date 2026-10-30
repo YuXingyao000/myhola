@@ -1,2 +1,0 @@
-# Python's CSV writer uses RFC-style CRLF. Preserve bytes for report SHA256s.
-report/*.csv -text whitespace=cr-at-eol
