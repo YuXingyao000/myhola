@@ -25,6 +25,7 @@ import torch
 
 
 SOURCE_COMMIT = "c2660c00c6a9c8f9f82bd5b9f4d3c774fa38d361"
+SOURCE_IMPORT_VERSION = "installed-pointnet2-v1"
 SOURCE_FILES = (
     "src/__init__.py",
     "src/brepnet/__init__.py",
@@ -41,7 +42,8 @@ def _archive_sources(repo_root: Path, archive_root: str | Path | None) -> tuple[
     payload = subprocess.check_output(
         ["git", "archive", SOURCE_COMMIT, *SOURCE_FILES], cwd=repo_root,
     )
-    root = Path(archive_root).resolve() if archive_root else Path(tempfile.mkdtemp(prefix="hola-svr-legacy-"))
+    cache = Path(archive_root).resolve() if archive_root else Path(tempfile.mkdtemp(prefix="img2brep-svr-legacy-"))
+    root = cache / SOURCE_IMPORT_VERSION
     root.mkdir(parents=True, exist_ok=True)
     hashes = {}
     with tarfile.open(fileobj=io.BytesIO(payload)) as archive:
@@ -51,6 +53,13 @@ def _archive_sources(repo_root: Path, archive_root: str | Path | None) -> tuple[
             if member.name not in SOURCE_FILES or not member.isfile():
                 raise ValueError(f"Unexpected historical archive member: {member.name}")
             content = archive.extractfile(member).read()
+            # The historical network uses a repository-qualified environment import.
+            # Only its import path changes; model definitions and state keys stay intact.
+            if member.name == "src/brepnet/diffusion_model.py":
+                content = content.replace(
+                    b"from thirdparty.Pointnet2_PyTorch.pointnet2_ops_lib.pointnet2_ops.pointnet2_modules import",
+                    b"from pointnet2_ops.pointnet2_modules import",
+                )
             digest = hashlib.sha256(content).hexdigest()
             target = root / member.name
             if target.exists():
@@ -79,7 +88,6 @@ def _isolated_sources(source_root: Path, repo_root: Path):
     try:
         for name in saved_modules:
             del sys.modules[name]
-        # 当前 thirdparty 仅提供旧文件顶层导入的依赖，不替换历史网络源码。
         sys.path[:0] = [str(source_root), str(repo_root)]
         importlib.invalidate_caches()
         yield
@@ -123,6 +131,7 @@ def _construct_legacy(
     model.noise_scheduler = DDPMScheduler.from_config(model.noise_scheduler.config)
     return model, {
         "source_commit": SOURCE_COMMIT, "source_archive": str(source_root),
+        "source_import_version": SOURCE_IMPORT_VERSION,
         "source_sha256": source_hashes, "dino_repository": str(dino_root),
     }
 

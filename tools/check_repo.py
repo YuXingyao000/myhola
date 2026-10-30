@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 TOP_LEVEL = {
     ".github", ".gitignore", ".pre-commit-config.yaml", "AGENTS.md", "CLAUDE.md", "README.md",
-    "configs", "docs", "environment.yml", "packages", "pyproject.toml", "src", "tests", "thirdparty", "tools",
+    "configs", "docs", "environment.yml", "pyproject.toml", "src", "tests", "tools",
 }
 DATA_SUFFIXES = {
     ".npz", ".npy", ".pt", ".pth", ".ckpt", ".safetensors", ".pkl", ".h5", ".hdf5",
@@ -42,6 +42,10 @@ def tracked_files() -> list[str]:
 
 def check_layout() -> list[str]:
     errors = []
+    staged = subprocess.check_output(["git", "ls-files", "--stage"], cwd=ROOT, text=True)
+    for entry in staged.splitlines():
+        if entry.startswith("160000 "):
+            errors.append(f"{entry.split(chr(9), 1)[1]}: Git submodules belong in environment installation, not the code repository")
     for name in tracked_files():
         top = name.split("/", 1)[0]
         if top not in TOP_LEVEL:

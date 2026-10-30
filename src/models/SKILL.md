@@ -1,6 +1,6 @@
 ---
-name: brepnet-diffusion-model-maintenance
-description: Maintain or extend the HoLa-BRep diffusion implementation in src/models/diffusion, including layerwise image conditioning, latent/padding contracts, and checkpoint loading. Use for repository diffusion changes, not as a fixed future research plan.
+name: img2brep-diffusion-model-maintenance
+description: Maintain or extend the Img2Brep diffusion implementation in src/models/diffusion, including layerwise image conditioning, latent/padding contracts, and checkpoint loading. Use for repository diffusion changes, not as a fixed future research plan.
 ---
 
 # Diffusion 模块维护
@@ -10,13 +10,13 @@ description: Maintain or extend the HoLa-BRep diffusion implementation in src/mo
 
 ## 实现入口
 
-- `../diffusion/model.py`：装配、训练/推理与 checkpoint 加载。
-- `../diffusion/conditioning.py`、`image_encoder.py`：条件路由、冻结 ViT 与可训练图像投影。
-- `../diffusion/denoiser.py`、`fusion.py`：原完整 EncoderLayer 后接独立 image cross-attention；默认共 24 组。
-- `../diffusion/latents.py`、`padding.py`：latent 来源、面 slots 打包、有效性筛选和去重。
-- `../diffusion/topology.py`：可选 oracle / learned self-attention mask 或 bias。
-- `../diffusion/losses.py`、`sampling.py`：训练目标与 DDPM 反向迭代。
-- `vae.py`、`blocks.py`：外部 VAE 与共享算子，不为 diffusion 整理擅自修改其表示。
+- `diffusion/model.py`：装配、训练/推理与 checkpoint 加载。
+- `diffusion/conditioning.py`、`image_encoder.py`：条件路由、冻结 ViT 与可训练图像投影。
+- `diffusion/denoiser.py`、`fusion.py`：原完整 EncoderLayer 后接独立 image cross-attention；默认共 24 组。
+- `diffusion/latents.py`、`padding.py`：latent 来源、面 slots 打包、有效性筛选和去重。
+- `diffusion/topology.py`：可选 oracle / learned self-attention mask 或 bias。
+- `diffusion/losses.py`、`sampling.py`：训练目标与 DDPM 反向迭代。
+- `vae/`、`blocks.py`：外部 VAE 与共享算子，不为 diffusion 整理擅自修改其表示。
 
 ## 当前合同
 

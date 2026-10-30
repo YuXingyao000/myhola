@@ -110,7 +110,7 @@ if __name__ == '__main__':
     parser.add_argument('--diffusion-weights', type=str, required=True)
     parser.add_argument('--condition', type=str, required=True, choices=['single_img'])
     parser.add_argument('--input', nargs='+', type=str, required=True)
-    parser.add_argument('--output-dir', type=str, default="./inference_output")
+    parser.add_argument('--output-dir', type=str, required=True)
     parser.add_argument('--num-samples', type=int, default=32)
 
     args = parser.parse_args()

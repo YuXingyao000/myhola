@@ -15,7 +15,7 @@
 | `model_lists.py` | 读取 8 位 ID 清单（去重保序、拒绝非法 ID） |
 | `splits/` | 固定清单：`deduplicated_deepcad_{training,validation,testing}_7_30.txt`、`deepcad_v7_contract_{train,validation,test}.txt`（VAE 合同审计 accepted，validation 3495 件）、`deepcad_v7_validation100.txt` |
 
-相关工具：`tools/audit_deepcad_v7_dataset.py`（资产与字段审计）、`tools/filter_deepcad_v7_lists.py`（完整性筛单，先 `--dry-run`）、`tools/generate_model_lists.py`。工具的报告目录显式传入，写到 `/mnt/d/hola_research/<主题>/`；它们不认证图像与 CAD 几何配对。`docs/rotation_cleanup.md` 含 identity 在 18 的旧约定，不能照单执行，当前语义以 `rotations.py` 为准。
+相关工具：`tools/audit_deepcad_v7_dataset.py`（资产与字段审计）、`tools/filter_deepcad_v7_lists.py`（完整性筛单，先 `--dry-run`）。数据根、缓存根、输出与报告目录均显式传入；报告写到 `/mnt/d/hola_research/<主题>/`，工具拒绝向代码仓库写入报告／派生清单。旧 `generate_model_lists.py` 使用 DeepCAD v6／Euler64 协议，已删除；当前 cube24 数据使用 v7 筛单工具。它们不认证图像与 CAD 几何配对。`docs/rotation_cleanup.md` 含 identity 在 18 的旧约定，不能照单执行，当前语义以 `rotations.py` 为准。
 
 ## 运行时数据契约
 

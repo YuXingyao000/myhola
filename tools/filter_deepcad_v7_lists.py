@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Filter DeepCAD model lists to entries that exist in the v7 training assets.
 
-Default behavior is non-destructive: filtered lists are written to
-src/preprocess/splits/filtered_v7/. Use --in-place to replace the input lists;
+Output and report directories must be specified outside the code repository.
+Use --in-place to replace the input lists;
 that mode writes a .bak copy next to each original before overwriting it.
 """
 
@@ -14,12 +14,6 @@ from collections import Counter
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-
-DEFAULT_DATA_ROOT = Path("/mnt/d/data/deepcad_v7")
-DEFAULT_COND_ROOT = Path("/mnt/d/data/deepcad_v7_cond")
-DEFAULT_LATENT_ROOT = Path("/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24")
-DEFAULT_OUTPUT_DIR = Path("src/preprocess/splits/filtered_v7")
-DEFAULT_REPORT_DIR = Path("experiments/2026-06-07/list_filter_report")
 
 DEFAULT_LISTS = (
     Path("src/preprocess/splits/deduplicated_deepcad_testing_7_30_sample_100.txt"),
@@ -162,11 +156,11 @@ def filter_one_list(list_path: Path, args: argparse.Namespace) -> dict[str, obje
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--list", dest="lists", type=Path, action="append", help="List file to filter. Repeatable. Defaults to the four common DeepCAD lists.")
-    parser.add_argument("--data-root", type=Path, default=DEFAULT_DATA_ROOT)
-    parser.add_argument("--condition-root", type=Path, default=DEFAULT_COND_ROOT)
-    parser.add_argument("--latent-root", type=Path, default=DEFAULT_LATENT_ROOT)
-    parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
-    parser.add_argument("--report-dir", type=Path, default=DEFAULT_REPORT_DIR)
+    parser.add_argument("--data-root", type=Path, required=True)
+    parser.add_argument("--condition-root", type=Path, required=True)
+    parser.add_argument("--latent-root", type=Path, required=True)
+    parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--report-dir", type=Path, required=True)
     parser.add_argument("--latent-views", choices=("all", "identity"), default="all")
     parser.add_argument("--no-require-imgs", dest="require_imgs", action="store_false")
     parser.add_argument("--no-require-real-photo", dest="require_real_photo", action="store_false")
@@ -177,7 +171,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--backup-suffix", default=".bak")
     parser.add_argument("--overwrite-backup", action="store_true")
     parser.set_defaults(require_imgs=True, require_real_photo=True, dedupe=True)
-    return parser.parse_args()
+    args = parser.parse_args()
+    repo_root = Path(__file__).resolve().parents[1]
+    destinations = [args.output_dir, args.report_dir]
+    if args.in_place:
+        destinations.extend(args.lists or DEFAULT_LISTS)
+    if any(path.resolve().is_relative_to(repo_root) for path in destinations):
+        parser.error("Write filtered lists and reports outside the code repository")
+    return args
 
 
 def main() -> None:

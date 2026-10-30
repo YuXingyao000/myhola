@@ -1,4 +1,6 @@
-# HoLa-BRep Research Guidelines
+# Img2Brep Research Guidelines
+
+项目现名 **Img2Brep**（2026-10-30）；HoLa 仅用于历史方法、权重及论文出处。既有资产目录和 GitHub 地址暂保留。
 
 ## 研究目标与协作方式（2026-10-09 重启）
 
@@ -27,7 +29,7 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 |---|---|---|
 | `/mnt/d/python` | 代码仓库（GitHub `YuXingyao000/myhola`），唯一长期分支 `main` | 只经 PR 合入 |
 | `/mnt/d/hola_research/` | 研究记录（独立 git 仓库）：每个主题一个目录，`PLAN.md`、`README.md`／`NOTE.md`、`ARCHITECTURE.md`、一次性分析脚本；原 `checkpoints/` 记录与 `experiments/` 历史都在这里 | 新计划、审计、结果都写这里，不写进代码仓库 |
-| `/mnt/d/hola_runs/` | 训练与评估运行目录（权重、日志、缓存），原 `checkpoints/<exp>/...` 同路径迁入 | `trainer.output_dir` 默认 `${HOLA_RUNS_ROOT:-/mnt/d/hola_runs}` |
+| `/mnt/d/hola_runs/` | 训练与评估运行目录（权重、日志、缓存），原 `checkpoints/<exp>/...` 同路径迁入 | `trainer.output_dir` 默认 `${IMG2BREP_RUNS_ROOT:-/mnt/d/hola_runs}` |
 | `/mnt/d/hola_archive/20261030/` | 整理时迁出的旧产物：`outputs_brepnet_diffusion/`、`claude_try/`、旧 datagen 输出、Depth Anything 等 | 只读 |
 | `/mnt/d/data/` | 数据集与派生缓存 | 代码通过 Hydra override 或环境变量传路径 |
 
@@ -61,16 +63,15 @@ src/
 configs/        Hydra 配置；实验旋钮在这里暴露
 tests/          单元与接口测试（pytest testpaths）
 tools/          仍在用的命令行工具与仓库检查（check_repo.py、migrate_checkpoint.py 等）
-thirdparty/     仅 Pointnet2_PyTorch：models/diffusion/legacy.py 构建原版 SVR 时旧源码顶层导入它
 ```
 
-当前单图路径：图片 → 冻结 DINOv2 的 CLS / patch tokens → 可训练图像投影；带时间嵌入的 noisy face latent → 24×（完整 TransformerEncoderLayer → 独立 image cross-attention residual）→ DDPM → 冻结 VAE → OCC 后处理。条件只剩 `single_img` 与 `none`；点云、草图、文本、多视图、Depth Anything 已删除。这是当前实现，不是未来架构要求，也不代表已训练或已提升重建质量。照片 baseline／DPO／spatial 模型通过 `models/diffusion/legacy.py` 从历史提交 `c2660c00` 解出旧源码构建原版 SVR 再初始化。
+当前单图路径：图片 → 冻结 DINOv2 的 CLS / patch tokens → 可训练图像投影；带时间嵌入的 noisy face latent → 24×（完整 TransformerEncoderLayer → 独立 image cross-attention residual）→ DDPM → 冻结 VAE → OCC 后处理。条件只剩 `single_img` 与 `none`；点云、草图、文本、多视图、Depth Anything 已删除。这是当前实现，不是未来架构要求，也不代表已训练或已提升重建质量。照片 baseline／DPO／spatial 模型通过 `models/diffusion/legacy.py` 从历史提交 `c2660c00` 解出旧源码构建原版 SVR 再初始化；其中 Pointnet2 导入改用环境安装的 `pointnet2_ops`，仓库不保留子模块或安装源码。
 
 VAE 与 diffusion 内部结构的进一步整理另行讨论；目录内说明见 `src/AGENTS.md`、`src/preprocess/AGENTS.md`、`src/eval/AGENTS.md`、`src/models/SKILL.md`。
 
 ## 代码卫生（机器检查，2026-10-30）
 
-**检查即规范**：pre-commit（`.pre-commit-config.yaml`）与 CI 运行下列检查；失败时修代码，不跳过 hook、不加忽略来绕过。每个 clone 执行一次 `pre-commit install`。
+**检查即规范**：pre-commit（`.pre-commit-config.yaml`）与 CI 运行下列检查；失败时修代码，不跳过 hook、不加忽略来绕过。每个 clone 执行一次 `pre-commit install`。GitHub 只执行这些轻量检查与无 OCC/CUDA 的维护测试；真实模型/OCC/GPU 验证在已验收环境进行，不要求 GitHub 托管环境安装整套训练依赖。
 
 | 检查 | 规则 |
 |---|---|
@@ -119,6 +120,8 @@ VAE 与 diffusion 内部结构的进一步整理另行讨论；目录内说明�
 | `checkpoints/<exp>/<run>/`（运行） | `/mnt/d/hola_runs/<exp>/<run>/` |
 | VAE 合同审计 accepted 清单、diffusion validation100 | `src/preprocess/splits/deepcad_v7_contract_{train,validation,test}.txt`、`deepcad_v7_validation100.txt` |
 
+2026-10-30 包和资产路径有过调整，复用历史记录先核对路径；近期五组权重的严格加载与真实推理核验见 `/mnt/d/hola_research/img2brep_transition_20261030/README.md`。
+
 **Checkpoint 迁移。** `python tools/migrate_checkpoint.py OLD.ckpt NEW.ckpt [--dry-run]` 按 `MIGRATIONS` 顺序应用并记入 `checkpoint["hola_migrations"]`，只写新文件。spatial／photo／preference 的 resume 会比较保存的 `dataset.provenance` 与路径，整理前的 checkpoint **必须先迁移才能 resume**（已在 `diffusion_spatial_photo/20261028T104221Z/weights/last.ckpt` 上验证：原文件 resume 检查失败，迁移后通过且严格加载）。
 
 | 版本 | 内容 |
@@ -154,7 +157,7 @@ VAE 与 diffusion 内部结构的进一步整理另行讨论；目录内说明�
 
 ## 开发与验证
 
-环境定义为 `environment.yml`，常规安装为 `conda env create -f environment.yml`、`conda activate hola-brep`、`pip install -e .`。先检查现有环境，不因阅读或文档任务自动重装。
+环境定义为 `environment.yml`，常规安装为 `conda env create -f environment.yml`、`conda activate img2brep`、`pip install -e .`。先检查现有环境，不因阅读或文档任务自动重装。
 
 训练使用 `python -m src.train --config-name <config>`。当前先用灰模的逐层条件训练入口为 `configs/train_diffusion_layerwise_svr.yaml`，训练/验证 photo ratio 均为 0，仅读取 `imgs.npz["svr_imgs"]`，不要求或读取 `real_photo.npz`；保留原 `is_aug=false` 视角 0、VAE/cache 和 split。`train_diffusion_layerwise_real.yaml` 保留为生成图条件入口；正式运行显式设置数据/split、设备数、每卡 batch、seed 与 AE checkpoint。配置名含 `baseline` 不保证仍是旧架构，旧模型要回 baseline 分支复现。不要把 `train_diffusion_real.yaml` 名字当作协议保证：它继承的 overfit / validation 条件有陷阱，详见源码指南。VAE loader 已接受规范字段及显式旧别名，冲突值必须报错；仍需核对实际数据。新联合边界 decoder 的命令与迁移协议见 `/mnt/d/hola_research/joint_boundary/README.md`。
 
@@ -177,7 +180,7 @@ VAE 与 diffusion 内部结构的进一步整理另行讨论；目录内说明�
 
 **新实验、计划及结果记录统一放在 `/mnt/d/hola_research/<主题>/`（独立 git 仓库），不写进代码仓库。** `/mnt/d/hola_research/experiments/` 是六月历史，不再追加。每个研究主题维护受 Git 管理的 `PLAN.md`、`README.md`／`NOTE.md`，记录“为什么、具体实施、结果／状态、参考链接”；事实、计划和已完成结果分开。
 
-统一训练默认目录为 `${HOLA_RUNS_ROOT:-/mnt/d/hola_runs}/<trainer.exp_name>/<UTC 时间戳>/`，权重 `weights/`、日志 `logs/`、W&B `wandb/`、逐对象预测 `raw_predictions/`、可视化 `visualizations/`、配置与 Git 元数据 `metadata/` 分开。`trainer.output_dir` 是根目录；`trainer.run_dir` 显式指定完整 run。续训使用 `trainer.resume_from_checkpoint` 回到原 run；不要将 init 当作 resume。每次调用保存 resolved config、Git commit／dirty diff、seed 和命令，已有 run 不允许无续训标记覆盖。
+统一训练默认目录为 `${IMG2BREP_RUNS_ROOT:-/mnt/d/hola_runs}/<trainer.exp_name>/<UTC 时间戳>/`，权重 `weights/`、日志 `logs/`、W&B `wandb/`、逐对象预测 `raw_predictions/`、可视化 `visualizations/`、配置与 Git 元数据 `metadata/` 分开。`trainer.output_dir` 是根目录；`trainer.run_dir` 显式指定完整 run。续训使用 `trainer.resume_from_checkpoint` 回到原 run；不要将 init 当作 resume。每次调用保存 resolved config、Git commit／dirty diff、seed 和命令，已有 run 不允许无续训标记覆盖。
 
 运行权重、原始几何及临时日志在 `/mnt/d/hola_runs`；研究文档与紧凑的验证报告在 `/mnt/d/hola_research` 中做版本管理。记录数据／split、checkpoint、seed、预算及输出路径。先建立可判断方向的研究问题，不机械延续旧实验编号。
 

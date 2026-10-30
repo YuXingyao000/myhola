@@ -34,13 +34,13 @@ limit_val_batches: 1.0
 limit_test_batches: 1.0
 wandb:
   enabled: true
-  project: hola-brep
+  project: img2brep
   name: null
   offline: false
 resume_from_checkpoint: null
 init_from_checkpoint: null
 evaluate: false
 test_output_dir: null
-output_dir: ${oc.env:HOLA_RUNS_ROOT,/mnt/d/hola_runs}
+output_dir: ${oc.env:IMG2BREP_RUNS_ROOT,/mnt/d/hola_runs}
 run_dir: null
 exp_name: default

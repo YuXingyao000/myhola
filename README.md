@@ -1,244 +1,152 @@
-<div align="center">
+# Img2Brep
 
-# HoLa-BRep: B-Rep Generation using a Holistic Latent Representation
+从单张图片重建 B-Rep，并构建来源可追溯的 CAD–图像配对数据。研究记录、数据、权重与逐对象结果保存在代码仓库外。
 
-### ACM Transactions on Graphics (Proceedings of SIGGRAPH 2025)
+当前主线：冻结 DINOv2 → 图像 token 投影 → 24 层逐层 image cross-attention 的 face-latent DDPM → 冻结 VAE → OCC 后处理。photo baseline / DPO 使用固定历史 HoLa SVR 后端，权重分别加载。
 
-[Yilin Liu]()\*, [Duoteng Xu]()\*, Xingyao Yu, Xiang Xu, Daniel Cohen-Or, Hao Zhang, Hui Huang
+## 环境安装
 
-[![Paper](https://img.shields.io/badge/Paper-arXiv%3A2504.14257-b31b1b)](https://arxiv.org/abs/2504.14257)
-[![Project Page](https://img.shields.io/badge/Project-Page-blue)](https://vcc.tech/research/2025/HolaBrep)
-[![License](https://img.shields.io/badge/License-MIT-green)]()
-
-</div>
-
----
-
-## Overview
-
-This repository reconstructs CAD models in **Boundary Representation (B-Rep)** from a single image via a two-stage pipeline:
-
-1. **Stage 1 — VAE**: Encodes B-Rep geometry (faces + edges) into a compact holistic latent space that captures topology and geometry together.
-2. **Stage 2 — Image-conditioned diffusion**: A frozen DINOv2 encoder conditions a 24-layer denoiser (self-attention followed by image cross-attention in every layer) that generates face latent tokens; the frozen VAE decodes them and PythonOCC post-processing builds the STEP solid.
-
-It also contains the tooling to build paired CAD–image datasets (`src/datagen/`). Research notes and run outputs are kept outside the repository.
-
----
-
-## Installation
-
-### Prerequisites
-
-- Linux (tested on Ubuntu 22.04) or Windows (WSL2)
-- NVIDIA GPU with CUDA 12.4+
-- Conda
-
-### Setup
+RTX 4090 本机已验证 Python 3.10、PyTorch 2.4.1 / CUDA 12.4、PythonOCC 7.8.1 API 系列。`environment.yml` 固定基础环境，Python 依赖统一在 `pyproject.toml` 声明。
 
 ```bash
-# 1. Clone
-git clone https://github.com/your-repo/HoLa-BRep.git
-cd HoLa-BRep
-
-# 2. Create conda environment
+git clone https://github.com/YuXingyao000/myhola.git Img2Brep
+cd Img2Brep
 conda env create -f environment.yml
-conda activate hola-brep
-
-# 3. Install project
-pip install -e .
-
-# 4. Build PointNet++ CUDA ops (imported by the historical SVR constructor used to
-#    initialize the photo baseline / preference / spatial diffusion models)
-cd thirdparty/Pointnet2_PyTorch/pointnet2_ops_lib
-pip install -e .
-cd ../../..
+conda activate img2brep
+python -m pip install --no-build-isolation -e '.[dev]'
+pre-commit install
 ```
 
-### Key Dependencies
+已有环境可继续使用原名称；本轮没有重装，新建环境流程尚未从空环境复验。CUDA 扩展需要与 PyTorch 匹配的 CUDA toolkit 和 C++ 编译器。
 
-| Package | Version | Note |
-|---------|---------|------|
-| PyTorch | 2.4.1 | CUDA 12.4 |
-| pythonocc-core | 7.8.1 | `conda install` only |
-| pytorch-lightning | >=2.2 | Training framework |
-| diffusers | >=0.27 | Noise schedulers |
-| transformers | >=4.36 | DINOv2 backbone |
-| torch-geometric | >=2.5 | Graph neural networks |
-
----
-
-## Data Format
-
-### B-Rep Geometry Data (`data.npz`)
-
-Each CAD model is stored as a NumPy compressed archive with the following arrays:
-
-| Key | Shape | Description |
-|-----|-------|-------------|
-| `sample_points_faces` | `[num_faces, 16, 16, 6]` | Face surface points (xyz + normals) on a 16x16 UV grid |
-| `sample_points_lines` | `[num_edges, 16, 6]` | Edge curve points (xyz + normals) with 16 samples |
-| `face_adj` | `[num_faces, num_faces]` | Face adjacency matrix |
-| `edge_face_connectivity` | `[num_edges, 3]` | Per-edge: (edge_id, face_id_1, face_id_2) |
-| `zero_positions` | `[num_neg_pairs, 2]` | Negative face pairs (no shared edge) |
-
-### Condition Data (per model directory)
-
-| File | Content |
-|------|---------|
-| `imgs.npz` | Grayscale renders over the cube24 rotations: `svr_imgs[24, H, W, 3]` (training reads this key) |
-| `real_photo.npz` | Synthetic photo-style image `flux[H, W, 3]` or `[24, H, W, 3]` (FLUX edits; the file name is historical and does not mean a real capture) |
-
-Rotation 0 is the identity; latents, images, face adjacency and visibility share the same object, rotation and face indices.
-
-### Cached Latent Features (for Stage 2)
-
-Pre-computed VAE latent features stored as:
-```
-<cache_root>/<model_name>_<rotation_id>/features.npy  # shape: [num_faces, 64]
-```
-The 64 dimensions are `[mean(32), std(32)]` from the VAE's Gaussian bottleneck.
-
-### Dataset Preparation
-
-> Dataset download links will be available upon publication.
-
-- `python -m src.preprocess.extract_brep` — extract B-Rep geometry from STEP files (explicit roots and model list, never overwrites; try `--dry-run` first)
-- `src/preprocess/extract_visibility.py` — per-view face visibility caches
-- `src/datagen/` — paired image generation (scene templates, Blender capture, review, retouch); see its `README.md`
-- Fixed split lists live in `src/preprocess/splits/`
-
----
-
-## Training
-
-All training is managed through a single entry point with Hydra config composition:
+RTX 5090 服务器已验收 PyTorch 2.8.0 / CUDA 12.8、PythonOCC 7.8.1 API 系列。重建时使用独立步骤：
 
 ```bash
-python -m src.train --config-name <train_config> [overrides...]
+conda create -n img2brep -c conda-forge python=3.10 pythonocc-core=7.8.1 pip
+conda activate img2brep
+python -m pip install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu128
+python -m pip install torch-scatter torch-sparse -f https://data.pyg.org/whl/torch-2.8.0+cu128.html
+python -m pip install --no-build-isolation -e '.[dev]'
+pre-commit install
 ```
 
-### Stage 1: VAE Training
+### 历史 SVR / photo / DPO 后端
+
+后端从固定 Git 提交 `c2660c00` 提取原网络，需要包含该提交的 Git 历史；浅克隆或单独的 wheel 不提供此后端。Pointnet2 是环境依赖，仓库中没有它的子模块或安装源码。需要构建时安装固定上游版本：
 
 ```bash
-python -m src.train \
-    --config-name train_vae \
-    model=vae_light \
-    dataset.raw_data_root=/path/to/brep_data \
-    dataset.train_dataset=/path/to/train.txt \
-    dataset.val_dataset=/path/to/val.txt \
-    dataset.test_dataset=/path/to/test.txt \
-    trainer.devices=1 \
-    trainer.batch_size=4
+python -m pip install --no-build-isolation --no-deps 'git+https://github.com/erikwijmans/Pointnet2_PyTorch.git@b5ceb6d9ca0467ea34beb81023f96ee82228f626#subdirectory=pointnet2_ops_lib'
+python -c 'from pointnet2_ops.pointnet2_modules import PointnetSAModuleMSG'
 ```
 
-### Stage 2: Diffusion Training
+历史源码仅将 Pointnet2 导入改为环境包路径，网络定义和参数键保留。DINOv2 本地 torch.hub 源码也必须可用，可用 `dino_repo` 指定。
 
-```bash
-python -m src.train \
-    --config-name train_diffusion_white \
-    dataset.cached_latent_root=/path/to/cached_latents \
-    dataset.condition_data_root=/path/to/condition_data \
-    model.autoencoder.checkpoint=/path/to/vae.ckpt \
-    trainer.devices=8 \
-    trainer.batch_size=64
-```
+## 数据与训练
 
-### Available Configurations
+数据路径通过 Hydra overrides / CLI 显式指定。固定 split 在 `src/preprocess/splits/`，按 CAD identity 划分。
 
-| Config Group | Options |
+| 资产 | 接口 |
 |---|---|
-| `model` | `vae`, `vae_light`, `vae_light_exp`, `vae_joint`, `vae_intersection`, `vae_uv_intersection`, `diffusion` |
-| `condition` | `single_img`, `none` |
-| top-level config | `train_vae*`, `train_diffusion_layerwise_svr`, `train_diffusion_layerwise_real`, `train_diffusion_photo_baseline`, `train_diffusion_preference*`, `train_diffusion_spatial_photo`, `train_diffusion_uncond`, ... (see `configs/`) |
+| 原始 B-Rep | `<raw_root>/<model_id>/data.npz` |
+| 灰模图 | `<condition_root>/<model_id>/imgs.npz` 的 `svr_imgs` |
+| 合成照片风格图 | 同目录 `real_photo.npz` 的 `flux`；历史文件名不表示实拍 |
+| latent cache | `<cache_root>/<model_id>_<rotation_id>/features.npy`；32D VAE 常见为 mean(32) + std(32) |
+| 边界 / UV 监督 | 按具体 VAE 配置准备对应 sidecar |
 
-All entry points write to `${HOLA_RUNS_ROOT:-/mnt/d/hola_runs}/<experiment>/<UTC timestamp>/`, with separate `weights/`, `logs/`, `wandb/`, `raw_predictions/`, `visualizations/`, and `metadata/`. Set `trainer.run_dir` for an explicit full run path. Resume or evaluate with an explicit `trainer.resume_from_checkpoint`; evaluation never silently uses random weights. Checkpoints written before the 2026-10-30 layout change must be converted with `python tools/migrate_checkpoint.py OLD.ckpt NEW.ckpt` before resuming.
-
----
-
-## Inference
+图像、latent、face 顺序、相机与 cube24 旋转必须一致。单张 `flux[H,W,3]` 仅支持 identity。当前灰模入口关闭 overfit，训练和验证 photo ratio 均为 0：
 
 ```bash
-python -m src.inference \
-    --diffusion-weights /path/to/diffusion.ckpt \
-    --autoencoder-weights /path/to/vae.ckpt \
-    --condition single_img \
-    --input /path/to/images/ \
-    --output-dir /path/to/output/
+python -m src.train --config-name train_diffusion_layerwise_svr \
+  dataset.raw_data_root="${RAW_DATA_ROOT:?}" \
+  dataset.cached_latent_root="${LATENT_CACHE_ROOT:?}" \
+  dataset.condition_data_root="${CONDITION_DATA_ROOT:?}" \
+  dataset.train_dataset=src/preprocess/splits/deduplicated_deepcad_training_7_30.txt \
+  dataset.val_dataset=src/preprocess/splits/deduplicated_deepcad_validation_7_30.txt \
+  dataset.test_dataset=src/preprocess/splits/deduplicated_deepcad_testing_7_30.txt \
+  model.autoencoder.checkpoint="${AE_CHECKPOINT:?}" \
+  trainer.devices=1 trainer.batch_size=4 trainer.seed=42
 ```
 
-The inference pipeline:
-1. Encode the image with frozen DINOv2 and the trained projection
-2. Run DDPM sampling (1000 steps) to generate face latent tokens
-3. Decode latents via frozen VAE → face/edge geometry + topology
-4. Post-process with PythonOCC → output STEP files
+| 入口 | 用途 |
+|---|---|
+| `train_diffusion_layerwise_real` | FLUX 合成图条件，训练和验证 photo ratio 均为 1 |
+| `train_diffusion_photo_baseline` | 历史 SVR 初始化的照片 DDPM，读取已核验冻结特征缓存 |
+| `train_diffusion_preference` / `train_diffusion_preference_photo` | SVR / photo DPO，需对应来源和偏好协议 |
+| `train_vae_shared_curve_uv` | 32D shared curve + UV，需对应 sidecar 与初始化来源 |
+| `train_vae_uv_intersection*` | UV intersection 实验，按各自架构快照使用 |
 
----
+历史 `train_diffusion_white` / `train_diffusion_real` 的 `is_overfit=true`，后者验证 photo ratio 仍为 0，使用前核对配置；`baseline` 文件名也不自动代表旧网络。AE checkpoint 必须与 cache 同源。
 
-## Evaluation
+新运行默认写入 `${IMG2BREP_RUNS_ROOT:-/mnt/d/hola_runs}/<exp_name>/<UTC timestamp>/`。已有 `hola_runs`、`hola_research`、`hola_archive` 目录保留；新启动使用 `IMG2BREP_RUNS_ROOT`，原 `HOLA_RUNS_ROOT` 需更新。`trainer.output_dir` 是根目录，`trainer.run_dir` 是完整 run 路径。
+
+run 分设 `weights/`、`logs/`、`wandb/`、`raw_predictions/`、`visualizations/`、`metadata/`。用 `trainer.resume_from_checkpoint` 恢复优化器和步数；权重初始化创建新 run。新 W&B project 为 `img2brep`，旧 run 若继续使用原 project / ID，显式 override。
+
+2026-10-30 调整过包和资产路径，复用旧记录时先确认路径；需要恢复旧配置时可先运行 `python tools/migrate_checkpoint.py OLD.ckpt NEW.ckpt --dry-run`，保留原权重。
+
+## 单图推理
+
+此 CLI 对应当前逐层条件 `Diffusion`，输入为图片文件列表。手写模型设置需与训练配置核对：
 
 ```bash
-python -m src.evaluate \
-    --pred-root /path/to/predictions \
-    --gt-root /path/to/ground_truth \
-    --split-list /path/to/frozen_model_ids.txt \
-    --metrics condition,validity
+python -m src.inference --diffusion-weights "${DIFFUSION_CHECKPOINT:?}" \
+  --autoencoder-weights "${AE_CHECKPOINT:?}" --condition single_img \
+  --input /path/to/image.png --num-samples 1 --output-dir /path/to/new_inference_run
 ```
 
-Solid validity is judged on the saved STEP re-read at `read.precision.mode=0` (`src/eval/step_metrics.py`); failures and timeouts stay in the denominator.
+历史模型严格加载接口：`src.models.diffusion.legacy.load_legacy_svr` / `load_preference_svr`、`src.models.diffusion.photo_baseline.load_photo_svr`、`src.eval.photo_model_loading.load_photo_dpo`。photo DPO 的 reference 必须是对应 photo baseline。
 
-Available metrics: `validity`, `condition` (Chamfer/F1), `complexity`, `unique`, `lfd`
+## 评估口径
 
----
-
-## Project Structure
-
-```
-├── configs/          Hydra configuration (model/, condition/, dataset/, trainer/, datagen/)
-├── src/
-│   ├── train.py      Unified training entry (VAE and diffusion)
-│   ├── inference.py  Single-image inference
-│   ├── evaluate.py   Evaluation dispatch
-│   ├── common/       Run management, prediction export, OCC and IO helpers
-│   ├── preprocess/   DeepCAD / ABC preprocessing, visibility, rotations, splits/
-│   ├── datagen/      Paired image dataset generation
-│   ├── datasets/     Training datasets
-│   ├── preference/   Preference-pair generation for DPO
-│   ├── models/       vae/, diffusion/, shared blocks
-│   ├── postprocess/  PythonOCC post-processing (→ STEP)
-│   └── eval/         Metrics and evaluation reports
-├── tests/            Unit and interface tests
-├── tools/            Maintenance CLIs (repository checks, checkpoint migration, dataset audits)
-├── thirdparty/       Pointnet2_PyTorch (see Installation step 4)
-├── environment.yml
-└── pyproject.toml    Package, ruff and import-linter configuration
+```bash
+python -m src.evaluate --pred-root /path/to/postprocessed_predictions \
+  --gt-root /path/to/ground_truth --split-list /path/to/frozen_ids.txt --metrics condition,validity
 ```
 
-Development follows [AGENTS.md](AGENTS.md): short-lived branches with pull requests into `main`, and `pre-commit run --all-files` (layout, dead-module, import-layering and ruff checks) before committing.
+此入口的 `validity` 沿用历史 HoLa 检查：读取 STEP，对 solid 设置 `tolerance=0.1` 后执行 BRepCheck。原生检查由 `src/eval/step_metrics.py:native_validity` 提供：mode 0 重读后直接检查 as-read solid。两种口径分别报告，当前口径选择仍在讨论。
 
----
+默认汇总有历史限制：condition 的 `num_total` 使用 split 与已有目录的交集；validity 的 worker 异常可能被跳过。baseline 另记固定预定总数、目录数、STEP 数、失败／超时数，并列固定分母和已有目录分母的比例。不能仅凭单个汇总字段确定论文当年的统计协议。
 
-## Citation
+## 预处理与维护
 
-If you find this work useful, please cite:
+`python -m src.preprocess.extract_brep --help` 查看 STEP 提取接口；[datagen README](src/datagen/README.md) 描述场景制作、Blender 拍摄与修图。
 
-```bibtex
-@article{liu2025hola,
-  title={HoLa: B-Rep Generation using a Holistic Latent Representation},
-  author={Liu, Yilin and Xu, Duoteng and Yu, Xingyao and Xu, Xiang and Cohen-Or, Daniel and Zhang, Hao and Huang, Hui},
-  journal={ACM Transactions on Graphics (Proceedings of SIGGRAPH)},
-  volume={44},
-  number={4},
-  year={2025},
-  publisher={ACM}
-}
+审计与筛单工具显式传入数据、缓存和仓库外的报告目录：
+
+```bash
+python tools/audit_deepcad_v7_dataset.py --data-root "${RAW_DATA_ROOT:?}" \
+  --condition-root "${CONDITION_DATA_ROOT:?}" --latent-root "${LATENT_CACHE_ROOT:?}" \
+  --out-dir /path/to/research/topic/asset_audit --max-models 100
+python tools/filter_deepcad_v7_lists.py --data-root "${RAW_DATA_ROOT:?}" \
+  --condition-root "${CONDITION_DATA_ROOT:?}" --latent-root "${LATENT_CACHE_ROOT:?}" \
+  --output-dir /path/to/derived_splits --report-dir /path/to/research/topic/list_filter \
+  --no-require-real-photo --dry-run
 ```
 
----
+`tools/prepare_photo_baseline.py` 的 `--checkpoint`、`--conditions`、`--source-run`、`--output` 同样显式指定，源 run 使用实际新位置。历史产物与哈希保持原样，路径迁移不代表旧生产任务可原地续跑。
 
-## Acknowledgements
+## 结构与检查
 
-This work was supported by the National Natural Science Foundation of China, Guangdong Basic and Applied Basic Research Foundation, and Shenzhen Science and Technology Program.
+```text
+src/
+  train.py  inference.py  evaluate.py
+  common/        运行溯源、IO、OCC 公共工具
+  preprocess/    原始 CAD 预处理、旋转、监督目标和固定 split
+  datagen/       场景制作、Blender 拍摄与合成真实感图像
+  datasets/      训练读取
+  preference/    DPO 偏好数据生成与选择
+  models/        vae/、diffusion/ 和共享算子
+  postprocess/   拟合、裁剪、缝合与 STEP 构建
+  eval/          指标、评估与报告
+configs/  tests/  tools/
+```
 
-## License
+规则见 [AGENTS.md](AGENTS.md)，代码经短期 PR 合入 `main`。GitHub Actions 执行布局、禁止数据／子模块、可达性、import 分层、Ruff 和无 OCC/CUDA 依赖的维护测试。模型、OCC、真实小批量与 GPU 测试在已验收的本机／服务器环境执行并记录命令；本轮没有注册自托管 runner 或部署任务。
 
-This project is released under the MIT License.
+```bash
+pre-commit run --all-files
+python -m pytest tests/test_maintenance_tools.py
+```
+
+## 历史来源
+
+原始方法与权重来源：[HoLa: B-Rep Generation using a Holistic Latent Representation](https://arxiv.org/abs/2504.14257)，ACM TOG / SIGGRAPH 2025。引用原始方法时保留论文名称和作者；Img2Brep 的研究改动以各次实现、checkpoint 和评估协议为准。

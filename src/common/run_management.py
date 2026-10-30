@@ -17,7 +17,7 @@ from omegaconf import OmegaConf
 def invocation_id() -> str:
     """Keep the launch identifier stable in Lightning's child processes."""
     return os.environ.setdefault(
-        "BREPNET_INVOCATION_ID", datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
+        "IMG2BREP_INVOCATION_ID", datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
     )
 
 
@@ -54,7 +54,7 @@ def resolve_run_directory(output_root, experiment, explicit_run=None, resume_che
         raise ValueError(
             "Cannot infer the original run from this checkpoint path; set trainer.run_dir explicitly."
         )
-    inherited = os.environ.get("BREPNET_ACTIVE_RUN_DIR")
+    inherited = os.environ.get("IMG2BREP_ACTIVE_RUN_DIR")
     if inherited:
         return inherited
     experiment_path = Path(str(experiment))
@@ -89,7 +89,7 @@ def _git_output(args: list[str], repo: Path) -> str | None:
 def prepare_run(cfg, run_dir: Path) -> dict:
     """Create only the selected run; retain one provenance snapshot per invocation."""
     run_dir = run_dir.resolve()
-    os.environ["BREPNET_ACTIVE_RUN_DIR"] = str(run_dir)
+    os.environ["IMG2BREP_ACTIVE_RUN_DIR"] = str(run_dir)
     for name in ("weights", "logs", "wandb", "raw_predictions", "visualizations", "metadata"):
         (run_dir / name).mkdir(parents=True, exist_ok=True)
     run_file = run_dir / "metadata" / "run.json"

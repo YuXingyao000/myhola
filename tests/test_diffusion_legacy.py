@@ -66,12 +66,12 @@ class OriginalGTEncodingTests(unittest.TestCase):
         self.assertFalse(encoder.grad_enabled)
 
 
-@unittest.skipUnless(os.environ.get("HOLA_LEGACY_TEST_CHECKPOINT"), "Explicit original checkpoint required.")
+@unittest.skipUnless(os.environ.get("IMG2BREP_LEGACY_TEST_CHECKPOINT"), "Explicit original checkpoint required.")
 class LegacyNativeSamplingTests(unittest.TestCase):
-    @unittest.skipUnless(os.environ.get("HOLA_LEGACY_TEST_GT"), "Explicit original GT required.")
+    @unittest.skipUnless(os.environ.get("IMG2BREP_LEGACY_TEST_GT"), "Explicit original GT required.")
     def test_original_gt_matches_native_posterior(self):
         torch.set_num_threads(1)
-        model, _ = load_legacy_svr(os.environ["HOLA_LEGACY_TEST_CHECKPOINT"], "cuda:0")
+        model, _ = load_legacy_svr(os.environ["IMG2BREP_LEGACY_TEST_CHECKPOINT"], "cuda:0")
         captured = {}
         hook = model.ae_model.gaussian_proj.register_forward_pre_hook(
             lambda module, inputs: captured.__setitem__("features", inputs[0]),
@@ -79,7 +79,7 @@ class LegacyNativeSamplingTests(unittest.TestCase):
         cpu_rng = torch.random.get_rng_state()
         cuda_rng = torch.cuda.get_rng_state()
         try:
-            encoded = encode_original_gt(model, os.environ["HOLA_LEGACY_TEST_GT"])
+            encoded = encode_original_gt(model, os.environ["IMG2BREP_LEGACY_TEST_GT"])
         finally:
             hook.remove()
         self.assertTrue(torch.equal(cpu_rng, torch.random.get_rng_state()))
@@ -100,8 +100,8 @@ class LegacyNativeSamplingTests(unittest.TestCase):
         torch.backends.cudnn.allow_tf32 = False
         torch.backends.cudnn.benchmark = False
         device = torch.device("cuda:0")
-        checkpoint = os.environ["HOLA_LEGACY_TEST_CHECKPOINT"]
-        image_path = Path(os.environ["HOLA_LEGACY_TEST_IMAGE"])
+        checkpoint = os.environ["IMG2BREP_LEGACY_TEST_CHECKPOINT"]
+        image_path = Path(os.environ["IMG2BREP_LEGACY_TEST_IMAGE"])
         with np.load(image_path) as archive:
             image = archive["svr_imgs"][0]
         transform = transforms.Compose([
@@ -154,7 +154,7 @@ class LegacyNativeSamplingTests(unittest.TestCase):
             "geometry_keep_indices": sample["geometry_keep_indices"].tolist(),
             "raw_shapes": {key: list(value.shape) for key, value in sample["raw"].items()},
         }
-        report = os.environ.get("HOLA_LEGACY_TEST_REPORT")
+        report = os.environ.get("IMG2BREP_LEGACY_TEST_REPORT")
         if report:
             Path(report).write_text(json.dumps(result, indent=2) + "\n")
         print(json.dumps(result), flush=True)

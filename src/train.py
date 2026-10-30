@@ -1,5 +1,5 @@
 """
-Unified Training Entry Point for HoLa-BRep.
+Unified Training Entry Point for Img2Brep.
 
 Single Lightning module for VAE and diffusion training, dispatching by
 ``cfg.model.stage``.
@@ -709,7 +709,7 @@ class UnifiedTrainer(pl.LightningModule):
 
 @hydra.main(version_base="1.3", config_path="../../configs", config_name="train")
 def main(cfg: DictConfig):
-    """Unified training entry point for HoLa-BRep."""
+    """Unified training entry point for Img2Brep."""
     _configure_num_threads(cfg)
     _validate_evaluation_devices(cfg)
     accumulation = cfg.trainer.get("accumulate_grad_batches", 1)

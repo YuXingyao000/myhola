@@ -1,4 +1,4 @@
-"""HoLa-BRep diffusion；按需加载主模型，避免仅导入工具时加载 VAE。"""
+"""Img2Brep diffusion；按需加载主模型，避免仅导入工具时加载 VAE。"""
 
 from __future__ import annotations
 

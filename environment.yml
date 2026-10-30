@@ -1,4 +1,4 @@
-name: hola-brep
+name: img2brep
 
 channels:
   - pytorch
@@ -9,8 +9,8 @@ channels:
 dependencies:
   - python=3.10
   - pytorch=2.4.1
-  - torchvision
-  - torchaudio
+  - torchvision=0.19.1
+  - torchaudio=2.4.1
   - pytorch-cuda=12.4
   - pythonocc-core=7.8.1
   - pyg
@@ -19,19 +19,3 @@ dependencies:
   - h5py
   - tqdm
   - pip
-  - pip:
-      - hydra-core==1.3.2
-      - omegaconf>=2.3
-      - pytorch-lightning>=2.2
-      - diffusers>=0.27
-      - transformers>=4.36
-      - einops>=0.7
-      - torch-scatter
-      - torch-sparse
-      - trimesh
-      - open3d>=0.18
-      - sentence-transformers>=2.2
-      - wandb
-      - tensorboard
-      - plyfile
-      - rich>=13.7

@@ -219,9 +219,9 @@ def merge_shards(args):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True)
-    parser.add_argument("--checkpoint", default="/mnt/d/ckpt/HoLa/Diffusion_svr_sq30_1500k.ckpt")
-    parser.add_argument("--conditions", default="/mnt/d/data/deepcad_v7_cond")
-    parser.add_argument("--source-run", default="/mnt/d/python/checkpoints/diffusion/preference_data/20261020T134930Z")
+    parser.add_argument("--checkpoint", required=True)
+    parser.add_argument("--conditions", required=True)
+    parser.add_argument("--source-run", required=True, help="Existing preference generation run at its current location")
     parser.add_argument("--train-split", default="src/preprocess/splits/deduplicated_deepcad_training_7_30.txt")
     parser.add_argument("--val-split", default="src/preprocess/splits/deepcad_v7_validation100.txt")
     parser.add_argument("--gpus", type=int, default=8)

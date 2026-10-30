@@ -14,7 +14,7 @@ from src.common.run_management import prepare_run, resolve_run_directory
 
 @pytest.fixture
 def isolated_launch(monkeypatch):
-    for key in ("BREPNET_ACTIVE_RUN_DIR", "BREPNET_INVOCATION_ID", "RANK", "LOCAL_RANK"):
+    for key in ("IMG2BREP_ACTIVE_RUN_DIR", "IMG2BREP_INVOCATION_ID", "RANK", "LOCAL_RANK"):
         monkeypatch.delenv(key, raising=False)
     return monkeypatch
 
@@ -49,7 +49,7 @@ def test_resume_rejects_unrecognized_paths_beneath_global_checkpoint_root(tmp_pa
 
 def test_new_launches_are_isolated_and_resume_keeps_metadata(tmp_path, isolated_launch):
     monkeypatch = isolated_launch
-    monkeypatch.setenv("BREPNET_INVOCATION_ID", "first")
+    monkeypatch.setenv("IMG2BREP_INVOCATION_ID", "first")
     first = Path(resolve_run_directory(tmp_path, "joint_boundary"))
     cfg = OmegaConf.create({
         "trainer": {"seed": 7, "exp_name": "joint_boundary", "resume_from_checkpoint": None, "evaluate": False},
@@ -60,8 +60,8 @@ def test_new_launches_are_isolated_and_resume_keeps_metadata(tmp_path, isolated_
     assert (first / "metadata/invocations/first/config.yaml").is_file()
     # Lightning children inherit the same launch id and may prepare the same run.
     assert prepare_run(cfg, first)["wandb_id"] == record["wandb_id"]
-    monkeypatch.delenv("BREPNET_ACTIVE_RUN_DIR")
-    monkeypatch.setenv("BREPNET_INVOCATION_ID", "second")
+    monkeypatch.delenv("IMG2BREP_ACTIVE_RUN_DIR")
+    monkeypatch.setenv("IMG2BREP_INVOCATION_ID", "second")
     assert Path(resolve_run_directory(tmp_path, "joint_boundary")) != first
     with pytest.raises(ValueError, match="already exists"):
         prepare_run(cfg, first)

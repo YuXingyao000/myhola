@@ -6,7 +6,7 @@ The canonical instructions for this directory are `AGENTS.md`; read it before ch
 
 - Training: `python -m src.train --config-name <config>`. `UnifiedTrainer` dispatches VAE/diffusion by `model.stage`; datasets are looked up by `dataset.name`.
 - Multi-GPU is controlled by `trainer.devices`; `batch_size` and `num_workers` are per GPU. Formal evaluation and NPZ export still require `trainer.devices=1` to avoid distributed-sampler duplication.
-- Runs default to `${HOLA_RUNS_ROOT:-/mnt/d/hola_runs}/<exp_name>/<UTC timestamp>/`. `trainer.run_dir` names a full run; `trainer.resume_from_checkpoint` resumes it. Weight-only init starts a new run and is not resume. Never overwrite an existing run without a resume marker.
+- Runs default to `${IMG2BREP_RUNS_ROOT:-/mnt/d/hola_runs}/<exp_name>/<UTC timestamp>/`. `trainer.run_dir` names a full run; `trainer.resume_from_checkpoint` resumes it. Weight-only init starts a new run and is not resume. Never overwrite an existing run without a resume marker.
 - Model factory: `models/__init__.py:build_model`. VAE: `models/vae/`; shared operators: `models/blocks.py`. Diffusion: `models/diffusion/`. Old `src/brepnet/...` paths map to the new layout via the table in the root `AGENTS.md`; migrate old checkpoints with `tools/migrate_checkpoint.py`.
 - Behavior belongs in `configs/model/`, `dataset/`, `condition/`, `trainer/`, `datagen/` (preference pair generation). Do not revive the removed `model.py`, `diffusion_model.py`, or `train_diffusion.py` entry points.
 

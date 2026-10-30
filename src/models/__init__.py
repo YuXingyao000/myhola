@@ -1,5 +1,5 @@
 """
-HoLa-BRep Model Registry & Factory Functions.
+Img2Brep Model Registry & Factory Functions.
 
 Provides centralized model construction through a small name-based registry.
 """
