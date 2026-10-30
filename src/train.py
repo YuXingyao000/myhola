@@ -263,7 +263,7 @@ class UnifiedTrainer(pl.LightningModule):
                     "or a strict model.checkpoint; refusing to freeze a random encoder."
                 )
         if cfg.model.name == "PreferenceDiffusion":
-            from src.datasets.preference import sha256_file
+            from src.common.io import sha256_file
             from src.models.diffusion.preference_geometry import geometry_settings
 
             photo_source = model_cfg.get("model_source") == "photo"
@@ -302,7 +302,7 @@ class UnifiedTrainer(pl.LightningModule):
                     raise ValueError("Photo DPO original DINO/AE or selected baseline step differs from generation")
             OmegaConf.update(model_cfg, "restoring_checkpoint", bool(has_resume), force_add=True)
         if cfg.model.name == "PhotoBaselineDiffusion":
-            from src.datasets.preference import sha256_file
+            from src.common.io import sha256_file
             if cfg.trainer.init_from_checkpoint:
                 raise ValueError("Photo baseline uses strict legacy initialization or full resume")
             if cfg.eval.enabled or cfg.trainer.evaluate or cfg.trainer.diffusion_validation_inference:

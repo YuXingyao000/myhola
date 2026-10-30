@@ -124,7 +124,7 @@ class PreferenceLossTests(unittest.TestCase):
             with (
                 patch("src.models.diffusion.legacy.load_legacy_svr", side_effect=lambda *a, **kw: tiny_legacy()),
                 patch("src.datasets.preference.preference_data_provenance", return_value={"source_checkpoint_sha256": "fixed"}),
-                patch("src.datasets.preference.sha256_file", return_value="fixed") as source_hash,
+                patch("src.common.io.sha256_file", return_value="fixed") as source_hash,
             ):
                 original = UnifiedTrainer(cfg)
             source_hash.assert_called_once_with(Path(cfg.model.legacy_checkpoint))
@@ -139,7 +139,7 @@ class PreferenceLossTests(unittest.TestCase):
                 patch("src.models.diffusion.legacy.build_legacy_svr", side_effect=lambda *a, **kw: tiny_legacy()) as build,
                 patch("src.models.diffusion.legacy.load_legacy_svr") as forbidden_load,
                 patch("src.datasets.preference.preference_data_provenance", return_value={"source_checkpoint_sha256": "fixed"}),
-                patch("src.datasets.preference.sha256_file") as forbidden_hash,
+                patch("src.common.io.sha256_file") as forbidden_hash,
             ):
                 resumed = UnifiedTrainer(cfg)
                 state = torch.load(checkpoint, weights_only=False)["state_dict"]

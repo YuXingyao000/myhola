@@ -13,12 +13,12 @@ from src.eval.preference import (
     _confirmed_no_solid, evaluate_candidate, face_detection, metric_seed, score_geometry,
     score_post, score_raw,
 )
-from tools import vae_compare_post as post
+from src.common.io import atomic_json
 
 
 def slow_worker(job, status_path, log_path):
     os.setsid()
-    post.atomic_json(status_path, {
+    atomic_json(status_path, {
         "image_id": job["image_id"], "candidate_id": job["candidate_id"],
         "protocol_fingerprint": job["protocol_fingerprint"], "status": "running",
         "validity": "invalid", "raw": {"face_cd_sq": 1.}, "post": []})

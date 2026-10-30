@@ -41,3 +41,47 @@ include = ["src*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = ["thirdparty", "src/eval/lfd/evaluation_scripts"]
+
+[tool.ruff.lint]
+# Real errors only: syntax, undefined names, invalid comparisons. Widen in its own PR.
+select = ["E9", "F63", "F7", "F82"]
+
+[tool.ruff.lint.per-file-ignores]
+# Lazy compatibility exports resolved by __getattr__; revisit with the VAE restructure.
+"src/models/blocks.py" = ["F822"]
+
+[tool.importlinter]
+root_packages = ["src"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Package code does not import tools/ or tests/"
+type = "forbidden"
+source_modules = ["src"]
+forbidden_modules = ["tools", "tests"]
+
+[[tool.importlinter.contracts]]
+name = "src layers: entry points > eval/preference > postprocess > models > datasets > preprocess > common"
+type = "layers"
+layers = [
+    "src.train | src.inference | src.evaluate",
+    "src.eval : src.preference",
+    "src.postprocess",
+    "src.models",
+    "src.datasets",
+    "src.preprocess",
+    "src.common",
+]
+# Known debt from the 2026-10-30 cleanup. Remove an entry when its import is fixed; never add one silently.
+ignore_imports = [
+    "src.postprocess.construct_brep -> src.eval.metrics.validity",
+    "src.preprocess.extract_brep_from_step_half_structure -> src.postprocess.utils",
+    "src.datasets.photo_preference -> src.preference.source",
+    "src.datasets.preference -> src.models.diffusion.image_loading",
+    "src.datasets.brep -> src.models.diffusion.image_loading",
+]

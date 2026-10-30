@@ -16,7 +16,12 @@ import tempfile
 import time
 import traceback
 
-from tools import vae_compare_post as post
+from src.common import io as common_io
+from src.eval import step_metrics
+from src.common.io import atomic_json, fingerprint, read_json, sha256_file
+from src.common.step_io import read_step_at_precision
+from src.eval.step_metrics import SAMPLING, native_validity, sample_native_geometry, squared_chamfer, validate_raw_prediction
+from src.postprocess.cpu_runtime import configure_cpu, terminate_process
 
 
 METRIC_VERSION = "svr_preference_metrics_v1"
@@ -49,7 +54,7 @@ def face_detection(predicted, target) -> dict:
     import numpy as np
     from scipy.optimize import linear_sum_assignment
     costs = np.array([
-        [post.squared_chamfer(face.reshape(-1, 3), truth.reshape(-1, 3))["cd"]
+        [squared_chamfer(face.reshape(-1, 3), truth.reshape(-1, 3))["cd"]
          for truth in target] for face in predicted
     ])
     row, column = linear_sum_assignment(costs)
@@ -63,7 +68,7 @@ def face_detection(predicted, target) -> dict:
 def score_geometry(pred_faces, pred_edges, gt_faces, gt_edges) -> dict:
     result = face_detection(pred_faces, gt_faces)
     for name, predicted, truth in (("face", pred_faces, gt_faces), ("edge", pred_edges, gt_edges)):
-        values = post.squared_chamfer(predicted.reshape(-1, 3), truth.reshape(-1, 3))
+        values = squared_chamfer(predicted.reshape(-1, 3), truth.reshape(-1, 3))
         result.update({f"{name}_cd_sq": values["cd"],
                        f"{name}_pred_to_gt_sq": values["accuracy"],
                        f"{name}_gt_to_pred_sq": values["completeness"],
@@ -93,18 +98,18 @@ def _post_input(raw_path: Path, destination: Path) -> None:
         np.savez_compressed(destination, **arrays)
     else:
         destination.symlink_to(raw_path.resolve())
-    post.validate_raw_prediction(destination)
+    validate_raw_prediction(destination)
 
 
 def _gt_samples(path: Path, cache_root: Path, image_id: str, seed: int) -> dict:
     """Concurrent candidates share the exact GT point sets for each repeat."""
     import numpy as np
-    key = post.fingerprint({"step_sha256": post.sha256_file(path),
-                            "sampling": post.SAMPLING, "seed": seed})
+    key = fingerprint({"step_sha256": sha256_file(path),
+                            "sampling": SAMPLING, "seed": seed})
     cache = cache_root / f"{image_id}-{key}.npz"
     if cache.exists():
         return _read_arrays(cache)
-    samples = post.sample_native_geometry(post.read_step_at_precision(path), seed)
+    samples = sample_native_geometry(read_step_at_precision(path), seed)
     cache_root.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(dir=cache_root, suffix=".tmp", delete=False) as handle:
         temporary = Path(handle.name)
@@ -118,7 +123,7 @@ def score_post(shape, gt_step: Path, cache_root: Path, image_id: str,
     gt_seed = metric_seed(seed, image_id, f"gt:{repeat}")
     pred_seed = metric_seed(seed, image_id, f"pred:{candidate_id}:{repeat}")
     truth = _gt_samples(gt_step, cache_root, image_id, gt_seed)
-    predicted = post.sample_native_geometry(shape, pred_seed)
+    predicted = sample_native_geometry(shape, pred_seed)
     result = score_geometry(
         predicted["face_points"].reshape(int(predicted["num_faces"]), -1, 3),
         predicted["edge_points"].reshape(int(predicted["num_edges"]), -1, 3),
@@ -148,7 +153,7 @@ def _execute_candidate(job: dict, status_path: Path) -> dict:
     def record(**changes):
         row.update(changes)
         row["elapsed_seconds"] = time.monotonic() - started
-        post.atomic_json(status_path, row)
+        atomic_json(status_path, row)
 
     record()
     try:
@@ -171,7 +176,7 @@ def _execute_candidate(job: dict, status_path: Path) -> dict:
             from_scratch=True, is_save_data=False, post_policy="recover_v1",
             deadline_monotonic=started + job["timeout_seconds"])
         directory = output / "post" / candidate_id
-        diagnostics = post.read_json(directory / "post_diagnostics.json")
+        diagnostics = read_json(directory / "post_diagnostics.json")
         record(post_diagnostics=diagnostics, stage="native_validity")
         if diagnostics.get("status") == "budget_exhausted":
             record(status="timeout")
@@ -181,9 +186,9 @@ def _execute_candidate(job: dict, status_path: Path) -> dict:
             record(status="no_step",
                    validity="invalid" if _confirmed_no_solid(diagnostics) else "unknown")
             return row
-        shape = post.read_step_at_precision(step)
-        native = post.native_validity(shape)
-        record(native=native, step_path=str(step), step_sha256=post.sha256_file(step),
+        shape = read_step_at_precision(step)
+        native = native_validity(shape)
+        record(native=native, step_path=str(step), step_sha256=sha256_file(step),
                validity="valid" if native["native_valid_solid"] else "invalid")
         # Invalid candidates need only deterministic raw metrics for pairing.
         if row["validity"] == "invalid":
@@ -203,7 +208,7 @@ def _execute_candidate(job: dict, status_path: Path) -> dict:
 
 def _candidate_process(job: dict, status_path: Path, log_path: Path) -> None:
     os.setsid()
-    post.configure_cpu()
+    configure_cpu()
     with log_path.open("ab", buffering=0) as handle:
         os.dup2(handle.fileno(), 1)
         os.dup2(handle.fileno(), 2)
@@ -213,8 +218,8 @@ def _candidate_process(job: dict, status_path: Path, log_path: Path) -> None:
 @lru_cache(maxsize=1)
 def _code_hashes() -> dict:
     post_root = Path(__file__).resolve().parents[1] / "postprocess"
-    paths = [Path(__file__), Path(post.__file__), *post_root.glob("*.py")]
-    return {str(path): post.sha256_file(path) for path in sorted(paths)}
+    paths = [Path(__file__), Path(step_metrics.__file__), Path(common_io.__file__), *post_root.glob("*.py")]
+    return {str(path): sha256_file(path) for path in sorted(paths)}
 
 
 def evaluate_candidate(raw_path: str | Path, gt_npz: str | Path, gt_step: str | Path,
@@ -225,7 +230,7 @@ def evaluate_candidate(raw_path: str | Path, gt_npz: str | Path, gt_step: str | 
     """Resume a matching terminal result, otherwise run one bounded CPU child.
 
     ``fork`` is intended only for an explicitly CPU-only parent that has called
-    ``tools.vae_compare_post.preload_cpu_dependencies``. GPU callers use spawn.
+    ``src.postprocess.cpu_runtime.preload_cpu_dependencies``. GPU callers use spawn.
     """
     if repeats < 2 or timeout_seconds <= 0:
         raise ValueError("Require repeated geometry measurements and a positive time budget")
@@ -238,23 +243,23 @@ def evaluate_candidate(raw_path: str | Path, gt_npz: str | Path, gt_step: str | 
         "gt_npz": str(Path(gt_npz).resolve()), "gt_step": str(Path(gt_step).resolve()),
         "output_dir": str(output), "image_id": image_id, "candidate_id": candidate_id,
         "timeout_seconds": timeout_seconds, "repeats": repeats, "seed": seed,
-        "max_optimize_iter": max_optimize_iter, "sampling": post.SAMPLING,
+        "max_optimize_iter": max_optimize_iter, "sampling": SAMPLING,
         "face_match_threshold": FACE_MATCH_THRESHOLD, "code_sha256": _code_hashes(),
         "gt_cache_root": str(Path(gt_cache_root or output / "gt_cache").resolve()),
     }
-    job["input_sha256"] = {key: post.sha256_file(Path(job[key])) if Path(job[key]).is_file() else None
+    job["input_sha256"] = {key: sha256_file(Path(job[key])) if Path(job[key]).is_file() else None
                            for key in ("raw_path", "gt_npz", "gt_step")}
-    job["protocol_fingerprint"] = post.fingerprint(job)
+    job["protocol_fingerprint"] = fingerprint(job)
     status_path = output / "metrics.json"
-    previous = post.read_json(status_path)
+    previous = read_json(status_path)
     if previous:
         if previous.get("protocol_fingerprint") != job["protocol_fingerprint"]:
             raise ValueError(f"Candidate evaluation protocol or inputs changed: {output}")
         if previous.get("status") == "running":
             previous.update(status="interrupted", validity="unknown")
-            post.atomic_json(status_path, previous)
+            atomic_json(status_path, previous)
         return previous
-    post.atomic_json(output / "protocol.json", job)
+    atomic_json(output / "protocol.json", job)
     process = mp.get_context(start_method).Process(
         target=_candidate_process, args=(job, status_path, output / "worker.log"))
     started = time.monotonic()
@@ -263,8 +268,8 @@ def evaluate_candidate(raw_path: str | Path, gt_npz: str | Path, gt_step: str | 
         process.join(timeout=timeout_seconds)
         expired = process.is_alive()
         if expired:
-            post.terminate_process(process)
-        row = post.read_json(status_path) or {
+            terminate_process(process)
+        row = read_json(status_path) or {
             "image_id": image_id, "candidate_id": candidate_id,
             "protocol_fingerprint": job["protocol_fingerprint"], "raw": {}, "post": []}
         if expired:
@@ -273,8 +278,8 @@ def evaluate_candidate(raw_path: str | Path, gt_npz: str | Path, gt_step: str | 
         elif process.exitcode != 0 or row.get("status") in (None, "running"):
             row.update(status="crash", validity="unknown", error=f"Worker exited {process.exitcode}")
         row.update(worker_exit_code=process.exitcode, wall_seconds=time.monotonic() - started)
-        post.atomic_json(status_path, row)
+        atomic_json(status_path, row)
         return row
     finally:
         if process.is_alive():
-            post.terminate_process(process)
+            terminate_process(process)

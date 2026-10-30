@@ -235,7 +235,7 @@ def load_preference_svr(
     reference、冻结 DINO 及可选训练几何 decoder 必须逐 tensor 等于原 checkpoint；只替换实际
     训练的五个模块。所有合同先检查，再更新权重，不宽松加载或重建新 VAE。
     """
-    from src.datasets.preference import sha256_file
+    from src.common.io import sha256_file
     from src.models.diffusion.preference_geometry import geometry_settings
 
     original_path = Path(original_checkpoint).expanduser().resolve()

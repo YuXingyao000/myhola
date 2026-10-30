@@ -221,3 +221,5 @@ env.txt
 # Research records and runs live outside this repository (2026-10-30 cleanup)
 /checkpoints/
 /experiments/
+.import_linter_cache/
+.ruff_cache/

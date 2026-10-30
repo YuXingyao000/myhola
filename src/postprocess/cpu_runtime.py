@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import signal
 
 
 def configure_cpu() -> None:
@@ -24,3 +25,12 @@ def preload_cpu_dependencies() -> None:
     from src.postprocess.construct_brep import construct_brep_for_sample  # noqa: F401
     from scipy.spatial import cKDTree  # noqa: F401
     import trimesh  # noqa: F401
+
+
+def terminate_process(process) -> None:
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        if process.is_alive():
+            process.kill()
+    process.join(timeout=5)

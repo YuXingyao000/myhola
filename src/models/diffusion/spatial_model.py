@@ -30,7 +30,7 @@ class SpatialPhotoDiffusion(nn.Module):
             legacy, self.provenance = build_legacy_svr(
                 cfg["legacy_model_config"], with_autoencoder=True, **options)
         else:
-            from src.datasets.preference import sha256_file
+            from src.common.io import sha256_file
             if sha256_file(Path(cfg["legacy_checkpoint"])) != cfg["frozen_source_sha256"]:
                 raise ValueError("Frozen DINO/VAE source checkpoint SHA256 changed")
             legacy, self.provenance = load_legacy_svr(cfg["legacy_checkpoint"], **options)

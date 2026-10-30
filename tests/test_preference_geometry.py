@@ -247,7 +247,7 @@ class GeometryModelTests(unittest.TestCase):
             with patch("src.models.diffusion.legacy.load_legacy_svr", side_effect=lambda *a, **kw:
                        (deepcopy(self.legacy), deepcopy(self.provenance))), \
                     patch("src.datasets.preference.preference_data_provenance", return_value=data), \
-                    patch("src.datasets.preference.sha256_file", return_value="fixed"):
+                    patch("src.common.io.sha256_file", return_value="fixed"):
                 original = UnifiedTrainer(cfg)
             path = Path(directory) / "resume.ckpt"
             torch.save({"hyper_parameters": dict(original.hparams), "state_dict": original.state_dict()}, path)

@@ -118,7 +118,7 @@ class PreferenceDiffusion(nn.Module):
         extension; malformed/missing policy or changed frozen weights are errors.
         """
         from omegaconf import OmegaConf
-        from src.datasets.preference import sha256_file
+        from src.common.io import sha256_file
 
         path = Path(path).expanduser().resolve()
         checkpoint = torch.load(path, map_location="cpu", mmap=True, weights_only=False)

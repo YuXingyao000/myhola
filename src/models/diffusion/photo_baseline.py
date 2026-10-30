@@ -34,7 +34,7 @@ def load_photo_svr(original_checkpoint, photo_checkpoint, *, device="cpu", sourc
                    dino_repo=None):
     """照片去噪器 + 严格保留原 AE，供既有 FP32 sampler / decoder 评价。"""
     from pathlib import Path
-    from src.datasets.preference import sha256_file
+    from src.common.io import sha256_file
 
     saved = torch.load(photo_checkpoint, map_location="cpu", mmap=True, weights_only=False)
     config = saved["hyper_parameters"]
