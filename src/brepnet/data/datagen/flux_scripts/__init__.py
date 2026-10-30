@@ -1,2 +1,0 @@
-"""FLUX generation scripts."""
-

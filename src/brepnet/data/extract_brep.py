@@ -9,7 +9,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from src.brepnet.data.datagen.utils import load_model_ids
+from src.brepnet.data.model_lists import load_model_ids
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:

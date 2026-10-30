@@ -265,7 +265,7 @@ def main():
     parser.add_argument("--reuse-run", required=True)
     parser.add_argument("--expected-count", type=int, default=3505)
     parser.add_argument("--canonical-validation-list", default="src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt")
-    parser.add_argument("--training-run", default="checkpoints/diffusion_photo_baseline/20261025T125340Z")
+    parser.add_argument("--training-run", default="/mnt/d/hola_runs/diffusion_photo_baseline/20261025T125340Z")
     parser.add_argument("--gpus", nargs="+", type=int, default=list(range(8)))
     parser.add_argument("--cpu-workers", type=int, default=32)
     options = vars(parser.parse_args())

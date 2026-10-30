@@ -125,29 +125,9 @@ def tiny_batch(latent_dim: int = 4, max_faces: int = 4) -> dict:
     }
 
 
-def test_legacy_imports_and_registry_point_to_new_modules(tiny_dependencies):
+def test_registry_points_to_diffusion_package(tiny_dependencies):
     from src.brepnet.models import _MODEL_LOADERS
 
-    names = {
-        "diffusion": ("model", ["Diffusion"]),
-        "diffusion_latents": ("latents", ["LatentProvider"]),
-        "diffusion_padding": ("padding", ["LatentSequence", "FacePadder", "RandomFacePadder", "ZeroFacePadder", "build_face_padder"]),
-        "diffusion_condition": ("conditioning", ["build_condition_encoder"]),
-    }
-    for old_name, (new_name, exports) in names.items():
-        old = importlib.import_module(f"src.brepnet.models.{old_name}")
-        new = importlib.import_module(f"src.brepnet.diffusion.{new_name}")
-        for name in exports:
-            assert getattr(old, name) is getattr(new, name)
-    old_denoiser = importlib.import_module("src.brepnet.models.diffusion_denoiser")
-    separated = {
-        "denoiser": ["BRepDenoiser"],
-        "topology": ["OracleTopologySelfAttentionMask", "LearnedTopologySelfAttentionMask", "LearnedTopologyPredictor", "build_soft_topology_attention_bias", "build_topology_self_attention"],
-    }
-    for new_name, exports in separated.items():
-        new = importlib.import_module(f"src.brepnet.diffusion.{new_name}")
-        for name in exports:
-            assert getattr(old_denoiser, name) is getattr(new, name)
     assert _MODEL_LOADERS["Diffusion"]() is tiny_dependencies.Diffusion
 
 

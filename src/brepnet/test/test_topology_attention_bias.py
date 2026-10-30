@@ -2,7 +2,7 @@ import math
 
 import torch
 
-from src.brepnet.models.diffusion_denoiser import (
+from src.brepnet.diffusion.topology import (
     OracleTopologySelfAttentionMask,
     build_soft_topology_attention_bias,
 )
