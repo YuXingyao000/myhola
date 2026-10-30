@@ -1,0 +1,59 @@
+defaults:
+  - trainer: default
+  - dataset: vae_joint
+  - model: vae_uv_intersection
+  - condition: none
+  - _self_
+
+trainer:
+  exp_name: uv_intersection/frozen64
+  # Safe single-device defaults; the measured deployment overrides these.
+  devices: 1
+  batch_size: 1
+  accumulate_grad_batches: 1
+  num_workers: 2
+  num_threads: 4
+  learning_rate: 2.0e-5
+  max_epochs: 1000
+  # Lightning counts optimizer updates, including when accumulating gradients.
+  max_steps: 30000
+  max_time: null
+  precision: bf16-mixed
+  # Keep FP32 spline fitting/evaluation out of TF32 approximate matrix products.
+  float32_matmul_precision: highest
+  gradient_clip_val: 1.0
+  seed: 42
+  cudnn_benchmark: false
+  checkpoint_enable_version_counter: false
+  vae_validation_inference: false
+  wandb:
+    name: vae-uv-intersection-frozen64
+
+model:
+  # The audited trained 64D no-edge-feature source for this experiment.
+  init_uv_decoder_sha256: 4262f4998fe047e19c3ca21a835d74c183b7430f7a656c709ec8ed045262ada4
+
+dataset:
+  is_aug: 1
+  # This representation supervises UV through new continuous surfaces, not old UV labels.
+  edge_uv_root: null
+  train_dataset: src/preprocess/splits/deepcad_v7_contract_train.txt
+  val_dataset: src/preprocess/splits/deepcad_v7_contract_validation.txt
+  test_dataset: src/preprocess/splits/deepcad_v7_contract_test.txt
+
+eval:
+  enabled: false
+  output_dir: null
+  num_samples: 100
+  post_process: false
+
+hydra:
+  run:
+    dir: ${brep_run_dir:${trainer.output_dir},${trainer.exp_name},${trainer.run_dir},${trainer.resume_from_checkpoint}}
+  output_subdir: metadata/hydra
+  job_logging:
+    handlers:
+      file:
+        filename: ${brep_log_file:${hydra.runtime.output_dir}}
+  job:
+    chdir: false

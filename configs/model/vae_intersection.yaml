@@ -13,9 +13,26 @@ init_legacy_checkpoint: null
 init_refinement_checkpoint: null
 init_curve_feedback_checkpoint: null
 init_encoder_edge_value_checkpoint: null
+init_face_encoder_checkpoint: null
+init_uv_boundary_checkpoint: null
+init_shared_curve_checkpoint: null
+# Added 2026-10-20: same-architecture channel expansion; never optimizer resume.
+init_latent_expansion_checkpoint: null
+init_conditional_intersection_checkpoint: null
 checkpoint: null
 trainable_scope: all
 edge_threshold: 0.5
+
+# Added 2026-10-17: optional full-resolution UV tokens, then query pooling.
+# Default CNN keeps the exact existing weights/keys and initialization order.
+face_encoder:
+  kind: cnn
+  hidden_dim: 512
+  embedding_dim: 128
+  num_layers: 6
+  nhead: 8
+  dim_feedforward: 2048
+  dropout: 0.0
 
 # Added 2026-10-15: direct edge content in each of the five GAT messages.
 # 128 -> 64 -> 32 residual MLP; final layer zero-initialized, +51,680 params.
@@ -43,6 +60,23 @@ curve_point_feedback:
   hidden_dim: 128
   feature_dim: 64
 
+# Added 2026-10-18: supervised auxiliary pcurve path after refinement.
+# Existing intersection, XYZ heads, and classifier are unchanged.
+uv_boundary:
+  enabled: false
+  hidden_dim: 128
+  num_layers: 2
+  nhead: 4
+  dim_feedforward: 256
+  dropout: 0.0
+  candidate_chunk_size: 256
+
+# Added 2026-10-19: one final XYZ curve per reciprocal pair, then per-owner UV.
+# Keeps all early directed features and the exported half-edge rows.
+shared_curve:
+  enabled: false
+  hidden_dim: 128
+
 # One pass: the original face Transformer is called only before refinement.
 refinement:
   enabled: true
@@ -62,5 +96,7 @@ loss_weights:
   xyz_weight: 1.0
   incidence_weight: 0.1
   twin_weight: 0.1
+  uv_weight: 0.0
+  uv_anchor_weight: 0.0
   geometry_tolerance: 1.0e-5
   geometry_chunk_size: 32

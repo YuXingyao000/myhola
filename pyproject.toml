@@ -3,14 +3,16 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "hola-brep"
+name = "img2brep"
 version = "0.2.0"
-description = "HoLa-BRep: Holistic Latent B-Rep Generation"
+description = "Img2Brep: image-conditioned B-Rep reconstruction and paired CAD-image data generation"
 requires-python = ">=3.10"
 readme = "README.md"
 
 dependencies = [
     "torch>=2.4",
+    "torchvision>=0.19",
+    "torch-geometric>=2.5",
     "pytorch-lightning>=2.2",
     "hydra-core==1.3.2",
     "omegaconf>=2.3",
@@ -21,7 +23,8 @@ dependencies = [
     "torch-sparse",
     "trimesh",
     "open3d>=0.18",
-    "sentence-transformers>=2.2",
+    "ray>=2.40,<3",
+    "chamferdist==1.0.3",
     "wandb",
     "tensorboard",
     "scipy",
@@ -32,8 +35,71 @@ dependencies = [
     "rich>=13.7",
 ]
 
+[project.optional-dependencies]
+dev = ["pytest>=8", "pre-commit==4.0.1", "import-linter==2.1", "ruff==0.12.2"]
+
 [tool.setuptools.packages.find]
-where = ["src", "thirdparty"]
+where = ["."]
+include = ["src*"]
 
 [tool.setuptools.package-data]
-"brepnet.data.list" = ["*.txt"]
+"src.preprocess" = ["splits/*.txt"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = ["thirdparty", "src/eval/lfd/evaluation_scripts"]
+
+[tool.ruff.lint]
+# Real errors only: syntax, undefined names, invalid comparisons. Widen in its own PR.
+select = ["E9", "F63", "F7", "F82"]
+
+[tool.ruff.lint.per-file-ignores]
+# Lazy compatibility exports resolved by __getattr__; revisit with the VAE restructure.
+"src/models/blocks.py" = ["F822"]
+
+[tool.importlinter]
+root_packages = ["src"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Package code does not import tools/ or tests/"
+type = "forbidden"
+source_modules = ["src"]
+forbidden_modules = ["tools", "tests"]
+
+[[tool.importlinter.contracts]]
+name = "src layers: entry points > eval/preference > postprocess > models > datasets > preprocess > common"
+type = "layers"
+layers = [
+    "src.train | src.inference | src.evaluate",
+    "src.eval : src.preference",
+    "src.postprocess",
+    "src.models",
+    "src.datasets",
+    "src.preprocess",
+    "src.common",
+]
+# Known debt from the 2026-10-30 cleanup. Remove an entry when its import is fixed; never add one silently.
+ignore_imports = [
+    "src.postprocess.construct_brep -> src.eval.metrics.validity",
+    "src.preprocess.extract_brep_from_step_half_structure -> src.postprocess.utils",
+    "src.datasets.photo_preference -> src.preference.source",
+    "src.datasets.preference -> src.models.diffusion.image_loading",
+    "src.datasets.brep -> src.models.diffusion.image_loading",
+]
+
+[[tool.importlinter.contracts]]
+name = "Training stack does not import dataset generation"
+type = "forbidden"
+source_modules = ["src.train", "src.inference", "src.evaluate", "src.eval", "src.preference", "src.postprocess", "src.models", "src.datasets", "src.preprocess", "src.common"]
+forbidden_modules = ["src.datagen"]
+
+[[tool.importlinter.contracts]]
+name = "Dataset generation does not import the training stack"
+type = "forbidden"
+source_modules = ["src.datagen"]
+forbidden_modules = ["src.train", "src.inference", "src.evaluate", "src.eval", "src.preference", "src.postprocess", "src.datasets", "src.preprocess", "src.models"]

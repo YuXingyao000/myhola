@@ -1,0 +1,30 @@
+# Same old DPO initialization/data as the continuation control; only add geometry.
+defaults:
+  - train_diffusion_preference
+  - _self_
+
+model:
+  init_preference_checkpoint: /mnt/d/hola_runs/diffusion_preference_svr/20261023T030527Z/weights/steps/step=00005000.ckpt
+  geometry:
+    enabled: true
+    # Fixed train-only epsilon-gradient calibration: about 10% of DDPM at initialization.
+    # Evidence: /mnt/d/hola_research/diffusion/fidelity_uncertainty/geometry/CPU_VALIDATION.json
+    weight: 0.0226
+    min_snr: 1.0
+    primitive_chunk_size: 16
+
+dataset:
+  pairs_manifest: /mnt/d/hola_runs/diffusion/preference_data/20261020T134930Z/pairs.jsonl
+  cached_latent_root: /mnt/d/hola_runs/diffusion/preference_data/20261020T134930Z/gt_cache
+  geometry:
+    enabled: ${model.geometry.enabled}
+    raw_data_root: /mnt/d/data/deepcad_v7
+
+trainer:
+  exp_name: diffusion_preference_geometry
+  devices: 8
+  batch_size: 8
+  seed: 42
+  max_steps: 5000
+  wandb:
+    name: diffusion_preference_geometry_v1

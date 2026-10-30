@@ -1,0 +1,16 @@
+defaults:
+  - train_vae_latent_expansion
+  - _self_
+
+# Same source checkpoint, joint training, data, losses and exposure budget.
+# This 32-D control separates capacity gains from merely unfreezing/continuing.
+trainer:
+  exp_name: latent_expansion/d32_control
+  wandb:
+    name: vae-shared-curve-latent32-control
+
+model:
+  init_latent_expansion_checkpoint: null
+  checkpoint: ???
+  latent_channels: 8
+  gaussian_weights: 1.0e-6

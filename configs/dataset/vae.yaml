@@ -1,5 +1,7 @@
 name: AutoEncoder_dataset3
 raw_data_root: ???
+# Optional versioned edge/owner UV labels; geometry remains in raw_data_root.
+edge_uv_root: null
 train_dataset: ???
 val_dataset: ???
 test_dataset: ???

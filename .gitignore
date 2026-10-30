@@ -141,70 +141,12 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Local experiment outputs and large generated assets
+# Runtime assets and environment source trees stay outside this repository.
 wandb/
-src/brepnet/results/
-src/brepnet/data/DataGeneration/
-thirdparty/Depth_Anything_V2/
-check.png
-env.txt
 *.pt
-
-# Training checkpoints and generated experiment geometry stay local.
-# Keep notes, commands, resolved configs, audit records, and evaluation CSV/JSON.
 *.ckpt
-/experiments/**/*.npz
-/experiments/**/*.npy
-/experiments/**/*.ply
-/experiments/**/*.step
-/experiments/**/*.stp
-/experiments/**/*.stl
-/experiments/**/*.obj
-/experiments/**/success.txt
-/experiments/**/events.out.tfevents.*
-/experiments/2026-06-17/visibility_*/**/*.png
-
-# New research records live in checkpoints/; only runtime artifacts are ignored.
-# PLAN.md, README.md, NOTE.md and compact validation reports remain versioned.
-/checkpoints/**/weights/
-/checkpoints/**/logs/
-/checkpoints/**/wandb/
-/checkpoints/**/raw_predictions/
-/checkpoints/**/visualizations/
-/checkpoints/**/metadata/
-/checkpoints/**/*.npz
-/checkpoints/**/*.npy
-/checkpoints/**/*.ply
-/checkpoints/**/*.step
-/checkpoints/**/*.stp
-/checkpoints/**/*.stl
-/checkpoints/**/*.obj
-/checkpoints/**/success.txt
-/checkpoints/**/pytest_tmp*/
-# Per-ID audit streams can be regenerated; retain accepted/rejected manifests
-# and their compact summaries in Git instead.
-/checkpoints/**/samples.csv
-
-# Full paired failure trajectories stay local; compact_summary.json is versioned.
-/checkpoints/intersection_refinement/failure_census_20261011/summary.json
-/checkpoints/intersection_refinement/failure_census_20261011/cases.csv
-/checkpoints/intersection_refinement/failure_census_20261011/optimization_regressions.json
-
-# Repeated per-object evaluation data stay local for every evaluation date.
-# Keep research notes, sample lists, compact summaries, and validation reports.
-/checkpoints/**/failure_census_*/source_preservation.json
-/checkpoints/**/evaluation_*/raw_metrics/*/per_object.csv
-/checkpoints/**/evaluation_*/diagnostics/raw_distribution_per_object.csv
-# Evaluation reference links / reconstructed geometry are runtime assets.
-/checkpoints/**/evaluation_*/post/*/intersection
-/checkpoints/**/evaluation_*/post/*/local/
-
-# Fixed-input post experiments: per-object STEP, diagnostics and duplicate roots.
-/checkpoints/postprocess_refinement/**/post_variants/
-/checkpoints/postprocess_refinement/**/validation/post_smoke/
-/checkpoints/postprocess_refinement/**/validation/legacy_replay/
-/checkpoints/postprocess_refinement/**/report/cases.csv
-/checkpoints/postprocess_refinement/validation/policy_smoke*/*/
-
-# Raw multi-rank timing traces; keep the compact throughput report instead.
-/checkpoints/diffusion/performance/
+/checkpoints/
+/experiments/
+/thirdparty/
+.import_linter_cache/
+.ruff_cache/

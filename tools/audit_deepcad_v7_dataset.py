@@ -6,8 +6,9 @@ corruption, and --check-latent-shape to read every features.npy and validate
 latent stat shapes.
 
 Example:
-    python tools/audit_deepcad_v7_dataset.py --max-models 100
-    python tools/audit_deepcad_v7_dataset.py
+    python tools/audit_deepcad_v7_dataset.py --help
+
+Pass explicit data/cache roots and an --out-dir outside the code repository.
 """
 
 from __future__ import annotations
@@ -25,15 +26,10 @@ from typing import Any
 import numpy as np
 
 
-DEFAULT_DATA_ROOT = Path("/mnt/d/data/deepcad_v7")
-DEFAULT_COND_ROOT = Path("/mnt/d/data/deepcad_v7_cond")
-DEFAULT_LATENT_ROOT = Path("/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24")
-DEFAULT_OUT_DIR = Path("experiments/2026-06-07/dataset_audit")
-
 DEFAULT_LISTS = (
-    ("train", Path("src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt")),
-    ("val", Path("src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt")),
-    ("test", Path("src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt")),
+    ("train", Path("src/preprocess/splits/deduplicated_deepcad_training_7_30.txt")),
+    ("val", Path("src/preprocess/splits/deduplicated_deepcad_validation_7_30.txt")),
+    ("test", Path("src/preprocess/splits/deduplicated_deepcad_testing_7_30.txt")),
 )
 
 DATA_NPZ_KEYS = (
@@ -840,10 +836,10 @@ def write_reports(
 
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--data-root", type=Path, default=DEFAULT_DATA_ROOT)
-    parser.add_argument("--condition-root", type=Path, default=DEFAULT_COND_ROOT)
-    parser.add_argument("--latent-root", type=Path, default=DEFAULT_LATENT_ROOT)
-    parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
+    parser.add_argument("--data-root", type=Path, required=True)
+    parser.add_argument("--condition-root", type=Path, required=True)
+    parser.add_argument("--latent-root", type=Path, required=True)
+    parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument(
         "--list",
         action="append",
@@ -879,6 +875,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
 def main() -> None:
     parser = build_arg_parser()
     args = parser.parse_args()
+    if args.out_dir.resolve().is_relative_to(Path(__file__).resolve().parents[1]):
+        parser.error("Write audit reports outside the code repository")
 
     if args.list_specs_raw:
         args.list_specs = [parse_list_spec(spec) for spec in args.list_specs_raw]

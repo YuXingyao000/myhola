@@ -1,0 +1,16 @@
+defaults:
+  - train_vae_uv_intersection
+  - _self_
+
+# Main experiment: initialize from the trained 64-D source, optimize the entire VAE.
+# The previous frozen run remains a separate ablation; never resume its optimizer here.
+trainer:
+  exp_name: uv_intersection/joint64
+  wandb:
+    name: vae-uv-intersection-joint64
+
+model:
+  freeze_encoder: false
+  trainable_scope: all
+  # Same pre-LN 8 x 512 TransformerDecoder blocks; new token interfaces stay new.
+  init_uv_attention_from_intersection: true

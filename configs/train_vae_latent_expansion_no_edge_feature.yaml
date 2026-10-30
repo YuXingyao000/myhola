@@ -1,0 +1,15 @@
+defaults:
+  - train_vae_latent_expansion
+  - _self_
+
+# Same 64-D initialization and joint training; disable only feature matching.
+# Keep the raw diagnostic and the encoder-edge geometry reconstruction losses.
+trainer:
+  exp_name: latent_expansion/d64_no_edge_feature
+  max_steps: 30000
+  wandb:
+    name: vae-latent64-no-edge-feature-30k
+
+model:
+  loss_weights:
+    feature_weight: 0.0

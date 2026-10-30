@@ -1,0 +1,84 @@
+# 从头训练空间条件 DDPM；只有冻结 DINO/VAE 来自原 HoLa checkpoint。
+defaults:
+  - trainer: default
+  - _self_
+
+model:
+  name: SpatialPhotoDiffusion
+  stage: diffusion
+  architecture_version: spatial_photo_v1
+  legacy_checkpoint: /mnt/d/ckpt/HoLa/Diffusion_svr_sq30_1500k.ckpt
+  frozen_source_sha256: 9dcafb192529c1ddf65942392c25b409fbbf2bce407805f34a460d0b44bb4839
+  legacy_source_cache: null
+  dino_repo: /root/.cache/torch/hub/facebookresearch_dinov2_main
+  spatial:
+    grid_side: 8
+    extent: 1.0
+    fourier_bands: 6
+    width: 512
+    layers: 4
+    heads: 8
+    ff_width: 2048
+    dropout: 0.1
+    retain_rgb: true
+  denoiser:
+    width: 1024
+    layers: 24
+    heads: 16
+    ff_width: 2048
+    dropout: 0.1
+    activation_checkpointing: true
+  noise:
+    num_train_timesteps: 1000
+    beta_schedule: squaredcos_cap_v2
+    beta_start: 0.0001
+    beta_end: 0.02
+    variance_type: fixed_small
+    prediction_type: epsilon
+
+condition: null
+
+dataset:
+  name: src.datasets.spatial_photo.SpatialPhotoDataset
+  condition_data_root: /mnt/d/data/deepcad_v7_cond
+  cached_latent_root: /mnt/d/hola_runs/diffusion/photo_preference_data/20261026T055801Z/gt_cache
+  source_protocol: /mnt/d/hola_runs/diffusion/photo_preference_data/20261026T055801Z/metadata/protocol.json
+  source_protocol_sha256: 541ef216acd06f893cf4a5eeea33ad0697ae5b76d1f79699edb2f0777d628ad0
+  train_dataset: src/preprocess/splits/deduplicated_deepcad_training_7_30.txt
+  val_dataset: src/preprocess/splits/deduplicated_deepcad_validation_7_30.txt
+  # 每约 1040 optimizer steps 做一次完整 validation，避免频繁写大 checkpoint。
+  epoch_scale_factor: 10
+
+trainer:
+  exp_name: diffusion_spatial_photo
+  devices: 7
+  batch_size: 64
+  learning_rate: 1.0e-4
+  precision: bf16-mixed
+  max_steps: 10000000
+  num_threads: 4
+  num_workers: 4
+  prefetch_factor: 4
+  ddp_find_unused_parameters: false
+  ddp_gradient_as_bucket_view: true
+  sync_train_step_loss: false
+  diffusion_validation_inference: false
+  checkpoint_every_n_train_steps: 5000
+  checkpoint_step_keep_last: 3
+  wandb:
+    name: photo_spatial_memory_v1
+
+eval:
+  enabled: false
+  output_dir: null
+
+hydra:
+  run:
+    dir: ${brep_run_dir:${trainer.output_dir},${trainer.exp_name},${trainer.run_dir},${trainer.resume_from_checkpoint}}
+  output_subdir: metadata/hydra
+  job_logging:
+    handlers:
+      file:
+        filename: ${brep_log_file:${hydra.runtime.output_dir}}
+  job:
+    chdir: false

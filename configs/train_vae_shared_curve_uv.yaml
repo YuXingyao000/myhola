@@ -1,0 +1,19 @@
+defaults:
+  - train_vae_uv_boundary
+  - _self_
+
+# New run initialized from the accepted UV-boundary best, not optimizer resume.
+# Original loss weights, backbone widths and dataset/sidecars remain unchanged.
+trainer:
+  exp_name: shared_curve_uv/candidate
+  wandb:
+    enabled: true
+    offline: false
+    name: vae-shared-curve-uv-v1
+
+model:
+  init_uv_boundary_checkpoint: null
+  init_shared_curve_checkpoint: ???
+  shared_curve:
+    enabled: true
+    hidden_dim: 128

@@ -1,0 +1,26 @@
+defaults:
+  - train_vae_shared_curve_uv
+  - _self_
+
+# Added 2026-10-20. Widen the CNN bottleneck and all F/E interfaces together:
+# face/z 32 -> 64; edge 64 -> 128. Attention depths/hidden widths stay unchanged.
+# A new run: migrate the trained shared-curve weights, train the entire VAE.
+trainer:
+  exp_name: latent_expansion/d64
+  devices: 8
+  batch_size: 16
+  learning_rate: 2.0e-5
+  seed: 42
+  wandb:
+    enabled: true
+    offline: false
+    name: vae-shared-curve-latent64
+
+model:
+  init_shared_curve_checkpoint: null
+  init_latent_expansion_checkpoint: ???
+  freeze_encoder: false
+  latent_channels: 16
+  # KL is a sum. Keep beta*D constant relative to the D=32 control (1e-6).
+  # Reconstruction, UV and incidence weights are inherited without change.
+  gaussian_weights: 5.0e-7

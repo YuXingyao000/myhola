@@ -1,0 +1,57 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "decision": {
+      "type": "string",
+      "enum": ["ready", "revise", "blocked"]
+    },
+    "summary": {"type": "string"},
+    "inspected_images": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "reference_images": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "reference_comparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "layout": {"type": "string"},
+        "surfaces": {"type": "string"},
+        "lighting": {"type": "string"},
+        "adaptation": {"type": "string"}
+      },
+      "required": ["layout", "surfaces", "lighting", "adaptation"]
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "image": {"type": "string"},
+          "region": {"type": "string"},
+          "observation": {"type": "string"},
+          "suggested_change": {"type": "string"}
+        },
+        "required": ["image", "region", "observation", "suggested_change"]
+      }
+    },
+    "remaining_issues": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  },
+  "required": [
+    "decision",
+    "summary",
+    "inspected_images",
+    "reference_images",
+    "reference_comparison",
+    "issues",
+    "remaining_issues"
+  ]
+}

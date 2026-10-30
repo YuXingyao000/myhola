@@ -1,0 +1,35 @@
+# Repository hygiene. Install once per clone: `pre-commit install`.
+# The checks are the rules: fix the code instead of skipping a hook.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: check-merge-conflict
+      - id: check-yaml
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.2
+    hooks:
+      - id: ruff
+  - repo: local
+    hooks:
+      - id: repo-layout
+        name: top-level whitelist, no data or binary files
+        entry: python tools/check_repo.py layout
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: dead-modules
+        name: every src module is reachable
+        entry: python tools/check_repo.py dead
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: import-linter
+        name: import layering (pyproject [tool.importlinter])
+        entry: lint-imports --no-cache
+        language: python
+        additional_dependencies: ["import-linter==2.1"]
+        pass_filenames: false
+        always_run: true

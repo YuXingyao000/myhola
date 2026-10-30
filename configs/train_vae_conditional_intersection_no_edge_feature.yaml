@@ -1,0 +1,17 @@
+defaults:
+  - train_vae_conditional_intersection
+  - _self_
+
+# Accepted training entry from 2026-10-29. The parent remains an explicit
+# historical feature-on configuration so old runs are still reproducible.
+# Start again from the original 91% XYZ32 checkpoint with a new Adam/run.
+trainer:
+  exp_name: conditional_intersection/no_edge_feature_xyz32
+  wandb:
+    name: vae-conditional-intersection-xyz32-no-edge-feature
+
+model:
+  loss_weights:
+    # Raw edge_feature remains a diagnostic; weighted_edge_feature is zero.
+    # Keep the encoder's XYZ/local/bbox reconstruction and all geometric terms.
+    feature_weight: 0.0

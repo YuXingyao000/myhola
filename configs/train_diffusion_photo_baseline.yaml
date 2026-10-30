@@ -1,0 +1,52 @@
+# Original 1024-wide concat HoLa, initialized from SVR; photo RGB DDPM only.
+defaults:
+  - trainer: default
+  - _self_
+
+model:
+  name: PhotoBaselineDiffusion
+  stage: diffusion
+  legacy_checkpoint: /mnt/d/ckpt/HoLa/Diffusion_svr_sq30_1500k.ckpt
+  legacy_source_cache: null
+  dino_repo: null
+
+condition: null
+
+dataset:
+  name: src.datasets.photo.PhotoFeatureDataset
+  cache_root: /mnt/d/hola_runs/diffusion/photo_baseline/cache_v1
+  epoch_scale_factor: 50
+
+trainer:
+  exp_name: diffusion_photo_baseline
+  devices: 8
+  batch_size: 64
+  learning_rate: 1.0e-4
+  precision: bf16-mixed
+  max_steps: 10000000
+  num_threads: 4
+  num_workers: 2
+  prefetch_factor: 4
+  ddp_find_unused_parameters: false
+  ddp_gradient_as_bucket_view: true
+  sync_train_step_loss: false
+  diffusion_validation_inference: false
+  checkpoint_every_n_train_steps: 5000
+  checkpoint_step_keep_last: 3
+  wandb:
+    name: original_hola_photo_rgb_baseline
+
+eval:
+  enabled: false
+  output_dir: null
+
+hydra:
+  run:
+    dir: ${brep_run_dir:${trainer.output_dir},${trainer.exp_name},${trainer.run_dir},${trainer.resume_from_checkpoint}}
+  output_subdir: metadata/hydra
+  job_logging:
+    handlers:
+      file:
+        filename: ${brep_log_file:${hydra.runtime.output_dir}}
+  job:
+    chdir: false

@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 from scipy.spatial import cKDTree
 
-from src.brepnet.data.shared_boundaries import build_shared_boundary_targets
+from src.preprocess.shared_boundaries import build_shared_boundary_targets
 
 
 ACCEPTED_COUNT = 2417

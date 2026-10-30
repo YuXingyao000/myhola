@@ -1,0 +1,43 @@
+defaults:
+  - train_vae_intersection
+  - _self_
+
+# Added 2026-10-18. Initialize a NEW run from the accepted conditioned CNN VAE.
+# UV labels are supervision only; inference still uses the original XYZ heads.
+trainer:
+  exp_name: uv_boundary/candidate
+  devices: 8
+  batch_size: 16
+  max_epochs: 10000
+  max_steps: 100000
+  max_time: null
+  wandb:
+    enabled: true
+    offline: false
+
+dataset:
+  edge_uv_root: ???
+
+model:
+  init_uv_boundary_checkpoint: ???
+  freeze_encoder: true
+  face_encoder:
+    kind: cnn
+  encoder_edge_value:
+    enabled: false
+  intersection:
+    kind: legacy
+  curve_conditioning:
+    enabled: true
+  curve_point_feedback:
+    enabled: false
+  uv_boundary:
+    enabled: true
+  refinement:
+    candidate_chunk_size: 256
+    geometry_chunk_size: 128
+    checkpoint_candidates: false
+  loss_weights:
+    geometry_chunk_size: 128
+    uv_weight: 0.01
+    uv_anchor_weight: 0.1
