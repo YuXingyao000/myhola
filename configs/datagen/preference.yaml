@@ -4,8 +4,8 @@ dino_repo: /root/.cache/torch/hub/facebookresearch_dinov2_main
 raw_data_root: /mnt/d/data/deepcad_v7
 condition_data_root: /mnt/d/data/deepcad_v7_cond
 train_list: src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt
-validation_list: checkpoints/diffusion/svr_comparison_20261017/validation100.txt
-output_root: checkpoints/diffusion/preference_data
+validation_list: src/brepnet/data/list/deepcad_v7_validation100.txt
+output_root: /mnt/d/hola_runs/diffusion/preference_data
 train_limit: null
 validation_limit: null
 

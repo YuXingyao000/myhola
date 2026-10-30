@@ -37,9 +37,9 @@ dataset:
   is_aug: 1
   # This representation supervises UV through new continuous surfaces, not old UV labels.
   edge_uv_root: null
-  train_dataset: checkpoints/joint_boundary/validation/train_contract_audit/accepted.txt
-  val_dataset: checkpoints/joint_boundary/validation/val_contract_audit/accepted.txt
-  test_dataset: checkpoints/joint_boundary/validation/test_contract_audit/accepted.txt
+  train_dataset: src/brepnet/data/list/deepcad_v7_contract_train.txt
+  val_dataset: src/brepnet/data/list/deepcad_v7_contract_validation.txt
+  test_dataset: src/brepnet/data/list/deepcad_v7_contract_test.txt
 
 eval:
   enabled: false

@@ -38,8 +38,8 @@ def test_entry_uses_shared_boundary_dataset_new_uv_domain_and_fixed_training_bud
     assert cfg.model.name in available_models()
     assert cfg.dataset.name == "AutoEncoder_joint_dataset"
     assert cfg.dataset.edge_uv_root is None
-    for split in ("train", "val", "test"):
-        assert cfg.dataset[f"{split}_dataset"].endswith(f"{split}_contract_audit/accepted.txt")
+    for split, name in (("train", "train"), ("val", "validation"), ("test", "test")):
+        assert cfg.dataset[f"{split}_dataset"].endswith(f"deepcad_v7_contract_{name}.txt")
     assert cfg.model.freeze_encoder and cfg.model.latent_channels == 16
     assert cfg.model.uv_intersection.latent_dim == 64
     assert cfg.model.uv_intersection.face_layers == cfg.model.uv_intersection.curve_layers == 8

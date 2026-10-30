@@ -223,7 +223,7 @@ def main():
     parser.add_argument("--conditions", default="/mnt/d/data/deepcad_v7_cond")
     parser.add_argument("--source-run", default="/mnt/d/python/checkpoints/diffusion/preference_data/20261020T134930Z")
     parser.add_argument("--train-split", default="src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt")
-    parser.add_argument("--val-split", default="checkpoints/diffusion/svr_comparison_20261017/validation100.txt")
+    parser.add_argument("--val-split", default="src/brepnet/data/list/deepcad_v7_validation100.txt")
     parser.add_argument("--gpus", type=int, default=8)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--worker", action="store_true")

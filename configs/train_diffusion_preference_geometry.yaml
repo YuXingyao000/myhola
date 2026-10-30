@@ -8,14 +8,14 @@ model:
   geometry:
     enabled: true
     # Fixed train-only epsilon-gradient calibration: about 10% of DDPM at initialization.
-    # Evidence: checkpoints/diffusion/fidelity_uncertainty/geometry/CPU_VALIDATION.json
+    # Evidence: /mnt/d/hola_research/diffusion/fidelity_uncertainty/geometry/CPU_VALIDATION.json
     weight: 0.0226
     min_snr: 1.0
     primitive_chunk_size: 16
 
 dataset:
-  pairs_manifest: checkpoints/diffusion/preference_data/20261020T134930Z/pairs.jsonl
-  cached_latent_root: checkpoints/diffusion/preference_data/20261020T134930Z/gt_cache
+  pairs_manifest: /mnt/d/hola_runs/diffusion/preference_data/20261020T134930Z/pairs.jsonl
+  cached_latent_root: /mnt/d/hola_runs/diffusion/preference_data/20261020T134930Z/gt_cache
   geometry:
     enabled: ${model.geometry.enabled}
     raw_data_root: /mnt/d/data/deepcad_v7

@@ -5,9 +5,9 @@ defaults:
   - _self_
 
 dataset:
-  pairs_manifest: checkpoints/diffusion/preference_data/observation_v1/pairs.jsonl
+  pairs_manifest: /mnt/d/hola_runs/diffusion/preference_data/observation_v1/pairs.jsonl
   # 新版只重选，继续使用生成候选时同源的原 VAE GT cache。
-  cached_latent_root: checkpoints/diffusion/preference_data/20261020T134930Z/gt_cache
+  cached_latent_root: /mnt/d/hola_runs/diffusion/preference_data/20261020T134930Z/gt_cache
 
 trainer:
   exp_name: diffusion_preference_svr_observation

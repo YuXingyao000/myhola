@@ -177,7 +177,7 @@ def main():
     parser.add_argument("--original-svr", default="/mnt/d/ckpt/HoLa/Diffusion_svr_sq30_1500k.ckpt")
     parser.add_argument("--photo-val-best", required=True)
     parser.add_argument("--photo-latest", required=True)
-    parser.add_argument("--split-list", default="/mnt/d/hola_research/diffusion/svr_comparison_20261017/validation100.txt")
+    parser.add_argument("--split-list", default="src/brepnet/data/list/deepcad_v7_validation100.txt")
     parser.add_argument("--cache-root", default="/mnt/d/hola_runs/diffusion/photo_baseline/cache_v1")
     parser.add_argument("--condition-root", default="/mnt/d/data/deepcad_v7_cond")
     parser.add_argument("--gt-root", default="/mnt/d/data/deepcad_v7")
