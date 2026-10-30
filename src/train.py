@@ -347,6 +347,10 @@ class UnifiedTrainer(pl.LightningModule):
         self.viz: Dict[str, Any] = {}
 
     def on_load_checkpoint(self, checkpoint: Dict[str, Any]) -> None:
+        if checkpoint.get("initialization_only"):
+            raise ValueError(
+                "This migrated checkpoint is initialization-only; use model.checkpoint with a new run, not resume."
+            )
         if self.cfg.model.name == "AutoEncoder_uv_intersection":
             # Strict tensor loading cannot detect same-shape changes to heads,
             # dropout, or other saved architecture semantics.
@@ -707,7 +711,7 @@ class UnifiedTrainer(pl.LightningModule):
 # Main Entry Point
 # ---------------------------------------------------------------------------
 
-@hydra.main(version_base="1.3", config_path="../../configs", config_name="train")
+@hydra.main(version_base="1.3", config_path="../configs", config_name="train")
 def main(cfg: DictConfig):
     """Unified training entry point for Img2Brep."""
     _configure_num_threads(cfg)
@@ -723,6 +727,7 @@ def main(cfg: DictConfig):
     # --- Reproducibility ---
     seed_everything(cfg.trainer.seed, workers=True)
     torch.set_float32_matmul_precision(cfg.trainer.get("float32_matmul_precision", "medium"))
+    torch.backends.cudnn.allow_tf32 = cfg.trainer.get("cudnn_allow_tf32", True)
     torch.backends.cudnn.benchmark = bool(cfg.trainer.cudnn_benchmark) and not cfg.trainer.deterministic
 
     # --- Print resolved config ---
