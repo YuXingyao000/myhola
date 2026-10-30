@@ -64,7 +64,7 @@ def load_point2cad_reconstruction(
         ),
         axis=1,
     )
-    color_file = Path(__file__).resolve().parents[1] / "point2cad_color.txt"
+    color_file = Path(__file__).resolve().parent / "point2cad_color.txt"
     color_map = [list(map(int, item.strip().split(" "))) for item in color_file.read_text().splitlines()]
     index = np.asarray([color_map.index(item.tolist()) for item in color])
 
