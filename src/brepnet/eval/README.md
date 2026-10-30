@@ -2,6 +2,10 @@
 
 ## 入口
 
+固定 validation 的新旧 DPO 对照使用 `python -m src.brepnet.eval.preference_ablation`：只生成新 DPO，复用已完成原 SVR 结果，并接续观测 audit 与跨 run 配对报告。支持 CPU-only `--check-only` 与同协议 `--resume`；实验配置和手动命令见 [fidelity_uncertainty/README](../../../checkpoints/diffusion/fidelity_uncertainty/README.md)。独立汇总入口为 `python -m src.brepnet.eval.preference_ablation_report`，各参数通过 `--help` 查看。
+
+同起点的继续 DPO / 几何辅助 DPO 对照使用 `preference_compare --baseline-preference-checkpoint <控制组step5000> --preference-checkpoint <几何组step5000>`。此模式使用独立协议版本，baseline 槽加载控制组 policy；报告从协议读取两组真实标签，不将控制组称为原 SVR。完整两阶段入口和固定设置见 [geometry/EVALUATION_SPEC](../../../checkpoints/diffusion/fidelity_uncertainty/geometry/EVALUATION_SPEC.md)。
+
 普通STEP结果目录的通用入口是 `run.py`：
 
 ```bash

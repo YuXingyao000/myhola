@@ -1,0 +1,36 @@
+{
+  "status": "discussion_proposals_only_not_implemented_or_evaluated",
+  "date_utc": "2026-10-28",
+  "constraints": [
+    "现有B-Rep VAE权重与每面32维latent语义保持不变。",
+    "允许重新设计条件编码器与denoiser；图示宽度、层数、token数仅为接口示例。",
+    "本轮只讨论并绘制架构，未修改训练代码或启动实验。",
+    "单图推理不得使用GT相机、GT面数、GT拓扑或GT可见性。",
+    "CAD可作为训练监督；隐藏区域的合理多解不能被当作已观测信息。"
+  ],
+  "directions": {
+    "A": "带三维位置的query从RGB特征读取空间条件；相机/射线提供软几何关联；空间条件与原RGB共同进入原生条件denoiser。",
+    "B": "训练条件编码器的三维表示：直接空间几何监督，或在同一三维query位置对齐冻结的CAD几何教师；主要监督有可靠对应的观测区域。",
+    "C": "联合扩散粗点云与B-Rep latent。共享denoiser按token类型分别输出point/latent噪声，最终只有latent进入冻结VAE。该联合方案是本次研究假设，不是SPAR3D原方法。"
+  },
+  "open_issues": [
+    "照片相机与CAD规范坐标系的对应；旧FLUX编辑图不能默认保留原相机。",
+    "三维位置编码本身不保证特征几何正确；教师局部监督的空间对应与可见性需要定义。",
+    "单图中的隐藏结构仍需条件分布表达；确定性的完整形状特征回归可能造成平均化。",
+    "点/latent联合扩散的尺度、loss、计算预算与跨表示一致性尚未验证。",
+    "粗点云不能覆盖全部小孔和薄壁；点集与面集合没有按索引的一一对应。",
+    "固定VAE保留解码有效性的限制；网格或点云论文结果不等于B-Rep合法率结论。"
+  ],
+  "primary_sources": {
+    "LRM": "https://arxiv.org/abs/2311.04400",
+    "Michelangelo": "https://neuralcarver.github.io/michelangelo/",
+    "SPAR3D": "https://arxiv.org/abs/2501.04689",
+    "TripoSG": "https://arxiv.org/abs/2502.06608",
+    "Zero123++": "https://arxiv.org/abs/2310.15110",
+    "CADDreamer": "https://arxiv.org/abs/2502.20732"
+  },
+  "figures": [
+    "visualizations/spatial_bridge_and_3d_supervision.png",
+    "visualizations/joint_geometry_latent_diffusion.png"
+  ]
+}

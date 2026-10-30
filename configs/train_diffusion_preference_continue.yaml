@@ -1,0 +1,14 @@
+# New run, fresh Adam, same old DPO/pair/reference as the geometry arm.
+defaults:
+  - train_diffusion_preference_geometry
+  - _self_
+
+model:
+  geometry:
+    enabled: false
+    weight: 0.0
+
+trainer:
+  exp_name: diffusion_preference_continue
+  wandb:
+    name: diffusion_preference_continue_v1

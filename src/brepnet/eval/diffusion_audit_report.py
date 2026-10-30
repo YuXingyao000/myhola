@@ -171,7 +171,8 @@ def plot_figures(summary: dict, output: Path, font: Path | None) -> None:
     plt.rcParams.update({"font.size": 12, "svg.fonttype": "path", "axes.spines.top": False,
                          "axes.spines.right": False, "axes.spines.left": False})
     methods = list(summary["methods"])
-    labels = [METHOD_LABELS.get(name, name) for name in methods]
+    method_labels = summary.get("method_labels", METHOD_LABELS)
+    labels = [method_labels.get(name, name) for name in methods]
 
     def save(fig, name):
         for suffix in ("png", "svg"):
@@ -214,7 +215,7 @@ def plot_figures(summary: dict, output: Path, font: Path | None) -> None:
         values = [summary["methods"][method]["signals"][key][group]["positive_rate"] for key in signals]
         positions = y + (index - (count - 1) / 2) * .8 / count
         ax.barh(positions, [value * 100 if value is not None else np.nan for value in values], height=.8 / count,
-                color=COLORS[index % len(COLORS)], label=f"{METHOD_LABELS.get(method,method)} · {'合法' if group=='valid' else '不合法'}")
+                color=COLORS[index % len(COLORS)], label=f"{method_labels.get(method,method)} · {'合法' if group=='valid' else '不合法'}")
     ax.set_yticks(y, [FLAG_LABELS[key] for key in signals])
     ax.invert_yaxis()
     ax.set_xlim(0, 105)
@@ -265,6 +266,20 @@ def write_report(rows: list[dict], output: Path, *, font: Path | None = None) ->
     report.mkdir(parents=True, exist_ok=True)
     rows = sorted(rows, key=lambda row: (row["method"], row["image_id"], row["candidate_id"]))
     summary = summarize(rows)
+    # Resolve display labels from the immutable comparison protocol; numerical
+    # keys remain baseline/dpo_5000 for compatibility with paired statistics.
+    audit_protocol_path = output / "protocol.json"
+    if audit_protocol_path.is_file():
+        audit_protocol = json.loads(audit_protocol_path.read_text())
+        comparison_path = Path(audit_protocol["config"]["comparison_run"]) / "metadata/protocol.json"
+        from tools.vae_compare_post import sha256_file
+        if sha256_file(comparison_path) != audit_protocol["comparison_protocol_sha256"]:
+            raise ValueError("Comparison protocol changed before writing the audit report")
+        comparison = json.loads(comparison_path.read_text())
+        if "method_labels_zh" in comparison:
+            summary["method_labels"] = comparison["method_labels_zh"]
+            summary["comparison"] = comparison["comparison"]
+    method_labels = summary.get("method_labels", METHOD_LABELS)
     write_json(report / "summary.json", summary)
     write_csv(report / "cases.csv", [_flat_row(row) for row in rows])
     plot_figures(summary, report, font)
@@ -272,7 +287,7 @@ def write_report(rows: list[dict], output: Path, *, font: Path | None = None) ->
              "| 模型 | 总数 | 合法 | 不合法 | 未知 | 可见指标可测 |", "|---|---:|---:|---:|---:|---:|"]
     for method, item in summary["methods"].items():
         counts = item["validity_counts"]
-        lines.append(f"| {METHOD_LABELS.get(method,method)} | {item['intended_count']} | {counts.get('valid',0)} | {counts.get('invalid',0)} | {counts.get('unknown',0)} | {item['observation_status_counts'].get('ok',0)} |")
+        lines.append(f"| {method_labels.get(method,method)} | {item['intended_count']} | {counts.get('valid',0)} | {counts.get('invalid',0)} | {counts.get('unknown',0)} | {item['observation_status_counts'].get('ok',0)} |")
     if (report / "01_failure_stages.png").is_file():
         lines.extend(["", "![失败阶段](01_failure_stages.png)"])
     lines.extend(["", "![内部一致性](02_internal_consistency.png)", "",

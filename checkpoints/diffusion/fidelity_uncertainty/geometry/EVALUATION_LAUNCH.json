@@ -1,0 +1,92 @@
+{
+  "checked_utc": "2026-10-25T09:12:42.071852+00:00",
+  "supervisor_pid": 365820,
+  "status": "generating",
+  "intended_per_model": 3505,
+  "completed_generation": {
+    "baseline": {
+      "ok": 40
+    },
+    "dpo_5000": {
+      "ok": 39
+    }
+  },
+  "same_input_and_seed_verified_pairs": 39,
+  "loaded_gpu_workers": 8,
+  "examples": {
+    "baseline": {
+      "image_id": "00000178",
+      "latent_shape": [
+        30,
+        32
+      ],
+      "raw_shapes": {
+        "face_features": [
+          9,
+          32
+        ],
+        "pred_face_adj": [
+          81
+        ],
+        "pred_face_adj_prob": [
+          84
+        ],
+        "pred_edge_face_connectivity": [
+          28,
+          3
+        ],
+        "pred_face": [
+          9,
+          16,
+          16,
+          3
+        ],
+        "pred_edge": [
+          28,
+          16,
+          3
+        ]
+      },
+      "finite": true,
+      "recorded_output_sha256_verified": true
+    },
+    "dpo_5000": {
+      "image_id": "00000178",
+      "latent_shape": [
+        30,
+        32
+      ],
+      "raw_shapes": {
+        "face_features": [
+          9,
+          32
+        ],
+        "pred_face_adj": [
+          81
+        ],
+        "pred_face_adj_prob": [
+          84
+        ],
+        "pred_edge_face_connectivity": [
+          28,
+          3
+        ],
+        "pred_face": [
+          9,
+          16,
+          16,
+          3
+        ],
+        "pred_edge": [
+          28,
+          16,
+          3
+        ]
+      },
+      "finite": true,
+      "recorded_output_sha256_verified": true
+    }
+  },
+  "cpu_regression_tests_passed": 68,
+  "reconstruction_quality_results_available": false
+}

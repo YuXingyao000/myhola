@@ -1,0 +1,18 @@
+{
+  "identity": {
+    "host": "root@172.31.224.142",
+    "port": 12222,
+    "run_dir": "/mnt/d/python/checkpoints/uv_face_encoder/candidate/20261017T112147.401058Z_numeric_fix",
+    "destination": "/mnt/d/python/checkpoints/uv_face_encoder/candidate/20261017T112147.401058Z_numeric_fix"
+  },
+  "retry_command": "/usr/bin/python3 /mnt/d/python/checkpoints/uv_face_encoder/validation/server_preflight_20261017/return_tools/pull_run.py --run-dir /mnt/d/python/checkpoints/uv_face_encoder/candidate/20261017T112147.401058Z_numeric_fix --host root@172.31.224.142 --port 12222 --destination-root /mnt/d/python/checkpoints/uv_face_encoder/candidate",
+  "pid": 2640689,
+  "updated_at": "2026-10-18T02:35:09.060151+00:00",
+  "status": "returned_and_verified",
+  "ready_sha256": "0f20917e2f4ffeb5610e4bc25542a82c0d2ceda1c7fc620d581c0c4da339f67c",
+  "training_status": "interrupted",
+  "staging": "/mnt/d/python/checkpoints/uv_face_encoder/candidate/.20261017T112147.401058Z_numeric_fix.return-staging",
+  "receipt": "/mnt/d/python/checkpoints/uv_face_encoder/candidate/20261017T112147.401058Z_numeric_fix.return_receipt.json",
+  "file_count": 34,
+  "total_bytes": 8779474116
+}

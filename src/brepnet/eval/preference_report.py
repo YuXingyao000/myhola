@@ -221,11 +221,14 @@ def plot_comparison(summary: dict, output: Path) -> None:
 
     plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 10, "svg.fonttype": "none"})
     colors = ("#4775a7", "#dc7856")
+    method_labels = summary.get("method_labels", {"baseline": "Original SVR", "dpo_5000": "DPO 5000"})
+    method_names = [method_labels[method] for method in METHODS]
+    delta_label = "Geometry − control" if "method_labels" in summary else "DPO − SVR"
     fig = plt.figure(figsize=(17, 10), facecolor="#fafafa")
     grid = fig.add_gridspec(2, 3, height_ratios=(1.55, 1), hspace=.6, wspace=.65)
     ax_table = fig.add_subplot(grid[0, :])
     ax_table.axis("off")
-    ax_table.set_title("Single-view reconstruction: original SVR vs DPO (5,000 steps)", loc="left", fontsize=19, pad=20)
+    ax_table.set_title("Single-view reconstruction: " + " vs ".join(method_names), loc="left", fontsize=19, pad=20)
 
     def number(value, scale=1):
         return "n/a" if value is None else f"{value * scale:.3f}"
@@ -249,7 +252,7 @@ def plot_comparison(summary: dict, output: Path) -> None:
         ci = "n/a" if interval is None else f"[{interval[0] * scale:.3f}, {interval[1] * scale:.3f}]"
         table_rows.append([label, number(paired["baseline_mean"], scale), number(paired["dpo_5000_mean"], scale),
                            str(paired["n"]), number(paired["dpo_minus_baseline"], scale), ci])
-    table = ax_table.table(cellText=table_rows, colLabels=["Metric", "Original SVR", "DPO 5000", "Paired n", "DPO − SVR", "Paired 95% CI"],
+    table = ax_table.table(cellText=table_rows, colLabels=["Metric", *method_names, "Paired n", delta_label, "Paired 95% CI"],
                            cellLoc="center", colWidths=[.25, .14, .14, .09, .14, .24], bbox=[0, 0, 1, .95])
     table.auto_set_font_size(False)
     table.set_fontsize(10)
@@ -268,7 +271,7 @@ def plot_comparison(summary: dict, output: Path) -> None:
     for i, method in enumerate(METHODS):
         unknown = summary["methods"][method]["counts"]["validity_unknown"]
         ax_valid.text(i, counts[i] / total * 100 + 2, f"{counts[i]}/{total}\nunknown: {unknown}", ha="center", fontsize=10)
-    ax_valid.set(xticks=[0, 1], xticklabels=["Original SVR", "DPO 5000"], ylim=(0, 113), ylabel="Native valid solid (%)", title="Validity: full intended list")
+    ax_valid.set(xticks=[0, 1], xticklabels=method_names, ylim=(0, 113), ylabel="Native valid solid (%)", title="Validity: full intended list")
 
     def delta_plot(ax, keys, scale, xlabel, title):
         for index, key in enumerate(keys):
@@ -288,13 +291,13 @@ def plot_comparison(summary: dict, output: Path) -> None:
         ax.margins(y=.3)
 
     delta_plot(fig.add_subplot(grid[1, 1]), ["raw_face_cd_sq", "raw_edge_cd_sq", "post_face_cd_sq", "post_edge_cd_sq"],
-               1000, "DPO − SVR, CD² ×1000 (lower is better)", "Paired geometry differences + 95% CI")
+               1000, delta_label + ", CD² ×1000 (lower is better)", "Paired geometry differences + 95% CI")
     delta_plot(fig.add_subplot(grid[1, 2]), ["raw_face_f1", "post_face_f1"], 100,
-               "DPO − SVR, percentage points (higher is better)", "Paired face F1 differences + 95% CI")
+               delta_label + ", percentage points (higher is better)", "Paired face F1 differences + 95% CI")
     for ax in fig.axes[1:]:
         ax.spines[["top", "right"]].set_visible(False)
     own_counts = []
-    for method, label in zip(METHODS, ("SVR", "DPO")):
+    for method, label in zip(METHODS, method_names):
         raw_n = summary["metrics"]["raw_face_cd_sq"]["own"][method]["n"]
         post_n = summary["metrics"]["post_face_cd_sq"]["own"][method]["n"]
         own_counts.append(f"{label}: raw n={raw_n}, complete post n={post_n}")
@@ -309,6 +312,14 @@ def write_report(run_dir: str | Path, *, expected_count: int | None = None) -> d
     run_dir = Path(run_dir).resolve()
     ids, rows = load_rows(run_dir, expected_count=expected_count)
     summary = summarize(ids, rows)
+    protocol_path = run_dir / "metadata/protocol.json"
+    if protocol_path.is_file():
+        protocol = read_json(protocol_path)
+        if "method_labels" in protocol:
+            summary["method_labels"] = protocol["method_labels"]
+            summary["version"] = protocol["version"]
+            summary["protocol"]["comparison"] = protocol["comparison"]
+            summary["checkpoint_sha256"] = protocol["checkpoint_sha256"]
     summary["run_dir"] = str(run_dir)
     output = run_dir / "report"
     output.mkdir(exist_ok=True)

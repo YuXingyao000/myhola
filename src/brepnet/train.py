@@ -235,12 +235,18 @@ class UnifiedTrainer(pl.LightningModule):
                 OmegaConf.update(model_cfg, "restoring_checkpoint", True, force_add=True)
         if cfg.model.name == "PreferenceDiffusion":
             from src.brepnet.data.preference_dataset import sha256_file
+            from src.brepnet.diffusion.preference_geometry import geometry_settings
 
             photo_source = model_cfg.get("model_source") == "photo"
             if photo_source != (cfg.dataset.provenance.get("protocol_version") == "photo_preference_generation_v1"):
                 raise ValueError("Preference model and dataset photo/grey sources must agree")
             if cfg.trainer.init_from_checkpoint:
-                raise ValueError("Use model.legacy_checkpoint to initialize preference training, or resume_from_checkpoint.")
+                raise ValueError("Use model.init_preference_checkpoint for a new DPO run, or resume_from_checkpoint.")
+            geometry = geometry_settings(model_cfg.get("geometry"))
+            if geometry["enabled"] != bool((cfg.dataset.get("geometry") or {}).get("enabled", False)):
+                raise ValueError("Model and dataset geometry supervision switches must agree")
+            if geometry["enabled"] and str(cfg.trainer.precision) not in {"32", "32-true"}:
+                raise ValueError("The fixed geometry experiment requires FP32 training")
             if cfg.eval.enabled or cfg.trainer.evaluate or cfg.trainer.diffusion_validation_inference:
                 raise ValueError("Preference training exposes sample_latents(); STEP evaluation requires the explicit original VAE pipeline.")
             if has_resume:
@@ -251,9 +257,14 @@ class UnifiedTrainer(pl.LightningModule):
                 if photo_source and any(model_cfg.get(key) != saved_model_cfg.get(key) for key in (
                         "model_source", "photo_global_step", "beta_dpo", "preference_weight")):
                     raise ValueError("Cannot resume photo DPO with changed source or objective")
+                if geometry != geometry_settings(saved_model_cfg.get("geometry")):
+                    raise ValueError("Cannot resume preference training with changed geometry settings")
                 OmegaConf.update(
                     model_cfg, "legacy_model_config", saved_model_cfg["legacy_model_config"], force_add=True,
                 )
+                if "preference_initialization" in saved_model_cfg:
+                    OmegaConf.update(cfg.model, "preference_initialization",
+                                     saved_model_cfg["preference_initialization"], force_add=True)
             elif sha256_file(Path(model_cfg.photo_checkpoint if photo_source else model_cfg.legacy_checkpoint)) != cfg.dataset.provenance.source_checkpoint_sha256:
                 raise ValueError("Initial SVR checkpoint differs from the preference generation checkpoint.")
             if photo_source and not has_resume:
@@ -291,6 +302,10 @@ class UnifiedTrainer(pl.LightningModule):
         if cfg.model.name == "PreferenceDiffusion":
             # 恢复只依赖自身 checkpoint 的架构/权重，不重新读取旧 SVR 权重。
             OmegaConf.update(cfg.model, "legacy_model_config", self.model.legacy_model_config, force_add=True)
+            if model_cfg.get("init_preference_checkpoint") and not has_resume:
+                initialization = self.model.initialize_preference_weights(
+                    model_cfg.init_preference_checkpoint, dict(cfg.dataset.provenance))
+                OmegaConf.update(cfg.model, "preference_initialization", initialization, force_add=True)
             self.save_hyperparameters(OmegaConf.to_container(cfg, resolve=True))
         self._init_model_from_checkpoint()
         self._apply_trainable_scope()

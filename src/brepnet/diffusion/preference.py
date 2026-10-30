@@ -5,10 +5,13 @@ from __future__ import annotations
 from contextlib import contextmanager
 from copy import deepcopy
 import math
+from pathlib import Path
 
 import torch
 from torch import Tensor, nn
 import torch.nn.functional as F
+
+from .preference_geometry import geometry_settings, predicted_geometry_loss
 
 
 def per_sample_mse(prediction: Tensor, target: Tensor) -> Tensor:
@@ -78,9 +81,11 @@ class PreferenceDiffusion(nn.Module):
         super().__init__()
         from .legacy import build_legacy_svr, load_legacy_svr
 
+        self.geometry = geometry_settings(cfg.get("geometry"))
         loader_options = dict(source_cache=cfg.get("legacy_source_cache"), dino_repo=cfg.get("dino_repo"))
         if cfg.get("restoring_checkpoint", False):
-            legacy, self.provenance = build_legacy_svr(cfg["legacy_model_config"], **loader_options)
+            legacy, self.provenance = build_legacy_svr(
+                cfg["legacy_model_config"], with_autoencoder=self.geometry["enabled"], **loader_options)
         elif cfg.get("model_source") == "photo":
             from .photo_baseline import load_photo_svr
             legacy, self.provenance = load_photo_svr(
@@ -98,14 +103,77 @@ class PreferenceDiffusion(nn.Module):
         self.preference_weight = float(cfg["preference_weight"])
         if self.beta <= 0 or self.preference_weight < 0:
             raise ValueError("beta_dpo must be positive; preference_weight must be nonnegative.")
-        # 原模型不再持有引用；AE / camera embedding / classifier 不进入训练 state。
+        if self.geometry["enabled"]:
+            # Existing original VAE, including all original weights; no new head.
+            self.geometry_decoder = legacy.ae_model.requires_grad_(False).eval()
+        # No geometry: the historical DPO state is unchanged. Geometry: keep the
+        # original frozen AE in the checkpoint for a self-contained strict resume.
         del legacy
+
+    def initialize_preference_weights(self, path: str | Path, data_provenance: dict) -> dict:
+        """Start a new run from pre-geometry DPO; keep the original frozen reference.
+
+        This is weight initialization only. Adam state, step count and RNG are not
+        restored. Adding the original frozen decoder is the only permitted state
+        extension; malformed/missing policy or changed frozen weights are errors.
+        """
+        from omegaconf import OmegaConf
+        from src.brepnet.data.preference_dataset import sha256_file
+
+        path = Path(path).expanduser().resolve()
+        checkpoint = torch.load(path, map_location="cpu", mmap=True, weights_only=False)
+        hp = checkpoint["hyper_parameters"]
+        if OmegaConf.is_config(hp):
+            hp = OmegaConf.to_container(hp, resolve=True)
+        model_config = hp["model"]
+        if (model_config["name"] != "PreferenceDiffusion" or
+                model_config["legacy_model_config"] != self.legacy_model_config or
+                geometry_settings(model_config.get("geometry"))["enabled"]):
+            raise ValueError("Initialize from the same pre-geometry PreferenceDiffusion architecture")
+        if float(model_config["beta_dpo"]) != self.beta or float(model_config["preference_weight"]) != self.preference_weight:
+            raise ValueError("Preference objective differs from the initialization checkpoint")
+        source_data = {key: value for key, value in data_provenance.items() if key != "geometry_supervision"}
+        if hp["dataset"]["provenance"] != source_data:
+            raise ValueError("Initialization requires the same pair pool, GT split and source checkpoint")
+        expected = {f"model.{key}": value for key, value in self.state_dict().items()
+                    if not key.startswith("geometry_decoder.")}
+        weights = checkpoint["state_dict"]
+        if set(weights) != set(expected):
+            raise ValueError("Preference initialization state keys differ")
+        for key, current in expected.items():
+            value = weights[key]
+            if value.shape != current.shape or value.dtype != current.dtype:
+                raise ValueError(f"Preference initialization shape/dtype differs: {key}")
+            if not key.startswith("model.policy.") and not torch.equal(value, current):
+                raise ValueError(f"Initialization frozen reference/DINO differs from original SVR: {key}")
+        prefix = "model.policy."
+        self.policy.load_state_dict({key[len(prefix):]: value for key, value in weights.items()
+                                     if key.startswith(prefix)}, strict=True)
+        return {"checkpoint": str(path), "sha256": sha256_file(path),
+                "source_global_step": checkpoint["global_step"], "source_epoch": checkpoint["epoch"],
+                "policy_strict_load": True, "reference_and_dino_equal_original": True,
+                "optimizer_restored": False, "additional_trainable_parameters": 0}
 
     def train(self, mode: bool = True):
         super().train(mode)
         self.image_encoder.eval()
         self.reference.eval()
+        if self.geometry["enabled"]:
+            self.geometry_decoder.eval()
         return self
+
+    def _add_geometry(self, result: dict[str, Tensor], noisy: Tensor, prediction: Tensor,
+                      timestep: Tensor, batch: dict, v_test: bool) -> dict[str, Tensor]:
+        # Keep the existing validation loss and its checkpoint ranking unchanged.
+        if self.geometry["enabled"] and not v_test:
+            geometry = predicted_geometry_loss(
+                self.geometry_decoder, noisy, prediction, timestep, self.noise_scheduler.alphas_cumprod,
+                batch, min_snr=self.geometry["min_snr"],
+                primitive_chunk_size=self.geometry["primitive_chunk_size"])
+            result.update(geometry)
+            result["geometry_weighted_loss"] = self.geometry["weight"] * geometry["geometry_loss"]
+            result["total_loss"] = result["total_loss"] + result["geometry_weighted_loss"]
+        return result
 
     def _noise(self, clean: Tensor) -> tuple[Tensor, Tensor, Tensor]:
         timestep = torch.randint(
@@ -132,7 +200,7 @@ class PreferenceDiffusion(nn.Module):
         ddpm_loss = per_sample_mse(gt_prediction, gt_noise).mean()
         result = {"ddpm_loss": ddpm_loss, "total_loss": ddpm_loss}
         if not has_pairs:
-            return result
+            return self._add_geometry(result, noisy_gt, gt_prediction, gt_timestep, batch, v_test)
 
         winner, loser = batch["winner_latent"], batch["loser_latent"]
         noisy_winner, timestep, noise = self._noise(winner)
@@ -160,7 +228,7 @@ class PreferenceDiffusion(nn.Module):
             "loser_mse": policy_loser.detach().mean(),
             "total_loss": ddpm_loss + self.preference_weight * preference_loss,
         })
-        return result
+        return self._add_geometry(result, noisy_gt, gt_prediction, gt_timestep, batch, v_test)
 
     @torch.no_grad()
     def sample_latents(

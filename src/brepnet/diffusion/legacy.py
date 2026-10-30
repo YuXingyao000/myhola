@@ -232,10 +232,11 @@ def load_preference_svr(
 ) -> tuple[torch.nn.Module, dict]:
     """严格把 DPO policy 装回原生 SVR，保留原 AE、DINO 与完整采样行为。
 
-    reference 和冻结 DINO 必须逐 tensor 等于原 checkpoint；只替换实际
+    reference、冻结 DINO 及可选训练几何 decoder 必须逐 tensor 等于原 checkpoint；只替换实际
     训练的五个模块。所有合同先检查，再更新权重，不宽松加载或重建新 VAE。
     """
     from src.brepnet.data.preference_dataset import sha256_file
+    from src.brepnet.diffusion.preference_geometry import geometry_settings
 
     original_path = Path(original_checkpoint).expanduser().resolve()
     preference_path = Path(preference_checkpoint).expanduser().resolve()
@@ -265,6 +266,9 @@ def load_preference_svr(
         **{f"model.reference.{key}": value for key, value in original_policy.items()},
         **{f"model.image_encoder.{key}": value for key, value in original_dino.items()},
     }
+    geometry = geometry_settings(hparams["model"].get("geometry"))
+    if geometry["enabled"]:
+        expected.update({f"model.geometry_decoder.{key}": value for key, value in model.ae_model.state_dict().items()})
     weights = checkpoint["state_dict"]
     missing, unexpected = set(expected) - set(weights), set(weights) - set(expected)
     if missing or unexpected:
@@ -274,7 +278,7 @@ def load_preference_svr(
         if value.shape != original.shape or value.dtype != original.dtype:
             raise ValueError(f"DPO tensor shape/dtype differs from the original SVR: {key}")
         if not key.startswith("model.policy.") and not torch.equal(value, original):
-            raise ValueError(f"Frozen DPO reference/DINO differs from the original SVR: {key}")
+            raise ValueError(f"Frozen DPO reference/DINO/decoder differs from the original SVR: {key}")
 
     # 仅替换 policy；原生模型中的其他模块和 scheduler 均保持原 checkpoint。
     for name in module_names:
@@ -292,6 +296,8 @@ def load_preference_svr(
         "reference_equal_original": True, "reference_tensor_count": len(original_policy),
         "dino_equal_original": True, "dino_tensor_count": len(original_dino),
         "autoencoder_weight_source": "unchanged original complete SVR checkpoint",
+        "training_geometry_enabled": geometry["enabled"],
+        "geometry_decoder_equal_original": True if geometry["enabled"] else None,
     }
     return model, provenance
 

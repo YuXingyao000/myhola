@@ -1,0 +1,582 @@
+{
+  "created_utc": "2026-10-24T04:04:16.937865+00:00",
+  "run": "/mnt/d/python/checkpoints/diffusion/preference_data/observation_v1",
+  "protocol_fingerprint": "ac73d25e4a417e7c516cd0489822678e8675d4283573cbd903ea168f1a6b1747",
+  "method": "Read-only audit of all selected manifests using frozen selector source and saved metrics evidence; SHA256 source/protocol/manifest/code snapshots; selected latent file existence; no rerendering or training.",
+  "code_current_matches_frozen": {
+    "src/brepnet/data/preference_relabel.py": true,
+    "src/brepnet/data/preference_observation_worker.py": true,
+    "src/brepnet/data/preference_observation_selection.py": true,
+    "src/brepnet/data/extract_visibility.py": true,
+    "src/brepnet/data/rotations.py": true,
+    "src/brepnet/diffusion/image_loading.py": true,
+    "src/brepnet/eval/metrics/observation.py": true,
+    "shared/occ_utils.py": true,
+    "shared/common_utils.py": true,
+    "tools/vae_compare_post.py": true
+  },
+  "splits": {
+    "train": {
+      "intended_images": 46627,
+      "old_pairs": 42037,
+      "new_pairs": 41662,
+      "pair_coverage": 0.8935166319943381,
+      "pair_type": {
+        "geometry": 27563,
+        "validity": 14099
+      },
+      "validity_pairs": {
+        "valid->valid": 27563,
+        "valid->invalid": 14099
+      },
+      "transitions": {
+        "replaced": 29613,
+        "abstained": 505,
+        "retained": 11660,
+        "neither": 4460,
+        "flipped": 259,
+        "added": 130
+      },
+      "old_new_type_transitions": {
+        "geometry->geometry": 24757,
+        "validity->validity": 14099,
+        "validity->geometry": 2676,
+        "validity->none": 483,
+        "none->none": 4460,
+        "none->geometry": 130,
+        "geometry->none": 22
+      },
+      "rule_signal_counts": {
+        "geometry_improved_silhouette_iou": 11907,
+        "geometry_improved_visible_face_cd_sq": 26270,
+        "geometry_improved_silhouette_boundary_distance": 25343,
+        "geometry_no_observation_improvement": 0,
+        "validity_improved_silhouette_iou": 10163,
+        "validity_improved_visible_face_cd_sq": 13802,
+        "validity_improved_silhouette_boundary_distance": 13480,
+        "validity_no_observation_improvement": 53,
+        "geometry_outside_raw_guard": 8088
+      },
+      "selected_pair_metric_distributions": {
+        "all": {
+          "silhouette_iou_winner": {
+            "n": 41662,
+            "mean": 0.9374408093708602,
+            "median": 0.961474333133232,
+            "p05": 0.8041646260601369,
+            "p95": 0.991096565876392
+          },
+          "silhouette_iou_loser": {
+            "n": 41662,
+            "mean": 0.8785955304053157,
+            "median": 0.9332574743038593,
+            "p05": 0.5442099856017293,
+            "p95": 0.983292553254156
+          },
+          "silhouette_iou_winner_minus_loser": {
+            "n": 41662,
+            "mean": 0.058845278965544486,
+            "median": 0.02206209724996533,
+            "p05": 0.0007496531824715825,
+            "p95": 0.26456766063234316
+          },
+          "visible_face_cd_sq_winner": {
+            "n": 41662,
+            "mean": 0.0020356919097088257,
+            "median": 0.0004083453769622312,
+            "p05": 3.7363231088875494e-05,
+            "p95": 0.005820159921103668
+          },
+          "visible_face_cd_sq_loser": {
+            "n": 41662,
+            "mean": 0.011069279073581453,
+            "median": 0.0011295662053560564,
+            "p05": 9.551333684993367e-05,
+            "p95": 0.048129144683136754
+          },
+          "visible_face_cd_sq_winner_minus_loser": {
+            "n": 41662,
+            "mean": -0.009033587163872626,
+            "median": -0.0005145583534309742,
+            "p05": -0.03939348770775011,
+            "p95": -1.4979850126576735e-05
+          },
+          "visible_face_cd_sq_relative_reduction": {
+            "n": 41662,
+            "mean": 0.5499393174888418,
+            "median": 0.5659072269361849,
+            "p05": 0.06653125569168884,
+            "p95": 0.9760059482114661
+          },
+          "silhouette_boundary_distance_winner": {
+            "n": 41662,
+            "mean": 0.007543265926227834,
+            "median": 0.005373288932922606,
+            "p05": 0.0015932869439707618,
+            "p95": 0.02028857245982629
+          },
+          "silhouette_boundary_distance_loser": {
+            "n": 41662,
+            "mean": 0.01562788423150451,
+            "median": 0.008974034649606886,
+            "p05": 0.0030357294974788407,
+            "p95": 0.05276602108284571
+          },
+          "silhouette_boundary_distance_winner_minus_loser": {
+            "n": 41662,
+            "mean": -0.008084618305276675,
+            "median": -0.003051594767705396,
+            "p05": -0.035375410205721616,
+            "p95": -0.0001787521628899982
+          },
+          "silhouette_boundary_distance_relative_reduction": {
+            "n": 41662,
+            "mean": 0.3929799321120955,
+            "median": 0.37319525020483924,
+            "p05": 0.03217513908026282,
+            "p95": 0.8232480149470859
+          }
+        },
+        "geometry": {
+          "silhouette_iou_winner": {
+            "n": 27563,
+            "mean": 0.9487553593299067,
+            "median": 0.9674182759736757,
+            "p05": 0.849558402272168,
+            "p95": 0.9917719269296136
+          },
+          "silhouette_iou_loser": {
+            "n": 27563,
+            "mean": 0.918216429854804,
+            "median": 0.9469090084643289,
+            "p05": 0.7614404358396277,
+            "p95": 0.9848019561476352
+          },
+          "silhouette_iou_winner_minus_loser": {
+            "n": 27563,
+            "mean": 0.030538929475102613,
+            "median": 0.016472925946304007,
+            "p05": 0.0005721776743140894,
+            "p95": 0.0944213434063067
+          },
+          "visible_face_cd_sq_winner": {
+            "n": 27563,
+            "mean": 0.0014851974171050213,
+            "median": 0.0003217010820323819,
+            "p05": 3.07287731578312e-05,
+            "p95": 0.003315767144075233
+          },
+          "visible_face_cd_sq_loser": {
+            "n": 27563,
+            "mean": 0.004463571913514225,
+            "median": 0.0006966352415153123,
+            "p05": 7.470480114948048e-05,
+            "p95": 0.009592296647708776
+          },
+          "visible_face_cd_sq_winner_minus_loser": {
+            "n": 27563,
+            "mean": -0.002978374496409203,
+            "median": -0.00027842804779010873,
+            "p05": -0.005244975698063685,
+            "p95": -1.0369862939772552e-05
+          },
+          "visible_face_cd_sq_relative_reduction": {
+            "n": 27563,
+            "mean": 0.4734631987853493,
+            "median": 0.4782221547546918,
+            "p05": 0.05381556563021676,
+            "p95": 0.893743448390323
+          },
+          "silhouette_boundary_distance_winner": {
+            "n": 27563,
+            "mean": 0.006347867442261998,
+            "median": 0.004722505386848375,
+            "p05": 0.0014866804188255584,
+            "p95": 0.015661017214844135
+          },
+          "silhouette_boundary_distance_loser": {
+            "n": 27563,
+            "mean": 0.010460598289727403,
+            "median": 0.007380722745272129,
+            "p05": 0.0027951182400162908,
+            "p95": 0.026644290352659403
+          },
+          "silhouette_boundary_distance_winner_minus_loser": {
+            "n": 27563,
+            "mean": -0.004112730847465404,
+            "median": -0.002238673792693973,
+            "p05": -0.011781162269511218,
+            "p95": -0.00012904502161714402
+          },
+          "silhouette_boundary_distance_relative_reduction": {
+            "n": 27563,
+            "mean": 0.34136457558563826,
+            "median": 0.3182075818942064,
+            "p05": 0.024579817369559376,
+            "p95": 0.7351531942515372
+          }
+        },
+        "validity": {
+          "silhouette_iou_winner": {
+            "n": 14099,
+            "mean": 0.9153213015673844,
+            "median": 0.9443150046598322,
+            "p05": 0.7437910834103663,
+            "p95": 0.9884836826447951
+          },
+          "silhouette_iou_loser": {
+            "n": 14099,
+            "mean": 0.8011382035363,
+            "median": 0.878152636750737,
+            "p05": 0.32475432034859913,
+            "p95": 0.9763935175885875
+          },
+          "silhouette_iou_winner_minus_loser": {
+            "n": 14099,
+            "mean": 0.11418309803108453,
+            "median": 0.04925679717137199,
+            "p05": 0.0016323263614748788,
+            "p95": 0.4713925620860601
+          },
+          "visible_face_cd_sq_winner": {
+            "n": 14099,
+            "mean": 0.0031118873632614654,
+            "median": 0.0007068613743184016,
+            "p05": 7.217297662579571e-05,
+            "p95": 0.010874953938746027
+          },
+          "visible_face_cd_sq_loser": {
+            "n": 14099,
+            "mean": 0.023983181226424424,
+            "median": 0.005462367692727777,
+            "p05": 0.0002602952494989737,
+            "p95": 0.09614307860935191
+          },
+          "visible_face_cd_sq_winner_minus_loser": {
+            "n": 14099,
+            "mean": -0.020871293863162957,
+            "median": -0.003747405064564695,
+            "p05": -0.08433705432805116,
+            "p95": -6.027038388291174e-05
+          },
+          "visible_face_cd_sq_relative_reduction": {
+            "n": 14099,
+            "mean": 0.6994471733526879,
+            "median": 0.7839046103916979,
+            "p05": 0.13998395476766096,
+            "p95": 0.9921351570602595
+          },
+          "silhouette_boundary_distance_winner": {
+            "n": 14099,
+            "mean": 0.009880223753985149,
+            "median": 0.0072112376762482845,
+            "p05": 0.0020186021339162795,
+            "p95": 0.026048547185061444
+          },
+          "silhouette_boundary_distance_loser": {
+            "n": 14099,
+            "mean": 0.025729728505084374,
+            "median": 0.016816606570934485,
+            "p05": 0.0041945044277966834,
+            "p95": 0.07890040061653288
+          },
+          "silhouette_boundary_distance_winner_minus_loser": {
+            "n": 14099,
+            "mean": -0.015849504751099225,
+            "median": -0.0073656901436763705,
+            "p05": -0.05983884975234132,
+            "p95": -0.0004055611769161512
+          },
+          "silhouette_boundary_distance_relative_reduction": {
+            "n": 14099,
+            "mean": 0.49388595891816256,
+            "median": 0.5071435674999779,
+            "p05": 0.05898508915444802,
+            "p95": 0.883134337092613
+          }
+        }
+      }
+    },
+    "validation": {
+      "intended_images": 100,
+      "old_pairs": 95,
+      "new_pairs": 93,
+      "pair_coverage": 0.93,
+      "pair_type": {
+        "validity": 40,
+        "geometry": 53
+      },
+      "validity_pairs": {
+        "valid->invalid": 40,
+        "valid->valid": 53
+      },
+      "transitions": {
+        "retained": 26,
+        "replaced": 67,
+        "neither": 5,
+        "abstained": 2
+      },
+      "old_new_type_transitions": {
+        "validity->validity": 40,
+        "geometry->geometry": 47,
+        "none->none": 5,
+        "validity->geometry": 6,
+        "validity->none": 2
+      },
+      "rule_signal_counts": {
+        "validity_improved_silhouette_iou": 30,
+        "validity_improved_visible_face_cd_sq": 40,
+        "validity_improved_silhouette_boundary_distance": 36,
+        "validity_no_observation_improvement": 0,
+        "geometry_outside_raw_guard": 23,
+        "geometry_improved_silhouette_iou": 31,
+        "geometry_improved_visible_face_cd_sq": 45,
+        "geometry_improved_silhouette_boundary_distance": 50,
+        "geometry_no_observation_improvement": 0
+      },
+      "selected_pair_metric_distributions": {
+        "all": {
+          "silhouette_iou_winner": {
+            "n": 93,
+            "mean": 0.918506196087954,
+            "median": 0.9491003625915031,
+            "p05": 0.7581580029143618,
+            "p95": 0.9872168871498056
+          },
+          "silhouette_iou_loser": {
+            "n": 93,
+            "mean": 0.8510948198410881,
+            "median": 0.9109986504723346,
+            "p05": 0.46626617627652167,
+            "p95": 0.9779303262223931
+          },
+          "silhouette_iou_winner_minus_loser": {
+            "n": 93,
+            "mean": 0.06741137624686579,
+            "median": 0.027601380038711376,
+            "p05": 0.0014969476529170809,
+            "p95": 0.3690570343698975
+          },
+          "visible_face_cd_sq_winner": {
+            "n": 93,
+            "mean": 0.00266414519019715,
+            "median": 0.0004833075266298296,
+            "p05": 5.1391788949110845e-05,
+            "p95": 0.0065113224738019004
+          },
+          "visible_face_cd_sq_loser": {
+            "n": 93,
+            "mean": 0.01092504141010788,
+            "median": 0.0013443372278012264,
+            "p05": 0.00011557907871923148,
+            "p95": 0.047585140698920926
+          },
+          "visible_face_cd_sq_winner_minus_loser": {
+            "n": 93,
+            "mean": -0.00826089621991073,
+            "median": -0.0008346432148985129,
+            "p05": -0.03797295909588243,
+            "p95": -8.414776142593172e-06
+          },
+          "visible_face_cd_sq_relative_reduction": {
+            "n": 93,
+            "mean": 0.5717132888296499,
+            "median": 0.654974555310645,
+            "p05": 0.025438785494082176,
+            "p95": 0.9639117122294478
+          },
+          "silhouette_boundary_distance_winner": {
+            "n": 93,
+            "mean": 0.008752446208471846,
+            "median": 0.006762265350386596,
+            "p05": 0.002312088743422934,
+            "p95": 0.021725683273748804
+          },
+          "silhouette_boundary_distance_loser": {
+            "n": 93,
+            "mean": 0.016841022651786147,
+            "median": 0.010980261485563124,
+            "p05": 0.0038517740940614696,
+            "p95": 0.04546424052974617
+          },
+          "silhouette_boundary_distance_winner_minus_loser": {
+            "n": 93,
+            "mean": -0.008088576443314297,
+            "median": -0.0031880071968991928,
+            "p05": -0.0245112468279857,
+            "p95": -0.0002828429944680422
+          },
+          "silhouette_boundary_distance_relative_reduction": {
+            "n": 93,
+            "mean": 0.3555475075620446,
+            "median": 0.36737402788908724,
+            "p05": 0.0453155150411044,
+            "p95": 0.8012635718940577
+          }
+        },
+        "validity": {
+          "silhouette_iou_winner": {
+            "n": 40,
+            "mean": 0.8738585407173755,
+            "median": 0.9218217446661001,
+            "p05": 0.5619646236797591,
+            "p95": 0.9835925021008193
+          },
+          "silhouette_iou_loser": {
+            "n": 40,
+            "mean": 0.7536672156496611,
+            "median": 0.8518215220547858,
+            "p05": 0.29348514448574275,
+            "p95": 0.976983081689613
+          },
+          "silhouette_iou_winner_minus_loser": {
+            "n": 40,
+            "mean": 0.12019132506771432,
+            "median": 0.037386174896408275,
+            "p05": 0.0025943211087576584,
+            "p95": 0.49329434100433683
+          },
+          "visible_face_cd_sq_winner": {
+            "n": 40,
+            "mean": 0.0025875813001593855,
+            "median": 0.0011977091019239714,
+            "p05": 3.0374006880984742e-05,
+            "p95": 0.011236342194261744
+          },
+          "visible_face_cd_sq_loser": {
+            "n": 40,
+            "mean": 0.020538482087906172,
+            "median": 0.006658518575416804,
+            "p05": 0.0002435001037448586,
+            "p95": 0.05365389529579342
+          },
+          "visible_face_cd_sq_winner_minus_loser": {
+            "n": 40,
+            "mean": -0.017950900787746787,
+            "median": -0.005109738980805652,
+            "p05": -0.05112018164453852,
+            "p95": -3.513861006287994e-05
+          },
+          "visible_face_cd_sq_relative_reduction": {
+            "n": 40,
+            "mean": 0.7181644912998764,
+            "median": 0.7951702104897691,
+            "p05": 0.3187899145177088,
+            "p95": 0.9869151214083706
+          },
+          "silhouette_boundary_distance_winner": {
+            "n": 40,
+            "mean": 0.011467075049531743,
+            "median": 0.010323881065697437,
+            "p05": 0.0029356057906305337,
+            "p95": 0.027143209327468217
+          },
+          "silhouette_boundary_distance_loser": {
+            "n": 40,
+            "mean": 0.025349254541734822,
+            "median": 0.016780076127410917,
+            "p05": 0.004543754151061917,
+            "p95": 0.09342487301090434
+          },
+          "silhouette_boundary_distance_winner_minus_loser": {
+            "n": 40,
+            "mean": -0.013882179492203078,
+            "median": -0.004521611389411317,
+            "p05": -0.0834107941429921,
+            "p95": -0.00030765687599794346
+          },
+          "silhouette_boundary_distance_relative_reduction": {
+            "n": 40,
+            "mean": 0.38569682224652857,
+            "median": 0.37682300090860166,
+            "p05": 0.03393238701843245,
+            "p95": 0.8474482956225742
+          }
+        },
+        "geometry": {
+          "silhouette_iou_winner": {
+            "n": 53,
+            "mean": 0.9522025397638622,
+            "median": 0.9600685292567211,
+            "p05": 0.8870213687538864,
+            "p95": 0.9887944192744665
+          },
+          "silhouette_iou_loser": {
+            "n": 53,
+            "mean": 0.9246250871553725,
+            "median": 0.9433698689017838,
+            "p05": 0.831262773872825,
+            "p95": 0.9782533363438812
+          },
+          "silhouette_iou_winner_minus_loser": {
+            "n": 53,
+            "mean": 0.027577452608489546,
+            "median": 0.022489557823281436,
+            "p05": 0.0014969476529170802,
+            "p95": 0.07151493192116205
+          },
+          "visible_face_cd_sq_winner": {
+            "n": 53,
+            "mean": 0.0027219292581501797,
+            "median": 0.0003207388805485581,
+            "p05": 5.609391696327439e-05,
+            "p95": 0.0034893121591268246
+          },
+          "visible_face_cd_sq_loser": {
+            "n": 53,
+            "mean": 0.0036696144834676603,
+            "median": 0.0006829311188902207,
+            "p05": 0.00011557907871923148,
+            "p95": 0.007697853186134366
+          },
+          "visible_face_cd_sq_winner_minus_loser": {
+            "n": 53,
+            "mean": -0.0009476852253174798,
+            "median": -0.00022710291146031463,
+            "p05": -0.004234643904477707,
+            "p95": -4.658717582624721e-06
+          },
+          "visible_face_cd_sq_relative_reduction": {
+            "n": 53,
+            "mean": 0.46118407941815837,
+            "median": 0.5084805042480884,
+            "p05": 0.012320234363790612,
+            "p95": 0.8678848886533697
+          },
+          "silhouette_boundary_distance_winner": {
+            "n": 53,
+            "mean": 0.006703669724653057,
+            "median": 0.0050081656943612805,
+            "p05": 0.001685934424847839,
+            "p95": 0.011965834501093883
+          },
+          "silhouette_boundary_distance_loser": {
+            "n": 53,
+            "mean": 0.01041971556503242,
+            "median": 0.00856855338192101,
+            "p05": 0.0029522696977680044,
+            "p95": 0.02443974386437886
+          },
+          "silhouette_boundary_distance_winner_minus_loser": {
+            "n": 53,
+            "mean": -0.0037160458403793666,
+            "median": -0.002869321367850751,
+            "p05": -0.010517844689285197,
+            "p95": -0.0002828429944680417
+          },
+          "silhouette_boundary_distance_relative_reduction": {
+            "n": 53,
+            "mean": 0.33279330780017,
+            "median": 0.35505656737275143,
+            "p05": 0.059650630011454805,
+            "p95": 0.6623400856464075
+          }
+        }
+      }
+    }
+  },
+  "violations": {},
+  "violation_examples": [],
+  "elapsed_seconds": 8.747431527008303,
+  "checked_at": "2026-10-24T12:06:54.904915+08:00"
+}
