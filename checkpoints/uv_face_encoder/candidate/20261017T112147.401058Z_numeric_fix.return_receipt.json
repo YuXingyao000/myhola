@@ -1,0 +1,18 @@
+{
+  "status": "returned_and_verified",
+  "verified_at": "2026-10-18T02:35:09.021177+00:00",
+  "identity": {
+    "host": "root@172.31.224.142",
+    "port": 12222,
+    "run_dir": "/mnt/d/python/checkpoints/uv_face_encoder/candidate/20261017T112147.401058Z_numeric_fix",
+    "destination": "/mnt/d/python/checkpoints/uv_face_encoder/candidate/20261017T112147.401058Z_numeric_fix"
+  },
+  "training_status": "interrupted",
+  "ready_sha256": "0f20917e2f4ffeb5610e4bc25542a82c0d2ceda1c7fc620d581c0c4da339f67c",
+  "manifest_sha256": "080a81dd07a29760d6670a6581536e540c4e15ff5d0ca38dd1aa8fff522287e7",
+  "files_sha256": "c8facae390665b498e0ae8d84fd4925c8325e981423008263082d857272f054b",
+  "source_sha256_verified": true,
+  "destination_sha256_verified": true,
+  "file_count": 34,
+  "total_bytes": 8779474116
+}

@@ -98,6 +98,9 @@ Depth Anything 选项仍只读取 ViT 特征，不产生深度预测或深度监
 
 ## 训练入口
 
+无条件入口为`configs/train_diffusion_uncond.yaml`：在线冻结原版AE、当前768维主干、linear DDPM，8卡×192、100万步。
+配置、真实batch/DDP检查与历史训练的差别见[无条件训练说明](uncond_training_20261018/README.md)；正式长训练待用户启动。
+
 当前先用灰模训练，入口为 `configs/train_diffusion_layerwise_svr.yaml`，实验名为 `diffusion_layerwise_svr`。
 默认 `trainer.max_steps=10000000`，按用户要求留出手动停止空间；这是包括已完成步数在内的总上限。此前命令的 100,000 steps 只是预算，未使用 loss early stopping。
 该入口已加入数据读取与 Lightning/DDP 吞吐优化；实测、暂存工具和本机命令见 [吞吐说明](throughput/README.md)。
@@ -148,6 +151,11 @@ python -m src.brepnet.train --config-name train_diffusion_layerwise_svr \
 它不会自动恢复任意训练 run 的配置；使用前仍需核对 checkpoint 对应的参数、VAE 与条件处理。
 
 ## 尚未解决的限制
+
+2026-10-17 用户手动停止训练后的实测见 [SVR 与历史 HoLa 对照](svr_comparison_20261017/README.md)：
+固定 validation100、K=1、1000步DDPM及相同后处理，用户指定HoLa1500k的原生合法solid为74/100，
+当前最低val-loss best（54,639步）为29/100，last（实际保存182,130步）为54/100。
+last的面CD²更低，但实体有效率仍落后；这不是等训练预算架构消融。历史CLIP式对齐候选的身份与小集限制另列，不能称为已确认的用户历史最佳。
 
 - zero padding validity head 在训练读取 prediction、推理读取最终 latent；epsilon 配置下二者分布不同。
 - learned topology 固定 slots adjacency 与随机面 slots 的对应问题未解决，也没有自动 topology BCE；GT topology 仍是 oracle，默认关闭。

@@ -1,0 +1,179 @@
+{
+  "status": "passed",
+  "gpu_used": false,
+  "training_started": false,
+  "configuration_differences": {
+    "dataset.cached_latent_root": {
+      "old": "/mnt/d/python/checkpoints/diffusion/preference_data/20261020T134930Z/gt_cache",
+      "new": "checkpoints/diffusion/preference_data/20261020T134930Z/gt_cache"
+    },
+    "dataset.pairs_manifest": {
+      "old": "/mnt/d/python/checkpoints/diffusion/preference_data/20261020T134930Z/pairs.jsonl",
+      "new": "checkpoints/diffusion/preference_data/observation_v1/pairs.jsonl"
+    },
+    "trainer.exp_name": {
+      "old": "diffusion_preference_svr",
+      "new": "diffusion_preference_svr_observation"
+    },
+    "trainer.run_dir": {
+      "old": "/mnt/d/python/checkpoints/diffusion_preference_svr/20261023T030527Z",
+      "new": null
+    },
+    "trainer.wandb.name": {
+      "old": "diffusion_preference_svr_20261023",
+      "new": "diffusion_preference_svr_observation_v1"
+    }
+  },
+  "source_checks": {
+    "src/brepnet/diffusion/preference.py": {
+      "matches_old_training": true,
+      "current_sha256": "f6f404e46a29a5fce2419917941b68525d95576929e5ac937dbebb357fdb330a"
+    },
+    "src/brepnet/train.py": {
+      "matches_old_training": true,
+      "current_sha256": "4f89f6ba980dab4ac5ddc2be330e74d8f940ba8cfb41231ef3913e076c1acaa3"
+    },
+    "src/brepnet/diffusion/legacy.py": {
+      "matches_old_training_file": false,
+      "only_change": "Added load_preference_svr for downstream inference; training load/build helpers unchanged",
+      "training_module_ast_equal_after_removing_added_function": true,
+      "current_sha256": "5b2c146ec713aaaaa96050406cddff9a3d7ea0fbd8fe0d05b8dd60bfab19ab57"
+    },
+    "PreferenceDataset.random_duplicate_padding": {
+      "matches_old_training": true
+    },
+    "PreferenceDataset._image": {
+      "matches_old_training": true
+    },
+    "PreferenceDataset._generated_latent": {
+      "matches_old_training": true
+    },
+    "PreferenceDataset.__getitem__": {
+      "matches_old_training": true
+    },
+    "PreferenceDataset.collate_fn": {
+      "matches_old_training": true
+    }
+  },
+  "checkpoint_sha256_verified": true,
+  "provenance": {
+    "pairs_manifest": "/mnt/d/python/checkpoints/diffusion/preference_data/observation_v1/pairs.jsonl",
+    "pairs_manifest_sha256": "fb8dc73bf7c2051929539821fefaa5915f926d700dd5f08c0d2d48b906b539c2",
+    "generation_protocol": "/mnt/d/python/checkpoints/diffusion/preference_data/observation_v1/metadata/protocol.json",
+    "generation_protocol_sha256": "43e020bc5566a77d536420d99d583ab9dc6657638f74490d9246262bedce9967",
+    "generation_fingerprint": "ac73d25e4a417e7c516cd0489822678e8675d4283573cbd903ea168f1a6b1747",
+    "source_checkpoint_sha256": "9dcafb192529c1ddf65942392c25b409fbbf2bce407805f34a460d0b44bb4839",
+    "train_list_sha256": "bfd0f90428a40600c6f9f72658544c018e75f5576ad6f0af00dbe29224ac9417",
+    "validation_list_sha256": "6c952c3556860c0a2782a0bedbf139b48bc2769b385788baf0fcb82fac1be587",
+    "protocol_version": "svr_observation_preference_v1",
+    "source_run": "/mnt/d/python/checkpoints/diffusion/preference_data/20261020T134930Z",
+    "source_protocol": "/mnt/d/python/checkpoints/diffusion/preference_data/20261020T134930Z/metadata/protocol.json",
+    "source_protocol_sha256": "2861064fe0e9714fbe37312879bf7fc7b17ebedfc019b98a0e30aa2c9d8614a0",
+    "source_protocol_fingerprint": "ae43b4e963851a53187753116a9c16570249d8b181b2c56de5d44941c3449c88",
+    "source_status_sha256": "bbe09e79c96e813ef34e1fc7f834076cdd9eb9d2b0f343adfa36213f36757d3c",
+    "gt_cache_root": "/mnt/d/python/checkpoints/diffusion/preference_data/20261020T134930Z/gt_cache",
+    "validation_pairs_manifest_sha256": "7990210b173399b16b6522006c7cfa618f691874f1676d4092fdafa12fccb1d0"
+  },
+  "dataset": {
+    "train_gt_count": 46627,
+    "train_pairs": 41662,
+    "validation_gt_count": 100,
+    "sample_gt_id": "00000061",
+    "sample_pair_id": "00491533",
+    "sample_shapes": {
+      "gt_latent": [
+        30,
+        32
+      ],
+      "gt_image": [
+        3,
+        224,
+        224
+      ],
+      "winner_latent": [
+        30,
+        32
+      ],
+      "loser_latent": [
+        30,
+        32
+      ],
+      "pair_image": [
+        3,
+        224,
+        224
+      ]
+    }
+  },
+  "configuration": {
+    "trainer": {
+      "devices": 8,
+      "accelerator": "gpu",
+      "precision": "32-true",
+      "num_workers": 4,
+      "num_threads": 4,
+      "prefetch_factor": 4,
+      "persistent_workers": true,
+      "ddp_find_unused_parameters": false,
+      "ddp_gradient_as_bucket_view": true,
+      "batch_size": 8,
+      "learning_rate": 1e-05,
+      "max_epochs": 1000000,
+      "max_steps": 5000,
+      "max_time": null,
+      "check_val_every_n_epoch": 1,
+      "num_sanity_val_steps": 2,
+      "vae_validation_inference": false,
+      "diffusion_validation_inference": false,
+      "gradient_clip_val": 1.0,
+      "log_every_n_steps": 50,
+      "sync_train_step_loss": false,
+      "seed": 42,
+      "deterministic": false,
+      "cudnn_benchmark": true,
+      "checkpoint_enable_version_counter": true,
+      "checkpoint_every_n_train_steps": 1000,
+      "limit_train_batches": 1.0,
+      "limit_val_batches": 1.0,
+      "limit_test_batches": 1.0,
+      "wandb": {
+        "enabled": true,
+        "project": "hola-brep",
+        "name": "diffusion_preference_svr_observation_v1",
+        "offline": false
+      },
+      "resume_from_checkpoint": null,
+      "init_from_checkpoint": null,
+      "evaluate": false,
+      "test_output_dir": null,
+      "output_dir": "./checkpoints",
+      "run_dir": null,
+      "exp_name": "diffusion_preference_svr_observation"
+    },
+    "model": {
+      "name": "PreferenceDiffusion",
+      "stage": "diffusion",
+      "legacy_checkpoint": "/mnt/d/ckpt/HoLa/Diffusion_svr_sq30_1500k.ckpt",
+      "legacy_source_cache": null,
+      "dino_repo": null,
+      "beta_dpo": 20.0,
+      "preference_weight": 1.0
+    },
+    "condition": null,
+    "dataset": {
+      "name": "src.brepnet.data.preference_dataset.PreferenceDataset",
+      "pairs_manifest": "checkpoints/diffusion/preference_data/observation_v1/pairs.jsonl",
+      "cached_latent_root": "checkpoints/diffusion/preference_data/20261020T134930Z/gt_cache",
+      "condition_data_root": "/mnt/d/data/deepcad_v7_cond",
+      "train_dataset": "src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt",
+      "val_dataset": "checkpoints/diffusion/svr_comparison_20261017/validation100.txt",
+      "test_dataset": "src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt",
+      "epoch_scale_factor": 1
+    },
+    "eval": {
+      "enabled": false,
+      "output_dir": null
+    }
+  },
+  "checked_at": "2026-10-24T12:06:54.907560+08:00"
+}

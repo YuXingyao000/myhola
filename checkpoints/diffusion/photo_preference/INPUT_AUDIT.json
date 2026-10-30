@@ -1,0 +1,18 @@
+{
+  "split_counts": {
+    "training": 46627,
+    "validation": 3505
+  },
+  "split_overlap": 0,
+  "candidates_per_image": 8,
+  "requested_candidates": 401056,
+  "missing_assets": [],
+  "bad_photo_headers": [],
+  "photo_shape_counts": {
+    "(512, 512, 3)": 50132
+  },
+  "photo_bytes": 41499114677,
+  "audit_scope": "file existence and flux NPY header only; full payload/CRC checked by generation",
+  "source_checkpoint_sha256": "9dcafb192529c1ddf65942392c25b409fbbf2bce407805f34a460d0b44bb4839",
+  "photo_checkpoint_sha256": "d8ba2f83fa6989ad235c021d2a41ca23d79505076a522954086597d575caa745"
+}

@@ -1,0 +1,24 @@
+{
+  "new_last": {
+    "native_inference_matches_export_exactly": true,
+    "max_abs_differences": {
+      "face_latents": 0.0,
+      "pred_face_adj": 0.0,
+      "pred_face_adj_prob": 0.0,
+      "pred_edge_face_connectivity": 0.0,
+      "pred_face": 0.0,
+      "pred_edge": 0.0
+    }
+  },
+  "new_best": {
+    "native_inference_matches_export_exactly": true,
+    "max_abs_differences": {
+      "face_latents": 0.0,
+      "pred_face_adj": 0.0,
+      "pred_face_adj_prob": 0.0,
+      "pred_edge_face_connectivity": 0.0,
+      "pred_face": 0.0,
+      "pred_edge": 0.0
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "devices": 8,
+  "per_gpu_batch": 64,
+  "global_batch": 512,
+  "precision": "bf16-mixed",
+  "first_global_step": 32,
+  "resumed_global_step": 36,
+  "first_optimizer_steps": [
+    32.0
+  ],
+  "resumed_optimizer_steps": [
+    36.0
+  ],
+  "strict_restore_logged": true,
+  "resume_original_checkpoint_unavailable": true,
+  "same_state_keys": true,
+  "state_key_count": 658,
+  "short_run_training_steps_per_second": 6.43,
+  "timing_scope": "32 optimizer steps, before checkpoint disk write; not long-run estimate",
+  "diagnostic_run": "/mnt/d/python/checkpoints/diffusion/photo_baseline/ddp_check_20261025",
+  "resume_limitation": "Lightning restores model/optimizer/step; this ordinary DataLoader does not restore exact within-epoch sample/RNG trajectory."
+}

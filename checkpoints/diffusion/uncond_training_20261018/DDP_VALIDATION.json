@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "devices": 2,
+  "batch_size_per_device": 192,
+  "optimizer_steps": 2,
+  "validation_batches_per_device": 1,
+  "validation_loss": 1.050542950630188,
+  "ddp_find_unused_parameters": false,
+  "precision": "bf16-mixed",
+  "checkpoint_saved": true,
+  "run_dir": "/mnt/d/python/checkpoints/diffusion/uncond_training_20261018/metadata/ddp_smoke",
+  "formal_training_started": false,
+  "config_sha256": "3de33d4fc20b71bf2c539215b69fd879a3274d95bcb1ed05e9c7e425d6f943c8"
+}

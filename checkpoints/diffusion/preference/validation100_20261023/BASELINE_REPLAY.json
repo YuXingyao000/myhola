@@ -1,0 +1,7 @@
+{
+  "intended": 100,
+  "bitwise_equal_latent_and_raw": 100,
+  "mismatched_ids": [],
+  "current_run": "/mnt/d/python/checkpoints/diffusion/preference_eval/20261023T062400Z",
+  "prior_run": "/mnt/d/python/checkpoints/diffusion/preference_data/20261020T134930Z"
+}

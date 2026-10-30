@@ -1,0 +1,23 @@
+{
+  "python_executable": "/mnt/d/anaconda3/envs/torch/bin/python",
+  "python": "3.10.13",
+  "torch": "2.4.1+cu124",
+  "numpy_runtime": "2.0.1",
+  "pytorch_lightning": "2.5.0.post0",
+  "diffusers": "0.37.1",
+  "transformers": "5.5.0",
+  "pythonocc": "7.8.1.1",
+  "git_head": "c6b6dc61978d2f06eb1128d89727cfea49ca2928",
+  "git_branch": "codex/diffusion-training-throughput",
+  "gpu": [
+    "0, NVIDIA GeForce RTX 4090, 570.133.07",
+    "1, NVIDIA GeForce RTX 4090, 570.133.07",
+    "2, NVIDIA GeForce RTX 4090, 570.133.07",
+    "3, NVIDIA GeForce RTX 4090, 570.133.07",
+    "4, NVIDIA GeForce RTX 4090, 570.133.07",
+    "5, NVIDIA GeForce RTX 4090, 570.133.07",
+    "6, NVIDIA GeForce RTX 4090, 570.133.07",
+    "7, NVIDIA GeForce RTX 4090, 570.133.07"
+  ],
+  "note": "Source machine evaluation environment; not the migrated 5090 server."
+}

@@ -87,6 +87,44 @@ def _build_strategy(cfg: DictConfig) -> DDPStrategy | str:
     )
 
 
+def _build_checkpoint_callbacks(cfg: DictConfig, run_dir: Path) -> list[ModelCheckpoint]:
+    """Keep validation-ranked weights and optional fixed-step snapshots separately."""
+    callbacks = [
+        ModelCheckpoint(
+            dirpath=str(run_dir / "weights"),
+            monitor="val/loss",
+            mode="min",
+            save_top_k=3,
+            save_last=True,
+            filename="epoch={epoch:04d}-step={step:08d}-val_loss={val/loss:.6f}",
+            auto_insert_metric_name=False,
+            enable_version_counter=cfg.trainer.checkpoint_enable_version_counter,
+        ),
+    ]
+    interval = cfg.trainer.get("checkpoint_every_n_train_steps")
+    if interval is not None:
+        if isinstance(interval, bool) or not isinstance(interval, int) or interval < 1:
+            raise ValueError("trainer.checkpoint_every_n_train_steps must be a positive integer or null.")
+        keep = cfg.trainer.get("checkpoint_step_keep_last", -1)
+        if isinstance(keep, bool) or not isinstance(keep, int) or keep == 0 or keep < -1:
+            raise ValueError("checkpoint_step_keep_last must be -1 or a positive integer")
+        callbacks.append(ModelCheckpoint(
+            dirpath=str(run_dir / "weights" / "steps"),
+            every_n_train_steps=interval,
+            every_n_epochs=0,
+            save_top_k=keep,
+            monitor="step" if keep > 0 else None,
+            mode="max",
+            save_last=True,
+            # Also retain the final state when max_steps ends between snapshots.
+            save_on_train_epoch_end=True,
+            filename="step={step:08d}",
+            auto_insert_metric_name=False,
+            enable_version_counter=cfg.trainer.checkpoint_enable_version_counter,
+        ))
+    return callbacks
+
+
 def _validate_evaluation_devices(cfg: DictConfig) -> None:
     """Avoid duplicated distributed test samples writing the same NPZ paths."""
     if (cfg.eval.enabled or cfg.trainer.evaluate) and cfg.trainer.devices > 1:
@@ -103,6 +141,9 @@ def _load_dataset_class(cfg: DictConfig):
     Dataset classes are resolved by the stable ``dataset.name`` config field.
     """
     name = cfg.dataset.name
+    if "." in name:
+        module_path, class_name = name.rsplit(".", 1)
+        return getattr(importlib.import_module(module_path), class_name)
     dataset_mod = importlib.import_module("src.brepnet.dataset")
     if not hasattr(dataset_mod, name):
         raise AttributeError(
@@ -127,6 +168,20 @@ class UnifiedTrainer(pl.LightningModule):
     def __init__(self, cfg: DictConfig):
         super().__init__()
         self.cfg = cfg
+        if cfg.model.name == "PhotoBaselineDiffusion":
+            from src.brepnet.data.photo_dataset import photo_cache_provenance
+            provenance = photo_cache_provenance(cfg.dataset)
+            expected = cfg.dataset.get("provenance")
+            if expected is not None and dict(expected) != provenance:
+                raise ValueError("Photo cache changed after prepare_run")
+            OmegaConf.update(cfg.dataset, "provenance", provenance, force_add=True)
+        if cfg.model.name == "PreferenceDiffusion":
+            from src.brepnet.data.preference_dataset import preference_data_provenance
+            provenance = preference_data_provenance(cfg.dataset)
+            expected = cfg.dataset.get("provenance")
+            if expected is not None and provenance != dict(expected):
+                raise ValueError("Preference data changed after prepare_run.")
+            OmegaConf.update(cfg.dataset, "provenance", provenance, force_add=True)
         self.save_hyperparameters(OmegaConf.to_container(cfg, resolve=True))
 
         # --- Core configuration ---
@@ -207,7 +262,80 @@ class UnifiedTrainer(pl.LightningModule):
                     "A fresh frozen-encoder UV run needs model.init_uv_decoder_checkpoint "
                     "or a strict model.checkpoint; refusing to freeze a random encoder."
                 )
+        if cfg.model.name == "PreferenceDiffusion":
+            from src.brepnet.data.preference_dataset import sha256_file
+            from src.brepnet.diffusion.preference_geometry import geometry_settings
+
+            photo_source = model_cfg.get("model_source") == "photo"
+            if photo_source != (cfg.dataset.provenance.get("protocol_version") == "photo_preference_generation_v1"):
+                raise ValueError("Preference model and dataset photo/grey sources must agree")
+            if cfg.trainer.init_from_checkpoint:
+                raise ValueError("Use model.init_preference_checkpoint for a new DPO run, or resume_from_checkpoint.")
+            geometry = geometry_settings(model_cfg.get("geometry"))
+            if geometry["enabled"] != bool((cfg.dataset.get("geometry") or {}).get("enabled", False)):
+                raise ValueError("Model and dataset geometry supervision switches must agree")
+            if geometry["enabled"] and str(cfg.trainer.precision) not in {"32", "32-true"}:
+                raise ValueError("The fixed geometry experiment requires FP32 training")
+            if cfg.eval.enabled or cfg.trainer.evaluate or cfg.trainer.diffusion_validation_inference:
+                raise ValueError("Preference training exposes sample_latents(); STEP evaluation requires the explicit original VAE pipeline.")
+            if has_resume:
+                saved = torch.load(str(resume), map_location="cpu", mmap=True, weights_only=False)
+                if dict(cfg.dataset.provenance) != saved["hyper_parameters"]["dataset"]["provenance"]:
+                    raise ValueError("Cannot resume preference training with a changed pair pool/protocol.")
+                saved_model_cfg = saved["hyper_parameters"]["model"]
+                if photo_source and any(model_cfg.get(key) != saved_model_cfg.get(key) for key in (
+                        "model_source", "photo_global_step", "beta_dpo", "preference_weight")):
+                    raise ValueError("Cannot resume photo DPO with changed source or objective")
+                if geometry != geometry_settings(saved_model_cfg.get("geometry")):
+                    raise ValueError("Cannot resume preference training with changed geometry settings")
+                OmegaConf.update(
+                    model_cfg, "legacy_model_config", saved_model_cfg["legacy_model_config"], force_add=True,
+                )
+                if "preference_initialization" in saved_model_cfg:
+                    OmegaConf.update(cfg.model, "preference_initialization",
+                                     saved_model_cfg["preference_initialization"], force_add=True)
+            elif sha256_file(Path(model_cfg.photo_checkpoint if photo_source else model_cfg.legacy_checkpoint)) != cfg.dataset.provenance.source_checkpoint_sha256:
+                raise ValueError("Initial SVR checkpoint differs from the preference generation checkpoint.")
+            if photo_source and not has_resume:
+                if (sha256_file(Path(model_cfg.legacy_checkpoint)) != cfg.dataset.provenance.original_checkpoint_sha256 or
+                        model_cfg.photo_global_step != cfg.dataset.provenance.photo_global_step):
+                    raise ValueError("Photo DPO original DINO/AE or selected baseline step differs from generation")
+            OmegaConf.update(model_cfg, "restoring_checkpoint", bool(has_resume), force_add=True)
+        if cfg.model.name == "PhotoBaselineDiffusion":
+            from src.brepnet.data.preference_dataset import sha256_file
+            if cfg.trainer.init_from_checkpoint:
+                raise ValueError("Photo baseline uses strict legacy initialization or full resume")
+            if cfg.eval.enabled or cfg.trainer.evaluate or cfg.trainer.diffusion_validation_inference:
+                raise ValueError("Use sample_latents and the explicit original AE for downstream evaluation")
+            if has_resume:
+                saved = torch.load(str(resume), map_location="cpu", mmap=True, weights_only=False)
+                if saved["hyper_parameters"]["model"]["name"] != "PhotoBaselineDiffusion":
+                    raise ValueError("Expected a PhotoBaselineDiffusion checkpoint")
+                if dict(cfg.dataset.provenance) != saved["hyper_parameters"]["dataset"]["provenance"]:
+                    raise ValueError("Cannot resume with a changed photo cache")
+                OmegaConf.update(model_cfg, "legacy_model_config",
+                                 saved["hyper_parameters"]["model"]["legacy_model_config"], force_add=True)
+            elif sha256_file(Path(model_cfg.legacy_checkpoint)) != cfg.dataset.provenance.source_checkpoint_sha256:
+                raise ValueError("Photo features/latents and initial weights have different sources")
+            OmegaConf.update(model_cfg, "restoring_checkpoint", bool(has_resume), force_add=True)
+        if cfg.model.name == "SpatialPhotoDiffusion":
+            from src.brepnet.diffusion.spatial_model import prepare_spatial_model_config
+            prepare_spatial_model_config(cfg, model_cfg, str(resume) if has_resume else None)
         self.model = build_model(model_cfg, cfg.condition)
+        if cfg.model.name == "SpatialPhotoDiffusion":
+            OmegaConf.update(cfg.model, "legacy_model_config", self.model.legacy_model_config, force_add=True)
+            self.save_hyperparameters(OmegaConf.to_container(cfg, resolve=True))
+        if cfg.model.name == "PhotoBaselineDiffusion":
+            OmegaConf.update(cfg.model, "legacy_model_config", self.model.legacy_model_config, force_add=True)
+            self.save_hyperparameters(OmegaConf.to_container(cfg, resolve=True))
+        if cfg.model.name == "PreferenceDiffusion":
+            # 恢复只依赖自身 checkpoint 的架构/权重，不重新读取旧 SVR 权重。
+            OmegaConf.update(cfg.model, "legacy_model_config", self.model.legacy_model_config, force_add=True)
+            if model_cfg.get("init_preference_checkpoint") and not has_resume:
+                initialization = self.model.initialize_preference_weights(
+                    model_cfg.init_preference_checkpoint, dict(cfg.dataset.provenance))
+                OmegaConf.update(cfg.model, "preference_initialization", initialization, force_add=True)
+            self.save_hyperparameters(OmegaConf.to_container(cfg, resolve=True))
         self._init_model_from_checkpoint()
         self._apply_trainable_scope()
 
@@ -619,6 +747,17 @@ def main(cfg: DictConfig):
     if evaluating:
         OmegaConf.update(cfg, "eval.output_dir", str(predictions_directory(cfg, Path(log_dir))))
         logger.info("Raw predictions will be saved to %s", cfg.eval.output_dir)
+    if cfg.model.name == "PreferenceDiffusion":
+        from src.brepnet.data.preference_dataset import preference_data_provenance
+        OmegaConf.update(
+            cfg.dataset, "provenance", preference_data_provenance(cfg.dataset), force_add=True,
+        )
+    if cfg.model.name == "PhotoBaselineDiffusion":
+        from src.brepnet.data.photo_dataset import photo_cache_provenance
+        OmegaConf.update(cfg.dataset, "provenance", photo_cache_provenance(cfg.dataset), force_add=True)
+    if cfg.model.name == "SpatialPhotoDiffusion":
+        from src.brepnet.data.spatial_photo_dataset import spatial_data_provenance
+        OmegaConf.update(cfg.dataset, "provenance", spatial_data_provenance(cfg.dataset), force_add=True)
     run_record = prepare_run(cfg, Path(log_dir))
 
     # --- Logger ---
@@ -642,16 +781,7 @@ def main(cfg: DictConfig):
 
     # --- Callbacks ---
     callbacks = [
-        ModelCheckpoint(
-            dirpath=str(Path(log_dir) / "weights"),
-            monitor="val/loss",
-            mode="min",
-            save_top_k=3,
-            save_last=True,
-            filename="epoch={epoch:04d}-step={step:08d}-val_loss={val/loss:.6f}",
-            auto_insert_metric_name=False,
-            enable_version_counter=cfg.trainer.checkpoint_enable_version_counter,
-        ),
+        *_build_checkpoint_callbacks(cfg, Path(log_dir)),
         LearningRateMonitor(logging_interval="step"),
         ModelSummary(max_depth=2),
     ]

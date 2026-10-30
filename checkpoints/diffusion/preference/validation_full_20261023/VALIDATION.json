@@ -1,0 +1,19 @@
+{
+  "source_run": "/mnt/d/python/checkpoints/diffusion/preference_eval/20261023T062400Z",
+  "full_count": 3505,
+  "reused_count": 100,
+  "remaining_count": 3405,
+  "referenced_records": 400,
+  "source_records_unchanged": true,
+  "repeat_setup_preserves_references": true,
+  "mismatch_rejections": [
+    "checkpoint_sha256",
+    "source_sha256"
+  ],
+  "orchestration_changes": [
+    "src/brepnet/eval/preference_compare.py",
+    "src/brepnet/eval/preference_report.py"
+  ],
+  "report_tests_passed": 10,
+  "original_100_summary_unchanged": true
+}

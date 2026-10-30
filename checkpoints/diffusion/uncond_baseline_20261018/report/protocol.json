@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "checkpoint": {
+    "path": "/mnt/d/ckpt/HoLa/Diffusion_uncond_1100k.ckpt",
+    "sha256": "4c240e38a22a0f0b24862fff5c6001b5f47a98340148ce10452224f573c64481",
+    "bytes": 3191839392,
+    "global_step": 1000000,
+    "epoch": 324
+  },
+  "sample_count": 1000,
+  "seed_prefix": "hola-uncond-20261018-v1:",
+  "samples_sha256": "efcc34ad61eae3834813ee2ef22a0bcd655fdc868360e402ee30090ccb83ea2a",
+  "plan_sha256": "34a0255a24470d24760733d214fd613f723a5385edcebe9647598652bc03b8c3",
+  "sampling": {
+    "batch_size": 1,
+    "steps": 1000,
+    "dtype": "float32",
+    "tf32": false,
+    "initial_noise_device": "cpu",
+    "prediction_type": "epsilon",
+    "beta_schedule": "linear",
+    "proposal_count_per_seed": 1
+  }
+}

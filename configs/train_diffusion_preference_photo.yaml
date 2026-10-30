@@ -1,0 +1,37 @@
+# Photo310k -> fresh Adam/DPO; full validation remains held out.
+defaults:
+  - train_diffusion_preference
+  - _self_
+
+model:
+  model_source: photo
+  photo_checkpoint: /mnt/d/python/checkpoints/diffusion/photo_baseline/evaluation_20261026/weights/photo_latest.ckpt
+  photo_global_step: 310000
+  dino_repo: /root/.cache/torch/hub/facebookresearch_dinov2_main
+  geometry:
+    enabled: false
+    weight: 0.0
+
+dataset:
+  name: src.brepnet.data.photo_preference_dataset.PhotoPreferenceDataset
+  model_source: photo
+  pairs_manifest: /mnt/d/python/checkpoints/diffusion/photo_preference_data/20261026T055801Z/pairs.jsonl
+  pairs_manifest_sha256: 31abdc344263abc7de2ebb900689d9f7b99bf2104c44df36cbe7259bd8adb885
+  validation_pairs_manifest: /mnt/d/python/checkpoints/diffusion/photo_preference_data/20261026T055801Z/validation_pairs.jsonl
+  validation_pairs_manifest_sha256: 305adedd442a77bb23b40690d56137ef8959ca2522d4abe83c8af73f3c3bc718
+  cached_latent_root: /mnt/d/python/checkpoints/diffusion/photo_preference_data/20261026T055801Z/gt_cache
+  cache_root: /mnt/d/python/checkpoints/diffusion/photo_baseline/cache_v1
+  val_dataset: src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt
+
+trainer:
+  exp_name: diffusion_preference_photo
+  devices: 7
+  batch_size: 8
+  max_steps: 5000
+  seed: 42
+  num_workers: 2
+  precision: 32-true
+  learning_rate: 1.0e-5
+  checkpoint_every_n_train_steps: 1000
+  wandb:
+    name: diffusion_preference_photo_310k_dpo5000

@@ -1,0 +1,33 @@
+# Frozen photo step310000; full validation then full train, disjoint manifests.
+model_source: photo
+checkpoint: /mnt/d/python/checkpoints/diffusion/photo_baseline/evaluation_20261026/weights/photo_latest.ckpt
+original_checkpoint: /mnt/d/ckpt/HoLa/Diffusion_svr_sq30_1500k.ckpt
+expected_global_step: 310000
+dino_repo: /root/.cache/torch/hub/facebookresearch_dinov2_main
+raw_data_root: /mnt/d/data/deepcad_v7
+condition_data_root: /mnt/d/data/deepcad_v7_cond
+train_list: src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt
+validation_list: src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt
+output_root: checkpoints/diffusion/photo_preference_data
+train_limit: null
+validation_limit: null
+stop_if_no_validation_pairs: false
+
+seed: 42
+candidates: 8
+gpus: [0, 1, 2, 3, 4, 5, 6, 7]
+workers_per_gpu: 2
+gpu_cpu_threads: 2
+cpu_workers: 32
+queue_size: 64
+post:
+  timeout_seconds: 180
+  max_optimize_iter: 200
+selection:
+  version: photo_preference_v1
+  cd_improvement: 0.05
+  cd_allowed_regression: 0.02
+  f1_improvement: 0.02
+  f1_allowed_regression: 0.01
+  post_repeats: 3
+  validity_priority: true

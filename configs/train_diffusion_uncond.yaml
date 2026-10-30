@@ -1,0 +1,68 @@
+# 新版无条件主干；训练预算对齐旧模型的 4×384×1,000,000。
+defaults:
+  - trainer: default
+  - dataset: diffusion
+  - model: diffusion
+  - condition: none
+  - _self_
+
+trainer:
+  exp_name: diffusion_uncond
+  devices: 8
+  batch_size: 192
+  max_steps: 1000000
+  learning_rate: 1.0e-4
+  precision: bf16-mixed
+  gradient_clip_val: 0.5
+  num_threads: 4
+  num_workers: 4
+  prefetch_factor: 2
+  persistent_workers: true
+  # 在线 VAE 的面/边总数变长，关闭每个新形状的卷积算法搜索。
+  cudnn_benchmark: false
+  ddp_find_unused_parameters: false
+  ddp_gradient_as_bucket_view: true
+  sync_train_step_loss: false
+  diffusion_validation_inference: false
+
+dataset:
+  # 原始几何 → 冻结 VAE mean；无需图像或 latent cache。
+  name: Diffusion_geometry_dataset
+  raw_data_root: /mnt/d/data/deepcad_v7
+  cached_latent_root: null
+  condition_data_root: null
+  train_dataset: src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt
+  val_dataset: src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt
+  test_dataset: src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt
+  is_aug: 1
+  is_overfit: false
+  epoch_scale_factor: 100
+  load_topology: false
+
+model:
+  latent:
+    use_cached_latents: false
+    use_mean: true
+  noise:
+    beta_schedule: linear
+  autoencoder:
+    checkpoint: /mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt
+  topology_bias:
+    enabled: false
+
+eval:
+  enabled: false
+  output_dir: null
+  num_samples: 100
+  post_process: true
+
+hydra:
+  run:
+    dir: ${brep_run_dir:${trainer.output_dir},${trainer.exp_name},${trainer.run_dir},${trainer.resume_from_checkpoint}}
+  output_subdir: metadata/hydra
+  job_logging:
+    handlers:
+      file:
+        filename: ${brep_log_file:${hydra.runtime.output_dir}}
+  job:
+    chdir: false

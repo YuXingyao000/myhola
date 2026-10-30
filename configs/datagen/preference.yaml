@@ -1,0 +1,29 @@
+# 固定旧 HoLa SVR，先 validation100，再完整训练集；测试集不参与。
+checkpoint: /mnt/d/ckpt/HoLa/Diffusion_svr_sq30_1500k.ckpt
+dino_repo: /root/.cache/torch/hub/facebookresearch_dinov2_main
+raw_data_root: /mnt/d/data/deepcad_v7
+condition_data_root: /mnt/d/data/deepcad_v7_cond
+train_list: src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt
+validation_list: checkpoints/diffusion/svr_comparison_20261017/validation100.txt
+output_root: checkpoints/diffusion/preference_data
+train_limit: null
+validation_limit: null
+
+seed: 42
+candidates: 8
+gpus: [0, 1, 2, 3, 4, 5, 6, 7]
+workers_per_gpu: 2
+gpu_cpu_threads: 2
+cpu_workers: 32
+queue_size: 64
+post:
+  timeout_seconds: 180
+  max_optimize_iter: 200
+selection:
+  version: svr_preference_v3
+  cd_improvement: 0.05
+  cd_allowed_regression: 0.02
+  f1_improvement: 0.02
+  f1_allowed_regression: 0.01
+  post_repeats: 3
+  validity_priority: true

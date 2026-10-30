@@ -1,0 +1,18 @@
+{
+  "checkpoint_step": 2,
+  "strict_inference_load": true,
+  "frozen_tensors_equal_original": {
+    "ae_model": 704,
+    "image_encoder": 344
+  },
+  "sample_shape": [
+    1,
+    30,
+    32
+  ],
+  "memory_shape": [
+    1,
+    768,
+    512
+  ]
+}

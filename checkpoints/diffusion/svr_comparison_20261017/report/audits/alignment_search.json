@@ -1,0 +1,433 @@
+{
+  "scope": "只检查metadata/config/git/weight结构，未遍历原始几何内容；root ignored run的img2brep/<wandbid>/checkpoints按固定层级检索。",
+  "search_roots": [
+    "/mnt/d/python/outputs_brepnet_diffusion",
+    "/mnt/d/ckpt/HoLa",
+    "/mnt/d/ckpt/reprod",
+    "/mnt/d/ckpt/paco",
+    "/mnt/d/ckpt/ptv3",
+    "/mnt/d/data/new_cond_ckpt",
+    "/mnt/d/data/diffusion_checkpoints"
+  ],
+  "root_legacy_checkpoint_paths_found": 113,
+  "copied_or_official_checkpoint_metadata": [
+    {
+      "checkpoint": "/mnt/d/ckpt/HoLa/Diffusion_svr_sq30_1500k.ckpt",
+      "actual_step": 1500000,
+      "actual_epoch": 82,
+      "state_key_count": 1375,
+      "alignment_tensor_blocks": {},
+      "saved_condition": [
+        "single_img"
+      ],
+      "train_split": "src/brepnet/data/list/new/deduplicated_deepcad_training_7_30.txt",
+      "validation_split": "src/brepnet/data/list/new/deduplicated_deepcad_validation_7_30.txt",
+      "topology_bias": null,
+      "saved_experiment": "1224_cond_svr_sq30_aug"
+    },
+    {
+      "checkpoint": "/mnt/d/data/new_cond_ckpt/0310_deepcad_natural.ckpt",
+      "actual_step": 150000,
+      "actual_epoch": 8,
+      "state_key_count": 1548,
+      "alignment_tensor_blocks": {},
+      "saved_condition": [
+        "natural_img"
+      ],
+      "train_split": "src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt",
+      "validation_split": "src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt",
+      "topology_bias": null,
+      "saved_experiment": "0310_deepcad_natural"
+    },
+    {
+      "checkpoint": "/mnt/d/data/new_cond_ckpt/0423_deepcad_natural_blender_align.ckpt",
+      "actual_step": 150000,
+      "actual_epoch": 513,
+      "state_key_count": 1556,
+      "alignment_tensor_blocks": {
+        "model.cad_align_proj": 2,
+        "model.img_align_proj": 2,
+        "model.cad_align_head": 2,
+        "model.img_align_head": 2
+      },
+      "saved_condition": [
+        "single_img"
+      ],
+      "train_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "validation_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "topology_bias": null,
+      "saved_experiment": "0413_deepcad_natural_blender_align"
+    },
+    {
+      "checkpoint": "/mnt/d/data/new_cond_ckpt/0423_deepcad_natural_flux_align.ckpt",
+      "actual_step": 150000,
+      "actual_epoch": 513,
+      "state_key_count": 1556,
+      "alignment_tensor_blocks": {
+        "model.cad_align_proj": 2,
+        "model.img_align_proj": 2,
+        "model.cad_align_head": 2,
+        "model.img_align_head": 2
+      },
+      "saved_condition": [
+        "single_img"
+      ],
+      "train_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "validation_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "topology_bias": null,
+      "saved_experiment": "0412_deepcad_natural_flux_align"
+    },
+    {
+      "checkpoint": "/mnt/d/data/new_cond_ckpt/0423_deepcad_natural_flux_cube24_align_depth.ckpt",
+      "actual_step": 100000,
+      "actual_epoch": 378,
+      "state_key_count": 1460,
+      "alignment_tensor_blocks": {
+        "model.cad_align_proj": 2,
+        "model.img_align_proj": 2,
+        "model.cad_align_head": 2,
+        "model.img_align_head": 2
+      },
+      "saved_condition": [
+        "single_img"
+      ],
+      "train_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/model_list.txt",
+      "validation_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/model_list.txt",
+      "topology_bias": null,
+      "saved_experiment": "0422_deepcad_natural_flux_cube24_align_depth"
+    },
+    {
+      "checkpoint": "/mnt/d/data/new_cond_ckpt/0423_deepcad_natural_flux_cube24_align_dino.ckpt",
+      "actual_step": 150000,
+      "actual_epoch": 568,
+      "state_key_count": 1556,
+      "alignment_tensor_blocks": {
+        "model.cad_align_proj": 2,
+        "model.img_align_proj": 2,
+        "model.cad_align_head": 2,
+        "model.img_align_head": 2
+      },
+      "saved_condition": [
+        "single_img"
+      ],
+      "train_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/model_list.txt",
+      "validation_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/model_list.txt",
+      "topology_bias": null,
+      "saved_experiment": "0423_deepcad_natural_flux_cube24_align_dino"
+    },
+    {
+      "checkpoint": "/mnt/d/data/new_cond_ckpt/0502_deepcad_flux_single_view_align_depth.ckpt",
+      "actual_step": 250000,
+      "actual_epoch": 13,
+      "state_key_count": 1460,
+      "alignment_tensor_blocks": {
+        "model.cad_align_proj": 2,
+        "model.img_align_proj": 2,
+        "model.cad_align_head": 2,
+        "model.img_align_head": 2
+      },
+      "saved_condition": [
+        "single_img"
+      ],
+      "train_split": "src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt",
+      "validation_split": "src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt",
+      "topology_bias": null,
+      "saved_experiment": "0502_deepcad_flux_single_view_align_depth"
+    },
+    {
+      "checkpoint": "/mnt/d/data/new_cond_ckpt/0504_deepcad_flux_single_view_align_dino.ckpt",
+      "actual_step": 250000,
+      "actual_epoch": 13,
+      "state_key_count": 1556,
+      "alignment_tensor_blocks": {
+        "model.cad_align_proj": 2,
+        "model.img_align_proj": 2,
+        "model.cad_align_head": 2,
+        "model.img_align_head": 2
+      },
+      "saved_condition": [
+        "single_img"
+      ],
+      "train_split": "src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt",
+      "validation_split": "src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt",
+      "topology_bias": null,
+      "saved_experiment": "0504_deepcad_flux_single_view_align_dino"
+    },
+    {
+      "checkpoint": "/mnt/d/data/new_cond_ckpt/0510_deepcad_flux_single_view_align_dino.ckpt",
+      "actual_step": 150000,
+      "actual_epoch": 8,
+      "state_key_count": 1560,
+      "alignment_tensor_blocks": {
+        "model.cad_align_proj": 2,
+        "model.img_align_proj": 2,
+        "model.cad_align_head": 2,
+        "model.img_align_head": 2
+      },
+      "saved_condition": [
+        "single_img"
+      ],
+      "train_split": "src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt",
+      "validation_split": "src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt",
+      "topology_bias": null,
+      "saved_experiment": "0510_deepcad_flux_single_view_align_dino"
+    },
+    {
+      "checkpoint": "/mnt/d/data/new_cond_ckpt/0511_deepcad_dino_cond_margin_s0p1_m0p01_shuffle.ckpt",
+      "actual_step": 250000,
+      "actual_epoch": 13,
+      "state_key_count": 1556,
+      "alignment_tensor_blocks": {
+        "model.cad_align_proj": 2,
+        "model.img_align_proj": 2,
+        "model.cad_align_head": 2,
+        "model.img_align_head": 2
+      },
+      "saved_condition": [
+        "single_img"
+      ],
+      "train_split": "src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt",
+      "validation_split": "src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt",
+      "topology_bias": null,
+      "saved_experiment": "0511_deepcad_dino_cond_margin_s0p1_m0p01_shuffle"
+    },
+    {
+      "checkpoint": "/mnt/d/data/new_cond_ckpt/0513_deepcad_dino_cond_margin_s0p1_m0p01_shuffle_t300.ckpt",
+      "actual_step": 200000,
+      "actual_epoch": 10,
+      "state_key_count": 1556,
+      "alignment_tensor_blocks": {
+        "model.cad_align_proj": 2,
+        "model.img_align_proj": 2,
+        "model.cad_align_head": 2,
+        "model.img_align_head": 2
+      },
+      "saved_condition": [
+        "single_img"
+      ],
+      "train_split": "src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt",
+      "validation_split": "src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt",
+      "topology_bias": null,
+      "saved_experiment": "0513_deepcad_dino_cond_margin_s0p1_m0p01_shuffle_t300"
+    },
+    {
+      "checkpoint": "/mnt/d/data/new_cond_ckpt/0514_deepcad_dino_addition_tag.ckpt",
+      "actual_step": 200000,
+      "actual_epoch": 10,
+      "state_key_count": 1556,
+      "alignment_tensor_blocks": {
+        "model.cad_align_proj": 2,
+        "model.img_align_proj": 2,
+        "model.cad_align_head": 2,
+        "model.img_align_head": 2
+      },
+      "saved_condition": [
+        "single_img"
+      ],
+      "train_split": "src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt",
+      "validation_split": "src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt",
+      "topology_bias": null,
+      "saved_experiment": "0514_deepcad_dino_addition_tag"
+    },
+    {
+      "checkpoint": "/mnt/d/data/new_cond_ckpt/diffusion_oracle_topology.ckpt",
+      "actual_step": 145704,
+      "actual_epoch": 7,
+      "state_key_count": 2254,
+      "alignment_tensor_blocks": {},
+      "saved_condition": null,
+      "train_split": "src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt",
+      "validation_split": "src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt",
+      "topology_bias": {
+        "enabled": true,
+        "source": "gt_adjacency",
+        "target": "self_attention",
+        "mode": "soft_bias",
+        "timestep_weight": "linear_high_noise",
+        "scale": 2.0
+      },
+      "saved_experiment": "0524_oracle_topology_soft_bias"
+    }
+  ],
+  "additional_svr_supported_blender_runs": [
+    {
+      "path": "/mnt/d/python/outputs_brepnet_diffusion/Diffusion_0411_deepcad_natural_blender_align/img2brep/o0hxudcr/checkpoints/last.ckpt",
+      "actual_step": 292,
+      "actual_epoch": 0,
+      "state_keys": 1556,
+      "alignment_keys": 8,
+      "experiment_name": "0411_deepcad_natural_blender_align",
+      "train_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "val_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "training_condition": [
+        "single_img"
+      ],
+      "data_root": "/mnt/d/data/deepcad_v6_cond",
+      "augmentation": 1,
+      "topology": null,
+      "callback_best_score": null,
+      "callback_best_path": "",
+      "callback_current_score": null
+    },
+    {
+      "path": "/mnt/d/python/outputs_brepnet_diffusion/Diffusion_0411_deepcad_natural_blender_align/img2brep/jxxjuf53/checkpoints/last.ckpt",
+      "actual_step": 2044,
+      "actual_epoch": 6,
+      "state_keys": 1556,
+      "alignment_keys": 8,
+      "experiment_name": "0411_deepcad_natural_blender_align",
+      "train_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "val_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "training_condition": [
+        "single_img"
+      ],
+      "data_root": "/mnt/d/data/deepcad_v6_cond",
+      "augmentation": 1,
+      "topology": null,
+      "callback_best_score": null,
+      "callback_best_path": "",
+      "callback_current_score": null
+    },
+    {
+      "path": "/mnt/d/python/outputs_brepnet_diffusion/Diffusion_0411_deepcad_natural_blender_align/img2brep/q67xhtjb/checkpoints/last.ckpt",
+      "actual_step": 22776,
+      "actual_epoch": 77,
+      "state_keys": 1556,
+      "alignment_keys": 8,
+      "experiment_name": "0411_deepcad_natural_blender_align",
+      "train_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "val_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "training_condition": [
+        "single_img"
+      ],
+      "data_root": "/mnt/d/data/deepcad_v6_cond",
+      "augmentation": 1,
+      "topology": null,
+      "callback_best_score": null,
+      "callback_best_path": "",
+      "callback_current_score": null
+    },
+    {
+      "path": "/mnt/d/python/outputs_brepnet_diffusion/Diffusion_0411_deepcad_natural_blender_align/img2brep/xyut2wh0/checkpoints/last.ckpt",
+      "actual_step": 8760,
+      "actual_epoch": 29,
+      "state_keys": 1556,
+      "alignment_keys": 8,
+      "experiment_name": "0411_deepcad_natural_blender_align",
+      "train_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "val_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "training_condition": [
+        "single_img"
+      ],
+      "data_root": "/mnt/d/data/deepcad_v6_cond",
+      "augmentation": 1,
+      "topology": null,
+      "callback_best_score": null,
+      "callback_best_path": "",
+      "callback_current_score": null
+    },
+    {
+      "path": "/mnt/d/python/outputs_brepnet_diffusion/Diffusion_0408_deepcad_natural_blender_align/img2brep/3bo9hr85/checkpoints/last.ckpt",
+      "actual_step": 42,
+      "actual_epoch": 2,
+      "state_keys": 1556,
+      "alignment_keys": 8,
+      "experiment_name": "0408_deepcad_natural_blender_align",
+      "train_split": "/mnt/d/natural/sampled_lists_valid/train.txt",
+      "val_split": "/mnt/d/natural/sampled_lists_valid/val.txt",
+      "training_condition": [
+        "single_img"
+      ],
+      "data_root": "/mnt/d/data/deepcad_v6_cond",
+      "augmentation": 1,
+      "topology": null,
+      "callback_best_score": null,
+      "callback_best_path": "",
+      "callback_current_score": null
+    },
+    {
+      "path": "/mnt/d/python/outputs_brepnet_diffusion/Diffusion_0408_deepcad_natural_blender_align/img2brep/ndgadae5/checkpoints/last.ckpt",
+      "actual_step": 2920,
+      "actual_epoch": 9,
+      "state_keys": 1556,
+      "alignment_keys": 8,
+      "experiment_name": "0408_deepcad_natural_blender_align",
+      "train_split": "/mnt/d/natural/sampled_lists_valid/train.txt",
+      "val_split": "/mnt/d/natural/sampled_lists_valid/val.txt",
+      "training_condition": [
+        "single_img"
+      ],
+      "data_root": "/mnt/d/data/deepcad_v6_cond",
+      "augmentation": 1,
+      "topology": null,
+      "callback_best_score": null,
+      "callback_best_path": "",
+      "callback_current_score": null
+    },
+    {
+      "path": "/mnt/d/python/outputs_brepnet_diffusion/Diffusion_0408_deepcad_natural_blender_align/img2brep/9cil0cw1/checkpoints/last.ckpt",
+      "actual_step": 5256,
+      "actual_epoch": 17,
+      "state_keys": 1556,
+      "alignment_keys": 8,
+      "experiment_name": "0408_deepcad_natural_blender_align",
+      "train_split": "/mnt/d/natural/sampled_lists_valid/train.txt",
+      "val_split": "/mnt/d/natural/sampled_lists_valid/train.txt",
+      "training_condition": [
+        "single_img"
+      ],
+      "data_root": "/mnt/d/data/deepcad_v6_cond",
+      "augmentation": 1,
+      "topology": null,
+      "callback_best_score": null,
+      "callback_best_path": "",
+      "callback_current_score": null
+    },
+    {
+      "path": "/mnt/d/python/outputs_brepnet_diffusion/Diffusion_0413_deepcad_natural_blender_align/img2brep/ya2o4xi1/checkpoints/last.ckpt",
+      "actual_step": 352152,
+      "actual_epoch": 1205,
+      "state_keys": 1556,
+      "alignment_keys": 8,
+      "experiment_name": "0413_deepcad_natural_blender_align",
+      "train_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "val_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "training_condition": [
+        "single_img"
+      ],
+      "data_root": "/mnt/d/data/deepcad_v6_cond",
+      "augmentation": 1,
+      "topology": null,
+      "callback_best_score": 0.02854456752538681,
+      "callback_best_path": "/mnt/d/python/outputs_brepnet_diffusion/Diffusion_0413_deepcad_natural_blender_align/img2brep/ya2o4xi1/checkpoints/epoch=856-step=250000.ckpt",
+      "callback_current_score": 0.029161281883716583
+    },
+    {
+      "path": "/mnt/d/python/outputs_brepnet_diffusion/Diffusion_0413_deepcad_natural_blender_align/img2brep/ya2o4xi1/checkpoints/epoch=856-step=250000.ckpt",
+      "actual_step": 250000,
+      "actual_epoch": 856,
+      "state_keys": 1556,
+      "alignment_keys": 8,
+      "experiment_name": "0413_deepcad_natural_blender_align",
+      "train_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "val_split": "/mnt/d/python/src/brepnet/data/DataGeneration/test_list/train.txt",
+      "training_condition": [
+        "single_img"
+      ],
+      "data_root": "/mnt/d/data/deepcad_v6_cond",
+      "augmentation": 1,
+      "topology": null,
+      "callback_best_score": 0.02854456752538681,
+      "callback_best_path": "/mnt/d/python/outputs_brepnet_diffusion/Diffusion_0413_deepcad_natural_blender_align/img2brep/ya2o4xi1/checkpoints/epoch=856-step=250000.ckpt",
+      "callback_current_score": 0.02854456752538681
+    }
+  ],
+  "conclusions": [
+    "官方HoLa SVR1500k无前端fuser和8个alignment tensor，不能称为CLIP模型。",
+    "已确认可严格运行的0413blender alignment候选使用同一750小集train/val；原runcallback选中的best是250k，不是另存150k。",
+    "0408blender三个checkpoint实际42/2920/5256steps，仍750训练列表；0411blender为292/2044/22776/8760steps，同750列表，未发现更充分的大训练集灰模alignment best。",
+    "存在更完整训练的FLUX命名alignment系列；850003e8归档single_img源码无条件读取single_view.npz:flux，且历史未提交改动不可完全恢复，不能擅自纳入灰模SVR行。",
+    "diffusion_oracle_topology.ckpt metadata启用gt_adjacency，即使photo ratio0也属于oracle条件，不能充当无GT单图alignment基线。",
+    "此为已检查路径内的发现，不能据此声称全机器或用户全部历史不存在其他最佳权重。"
+  ]
+}

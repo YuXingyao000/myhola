@@ -1,0 +1,249 @@
+{
+  "path": "/mnt/d/ckpt/HoLa/Diffusion_svr_sq30_1500k.ckpt",
+  "bytes": 4425826186,
+  "global_step": 1500000,
+  "epoch": 82,
+  "lightning": "2.4.0",
+  "hparams_name": "hparams",
+  "hyper_parameters": {
+    "dataset": {
+      "name": "Diffusion_dataset",
+      "train_dataset": "src/brepnet/data/list/new/deduplicated_deepcad_training_7_30.txt",
+      "val_dataset": "src/brepnet/data/list/new/deduplicated_deepcad_validation_7_30.txt",
+      "test_dataset": "src/brepnet/data/list/new/deduplicated_deepcad_testing_7_30.txt",
+      "data_root": "D:/img2brep/deepcad_whole_test_v5",
+      "face_z": "/mnt/d/ae_cache/1119_deepcad_aug1_11k",
+      "deduplicate_list": 0,
+      "pad_method": "random",
+      "cached_condition": true,
+      "scale_factor": 200,
+      "overfit": false,
+      "is_overfit": false,
+      "is_aug": 1,
+      "length": 1000,
+      "num_max_faces": 30,
+      "addition_tag": false,
+      "condition": [
+        "single_img"
+      ],
+      "cond_root": "/mnt/d/img2brep/deepcad_v6_cond",
+      "num_points": 10000,
+      "point_aug": 0
+    },
+    "trainer": {
+      "gpu": 2,
+      "num_worker": 4,
+      "batch_size": 256,
+      "learning_rate": 0.0001,
+      "check_val_every_n_epoch": 1,
+      "accelerator": "bf16-mixed",
+      "swa": false,
+      "evaluate": false,
+      "test_output_dir": null,
+      "max_steps": -1,
+      "resume_from_checkpoint": null,
+      "wandb": true,
+      "max_epochs": 10000000,
+      "spawn": false,
+      "output": "/root/repo/python/outputs_brepnet_diffusion/Diffusion_1224_cond_svr_sq30_aug",
+      "exp_name": "1224_cond_svr_sq30_aug"
+    },
+    "model": {
+      "name": "Diffusion_condition",
+      "train_decoder": false,
+      "stored_z": true,
+      "condition": [
+        "single_img"
+      ],
+      "use_mean": true,
+      "diffusion_latent": 768,
+      "diffusion_type": "epsilon",
+      "loss": "l2",
+      "pad_method": "random",
+      "num_max_faces": 30,
+      "beta_schedule": "squaredcos_cap_v2",
+      "beta_start": 0.0001,
+      "beta_end": 0.02,
+      "variance_type": "fixed_small",
+      "addition_tag": false,
+      "autoencoder": "AutoEncoder_1119_light",
+      "with_intersection": true,
+      "dim_latent": 8,
+      "dim_shape": 768,
+      "sigmoid": false,
+      "in_channels": 6,
+      "gaussian_weights": 1e-06,
+      "norm": "layer",
+      "autoencoder_weights": "/mnt/d/ae_checkpoints/1119_deepcad_aug1_11k.ckpt",
+      "point_sample_aug": false
+    }
+  },
+  "state_key_count": 1375,
+  "prefix_counts": {
+    "model.p_embed.0": 2,
+    "model.p_embed.1": 2,
+    "model.p_embed.3": 2,
+    "model.net1.layers": 288,
+    "model.net1.norm": 2,
+    "model.fc_out.0": 2,
+    "model.fc_out.1": 2,
+    "model.fc_out.3": 2,
+    "model.img_model.cls_token": 1,
+    "model.img_model.pos_embed": 1,
+    "model.img_model.register_tokens": 1,
+    "model.img_model.mask_token": 1,
+    "model.img_model.patch_embed": 2,
+    "model.img_model.blocks": 336,
+    "model.img_model.norm": 2,
+    "model.img_fc.0": 2,
+    "model.img_fc.1": 2,
+    "model.img_fc.3": 2,
+    "model.camera_embedding.0": 1,
+    "model.camera_embedding.1": 2,
+    "model.camera_embedding.2": 2,
+    "model.camera_embedding.4": 2,
+    "model.classifier.0": 2,
+    "model.classifier.1": 2,
+    "model.classifier.3": 2,
+    "model.time_embed.0": 2,
+    "model.time_embed.1": 2,
+    "model.time_embed.3": 2,
+    "model.ae_model.face_coords": 47,
+    "model.ae_model.edge_coords": 47,
+    "model.ae_model.graph_face_edge": 35,
+    "model.ae_model.face_attn_proj_in": 2,
+    "model.ae_model.face_attn_proj_out": 2,
+    "model.ae_model.face_attn": 98,
+    "model.ae_model.global_feature1": 4,
+    "model.ae_model.global_feature2": 4,
+    "model.ae_model.inter": 149,
+    "model.ae_model.classifier": 2,
+    "model.ae_model.face_attn_proj_in2": 2,
+    "model.ae_model.face_attn_proj_out2": 2,
+    "model.ae_model.face_attn2": 96,
+    "model.ae_model.face_points_decoder": 43,
+    "model.ae_model.face_center_scale_decoder": 62,
+    "model.ae_model.edge_points_decoder": 43,
+    "model.ae_model.edge_center_scale_decoder": 62,
+    "model.ae_model.gaussian_proj": 4
+  },
+  "optimizer_param_groups": [
+    {
+      "lr": 0.0001,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-08,
+      "weight_decay": 0,
+      "amsgrad": false,
+      "maximize": false,
+      "foreach": null,
+      "capturable": false,
+      "differentiable": false,
+      "fused": null,
+      "initial_lr": 0.0001,
+      "params": 1375
+    }
+  ],
+  "source_audit_name": "historical-svr-checkpoint-audit.json",
+  "source_audit_sha256": "d35836bbdd2e778d2f227d531cc9adf4557c6a788b9f18578ef1c6482efba2be",
+  "source_audit_bytes": 199491,
+  "state_schema_sha256": "a48e12d58a0fa7f8886705b7bf71c848649113e63eae01a85a005245a3e4ec9c",
+  "state_schema_hash_algorithm": "SHA256 of the complete state-key to tensor-shape mapping, JSON sort_keys=True,separators=(comma,colon),ensure_ascii=True; no tensor contents.",
+  "representative_state_shapes": {
+    "model.img_model.cls_token": {
+      "shape": [
+        1,
+        1,
+        1024
+      ],
+      "dtype": "torch.float32"
+    },
+    "model.img_model.pos_embed": {
+      "shape": [
+        1,
+        1370,
+        1024
+      ],
+      "dtype": "torch.float32"
+    },
+    "model.img_model.register_tokens": {
+      "shape": [
+        1,
+        4,
+        1024
+      ],
+      "dtype": "torch.float32"
+    },
+    "model.img_model.patch_embed.proj.weight": {
+      "shape": [
+        1024,
+        3,
+        14,
+        14
+      ],
+      "dtype": "torch.float32"
+    },
+    "model.p_embed.0.weight": {
+      "shape": [
+        768,
+        32
+      ],
+      "dtype": "torch.float32"
+    },
+    "model.img_fc.0.weight": {
+      "shape": [
+        1024,
+        1024
+      ],
+      "dtype": "torch.float32"
+    },
+    "model.img_fc.3.weight": {
+      "shape": [
+        256,
+        1024
+      ],
+      "dtype": "torch.float32"
+    },
+    "model.net1.layers.0.self_attn.in_proj_weight": {
+      "shape": [
+        3072,
+        1024
+      ],
+      "dtype": "torch.float32"
+    },
+    "model.net1.layers.0.linear1.weight": {
+      "shape": [
+        2048,
+        1024
+      ],
+      "dtype": "torch.float32"
+    },
+    "model.net1.layers.23.self_attn.in_proj_weight": {
+      "shape": [
+        3072,
+        1024
+      ],
+      "dtype": "torch.float32"
+    },
+    "model.fc_out.3.weight": {
+      "shape": [
+        32,
+        1024
+      ],
+      "dtype": "torch.float32"
+    }
+  },
+  "callbacks": {
+    "ModelCheckpoint{'monitor': 'Validation_Loss', 'mode': 'min', 'every_n_train_steps': 50000, 'every_n_epochs': 0, 'train_time_interval': None}": {
+      "monitor": "Validation_Loss",
+      "best_model_score": 0.03204101324081421,
+      "best_model_path": "/root/repo/python/outputs_brepnet_diffusion/Diffusion_1224_cond_svr_sq30_aug/BRepNet++/qevdsbh7/checkpoints/epoch=38-step=700000.ckpt",
+      "current_score": 0.032885223627090454,
+      "last_model_path": "/root/repo/python/outputs_brepnet_diffusion/Diffusion_1224_cond_svr_sq30_aug/BRepNet++/qevdsbh7/checkpoints/last.ckpt"
+    }
+  },
+  "saved_optimizer_steps_completed": 1500000,
+  "source_commit_not_recorded": true
+}

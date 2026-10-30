@@ -1,0 +1,36 @@
+{
+  "version": "legacy_photo_rgb_v1",
+  "complete": true,
+  "cache_root": "/mnt/d/python/checkpoints/diffusion/photo_baseline/cache_v1",
+  "manifest_sha256": "432aa5effe27e42c625a6301965fca34b76817a7660d607f619efd22b760183f",
+  "checkpoint": "/mnt/d/ckpt/HoLa/Diffusion_svr_sq30_1500k.ckpt",
+  "checkpoint_sha256": "9dcafb192529c1ddf65942392c25b409fbbf2bce407805f34a460d0b44bb4839",
+  "image_key": "flux",
+  "feature_precision": "float32",
+  "preprocessing": "PIL bilinear Resize224, RGB/255, ImageNet normalize; no augmentation",
+  "rotation_id": 0,
+  "splits": {
+    "training": {
+      "count": 46627,
+      "sha256": {
+        "features": "61bd69d3f02c8e1364ea5303fc15755cddb565d97b0731be7170a9d65a0c913e",
+        "means": "cb55f476696591edbf5e7b6815737529c2d6decf20868a9c9e49b81994d667c4",
+        "counts": "24caa94792c4686e9f593a78a14c66faf76077ec12065ee53c54821a7c6485e8"
+      }
+    },
+    "validation": {
+      "count": 100,
+      "sha256": {
+        "features": "606952ca0dae233e784bcc3f2dac90aa4403376442bb27bf65121b345bb78321",
+        "means": "29b3e6253f271078751e81c7fb7a564d3798bc04eef6be6370391f4eb9665a17",
+        "counts": "8329fd2815ca1371780d7cf1f2ecd756501780e149f14edba7ad121e7542e1ed"
+      }
+    }
+  },
+  "source_protocol_sha256": "2861064fe0e9714fbe37312879bf7fc7b17ebedfc019b98a0e30aa2c9d8614a0",
+  "input_audit_sha256": "d7332986f62e35a9f1d6d9201eb883186521dd50222750bae7b306d9bb72425d",
+  "all_workers_strict_load": true,
+  "max_dino_batch_vs_single_abs_error": 1.2040138244628906e-05,
+  "excluded_or_failed_rows": 0,
+  "fixed_validation_count_for_loss_monitoring_only": 100
+}

@@ -1,0 +1,35 @@
+[
+  {
+    "latent_source": "old",
+    "sample_id": "uncond_000000",
+    "decoders_match_exactly": true,
+    "max_abs_differences": {
+      "pred_face": 0.0,
+      "pred_edge": 0.0,
+      "pred_edge_face_connectivity": 0.0,
+      "pred_face_adj": 0.0
+    }
+  },
+  {
+    "latent_source": "new_last",
+    "sample_id": "uncond_000000",
+    "decoders_match_exactly": true,
+    "max_abs_differences": {
+      "pred_face": 0.0,
+      "pred_edge": 0.0,
+      "pred_edge_face_connectivity": 0.0,
+      "pred_face_adj": 0.0
+    }
+  },
+  {
+    "latent_source": "new_best",
+    "sample_id": "uncond_000000",
+    "decoders_match_exactly": true,
+    "max_abs_differences": {
+      "pred_face": 0.0,
+      "pred_edge": 0.0,
+      "pred_edge_face_connectivity": 0.0,
+      "pred_face_adj": 0.0
+    }
+  }
+]

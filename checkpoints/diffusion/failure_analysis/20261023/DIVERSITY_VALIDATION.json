@@ -1,0 +1,203 @@
+{
+  "schema_version": "conditional_diversity_validation_v1",
+  "status": "passed",
+  "completed_at": "2026-10-23T10:47:23.944997+00:00",
+  "scope": "原SVR固定100张validation、每图K=8的只读附录；不是DPO前后对比。",
+  "source_run": "/mnt/d/python/checkpoints/diffusion/preference_data/20261020T134930Z",
+  "source_split_path": "/mnt/d/python/checkpoints/diffusion/preference_data/20261020T134930Z/metadata/validation.txt",
+  "source_split_sha256": "6c952c3556860c0a2782a0bedbf139b48bc2769b385788baf0fcb82fac1be587",
+  "seed": 42,
+  "candidates_per_image": 8,
+  "manifest_path": "/mnt/d/python/checkpoints/diffusion/failure_analysis/runs/svr_k8_20261023_manifest.jsonl",
+  "manifest_sha256": "98e25281bbab18320fc23d8c096a697e108f6c5bb3a039b398f817bf3737f6f2",
+  "manifest_metadata_path": "/mnt/d/python/checkpoints/diffusion/failure_analysis/runs/svr_k8_20261023_manifest.metadata.json",
+  "manifest_metadata_sha256": "46530abfb47875e002b86c9e3f12e31cb72647f80628a86dc5daa73a8f1a49e7",
+  "input_verification": {
+    "intended_images": 100,
+    "intended_candidates": 800,
+    "metrics_records": 800,
+    "raw_sha256_matches_original_inference": 800,
+    "split_uses_frozen_list_not_directory_scan": true,
+    "dpo_comparison": false,
+    "new_generation": false,
+    "postprocessing_rerun": false
+  },
+  "implementation_validation": {
+    "unit_test_command": "/mnt/d/anaconda3/envs/torch/bin/python -m unittest src.brepnet.test.test_conditional_diversity -v",
+    "unit_tests_passed": 10,
+    "real_small_batch_images": 2,
+    "real_small_batch_candidates": 16,
+    "real_small_batch_pairs": 56,
+    "standalone_cli_real_data": "passed"
+  },
+  "command": "/mnt/d/anaconda3/envs/torch/bin/python -m src.brepnet.eval.metrics.conditional_diversity --manifest checkpoints/diffusion/failure_analysis/runs/svr_k8_20261023_manifest.jsonl --output-dir checkpoints/diffusion/failure_analysis/runs/svr_k8_20261023_diversity --workers 8",
+  "exit_code": 0,
+  "workers": 8,
+  "output_dir": "/mnt/d/python/checkpoints/diffusion/failure_analysis/runs/svr_k8_20261023_diversity",
+  "environment": {
+    "python": "3.10.13",
+    "numpy": "2.0.1",
+    "scipy": "1.15.3"
+  },
+  "git_commit_at_evaluation": "05ce7411a3cfdbdf5494dd7ed25ab38d69b1c101",
+  "source_sha256": {
+    "src/brepnet/eval/metrics/conditional_diversity.py": "1e20c484d228f05a529df0f15f2bb66dc5897d55aaf620b8986a490f6a2a8210",
+    "src/brepnet/test/test_conditional_diversity.py": "1b7583d54dc73635fc28ac232171cb433cc8d3df1f71c9d57fa875ff9e7bbe62"
+  },
+  "output_sha256": {
+    "candidates.csv": "d12cd9aa51ea42e11af229f411b4e29f480c9c1d8845d9dc7bce14dd4b2d7f57",
+    "diversity.json": "54f808df6ed13a0291b3628d2c3c79c694d2f32afed958766b1623f43923f5da",
+    "fingerprints.json": "b589448943d7bb8bd210158834b87a90a6d394374c7306e10e61bd6307396a63",
+    "images.csv": "4c33c16f36c217a859ab55392d7cb968abe751d8dda0c1d419b5463d388470bc",
+    "manifest.json": "09064a2757f0879920d1e2ecc0dabaa8955173645e34f74229980c5b018be64a",
+    "pairs.csv": "69423851faa37f26956ff4f65efa9fc25a1af7175740a580f352e445781314a6"
+  },
+  "counts": {
+    "images": 100,
+    "raw_readable": 800,
+    "within_image_pairs": 2800,
+    "validity": {
+      "valid": 581,
+      "invalid": 218,
+      "unknown": 1
+    },
+    "valid_candidates_per_image_histogram": {
+      "0": 5,
+      "1": 4,
+      "2": 8,
+      "3": 4,
+      "4": 8,
+      "5": 6,
+      "6": 11,
+      "7": 11,
+      "8": 43
+    },
+    "images_with_at_least_two_valid_candidates": 91,
+    "valid_pairs": 1728
+  },
+  "mean_pairwise_cd_sq": {
+    "all": {
+      "edge": {
+        "complete_image_count": 100,
+        "complete_images_mean_pairwise_cd_sq": 0.011150629546036408,
+        "intended_pair_count": 2800,
+        "mean_pairwise_cd_sq": 0.011150629546036408,
+        "measured_image_count": 100,
+        "measured_pair_count": 2800,
+        "partial_image_count": 0,
+        "status": "ok"
+      },
+      "face": {
+        "complete_image_count": 100,
+        "complete_images_mean_pairwise_cd_sq": 0.004113290624981458,
+        "intended_pair_count": 2800,
+        "mean_pairwise_cd_sq": 0.004113290624981458,
+        "measured_image_count": 100,
+        "measured_pair_count": 2800,
+        "partial_image_count": 0,
+        "status": "ok"
+      }
+    },
+    "intended_image_count": 100,
+    "valid": {
+      "edge": {
+        "complete_image_count": 91,
+        "complete_images_mean_pairwise_cd_sq": 0.01145344424580165,
+        "intended_pair_count": 1728,
+        "mean_pairwise_cd_sq": 0.01145344424580165,
+        "measured_image_count": 91,
+        "measured_pair_count": 1728,
+        "partial_image_count": 0,
+        "status": "ok"
+      },
+      "face": {
+        "complete_image_count": 91,
+        "complete_images_mean_pairwise_cd_sq": 0.003758690916973708,
+        "intended_pair_count": 1728,
+        "mean_pairwise_cd_sq": 0.003758690916973708,
+        "measured_image_count": 91,
+        "measured_pair_count": 1728,
+        "partial_image_count": 0,
+        "status": "ok"
+      }
+    }
+  },
+  "fingerprints": {
+    "all": {
+      "0.0001": {
+        "duplicate_pair_count": 0,
+        "duplicate_pair_ratio": 0.0,
+        "measurable_pair_count": 319600,
+        "measured_count": 800,
+        "missing_count": 0,
+        "repeated_member_count": 0,
+        "repeated_member_ratio": 0.0,
+        "unique_fingerprint_count": 800,
+        "unique_fingerprint_ratio": 1.0
+      },
+      "0.001": {
+        "duplicate_pair_count": 0,
+        "duplicate_pair_ratio": 0.0,
+        "measurable_pair_count": 319600,
+        "measured_count": 800,
+        "missing_count": 0,
+        "repeated_member_count": 0,
+        "repeated_member_ratio": 0.0,
+        "unique_fingerprint_count": 800,
+        "unique_fingerprint_ratio": 1.0
+      },
+      "0.01": {
+        "duplicate_pair_count": 0,
+        "duplicate_pair_ratio": 0.0,
+        "measurable_pair_count": 319600,
+        "measured_count": 800,
+        "missing_count": 0,
+        "repeated_member_count": 0,
+        "repeated_member_ratio": 0.0,
+        "unique_fingerprint_count": 800,
+        "unique_fingerprint_ratio": 1.0
+      }
+    },
+    "valid": {
+      "0.0001": {
+        "duplicate_pair_count": 0,
+        "duplicate_pair_ratio": 0.0,
+        "measurable_pair_count": 168490,
+        "measured_count": 581,
+        "missing_count": 0,
+        "repeated_member_count": 0,
+        "repeated_member_ratio": 0.0,
+        "unique_fingerprint_count": 581,
+        "unique_fingerprint_ratio": 1.0
+      },
+      "0.001": {
+        "duplicate_pair_count": 0,
+        "duplicate_pair_ratio": 0.0,
+        "measurable_pair_count": 168490,
+        "measured_count": 581,
+        "missing_count": 0,
+        "repeated_member_count": 0,
+        "repeated_member_ratio": 0.0,
+        "unique_fingerprint_count": 581,
+        "unique_fingerprint_ratio": 1.0
+      },
+      "0.01": {
+        "duplicate_pair_count": 0,
+        "duplicate_pair_ratio": 0.0,
+        "measurable_pair_count": 168490,
+        "measured_count": 581,
+        "missing_count": 0,
+        "repeated_member_count": 0,
+        "repeated_member_ratio": 0.0,
+        "unique_fingerprint_count": 581,
+        "unique_fingerprint_ratio": 1.0
+      }
+    }
+  },
+  "interpretation_limits": [
+    "距离是同图候选之间的变化幅度，不是对GT的重建误差；增大不能单独说明合理多解性更好。",
+    "raw点来自未裁剪面/边；三档量化指纹不同不证明严格B-Rep几何独特，也不能排除近似重复。",
+    "全部候选含invalid/unknown；valid子集需同时报告覆盖图数，不能以幸存子集替代全部生成质量。",
+    "DPO没有对应K=8输出，不能从本附录推断DPO多样性变化。"
+  ]
+}

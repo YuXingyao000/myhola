@@ -27,6 +27,8 @@ seed: 42
 deterministic: false
 cudnn_benchmark: true
 checkpoint_enable_version_counter: true
+# Optional snapshots independent of validation loss; stored in weights/steps/.
+checkpoint_every_n_train_steps: null
 limit_train_batches: 1.0
 limit_val_batches: 1.0
 limit_test_batches: 1.0

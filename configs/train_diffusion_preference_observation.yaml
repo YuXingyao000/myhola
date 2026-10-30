@@ -1,0 +1,19 @@
+# 新版观测偏好标签的同起点、同预算对照；仅切换 pair 数据。
+# 与旧 DPO 一样从原 SVR 初始化 policy/reference，不续训旧 DPO。
+defaults:
+  - train_diffusion_preference
+  - _self_
+
+dataset:
+  pairs_manifest: checkpoints/diffusion/preference_data/observation_v1/pairs.jsonl
+  # 新版只重选，继续使用生成候选时同源的原 VAE GT cache。
+  cached_latent_root: checkpoints/diffusion/preference_data/20261020T134930Z/gt_cache
+
+trainer:
+  exp_name: diffusion_preference_svr_observation
+  devices: 8
+  batch_size: 8
+  seed: 42
+  max_steps: 5000
+  wandb:
+    name: diffusion_preference_svr_observation_v1

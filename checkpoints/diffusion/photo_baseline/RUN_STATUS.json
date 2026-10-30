@@ -1,0 +1,78 @@
+{
+  "checked_at_utc": "2026-10-25T12:55:53.139240+00:00",
+  "state": "running",
+  "run_dir": "/mnt/d/python/checkpoints/diffusion_photo_baseline/20261025T125340Z",
+  "tmux_session": "hola-photo-baseline",
+  "wandb_url": "https://wandb.ai/whatseven777/hola-brep/runs/ca1061135728",
+  "source_commit": "7134f28cb12236b238dcbd5b349a66a77f21c02f",
+  "source_snapshot_files": 520,
+  "console_log": "/mnt/d/python/checkpoints/diffusion_photo_baseline/20261025T125340Z/logs/console.log",
+  "launch_script": "/mnt/d/python/checkpoints/diffusion_photo_baseline/20261025T125340Z/metadata/launch.sh",
+  "resume_script": "/mnt/d/python/checkpoints/diffusion_photo_baseline/20261025T125340Z/metadata/resume.sh",
+  "max_steps": 10000000,
+  "global_batch": 512,
+  "first_observation": {
+    "time": 1792932927.3868828,
+    "epoch": 0,
+    "step_in_epoch": 520,
+    "displayed_steps_per_second": 7.14
+  },
+  "last_observation": {
+    "time": 1792932953.1392016,
+    "epoch": 0,
+    "step_in_epoch": 704,
+    "displayed_steps_per_second": 7.14
+  },
+  "measured_steps_per_second": 7.144987641956685,
+  "gpu_utilization_percent_mean": [
+    99.42,
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    100.0
+  ],
+  "gpu_memory_mib_max": [
+    7551.0,
+    7551.0,
+    7553.0,
+    7681.0,
+    7553.0,
+    7553.0,
+    7553.0,
+    7553.0
+  ],
+  "checkpoint_interval_steps": 5000,
+  "formal_checkpoint_files_present": [],
+  "diagnostic_checkpoint_and_resume_verified": true,
+  "measurement_window_seconds": 25.752318859100342,
+  "scope": "Startup verification snapshot; live progress is in console/W&B. Throughput excludes periodic save/validation overhead.",
+  "loss_check": {
+    "record_count": 11,
+    "all_recorded_losses_finite": true,
+    "first": {
+      "epoch": 0,
+      "trainer/global_step": 49,
+      "_timestamp": 1792932861.6826425,
+      "_runtime": 29.91170673,
+      "_step": 1,
+      "train/loss_step_local": 0.03909166902303696
+    },
+    "last": {
+      "_runtime": 99.847211595,
+      "_step": 21,
+      "train/loss_step_local": 0.038475632667541504,
+      "epoch": 0,
+      "trainer/global_step": 549,
+      "_timestamp": 1792932931.618222
+    },
+    "scope": "rank-0 local stochastic training loss; not validation reconstruction quality"
+  },
+  "source_to_target_code_sync": {
+    "status": "blocked",
+    "reason": "Target must already be on the same branch; no branch creation/deletion",
+    "local_training_affected": false
+  }
+}

@@ -1,0 +1,239 @@
+{
+  "audit_time_utc": "2026-10-17T11:49:07.220353+00:00",
+  "run": "/mnt/d/python/checkpoints/diffusion_layerwise_svr/20261016T143450.891057Z",
+  "process_status": {
+    "matching_src_brepnet_train_processes": [],
+    "evidence": "本次扫描/proc/*/cmdline，筛选Python src.brepnet.train/benchmark_training；只输出PID和程序名，未输出环境或凭证。",
+    "resumed_wandb_exit_record_present": false,
+    "limitation": "无exit record只能说明日志未包含完整退出事件，不能单据此推断中断原因；用户明确报告手动停止。"
+  },
+  "checkpoints": [
+    {
+      "path": "/mnt/d/python/checkpoints/diffusion_layerwise_svr/20261016T143450.891057Z/weights/epoch=0002-step=00054639-val_loss=0.042497.ckpt",
+      "mtime_utc": "2026-10-16T18:54:42.805006+00:00",
+      "size_bytes": 4381411404,
+      "actual_global_step": 54639,
+      "actual_epoch_zero_based": 2,
+      "pytorch_lightning_version": "2.5.0.post0",
+      "state_dict_key_count": 2353,
+      "legacy_fuser_keys_present": false,
+      "file_unchanged_during_read": true,
+      "val_loss_at_same_step": 0.04249716177582741,
+      "checkpoint_callback_current_score": 0.04249716177582741,
+      "checkpoint_callback_best_score": 0.04249716177582741,
+      "checkpoint_callback_best_path": "/mnt/d/python/checkpoints/diffusion_layerwise_svr/20261016T143450.891057Z/weights/epoch=0002-step=00054639-val_loss=0.042497.ckpt"
+    },
+    {
+      "path": "/mnt/d/python/checkpoints/diffusion_layerwise_svr/20261016T143450.891057Z/weights/epoch=0003-step=00072852-val_loss=0.042730.ckpt",
+      "mtime_utc": "2026-10-16T20:21:27.507830+00:00",
+      "size_bytes": 4381411404,
+      "actual_global_step": 72852,
+      "actual_epoch_zero_based": 3,
+      "pytorch_lightning_version": "2.5.0.post0",
+      "state_dict_key_count": 2353,
+      "legacy_fuser_keys_present": false,
+      "file_unchanged_during_read": true,
+      "val_loss_at_same_step": 0.04272990673780441,
+      "checkpoint_callback_current_score": 0.04272990673780441,
+      "checkpoint_callback_best_score": 0.04249716177582741,
+      "checkpoint_callback_best_path": "/mnt/d/python/checkpoints/diffusion_layerwise_svr/20261016T143450.891057Z/weights/epoch=0002-step=00054639-val_loss=0.042497.ckpt"
+    },
+    {
+      "path": "/mnt/d/python/checkpoints/diffusion_layerwise_svr/20261016T143450.891057Z/weights/epoch=0004-step=00091065-val_loss=0.044174.ckpt",
+      "mtime_utc": "2026-10-16T21:48:07.486081+00:00",
+      "size_bytes": 4381411404,
+      "actual_global_step": 91065,
+      "actual_epoch_zero_based": 4,
+      "pytorch_lightning_version": "2.5.0.post0",
+      "state_dict_key_count": 2353,
+      "legacy_fuser_keys_present": false,
+      "file_unchanged_during_read": true,
+      "val_loss_at_same_step": 0.04417423903942108,
+      "checkpoint_callback_current_score": 0.04417423903942108,
+      "checkpoint_callback_best_score": 0.04249716177582741,
+      "checkpoint_callback_best_path": "/mnt/d/python/checkpoints/diffusion_layerwise_svr/20261016T143450.891057Z/weights/epoch=0002-step=00054639-val_loss=0.042497.ckpt"
+    },
+    {
+      "path": "/mnt/d/python/checkpoints/diffusion_layerwise_svr/20261016T143450.891057Z/weights/last.ckpt",
+      "mtime_utc": "2026-10-17T10:25:56.295508+00:00",
+      "size_bytes": 4381411468,
+      "actual_global_step": 182130,
+      "actual_epoch_zero_based": 9,
+      "pytorch_lightning_version": "2.5.0.post0",
+      "state_dict_key_count": 2353,
+      "legacy_fuser_keys_present": false,
+      "file_unchanged_during_read": true,
+      "val_loss_at_same_step": 0.0520484633743763,
+      "checkpoint_callback_current_score": null,
+      "checkpoint_callback_best_score": 0.04249716177582741,
+      "checkpoint_callback_best_path": "/mnt/d/python/checkpoints/diffusion_layerwise_svr/20261016T143450.891057Z/weights/epoch=0002-step=00054639-val_loss=0.042497.ckpt"
+    }
+  ],
+  "stopped_progress": {
+    "latest_saved_checkpoint_step": 182130,
+    "last_observed_training_completed_step_lower_bound": 198650,
+    "last_logged_rank0_loss": 0.032697662711143494,
+    "last_logged_training_utc": "2026-10-17T11:41:54.662211+00:00",
+    "updates_after_latest_checkpoint_at_least": 16520,
+    "note": "训练日志每50步记录一次；停止的精确步数未知，至少198650。未找到该停止时刻权重，last.ckpt只能标182130。"
+  },
+  "invocations": [
+    {
+      "directory": "/mnt/d/python/checkpoints/diffusion_layerwise_svr/20261016T143450.891057Z/metadata/invocations/20261016T143450.891057Z",
+      "commit": "b55d830b8064fe7f44b7b11f9060396ba8bc940e",
+      "branch": "codex/diffusion-training-throughput",
+      "working_tree_dirty": false,
+      "recorded_dirty_diff_bytes": 0,
+      "trainer": {
+        "devices": 8,
+        "batch_size": 64,
+        "max_steps": 100000,
+        "learning_rate": 0.0001,
+        "precision": "bf16-mixed",
+        "seed": 42,
+        "run_dir": "/mnt/d/python/checkpoints/diffusion_layerwise_svr/20261016T143450.891057Z",
+        "resume_from_checkpoint": null,
+        "init_from_checkpoint": null,
+        "diffusion_validation_inference": false,
+        "sync_train_step_loss": false,
+        "num_threads": 4,
+        "num_workers": 4,
+        "log_every_n_steps": 50,
+        "check_val_every_n_epoch": 1,
+        "max_time": null
+      },
+      "model_and_condition_match_latest_checkpoint": true
+    },
+    {
+      "directory": "/mnt/d/python/checkpoints/diffusion_layerwise_svr/20261016T143450.891057Z/metadata/invocations/20261017T040640.846040Z",
+      "commit": "7bb75c7cf9eb9146d8dbf37df51989dfcfd93062",
+      "branch": "codex/diffusion-training-throughput",
+      "working_tree_dirty": true,
+      "recorded_dirty_diff_bytes": 10475,
+      "trainer": {
+        "devices": 8,
+        "batch_size": 64,
+        "max_steps": 10000000,
+        "learning_rate": 0.0001,
+        "precision": "bf16-mixed",
+        "seed": 42,
+        "run_dir": "/mnt/d/python/checkpoints/diffusion_layerwise_svr/20261016T143450.891057Z",
+        "resume_from_checkpoint": "/mnt/d/python/checkpoints/diffusion_layerwise_svr/20261016T143450.891057Z/weights/last.ckpt",
+        "init_from_checkpoint": null,
+        "diffusion_validation_inference": false,
+        "sync_train_step_loss": false,
+        "num_threads": 4,
+        "num_workers": 4,
+        "log_every_n_steps": 50,
+        "check_val_every_n_epoch": 1,
+        "max_time": null
+      },
+      "model_and_condition_match_latest_checkpoint": true
+    }
+  ],
+  "latest_dataset_config": {
+    "train_dataset": "/dev/shm/hola-svr-20261016/splits/train.txt",
+    "val_dataset": "/dev/shm/hola-svr-20261016/splits/validation.txt",
+    "cached_latent_root": "/dev/shm/hola-svr-20261016/latents",
+    "condition_data_root": "/dev/shm/hola-svr-20261016/conditions",
+    "raw_data_root": "/mnt/d/data/deepcad_v7",
+    "epoch_scale_factor": 200,
+    "is_aug": false,
+    "real_photo_ratio": 0.0,
+    "validation_real_photo_ratio": 0.0,
+    "padding": "random",
+    "max_faces": 30
+  },
+  "validation_history": [
+    {
+      "invocation": "initial",
+      "completed_optimizer_steps": 18213,
+      "logged_global_step": 18212,
+      "epoch_zero_based": 0,
+      "val_loss": 0.05057632550597191,
+      "utc": "2026-10-16T16:01:14.002336+00:00",
+      "wandb_cumulative_runtime_seconds": 5178.617102842
+    },
+    {
+      "invocation": "initial",
+      "completed_optimizer_steps": 36426,
+      "logged_global_step": 36425,
+      "epoch_zero_based": 1,
+      "val_loss": 0.04476408287882805,
+      "utc": "2026-10-16T17:27:52.182223+00:00",
+      "wandb_cumulative_runtime_seconds": 10376.7969543
+    },
+    {
+      "invocation": "initial",
+      "completed_optimizer_steps": 54639,
+      "logged_global_step": 54638,
+      "epoch_zero_based": 2,
+      "val_loss": 0.04249716177582741,
+      "utc": "2026-10-16T18:54:35.157664+00:00",
+      "wandb_cumulative_runtime_seconds": 15579.772458042
+    },
+    {
+      "invocation": "initial",
+      "completed_optimizer_steps": 72852,
+      "logged_global_step": 72851,
+      "epoch_zero_based": 3,
+      "val_loss": 0.04272990673780441,
+      "utc": "2026-10-16T20:21:19.864374+00:00",
+      "wandb_cumulative_runtime_seconds": 20784.479073468
+    },
+    {
+      "invocation": "initial",
+      "completed_optimizer_steps": 91065,
+      "logged_global_step": 91064,
+      "epoch_zero_based": 4,
+      "val_loss": 0.04417423903942108,
+      "utc": "2026-10-16T21:47:59.772772+00:00",
+      "wandb_cumulative_runtime_seconds": 25984.387505955
+    },
+    {
+      "invocation": "resume",
+      "completed_optimizer_steps": 109278,
+      "logged_global_step": 109277,
+      "epoch_zero_based": 5,
+      "val_loss": 0.04569339379668236,
+      "utc": "2026-10-17T04:50:02.148596+00:00",
+      "wandb_cumulative_runtime_seconds": 31191.503738993
+    },
+    {
+      "invocation": "resume",
+      "completed_optimizer_steps": 127491,
+      "logged_global_step": 127490,
+      "epoch_zero_based": 6,
+      "val_loss": 0.04688218608498573,
+      "utc": "2026-10-17T06:13:55.051918+00:00",
+      "wandb_cumulative_runtime_seconds": 36224.40688044
+    },
+    {
+      "invocation": "resume",
+      "completed_optimizer_steps": 145704,
+      "logged_global_step": 145703,
+      "epoch_zero_based": 7,
+      "val_loss": 0.04674503207206726,
+      "utc": "2026-10-17T07:37:57.067291+00:00",
+      "wandb_cumulative_runtime_seconds": 41266.422169364
+    },
+    {
+      "invocation": "resume",
+      "completed_optimizer_steps": 163917,
+      "logged_global_step": 163916,
+      "epoch_zero_based": 8,
+      "val_loss": 0.05428893491625786,
+      "utc": "2026-10-17T09:01:51.927600+00:00",
+      "wandb_cumulative_runtime_seconds": 46301.282471069
+    },
+    {
+      "invocation": "resume",
+      "completed_optimizer_steps": 182130,
+      "logged_global_step": 182129,
+      "epoch_zero_based": 9,
+      "val_loss": 0.0520484633743763,
+      "utc": "2026-10-17T10:25:46.623621+00:00",
+      "wandb_cumulative_runtime_seconds": 51335.978506965
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "implementation_checks_only": true,
+  "unit_tests_passed": 40,
+  "preflight_run": "/mnt/d/python/checkpoints/diffusion/photo_preference/preflight_20261026",
+  "preflight_protocol_sha256": "8ced92dba33ecf24c504dbd5b65f68abe1c5f2f13c802f0fa32d7349462ca90b",
+  "two_workers_on_one_gpu": true,
+  "baseline_bitwise_equal_c00_ids": [
+    "00000178",
+    "00000894"
+  ],
+  "baseline_latent_and_all_raw_fields_equal": true,
+  "complete_pipeline": {
+    "status": "complete",
+    "validation": {
+      "images": 2,
+      "candidates": 16,
+      "pairs": 1,
+      "validity_invalid": 13,
+      "status_ok": 16,
+      "validity_valid": 3,
+      "pairs_geometry": 1,
+      "elapsed_seconds": 70.06831361795776
+    },
+    "train": {
+      "images": 2,
+      "candidates": 16,
+      "pairs": 2,
+      "validity_valid": 16,
+      "status_ok": 16,
+      "pairs_geometry": 2,
+      "elapsed_seconds": 67.84564606903587
+    }
+  },
+  "resume_candidate_files_unchanged": 394,
+  "resume_protocol_unchanged": true,
+  "resume_pair_labels_unchanged": true,
+  "train_validation_manifests_disjoint": true,
+  "main_training_started": false,
+  "source_collection_revision": "optional geometry helper is snapshotted when present; metadata-only runtime revision audited",
+  "revision_resume_verified": true,
+  "GT_mean_comparison": [
+    {
+      "image_id": "00000061",
+      "num_faces": 7,
+      "bitwise_equal": false,
+      "max_abs_diff": 1.1026859283447266e-06,
+      "mean_abs_diff": 1.0901879221592026e-07
+    },
+    {
+      "image_id": "00000070",
+      "num_faces": 14,
+      "bitwise_equal": false,
+      "max_abs_diff": 1.5795230865478516e-06,
+      "mean_abs_diff": 1.1853470738287797e-07
+    }
+  ],
+  "GT_mean_note": "Same strictly retained original AE; observed small numerical differences, not bitwise equivalence. GT encoding cache is not used for candidate sampling or pair labels. Future DDPM control and DPO must share one fixed GT cache.",
+  "formal_startup_c00_equivalence": {
+    "ids": [
+      "00000178",
+      "00000894",
+      "00003202",
+      "00003406",
+      "00003999",
+      "00005825",
+      "00006067",
+      "00006608",
+      "00007585",
+      "00007655",
+      "00008165",
+      "00009919",
+      "00010156",
+      "00010531",
+      "00010555",
+      "00010704"
+    ],
+    "latent_and_raw_bitwise_equal_to_baseline": true
+  }
+}
