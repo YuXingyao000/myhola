@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import numpy as np
 import torch
 
-from src.brepnet.data.uv_curve_targets import (
+from src.preprocess.uv_curve_targets import (
     FixedSurfaceProjector, REASON_FLAGS, REPRESENTATION, SURFACE_SIGNATURE,
     UVProjectionConfig, load_uv_curve_targets, parameters_json, read_projection_source,
     sha256_file, write_uv_curve_targets,
@@ -75,7 +75,7 @@ def synthetic_checks(projector):
     if singular_labels["valid"].any() or not np.any(singular_labels["reason_flags"]&2):
         raise AssertionError("degenerate Jacobian was not masked")
     # Exact boundary and derivative behavior must match the current Torch module.
-    from src.brepnet.models.vae.uv_intersection import FixedBSplineSurface
+    from src.models.vae.uv_intersection import FixedBSplineSurface
     reference=FixedBSplineSurface().to(projector.surface.device)
     with torch.inference_mode():
         gt=projector.surface.tensor(source["faces"])
@@ -118,7 +118,7 @@ def main():
     params=parameters_json(config);param_sha=hashlib.sha256(params.encode()).hexdigest()
     metadata=dict(run_id=run_id,representation=REPRESENTATION,surface_signature=SURFACE_SIGNATURE,
                   device=args.device,torch_version=torch.__version__,parameters=asdict(config),parameters_sha256=param_sha,
-                  script_sha256=sha256_file(__file__),module_sha256=sha256_file(Path(__file__).resolve().parents[1]/"src/brepnet/data/uv_curve_targets.py"),
+                  script_sha256=sha256_file(__file__),module_sha256=sha256_file(Path(__file__).resolve().parents[1]/"src/preprocess/uv_curve_targets.py"),
                   raw_root=str(args.raw_root),lists=[dict(path=str(p),sha256=sha256_file(p)) for p in args.list],
                   shards=args.shards,shard_index=args.shard_index,batch_cads=args.batch_cads,limit=args.limit)
     if args.synthetic_check:

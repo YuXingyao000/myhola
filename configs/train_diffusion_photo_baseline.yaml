@@ -13,7 +13,7 @@ model:
 condition: null
 
 dataset:
-  name: src.brepnet.data.photo_dataset.PhotoFeatureDataset
+  name: src.datasets.photo.PhotoFeatureDataset
   cache_root: /mnt/d/hola_runs/diffusion/photo_baseline/cache_v1
   epoch_scale_factor: 50
 

@@ -31,9 +31,9 @@ DEFAULT_LATENT_ROOT = Path("/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24")
 DEFAULT_OUT_DIR = Path("experiments/2026-06-07/dataset_audit")
 
 DEFAULT_LISTS = (
-    ("train", Path("src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt")),
-    ("val", Path("src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt")),
-    ("test", Path("src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt")),
+    ("train", Path("src/preprocess/splits/deduplicated_deepcad_training_7_30.txt")),
+    ("val", Path("src/preprocess/splits/deduplicated_deepcad_validation_7_30.txt")),
+    ("test", Path("src/preprocess/splits/deduplicated_deepcad_testing_7_30.txt")),
 )
 
 DATA_NPZ_KEYS = (

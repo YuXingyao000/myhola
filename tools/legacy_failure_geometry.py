@@ -337,7 +337,7 @@ def extract_step(path: Path, panel: dict, diagnostic: dict, checkpoint=lambda: N
 
 def raw_panel_and_diagnostics(path: Path) -> tuple[dict, dict]:
     from scipy.spatial import cKDTree
-    from src.brepnet.data.shared_boundaries import _point_to_polyline_max
+    from src.preprocess.shared_boundaries import _point_to_polyline_max
     with np.load(path, allow_pickle=False) as data:
         faces = data["pred_face"][..., :3].astype(np.float64)
         curves = data["pred_edge"][..., :3].astype(np.float64)

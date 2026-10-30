@@ -39,13 +39,13 @@ model:
 condition: null
 
 dataset:
-  name: src.brepnet.data.spatial_photo_dataset.SpatialPhotoDataset
+  name: src.datasets.spatial_photo.SpatialPhotoDataset
   condition_data_root: /mnt/d/data/deepcad_v7_cond
   cached_latent_root: /mnt/d/hola_runs/diffusion/photo_preference_data/20261026T055801Z/gt_cache
   source_protocol: /mnt/d/hola_runs/diffusion/photo_preference_data/20261026T055801Z/metadata/protocol.json
   source_protocol_sha256: 541ef216acd06f893cf4a5eeea33ad0697ae5b76d1f79699edb2f0777d628ad0
-  train_dataset: src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt
-  val_dataset: src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt
+  train_dataset: src/preprocess/splits/deduplicated_deepcad_training_7_30.txt
+  val_dataset: src/preprocess/splits/deduplicated_deepcad_validation_7_30.txt
   # 每约 1040 optimizer steps 做一次完整 validation，避免频繁写大 checkpoint。
   epoch_scale_factor: 10
 

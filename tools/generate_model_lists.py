@@ -7,10 +7,10 @@
 4. 每个 model_id 在 cond 中是否有 imgs.npz
 
 输出:
-    src/brepnet/data/list/train.txt      (去重 + 过滤后)
-    src/brepnet/data/list/val.txt
-    src/brepnet/data/list/test.txt
-    src/brepnet/data/list/excluded.txt   (被排除的模型及原因)
+    src/preprocess/splits/train.txt      (去重 + 过滤后)
+    src/preprocess/splits/val.txt
+    src/preprocess/splits/test.txt
+    src/preprocess/splits/excluded.txt   (被排除的模型及原因)
 
 用法:
     python tools/generate_model_lists.py --dry-run
@@ -27,11 +27,11 @@ DATA_ROOT = Path("/mnt/d/data/deepcad_v6")
 AE_CACHE = Path("/mnt/d/data/ae_cache/1119_deepcad_aug1_11k")
 COND_ROOT = Path("/mnt/d/data/deepcad_v6_cond")
 
-OLD_TRAIN = Path("src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt")
-OLD_VAL = Path("src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt")
-OLD_TEST = Path("src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt")
+OLD_TRAIN = Path("src/preprocess/splits/deduplicated_deepcad_training_7_30.txt")
+OLD_VAL = Path("src/preprocess/splits/deduplicated_deepcad_validation_7_30.txt")
+OLD_TEST = Path("src/preprocess/splits/deduplicated_deepcad_testing_7_30.txt")
 
-OUTPUT_DIR = Path("src/brepnet/data/list")
+OUTPUT_DIR = Path("src/preprocess/splits")
 
 
 def load_list(path: Path) -> list[str]:

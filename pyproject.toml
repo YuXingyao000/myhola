@@ -33,7 +33,11 @@ dependencies = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["src", "thirdparty"]
+where = ["."]
+include = ["src*"]
 
 [tool.setuptools.package-data]
-"brepnet.data.list" = ["*.txt"]
+"src.preprocess" = ["splits/*.txt"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

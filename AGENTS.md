@@ -33,29 +33,29 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 
 ## 当前实现地图
 
-主包是 `src/brepnet/`，其他 `src/` 项目和历史脚本不是默认入口。
+主包是 `src/`，其他 `src/` 项目和历史脚本不是默认入口。
 
 | 位置 | 当前职责 |
 |---|---|
-| `src/brepnet/train.py` | Hydra + Lightning 统一 VAE / diffusion 入口 |
-| `src/brepnet/dataset.py` | 当前 `Diffusion_dataset`，以及仍有旧字段的 VAE / legacy 数据路径 |
-| `src/brepnet/models/vae/` | `BaseVAE`；legacy/intersection/joint 各自主类，encoder、decoder、loss、checkpoint与几何工具按职责分类 |
-| `src/brepnet/models/blocks.py` | 通用残差层与位置编码；旧VAE block名称仅兼容导出，实际定义在 `models/vae/` |
-| `src/brepnet/run_management.py`、`prediction_export.py` | 独立 run 目录、配置／Git 溯源、逐对象原始预测导出 |
-| `src/brepnet/diffusion/model.py`、`sampling.py`、`losses.py` | diffusion 装配、训练损失、DDPM 采样与 VAE 接口 |
-| `src/brepnet/diffusion/latents.py`、`padding.py` | cached mean/std 或 VAE 编码，face token 打包、筛选与去重 |
-| `src/brepnet/diffusion/conditioning.py`、`image_encoder.py` | 条件工厂与图像编码；其他条件编码分文件保留 |
-| `src/brepnet/diffusion/denoiser.py`、`fusion.py`、`topology.py` | 24 层去噪主干、每层后的独立 image cross-attention、可选 oracle / learned topology bias |
-| `src/brepnet/data/datagen/`、`configs/datagen/` | Blender 渲染、FLUX 编辑、打包；存在入口契约漂移，见局部指南 |
-| `src/brepnet/data/rotations.py`、`extract_visibility.py` | cube24 旋转与可见性缓存 |
-| `src/brepnet/eval/run.py`、`eval/metrics/` | 统一评估调度与指标 |
-| `src/brepnet/post/` | 曲面／曲线拟合、裁剪、缝合、STEP 构造与检查 |
+| `src/train.py` | Hydra + Lightning 统一 VAE / diffusion 入口 |
+| `src/datasets/brep.py` | 当前 `Diffusion_dataset`，以及仍有旧字段的 VAE / legacy 数据路径 |
+| `src/models/vae/` | `BaseVAE`；legacy/intersection/joint 各自主类，encoder、decoder、loss、checkpoint与几何工具按职责分类 |
+| `src/models/blocks.py` | 通用残差层与位置编码；旧VAE block名称仅兼容导出，实际定义在 `models/vae/` |
+| `src/common/run_management.py`、`prediction_export.py` | 独立 run 目录、配置／Git 溯源、逐对象原始预测导出 |
+| `src/models/diffusion/model.py`、`sampling.py`、`losses.py` | diffusion 装配、训练损失、DDPM 采样与 VAE 接口 |
+| `src/models/diffusion/latents.py`、`padding.py` | cached mean/std 或 VAE 编码，face token 打包、筛选与去重 |
+| `src/models/diffusion/conditioning.py`、`image_encoder.py` | 条件工厂与图像编码；其他条件编码分文件保留 |
+| `src/models/diffusion/denoiser.py`、`fusion.py`、`topology.py` | 24 层去噪主干、每层后的独立 image cross-attention、可选 oracle / learned topology bias |
+| `src/preprocess/datagen/`、`configs/datagen/` | Blender 渲染、FLUX 编辑、打包；存在入口契约漂移，见局部指南 |
+| `src/preprocess/rotations.py`、`extract_visibility.py` | cube24 旋转与可见性缓存 |
+| `src/evaluate.py`、`eval/metrics/` | 统一评估调度与指标 |
+| `src/postprocess/` | 曲面／曲线拟合、裁剪、缝合、STEP 构造与检查 |
 
 当前单图路径：图片 → 冻结 DINOv2 的 CLS / patch tokens → 可训练图像投影；带时间嵌入的 noisy face latent → 24×（完整 TransformerEncoderLayer → 独立 image cross-attention residual）→ DDPM → 冻结 VAE → OCC 后处理。默认每面 32 维、最多 30 个 token、random duplicate padding。前端 4 层 fuser 与 alignment 已移除；这是当前实现，不是未来架构要求，也不代表已训练或已提升重建质量。
 
-Diffusion 新代码从 `src/brepnet/diffusion/` 导入；保留的旧路径导出不保证旧架构配置兼容。旧模块化 baseline 位于归档 tag `archive/2026-10-16/codex/diffusion-modular-baseline`（`b67c5d8e`）；逐层条件实现已合入 `main`，显式拒绝 `condition_fuser` 配置，旧 diffusion checkpoint 不可直接 resume 或宽松加载。当前结构、加载协议及历史验证边界见 [说明](checkpoints/diffusion/README.md)，分支归档与恢复见 [Git 整理记录](checkpoints/repository_maintenance/20261016/README.md)。本主题讨论神经网络架构时优先可视化每层、数据流、张量形状及输入输出，不使用 Mermaid 画神经网络。
+Diffusion 新代码从 `src/models/diffusion/` 导入；保留的旧路径导出不保证旧架构配置兼容。旧模块化 baseline 位于归档 tag `archive/2026-10-16/codex/diffusion-modular-baseline`（`b67c5d8e`）；逐层条件实现已合入 `main`，显式拒绝 `condition_fuser` 配置，旧 diffusion checkpoint 不可直接 resume 或宽松加载。当前结构、加载协议及历史验证边界见 [说明](checkpoints/diffusion/README.md)，分支归档与恢复见 [Git 整理记录](checkpoints/repository_maintenance/20261016/README.md)。本主题讨论神经网络架构时优先可视化每层、数据流、张量形状及输入输出，不使用 Mermaid 画神经网络。
 
-细节见 [源码指南](src/brepnet/AGENTS.md)、[数据指南](src/brepnet/data/AGENTS.md)、[评估指南](src/brepnet/eval/AGENTS.md)。
+细节见 [源码指南](src/AGENTS.md)、[数据指南](src/preprocess/AGENTS.md)、[评估指南](src/eval/AGENTS.md)。
 
 2026-10-13 按原文件组织归并 VAE 实验代码：移除 `models/` 下原 `intersection_*` 六个文件、`joint_*` 三个文件及 `holistic_encoder.py`、`local_intersection.py`，实现集中到 `vae.py`／`blocks.py`。已有模型名称、模块属性层级和旧 checkpoint state key 保留，trainer 继续共用 config 装配。历史 PLAN／NOTE 的旧路径保留为当时记录，当前入口以本地图及主题 README 为准。
 
@@ -96,7 +96,7 @@ Diffusion 新代码从 `src/brepnet/diffusion/` 导入；保留的旧路径导�
 
 环境定义为 `environment.yml`，常规安装为 `conda env create -f environment.yml`、`conda activate hola-brep`、`pip install -e .`。先检查现有环境，不因阅读或文档任务自动重装。
 
-训练使用 `python -m src.brepnet.train --config-name <config>`。当前先用灰模的逐层条件训练入口为 `configs/train_diffusion_layerwise_svr.yaml`，训练/验证 photo ratio 均为 0，仅读取 `imgs.npz["svr_imgs"]`，不要求或读取 `real_photo.npz`；保留原 `is_aug=false` 视角 0、VAE/cache 和 split。`train_diffusion_layerwise_real.yaml` 保留为生成图条件入口；正式运行显式设置数据/split、设备数、每卡 batch、seed 与 AE checkpoint。配置名含 `baseline` 不保证仍是旧架构，旧模型要回 baseline 分支复现。不要把 `train_diffusion_real.yaml` 名字当作协议保证：它继承的 overfit / validation 条件有陷阱，详见源码指南。VAE loader 已接受规范字段及显式旧别名，冲突值必须报错；仍需核对实际数据。新联合边界 decoder 的命令与迁移协议见 [README](checkpoints/joint_boundary/README.md)。
+训练使用 `python -m src.train --config-name <config>`。当前先用灰模的逐层条件训练入口为 `configs/train_diffusion_layerwise_svr.yaml`，训练/验证 photo ratio 均为 0，仅读取 `imgs.npz["svr_imgs"]`，不要求或读取 `real_photo.npz`；保留原 `is_aug=false` 视角 0、VAE/cache 和 split。`train_diffusion_layerwise_real.yaml` 保留为生成图条件入口；正式运行显式设置数据/split、设备数、每卡 batch、seed 与 AE checkpoint。配置名含 `baseline` 不保证仍是旧架构，旧模型要回 baseline 分支复现。不要把 `train_diffusion_real.yaml` 名字当作协议保证：它继承的 overfit / validation 条件有陷阱，详见源码指南。VAE loader 已接受规范字段及显式旧别名，冲突值必须报错；仍需核对实际数据。新联合边界 decoder 的命令与迁移协议见 [README](checkpoints/joint_boundary/README.md)。
 
 保持既有模块职责；有理由改变边界时说明迁移。用 Python 3.10+、四空格、snake_case、显式配置与适当类型注解。不要把研究行为藏在路径猜测、checkpoint 名称或静默 fallback 中。
 
@@ -111,7 +111,7 @@ Diffusion 新代码从 `src/brepnet/diffusion/` 导入；保留的旧路径导�
 
 当前示例：[UV boundary 完整架构记录](checkpoints/uv_boundary/ARCHITECTURE.md)。本约定优先于历史笔记中要求在模型内部反复校验“合同/契约”的描述。
 
-验证与改动相称：文档检查路径和差异；代码检查相关导入／单元行为；模型或数据接口检查真实小批量形状、loss、梯度与推理语义。实现可靠后才启动正式研究运行。不要把整个 `src/brepnet/test/` 当作无外部依赖的统一套件，也不要用 smoke test 宣称研究结论。
+验证与改动相称：文档检查路径和差异；代码检查相关导入／单元行为；模型或数据接口检查真实小批量形状、loss、梯度与推理语义。实现可靠后才启动正式研究运行。不要把整个 `tests/` 当作无外部依赖的统一套件，也不要用 smoke test 宣称研究结论。
 
 ## 记录与评估纪律
 

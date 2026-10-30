@@ -208,9 +208,9 @@ PythonOCC。路径均显式提供，输出必须使用新目录。
 ```bash
 python packages/cad_scene_factory/prepare_stl.py \
   --data_roots /path/to/deepcad_v6 /path/to/deepcad_v6_cond \
-  --training_list src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt \
-  --validation_list src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt \
-  --testing_list src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt \
+  --training_list src/preprocess/splits/deduplicated_deepcad_training_7_30.txt \
+  --validation_list src/preprocess/splits/deduplicated_deepcad_validation_7_30.txt \
+  --testing_list src/preprocess/splits/deduplicated_deepcad_testing_7_30.txt \
   --output_dir /path/to/deepcad_stl_total \
   --workers 16
 ```

@@ -16,9 +16,9 @@ dataset:
   raw_data_root: /mnt/d/data/deepcad_v7
   cached_latent_root: /mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24
   condition_data_root: /mnt/d/data/deepcad_v7_cond
-  train_dataset: src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt
-  val_dataset: src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt
-  test_dataset: src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt
+  train_dataset: src/preprocess/splits/deduplicated_deepcad_training_7_30.txt
+  val_dataset: src/preprocess/splits/deduplicated_deepcad_validation_7_30.txt
+  test_dataset: src/preprocess/splits/deduplicated_deepcad_testing_7_30.txt
   load_topology: false
   real_photo_ratio: 1.0
   validation_real_photo_ratio: 1.0

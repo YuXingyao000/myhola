@@ -6,8 +6,8 @@ expected_global_step: 310000
 dino_repo: /root/.cache/torch/hub/facebookresearch_dinov2_main
 raw_data_root: /mnt/d/data/deepcad_v7
 condition_data_root: /mnt/d/data/deepcad_v7_cond
-train_list: src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt
-validation_list: src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt
+train_list: src/preprocess/splits/deduplicated_deepcad_training_7_30.txt
+validation_list: src/preprocess/splits/deduplicated_deepcad_validation_7_30.txt
 output_root: /mnt/d/hola_runs/diffusion/photo_preference_data
 train_limit: null
 validation_limit: null

@@ -31,9 +31,9 @@ dataset:
   raw_data_root: /mnt/d/data/deepcad_v7
   cached_latent_root: null
   condition_data_root: null
-  train_dataset: src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt
-  val_dataset: src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt
-  test_dataset: src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt
+  train_dataset: src/preprocess/splits/deduplicated_deepcad_training_7_30.txt
+  val_dataset: src/preprocess/splits/deduplicated_deepcad_validation_7_30.txt
+  test_dataset: src/preprocess/splits/deduplicated_deepcad_testing_7_30.txt
   is_aug: 1
   is_overfit: false
   epoch_scale_factor: 100

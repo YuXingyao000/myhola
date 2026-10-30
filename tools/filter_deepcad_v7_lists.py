@@ -2,7 +2,7 @@
 """Filter DeepCAD model lists to entries that exist in the v7 training assets.
 
 Default behavior is non-destructive: filtered lists are written to
-src/brepnet/data/list/filtered_v7/. Use --in-place to replace the input lists;
+src/preprocess/splits/filtered_v7/. Use --in-place to replace the input lists;
 that mode writes a .bak copy next to each original before overwriting it.
 """
 
@@ -18,14 +18,14 @@ from pathlib import Path
 DEFAULT_DATA_ROOT = Path("/mnt/d/data/deepcad_v7")
 DEFAULT_COND_ROOT = Path("/mnt/d/data/deepcad_v7_cond")
 DEFAULT_LATENT_ROOT = Path("/mnt/d/data/ae_cache/1119_deepcad_aug1_11k_24")
-DEFAULT_OUTPUT_DIR = Path("src/brepnet/data/list/filtered_v7")
+DEFAULT_OUTPUT_DIR = Path("src/preprocess/splits/filtered_v7")
 DEFAULT_REPORT_DIR = Path("experiments/2026-06-07/list_filter_report")
 
 DEFAULT_LISTS = (
-    Path("src/brepnet/data/list/deduplicated_deepcad_testing_7_30_sample_100.txt"),
-    Path("src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt"),
-    Path("src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt"),
-    Path("src/brepnet/data/list/deduplicated_deepcad_validation_7_30.txt"),
+    Path("src/preprocess/splits/deduplicated_deepcad_testing_7_30_sample_100.txt"),
+    Path("src/preprocess/splits/deduplicated_deepcad_testing_7_30.txt"),
+    Path("src/preprocess/splits/deduplicated_deepcad_training_7_30.txt"),
+    Path("src/preprocess/splits/deduplicated_deepcad_validation_7_30.txt"),
 )
 
 NUM_VIEWS = 24

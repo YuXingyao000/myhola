@@ -20,9 +20,9 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset
 
-from src.brepnet.data.photo_dataset import photo_transform
-from src.brepnet.data.preference_dataset import read_split, sha256_file
-from src.brepnet.diffusion.legacy import load_legacy_svr
+from src.datasets.photo import photo_transform
+from src.datasets.preference import read_split, sha256_file
+from src.models.diffusion.legacy import load_legacy_svr
 
 
 class InputDataset(Dataset):
@@ -222,8 +222,8 @@ def main():
     parser.add_argument("--checkpoint", default="/mnt/d/ckpt/HoLa/Diffusion_svr_sq30_1500k.ckpt")
     parser.add_argument("--conditions", default="/mnt/d/data/deepcad_v7_cond")
     parser.add_argument("--source-run", default="/mnt/d/python/checkpoints/diffusion/preference_data/20261020T134930Z")
-    parser.add_argument("--train-split", default="src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt")
-    parser.add_argument("--val-split", default="src/brepnet/data/list/deepcad_v7_validation100.txt")
+    parser.add_argument("--train-split", default="src/preprocess/splits/deduplicated_deepcad_training_7_30.txt")
+    parser.add_argument("--val-split", default="src/preprocess/splits/deepcad_v7_validation100.txt")
     parser.add_argument("--gpus", type=int, default=8)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--worker", action="store_true")

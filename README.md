@@ -104,7 +104,7 @@ The 64 dimensions are `[mean(32), std(32)]` from the VAE's Gaussian bottleneck.
 
 > Dataset download links will be available upon publication.
 
-To prepare your own data, see scripts in `src/brepnet/data/`:
+To prepare your own data, see scripts in `src/preprocess/`:
 - `extract_brep_from_step_half_structure.py` — Extract B-Rep geometry from STEP files
 - `extract_imgs.py` — Render condition images
 
@@ -115,13 +115,13 @@ To prepare your own data, see scripts in `src/brepnet/data/`:
 All training is managed through a single entry point with Hydra config composition:
 
 ```bash
-python -m src.brepnet.train --config-name <train_config> [overrides...]
+python -m src.train --config-name <train_config> [overrides...]
 ```
 
 ### Stage 1: VAE Training
 
 ```bash
-python -m src.brepnet.train \
+python -m src.train \
     --config-name train_vae \
     model=vae_light \
     dataset.raw_data_root=/path/to/brep_data \
@@ -135,7 +135,7 @@ python -m src.brepnet.train \
 ### Stage 2: Diffusion Training
 
 ```bash
-python -m src.brepnet.train \
+python -m src.train \
     --config-name train_diffusion_white \
     dataset.cached_latent_root=/path/to/cached_latents \
     dataset.condition_data_root=/path/to/condition_data \
@@ -169,7 +169,7 @@ bash scripts/train.sh diffusion_white
 ## Inference
 
 ```bash
-python -m src.brepnet.inference \
+python -m src.inference \
     --diffusion-weights /path/to/diffusion.ckpt \
     --autoencoder-weights /path/to/vae.ckpt \
     --condition single_img \
@@ -189,13 +189,13 @@ The inference pipeline:
 
 ```bash
 # Run evaluation metrics
-python -m src.brepnet.eval.run \
+python -m src.evaluate \
     --pred-root /path/to/predictions \
     --gt-root /path/to/ground_truth \
     --metrics condition,validity
 
 # Select visualization cases
-python -m src.brepnet.eval.select_cases \
+python -m src.eval.select_cases \
     --pred-root /path/to/predictions \
     --num 5
 ```
@@ -213,7 +213,7 @@ HoLa-BRep/
 │   ├── condition/             #   Conditioning modalities
 │   ├── dataset/               #   Dataset protocols
 │   └── trainer/               #   Lightning trainer protocol
-├── src/brepnet/
+├── src/
 │   ├── models/                # Core model code
 │   │   ├── blocks.py          #   Shared building blocks
 │   │   ├── vae.py             #   B-Rep VAE (encoder + decoder)

@@ -16,14 +16,14 @@ model:
 condition: null
 
 dataset:
-  name: src.brepnet.data.preference_dataset.PreferenceDataset
+  name: src.datasets.preference.PreferenceDataset
   pairs_manifest: ???
   # 本轮生成器用原始 SVR 内置 VAE 重新编码的 run/gt_cache。
   cached_latent_root: ???
   condition_data_root: /mnt/d/data/deepcad_v7_cond
-  train_dataset: src/brepnet/data/list/deduplicated_deepcad_training_7_30.txt
-  val_dataset: src/brepnet/data/list/deepcad_v7_validation100.txt
-  test_dataset: src/brepnet/data/list/deduplicated_deepcad_testing_7_30.txt
+  train_dataset: src/preprocess/splits/deduplicated_deepcad_training_7_30.txt
+  val_dataset: src/preprocess/splits/deepcad_v7_validation100.txt
+  test_dataset: src/preprocess/splits/deduplicated_deepcad_testing_7_30.txt
   epoch_scale_factor: 1
 
 trainer:

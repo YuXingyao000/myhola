@@ -112,7 +112,7 @@ def preload_cpu_dependencies() -> None:
         pass
     # Import once in the single-threaded parent: every job still gets its own
     # process and OCC state, without paying thousands of heavyweight imports.
-    from src.brepnet.post.construct_brep import construct_brep_for_sample  # noqa: F401
+    from src.postprocess.construct_brep import construct_brep_for_sample  # noqa: F401
     from scipy.spatial import cKDTree  # noqa: F401
     import trimesh  # noqa: F401
 
@@ -157,7 +157,7 @@ def native_validity(shape) -> dict[str, Any]:
     from OCC.Core.TopAbs import TopAbs_SOLID, TopAbs_FACE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_WIRE
     from OCC.Core.BRep import BRep_Tool
     from OCC.Core.TopoDS import topods
-    from shared.occ_utils import get_primitives
+    from src.common.occ_utils import get_primitives
     solid_type = shape.ShapeType() == TopAbs_SOLID
     checked = bool(BRepCheck_Analyzer(shape).IsValid())
     primitives = {"face": get_primitives(shape, TopAbs_FACE, v_remove_half=True),
@@ -207,7 +207,7 @@ def sample_native_geometry(shape, seed: int) -> dict[str, Any]:
     from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
     from OCC.Core.TopAbs import TopAbs_FACE, TopAbs_EDGE, TopAbs_VERTEX
     from OCC.Core.TopLoc import TopLoc_Location
-    from shared.occ_utils import get_primitives
+    from src.common.occ_utils import get_primitives
     faces = get_primitives(shape, TopAbs_FACE, v_remove_half=True)
     edges = get_primitives(shape, TopAbs_EDGE, v_remove_half=True)
     if not faces or not edges:
@@ -284,7 +284,7 @@ def validate_raw_prediction(path: Path) -> dict[str, Any]:
         if not np.array_equal(np.sort(conn[:, 0]), np.arange(len(edge))):
             raise ValueError("Raw edge IDs must cover the curve array exactly once")
         if representation == "shared_boundary_v1":
-            from src.brepnet.data.shared_boundaries import shared_prediction_diagnostics
+            from src.preprocess.shared_boundaries import shared_prediction_diagnostics
             # Invalid/self face assignments remain raw diagnostics; the existing
             # explicit shared adapter handles them using predictions only.
             shared_prediction_diagnostics(len(face), edge, conn, data["pred_edge_confidence"])
@@ -327,7 +327,7 @@ def execute_job(job: dict, status_path: Path) -> dict:
     random.seed(row["seed"])
     np.random.seed(row["seed"])
     try:
-        from src.brepnet.post.construct_brep import construct_brep_for_sample
+        from src.postprocess.construct_brep import construct_brep_for_sample
         record(stage="post", post_status="running")
         post_started = time.monotonic()
         policy_arguments = {}
@@ -680,7 +680,7 @@ def main() -> int:
         "drop_num": 0, "use_cuda": False, "threads_per_process": 1,
         "sampling": SAMPLING, "native_validity": "read.precision.mode=0; as-read TopAbs_SOLID and BRepCheck before mutation",
         "compatibility_validity": "fresh read mode=1, precision=.1; SetTolerance(.1); TopAbs_SOLID and BRepCheck",
-        "post_algorithm_files": {str(path): sha256_file(path) for path in sorted(Path("src/brepnet/post").glob("*.py"))},
+        "post_algorithm_files": {str(path): sha256_file(path) for path in sorted(Path("src/postprocess").glob("*.py"))},
         "runner_sha256": sha256_file(Path(__file__)),
     }
     protocol["candidate_method"] = args.candidate_method
