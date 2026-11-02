@@ -59,6 +59,7 @@ def execute_job(job: dict, status_path: Path) -> dict:
     import numpy as np
     started = time.monotonic()
     row = {"sample_id": job["sample_id"], "method": job["method"], "mode": job["mode"],
+           "geometry_optimizer": job.get("geometry_optimizer", "legacy"),
            "post_policy": job.get("post_policy", "legacy"),
            "protocol_fingerprint": job["protocol_fingerprint"], "raw_sha256": job["raw_sha256"],
            "status": "running", "stage": "validate_raw", "process_pid": os.getpid(),
@@ -90,11 +91,14 @@ def execute_job(job: dict, status_path: Path) -> dict:
         record(stage="post", post_status="running")
         post_started = time.monotonic()
         policy_arguments = {}
+        if job.get("geometry_optimizer", "legacy") != "legacy":
+            policy_arguments.update(geometry_optimizer=job["geometry_optimizer"],
+                                    continuous_config=job.get("continuous_config"))
         if job.get("post_policy", "legacy") != "legacy":
-            policy_arguments = {
+            policy_arguments.update({
                 "post_policy": job["post_policy"],
                 "deadline_monotonic": started + job["timeout_seconds"],
-            }
+            })
         construct_brep_for_sample(
             job["raw_root"], job["post_root"], job["sample_id"], v_drop_num=0,
             is_ray=False, is_log=False, is_optimize_geom=job["mode"] == "optimized",
@@ -394,6 +398,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--workers", type=int, default=32)
     parser.add_argument("--timeout", type=float, default=180)
     parser.add_argument("--max-optimize-iter", type=int, default=200)
+    parser.add_argument("--geometry-optimizer", choices=("legacy", "continuous"), default="legacy")
+    parser.add_argument("--continuous-config", type=Path, help="Explicit JSON overrides for continuous_geometry.Config")
     parser.add_argument("--original-test-count", type=int, default=2424)
     parser.add_argument("--summary-only", action="store_true")
     return parser
@@ -401,6 +407,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     args = build_parser().parse_args()
+    continuous_config = json.loads(args.continuous_config.read_text()) if args.continuous_config else None
+    if args.continuous_config and args.geometry_optimizer != "continuous":
+        raise ValueError("--continuous-config requires --geometry-optimizer continuous")
     methods = comparison_methods(args.candidate_method, args.baseline_method)
     if args.methods is None:
         args.methods = [args.candidate_method] if args.reference_root is not None else list(methods)
@@ -439,6 +448,11 @@ def main() -> int:
     # for that path while making any new policy part of the resume fingerprint.
     if args.post_policy != "legacy":
         protocol["post_policy"] = args.post_policy
+    if args.geometry_optimizer == "continuous":
+        from dataclasses import asdict
+        from src.postprocess.continuous_geometry import Config
+        continuous_config = asdict(Config(**(continuous_config or {})))
+        protocol.update(geometry_optimizer="continuous", continuous_config=continuous_config)
     reference_rows = None
     if args.reference_root is not None:
         reference_rows, provenance = load_reference_rows(args.reference_root, args.comparison_root, args.mode, ids, protocol, baseline_method=args.baseline_method)
@@ -480,6 +494,7 @@ def main() -> int:
                         atomic_json(status_path, old)
                         continue
                 jobs.append({"sample_id": sample_id, "method": method, "mode": args.mode,
+                             "geometry_optimizer": args.geometry_optimizer, "continuous_config": continuous_config,
                              "post_policy": args.post_policy, "timeout_seconds": args.timeout,
                              "raw_root": str(raw_root), "raw_sha256": raw_sha,
                              "post_root": str(args.comparison_root / "post" / args.mode / method),

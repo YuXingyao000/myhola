@@ -203,7 +203,7 @@ def copy_occ_shapes(shapes):
 
 
 def create_trimmed_face_from_wire(geom_face, face_edges, wire_list, connected_tolerance,
-                                  *, require_all_wires=False, diagnostics=None):
+                                  *, require_all_wires=False, diagnostics=None, allow_natural_boundary=True):
     if diagnostics is not None:
         diagnostics.update(input_wire_count=len(wire_list), natural_wire_replacement=False,
                            accepted_wire_count=0, skipped_wires=[], boundary_complete=False)
@@ -211,7 +211,7 @@ def create_trimmed_face_from_wire(geom_face, face_edges, wire_list, connected_to
     is_debug = False
     if len(wire_list) == 6:
         pass
-    if (geom_face.IsUPeriodic() or geom_face.IsVPeriodic()) and len(get_primitives(topo_face, TopAbs_WIRE)) == 1 and len(face_edges) == 2:
+    if allow_natural_boundary and (geom_face.IsUPeriodic() or geom_face.IsVPeriodic()) and len(get_primitives(topo_face, TopAbs_WIRE)) == 1 and len(face_edges) == 2:
         length_edge1 = get_edge_length(face_edges[0])
         length_edge2 = get_edge_length(face_edges[1])
         if abs(length_edge1 - length_edge2) < 0.01:
