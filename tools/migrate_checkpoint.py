@@ -1,6 +1,7 @@
 """Migrate a Lightning checkpoint across repository layout and module renames.
 
     python tools/migrate_checkpoint.py OLD.ckpt NEW.ckpt [--dry-run]
+    python tools/migrate_checkpoint.py OLD.ckpt INIT.ckpt --curve-head-mode independent
 
 Every entry of MIGRATIONS is applied once, in order, and recorded in
 checkpoint["hola_migrations"]. Tensor values are never changed:
@@ -12,6 +13,8 @@ checkpoint["hola_migrations"]. Tensor values are never changed:
             it valid; changing parameter registration order does not.
 The output is a new file; the source checkpoint is never overwritten.
 Add a new version for every rename and list it in AGENTS.md.
+Optional curve-head migration clones the old CNN/bbox values into independent
+heads. Its result is initialization-only: optimizer/training state is removed.
 """
 from __future__ import annotations
 
@@ -44,6 +47,7 @@ LAYOUT_20261030 = [
 
 MIGRATIONS = [
     {"version": "2026-10-30-layout", "strings": LAYOUT_20261030, "prefixes": []},
+    {"version": "2026-10-30-curve-head-roles", "optional": "curve_head_mode"},
 ]
 
 
@@ -78,12 +82,61 @@ def rename_prefixes(state_dict: dict, pairs) -> tuple[dict, int]:
     return renamed, count
 
 
-def migrate(checkpoint: dict) -> list[str]:
+def split_curve_heads(checkpoint: dict, mode: str) -> int:
+    """Clone only the unconditioned geometry parameters for a new training run."""
+    if mode not in {"teacher_split", "independent"}:
+        raise ValueError(f"Unsupported curve head mode: {mode!r}")
+    state = checkpoint["state_dict"]
+    roots = [prefix for prefix in ("model.decoder.", "decoder.")
+             if any(key.startswith(prefix + "edge_geometry.points_decoder.") for key in state)]
+    if len(roots) != 1:
+        raise ValueError("Curve-head migration requires one complete Intersection decoder state_dict")
+    root = roots[0]
+    if any(key.startswith(root + name) for key in state
+           for name in ("teacher_edge_geometry.", "coarse_edge_geometry.")):
+        raise ValueError("Source already contains split curve heads; use its matching full configuration")
+    source = root + "edge_geometry."
+    destinations = ["teacher_edge_geometry"]
+    if mode == "independent":
+        destinations.append("coarse_edge_geometry")
+    copies = {}
+    for part in ("points_decoder.", "bbox_decoder."):
+        values = {key[len(source):]: value for key, value in state.items() if key.startswith(source + part)}
+        if not values:
+            raise ValueError(f"Missing source geometry component: {source + part}")
+        for destination in destinations:
+            copies.update({root + destination + "." + key: value.clone() for key, value in values.items()})
+    state.update(copies)
+    params = checkpoint.setdefault("hyper_parameters", {})
+    model = params.setdefault("model", {})
+    model.setdefault("geometry_heads", {}).update(curve_mode=mode)
+    checkpoint["initialization_only"] = {
+        "reason": "Curve head parameters changed; initialize a new optimizer/run.",
+        "source_epoch": checkpoint.get("epoch"),
+        "source_global_step": checkpoint.get("global_step"),
+    }
+    for key in ("optimizer_states", "lr_schedulers", "loops", "callbacks"):
+        checkpoint.pop(key, None)
+    return len(copies)
+
+
+def migrate(checkpoint: dict, curve_head_mode: str | None = None) -> list[str]:
     applied = list(checkpoint.get("hola_migrations", []))
     report = []
     for migration in MIGRATIONS:
+        if migration.get("optional") and curve_head_mode is None:
+            continue
         if migration["version"] in applied:
+            if migration.get("optional"):
+                saved_mode = checkpoint["hyper_parameters"]["model"]["geometry_heads"]["curve_mode"]
+                if saved_mode != curve_head_mode:
+                    raise ValueError(f"Checkpoint was already migrated to {saved_mode!r}")
             report.append(f"{migration['version']}: already applied")
+            continue
+        if migration.get("optional"):
+            count = split_curve_heads(checkpoint, curve_head_mode)
+            applied.append(migration["version"])
+            report.append(f"{migration['version']}: {count} cloned tensors; initialization only")
             continue
         changes = []
         for field in list(checkpoint):
@@ -102,11 +155,14 @@ def main() -> int:
     parser.add_argument("source", type=Path)
     parser.add_argument("target", type=Path)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--curve-head-mode", choices=("teacher_split", "independent"))
     args = parser.parse_args()
     if args.target.exists():
         parser.error(f"Refusing to overwrite {args.target}")
     checkpoint = torch.load(args.source, map_location="cpu", weights_only=False, mmap=True)
-    print("\n".join(migrate(checkpoint)))
+    print("\n".join(migrate(checkpoint, args.curve_head_mode)))
+    if args.curve_head_mode:
+        checkpoint["initialization_only"]["source_checkpoint"] = str(args.source.resolve())
     if not args.dry_run:
         args.target.parent.mkdir(parents=True, exist_ok=True)
         torch.save(checkpoint, args.target)

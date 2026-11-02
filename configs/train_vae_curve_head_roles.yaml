@@ -1,0 +1,26 @@
+defaults:
+  - train_vae_conditional_intersection_no_edge_feature
+  - _self_
+
+# New optimizer/run from an explicitly migrated Conditional checkpoint.
+# A: shared + detach=false; B: teacher_split + detach=false;
+# C: independent + detach=false; D (this entry): independent + detach=true.
+# All four use FP32 geometry; loss weights and the latent representation stay fixed.
+trainer:
+  exp_name: curve_head_roles/independent_uv_detach
+  float32_matmul_precision: highest
+  cudnn_allow_tf32: false
+  wandb:
+    name: vae-curve-head-roles-independent-uv-detach-fp32
+
+model:
+  init_conditional_intersection_checkpoint: null
+  checkpoint: ${oc.env:IMG2BREP_CURVE_HEAD_CHECKPOINT}
+  geometry_heads:
+    curve_mode: independent
+    fp32: true
+  uv_boundary:
+    detach_curve_input: true
+
+dataset:
+  edge_uv_root: ${oc.env:IMG2BREP_EDGE_UV_ROOT}

@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from contextlib import nullcontext
+from copy import deepcopy
+
 import torch
 from torch import nn, Tensor
 
@@ -63,12 +66,14 @@ class PrimitiveDecoder(nn.Module):
         point_channels: int,
         condition_dim: int | None = None,
         condition_hidden_dim: int = 128,
+        force_fp32: bool = False,
     ):
         super().__init__()
         self.points_decoder = points_decoder
         self.bbox_decoder = bbox_decoder
         self.spatial_shape = spatial_shape
         self.point_channels = point_channels
+        self.force_fp32 = force_fp32
         self.conditioning = None
         if condition_dim is not None:
             indices = [i for i, layer in enumerate(points_decoder) if isinstance(layer, nn.Conv1d)]
@@ -79,6 +84,13 @@ class PrimitiveDecoder(nn.Module):
                 condition_dim, condition_hidden_dim, output_layer.in_channels,
                 bbox_decoder[-1].in_features,
             )
+
+    def unconditioned_copy(self) -> PrimitiveDecoder:
+        """Same initial CNN/bbox values, independent parameters, no final conditioning."""
+        return PrimitiveDecoder(
+            deepcopy(self.points_decoder), deepcopy(self.bbox_decoder),
+            self.spatial_shape, self.point_channels, force_fp32=self.force_fp32,
+        )
 
     def _empty_geometry(self, features: Tensor) -> PrimitiveGeometry:
         return PrimitiveGeometry(
@@ -116,21 +128,32 @@ class PrimitiveDecoder(nn.Module):
         Iteration preserves all original module registrations and checkpoint
         names. The captured map stays connected to the face CNN's gradients.
         """
-        output_index = self._local_output_layer_index()
-        if features.shape[0] == 0:
-            local_map = features.new_empty((0, self.local_feature_channels, *self.spatial_shape))
-            return self._empty_geometry(features), local_map
-        points = features
-        local_map = None
-        for index, module in enumerate(self.points_decoder):
-            if index == output_index:
-                local_map = points
-            points = module(points)
-        return self._with_global_points(features, points), local_map
+        context = torch.autocast(features.device.type, enabled=False) if self.force_fp32 else nullcontext()
+        with context:
+            features = features.float() if self.force_fp32 else features
+            output_index = self._local_output_layer_index()
+            if features.shape[0] == 0:
+                local_map = features.new_empty((0, self.local_feature_channels, *self.spatial_shape))
+                return self._empty_geometry(features), local_map
+            points = features
+            local_map = None
+            for index, module in enumerate(self.points_decoder):
+                if index == output_index:
+                    local_map = points
+                points = module(points)
+            return self._with_global_points(features, points), local_map
 
     def forward(
         self, features: Tensor, condition: Tensor | None = None,
     ) -> PrimitiveGeometry:
+        context = torch.autocast(features.device.type, enabled=False) if self.force_fp32 else nullcontext()
+        with context:
+            features = features.float() if self.force_fp32 else features
+            if condition is not None and self.force_fp32:
+                condition = condition.float()
+            return self._decode_geometry(features, condition)
+
+    def _decode_geometry(self, features: Tensor, condition: Tensor | None) -> PrimitiveGeometry:
         if features.shape[0] == 0:
             return self._empty_geometry(features)
         if condition is None:
@@ -248,7 +271,7 @@ class CurveConditionedUVPathHead(UVPathHead):
         for start in range(0, len(edges), self.chunk_size):
             stop = start + self.chunk_size
             context = torch.cat((edges[start:stop], shared[start:stop], faces[owners[start:stop, 0]]), dim=-1)
-            # Keep the C -> UV gradient: this is predicted geometry, never GT.
+            # The caller controls C -> UV gradients; XYZ values are always predictions.
             xyz = curves[start:stop].to(dtype=edges.dtype)
             tokens = self.context(context)[:, None] + position[None] + self.curve_embedding(xyz)
             for layer in self.layers:

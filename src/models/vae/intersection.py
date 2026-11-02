@@ -100,6 +100,7 @@ class AutoEncoder_intersection(BaseVAE):
             curve_point_feedback_cfg=curve_point_feedback_cfg,
             uv_boundary_cfg=uv_boundary_cfg,
             shared_curve_cfg=shared_curve_cfg,
+            geometry_heads_cfg=cfg.get("geometry_heads"),
         )
         self.criterion = IntersectionLoss(
             cfg["loss_weights"], uv_boundary_enabled=uv_boundary_enabled, shared_curve_enabled=shared_curve_enabled,
@@ -166,7 +167,7 @@ class AutoEncoder_intersection(BaseVAE):
         latents, kl_loss, statistics = self.sample(encoding["face_features"], v_is_test=v_test)
         prediction = self.decode(latents, batch["face_counts"])  # geometry + [P] logits
         # Training-only edge reconstruction; decoder predictions never read GT edges.
-        teacher_geometry = self.decoder.edge_geometry(encoding["edge_features"])
+        teacher_geometry = self.decoder.decode_teacher(encoding["edge_features"])
         losses = self.criterion(
             prediction, batch, encoding["edge_features"], teacher_geometry,
             kl_loss, self.freeze_encoder,

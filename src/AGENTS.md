@@ -72,6 +72,16 @@ SVR 吞吐配置与本机验证见 [说明](/mnt/d/hola_research/diffusion/throu
 `load_diffusion_state_dict` 只允许省略独立 VAE 权重，严格检查其余参数；不会用 diffusion checkpoint 内的 AE 覆盖单独加载的 AE。
 `/mnt/d/hola_research/diffusion/VALIDATION.json` 是旧模块拆分的等价性报告，不是新架构的验证或效果报告；新接口验证见同目录 `LAYERWISE_VALIDATION.json`。
 
+`train_diffusion_adaln_photo` 是独立的原 concat baseline 条件调制实验，模型为
+`AdaLNPreferenceDiffusion`；不经过上面的逐层 cross-attention 路径。
+`models/diffusion/adaln.py` 保留旧 24 层／1024 维主干与五个模块的 state keys，
+新增每层 `1280→256→6144` MLP，读取图像256与时间1024；六组增量作用于旧
+affine LN 和 attention／FFN 残差，门为 `1+delta`，末层零初始化。
+照片 DPO policy 通过 `model.init_preference_checkpoint` 严格继承；reference
+仍是 photo310k，训练沿用 GT epsilon MSE + DPO。`model.checkpoint` 严格加载完整
+AdaLN 权重；resume 只读自身 checkpoint，不重复初始化旧来源。
+协议与验证边界见 `/mnt/d/hola_research/diffusion/baseline_adaln_20261102/ARCHITECTURE.md`。
+
 ## Face padding 与 topology 的共同契约
 
 - 默认 random padding 复制真实面并随机排列到 30 slots；mask 全为 true。`RandomFacePadder.postprocess()` 用 latent 距离阈值去重，面数由此间接产生。

@@ -23,6 +23,12 @@ checkpoint: null
 trainable_scope: all
 edge_threshold: 0.5
 
+# Ablations: shared -> teacher_split -> independent. Face heads stay shared.
+# Remove losing alternatives after the curve-head responsibility comparison.
+geometry_heads:
+  curve_mode: shared
+  fp32: false
+
 # Added 2026-10-17: optional full-resolution UV tokens, then query pooling.
 # Default CNN keeps the exact existing weights/keys and initialization order.
 face_encoder:
@@ -64,6 +70,7 @@ curve_point_feedback:
 # Existing intersection, XYZ heads, and classifier are unchanged.
 uv_boundary:
   enabled: false
+  detach_curve_input: false
   hidden_dim: 128
   num_layers: 2
   nhead: 4

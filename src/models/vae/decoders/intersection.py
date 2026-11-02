@@ -250,6 +250,7 @@ class IntersectionDecoder(nn.Module):
         curve_point_feedback_cfg: dict | None = None,
         uv_boundary_cfg: dict | None = None,
         shared_curve_cfg: dict | None = None,
+        geometry_heads_cfg: dict | None = None,
     ):
         super().__init__()
         self.face_dim = legacy.face_feature_dim
@@ -257,6 +258,11 @@ class IntersectionDecoder(nn.Module):
         self.chunk_size = int(cfg["candidate_chunk_size"])
         self.checkpoint_candidates = bool(cfg["checkpoint_candidates"])
         self.refinement_enabled = bool(cfg["enabled"])
+        geometry_options = geometry_heads_cfg or {}
+        self.curve_head_mode = str(geometry_options.get("curve_mode", "shared"))
+        if self.curve_head_mode not in {"shared", "teacher_split", "independent"}:
+            raise ValueError(f"Unknown geometry_heads.curve_mode: {self.curve_head_mode!r}")
+        geometry_fp32 = bool(geometry_options.get("fp32", False))
         conditioning_cfg = {} if curve_conditioning_cfg is None else curve_conditioning_cfg
         self.curve_conditioning_enabled = bool(conditioning_cfg.get("enabled", False))
         feedback_cfg = curve_point_feedback_cfg or {}
@@ -278,12 +284,22 @@ class IntersectionDecoder(nn.Module):
         self.face_geometry = PrimitiveDecoder(
             legacy.face_points_decoder, legacy.face_center_scale_decoder,
             spatial_shape=(16, 16), point_channels=legacy.in_channels,
+            force_fp32=geometry_fp32,
         )
         self.edge_geometry = PrimitiveDecoder(
             legacy.edge_points_decoder, legacy.edge_center_scale_decoder,
             spatial_shape=(16,), point_channels=legacy.in_channels,
             condition_dim=self.edge_dim + 2 * self.face_dim if self.curve_conditioning_enabled else None,
             condition_hidden_dim=int(conditioning_cfg.get("hidden_dim", 128)),
+            force_fp32=geometry_fp32,
+        )
+        # Final retains the original head and conditioning. Auxiliary copies
+        # start identically but own their CNN/bbox parameters independently.
+        self.teacher_edge_geometry = (
+            self.edge_geometry.unconditioned_copy() if self.curve_head_mode != "shared" else None
+        )
+        self.coarse_edge_geometry = (
+            self.edge_geometry.unconditioned_copy() if self.curve_head_mode == "independent" else None
         )
         intersection_cfg = {} if intersection_cfg is None else intersection_cfg
         self.intersection_kind = str(intersection_cfg.get("kind", "legacy"))
@@ -317,6 +333,7 @@ class IntersectionDecoder(nn.Module):
         )
         uv_options = dict(uv_boundary_cfg or {})
         uv_enabled = bool(uv_options.pop("enabled", False))
+        self.detach_uv_curve_input = bool(uv_options.pop("detach_curve_input", False))
         self.uv_boundary = None
         self.shared_curve = None
         if self.shared_curve_enabled:
@@ -341,30 +358,36 @@ class IntersectionDecoder(nn.Module):
         return torch.cat(chunks)
 
     def _decode_edge_chunk(
-        self, features: Tensor, condition: Tensor | None = None,
+        self, head: PrimitiveDecoder, features: Tensor, condition: Tensor | None = None,
     ) -> tuple[Tensor, Tensor, Tensor]:
-        geometry = self.edge_geometry(features, condition)
+        geometry = head(features, condition)
         return geometry.local_points, geometry.center_scale, geometry.points
 
     def _decode_edges(
         self, features: Tensor, condition: Tensor | None = None,
+        head: PrimitiveDecoder | None = None,
     ) -> PrimitiveGeometry:
+        head = self.edge_geometry if head is None else head
         if features.shape[0] == 0:
-            return self.edge_geometry(features, condition)
+            return head(features, condition)
         chunks = []
         for start in range(0, features.shape[0], self.chunk_size):
             chunk = features[start:start + self.chunk_size]
             condition_chunk = None if condition is None else condition[start:start + self.chunk_size]
             if self.checkpoint_candidates and self.training and torch.is_grad_enabled():
-                geometry = checkpoint(self._decode_edge_chunk, chunk, condition_chunk, use_reentrant=False)
+                geometry = checkpoint(self._decode_edge_chunk, head, chunk, condition_chunk, use_reentrant=False)
             else:
-                geometry = self._decode_edge_chunk(chunk, condition_chunk)
+                geometry = self._decode_edge_chunk(head, chunk, condition_chunk)
             chunks.append(geometry)
         return PrimitiveGeometry(
             local_points=torch.cat([chunk[0] for chunk in chunks]),
             center_scale=torch.cat([chunk[1] for chunk in chunks]),
             points=torch.cat([chunk[2] for chunk in chunks]),
         )
+
+    def decode_teacher(self, edge_features: Tensor) -> PrimitiveGeometry:
+        """Auxiliary GT-edge reconstruction; gradients still train the encoder."""
+        return self._decode_edges(edge_features, head=self.teacher_edge_geometry)
 
     def _decode_stage(
         self,
@@ -373,6 +396,7 @@ class IntersectionDecoder(nn.Module):
         pairs: CandidatePairs,
         face_geometry: PrimitiveGeometry | None = None,
         condition_curves: bool = False,
+        edge_head: PrimitiveDecoder | None = None,
     ) -> DecoderStage:
         logits = self.classifier(edges).squeeze(-1)
         # Only the final refined edge geometry reads the direct owner features.
@@ -383,7 +407,7 @@ class IntersectionDecoder(nn.Module):
             face_features=faces,
             edge_features=edges,
             face_geometry=self.face_geometry(faces) if face_geometry is None else face_geometry,
-            edge_geometry=self._decode_edges(edges, condition),
+            edge_geometry=self._decode_edges(edges, condition, head=edge_head),
             edge_logits=symmetric_pair_logits(logits, pairs.reverse),
         )
 
@@ -432,18 +456,22 @@ class IntersectionDecoder(nn.Module):
                 edges = self.inter(faces, local_features, pairs.indices)
             else:
                 edges = self.inter(faces, local_features, coarse_faces.points, pairs.indices)
-            coarse = self._decode_stage(faces, edges, pairs, face_geometry=coarse_faces)
+            coarse = self._decode_stage(
+                faces, edges, pairs, face_geometry=coarse_faces, edge_head=self.coarse_edge_geometry,
+            )
         else:
             edges = self._run_candidates(faces[pairs.indices])
-            coarse = self._decode_stage(faces, edges, pairs)
+            coarse = self._decode_stage(faces, edges, pairs, edge_head=self.coarse_edge_geometry)
 
         shared_features = None
         if self.refiner is None:
             delta_face, delta_edge = torch.zeros_like(faces), torch.zeros_like(edges)
             refined = coarse
+            if self.coarse_edge_geometry is not None and not self.shared_curve_enabled:
+                refined = self._decode_stage(faces, edges, pairs)
         else:
             delta_face, delta_edge = self.refiner(coarse, pairs)
-            # Reuse exactly the same geometry heads and linear classifier.
+            # The final head can be independent; the classifier stays shared.
             if self.shared_curve_enabled:
                 refined, shared_features = self._decode_shared_stage(faces + delta_face, edges + delta_edge, pairs)
             else:
@@ -464,9 +492,11 @@ class IntersectionDecoder(nn.Module):
         edge_uv = None
         if self.uv_boundary is not None:
             if self.shared_curve_enabled:
+                curves = refined.edge_geometry.points
+                uv_curves = curves.detach() if self.detach_uv_curve_input else curves
                 owner_uv = self.uv_boundary(
                     refined.edge_features, shared_features, refined.face_features,
-                    pairs.indices, refined.edge_geometry.points,
+                    pairs.indices, uv_curves,
                 )  # [P,16,2], each row's first owner
                 edge_uv = torch.stack((owner_uv, owner_uv[pairs.reverse].flip(1)), dim=1)
             else:

@@ -175,7 +175,7 @@ class UnifiedTrainer(pl.LightningModule):
             if expected is not None and dict(expected) != provenance:
                 raise ValueError("Photo cache changed after prepare_run")
             OmegaConf.update(cfg.dataset, "provenance", provenance, force_add=True)
-        if cfg.model.name == "PreferenceDiffusion":
+        if cfg.model.name in {"PreferenceDiffusion", "AdaLNPreferenceDiffusion"}:
             from src.datasets.preference import preference_data_provenance
             provenance = preference_data_provenance(cfg.dataset)
             expected = cfg.dataset.get("provenance")
@@ -262,11 +262,18 @@ class UnifiedTrainer(pl.LightningModule):
                     "A fresh frozen-encoder UV run needs model.init_uv_decoder_checkpoint "
                     "or a strict model.checkpoint; refusing to freeze a random encoder."
                 )
-        if cfg.model.name == "PreferenceDiffusion":
+        if cfg.model.name in {"PreferenceDiffusion", "AdaLNPreferenceDiffusion"}:
             from src.common.io import sha256_file
             from src.models.diffusion.preference_geometry import geometry_settings
 
             photo_source = model_cfg.get("model_source") == "photo"
+            full_checkpoint = model_cfg.get("checkpoint") if cfg.model.name == "AdaLNPreferenceDiffusion" else None
+            restore_path = resume if has_resume else full_checkpoint
+            if cfg.model.name == "AdaLNPreferenceDiffusion":
+                if not restore_path and not model_cfg.get("init_preference_checkpoint"):
+                    raise ValueError("AdaLN requires explicit DPO initialization, a full checkpoint, or resume")
+                if not has_resume and full_checkpoint and model_cfg.get("init_preference_checkpoint"):
+                    raise ValueError("Choose full AdaLN checkpoint or original DPO initialization")
             if photo_source != (cfg.dataset.provenance.get("protocol_version") == "photo_preference_generation_v1"):
                 raise ValueError("Preference model and dataset photo/grey sources must agree")
             if cfg.trainer.init_from_checkpoint:
@@ -278,8 +285,8 @@ class UnifiedTrainer(pl.LightningModule):
                 raise ValueError("The fixed geometry experiment requires FP32 training")
             if cfg.eval.enabled or cfg.trainer.evaluate or cfg.trainer.diffusion_validation_inference:
                 raise ValueError("Preference training exposes sample_latents(); STEP evaluation requires the explicit original VAE pipeline.")
-            if has_resume:
-                saved = torch.load(str(resume), map_location="cpu", mmap=True, weights_only=False)
+            if restore_path:
+                saved = torch.load(str(restore_path), map_location="cpu", mmap=True, weights_only=False)
                 if dict(cfg.dataset.provenance) != saved["hyper_parameters"]["dataset"]["provenance"]:
                     raise ValueError("Cannot resume preference training with a changed pair pool/protocol.")
                 saved_model_cfg = saved["hyper_parameters"]["model"]
@@ -291,16 +298,20 @@ class UnifiedTrainer(pl.LightningModule):
                 OmegaConf.update(
                     model_cfg, "legacy_model_config", saved_model_cfg["legacy_model_config"], force_add=True,
                 )
+                if cfg.model.name == "AdaLNPreferenceDiffusion":
+                    from src.models.diffusion.adaln_preference import check_adaln_checkpoint
+                    check_adaln_checkpoint(model_cfg, saved)
                 if "preference_initialization" in saved_model_cfg:
                     OmegaConf.update(cfg.model, "preference_initialization",
                                      saved_model_cfg["preference_initialization"], force_add=True)
             elif sha256_file(Path(model_cfg.photo_checkpoint if photo_source else model_cfg.legacy_checkpoint)) != cfg.dataset.provenance.source_checkpoint_sha256:
                 raise ValueError("Initial SVR checkpoint differs from the preference generation checkpoint.")
-            if photo_source and not has_resume:
+            if photo_source and not restore_path:
                 if (sha256_file(Path(model_cfg.legacy_checkpoint)) != cfg.dataset.provenance.original_checkpoint_sha256 or
                         model_cfg.photo_global_step != cfg.dataset.provenance.photo_global_step):
                     raise ValueError("Photo DPO original DINO/AE or selected baseline step differs from generation")
-            OmegaConf.update(model_cfg, "restoring_checkpoint", bool(has_resume), force_add=True)
+            OmegaConf.update(model_cfg, "restoring_checkpoint", bool(restore_path), force_add=True)
+            OmegaConf.update(model_cfg, "resuming_training", bool(has_resume), force_add=True)
         if cfg.model.name == "PhotoBaselineDiffusion":
             from src.common.io import sha256_file
             if cfg.trainer.init_from_checkpoint:
@@ -328,10 +339,10 @@ class UnifiedTrainer(pl.LightningModule):
         if cfg.model.name == "PhotoBaselineDiffusion":
             OmegaConf.update(cfg.model, "legacy_model_config", self.model.legacy_model_config, force_add=True)
             self.save_hyperparameters(OmegaConf.to_container(cfg, resolve=True))
-        if cfg.model.name == "PreferenceDiffusion":
+        if cfg.model.name in {"PreferenceDiffusion", "AdaLNPreferenceDiffusion"}:
             # 恢复只依赖自身 checkpoint 的架构/权重，不重新读取旧 SVR 权重。
             OmegaConf.update(cfg.model, "legacy_model_config", self.model.legacy_model_config, force_add=True)
-            if model_cfg.get("init_preference_checkpoint") and not has_resume:
+            if model_cfg.get("init_preference_checkpoint") and not has_resume and not model_cfg.get("checkpoint"):
                 initialization = self.model.initialize_preference_weights(
                     model_cfg.init_preference_checkpoint, dict(cfg.dataset.provenance))
                 OmegaConf.update(cfg.model, "preference_initialization", initialization, force_add=True)
@@ -347,6 +358,10 @@ class UnifiedTrainer(pl.LightningModule):
         self.viz: Dict[str, Any] = {}
 
     def on_load_checkpoint(self, checkpoint: Dict[str, Any]) -> None:
+        if checkpoint.get("initialization_only"):
+            raise ValueError(
+                "This migrated checkpoint is initialization-only; use model.checkpoint with a new run, not resume."
+            )
         if self.cfg.model.name == "AutoEncoder_uv_intersection":
             # Strict tensor loading cannot detect same-shape changes to heads,
             # dropout, or other saved architecture semantics.
@@ -707,7 +722,7 @@ class UnifiedTrainer(pl.LightningModule):
 # Main Entry Point
 # ---------------------------------------------------------------------------
 
-@hydra.main(version_base="1.3", config_path="../../configs", config_name="train")
+@hydra.main(version_base="1.3", config_path="../configs", config_name="train")
 def main(cfg: DictConfig):
     """Unified training entry point for Img2Brep."""
     _configure_num_threads(cfg)
@@ -723,6 +738,7 @@ def main(cfg: DictConfig):
     # --- Reproducibility ---
     seed_everything(cfg.trainer.seed, workers=True)
     torch.set_float32_matmul_precision(cfg.trainer.get("float32_matmul_precision", "medium"))
+    torch.backends.cudnn.allow_tf32 = cfg.trainer.get("cudnn_allow_tf32", True)
     torch.backends.cudnn.benchmark = bool(cfg.trainer.cudnn_benchmark) and not cfg.trainer.deterministic
 
     # --- Print resolved config ---
@@ -747,7 +763,7 @@ def main(cfg: DictConfig):
     if evaluating:
         OmegaConf.update(cfg, "eval.output_dir", str(predictions_directory(cfg, Path(log_dir))))
         logger.info("Raw predictions will be saved to %s", cfg.eval.output_dir)
-    if cfg.model.name == "PreferenceDiffusion":
+    if cfg.model.name in {"PreferenceDiffusion", "AdaLNPreferenceDiffusion"}:
         from src.datasets.preference import preference_data_provenance
         OmegaConf.update(
             cfg.dataset, "provenance", preference_data_provenance(cfg.dataset), force_add=True,

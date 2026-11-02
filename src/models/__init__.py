@@ -57,6 +57,9 @@ _MODEL_LOADERS: Dict[str, Any] = {
     "PreferenceDiffusion": _lazy_import(
         "src.models.diffusion.preference", "PreferenceDiffusion"
     ),
+    "AdaLNPreferenceDiffusion": _lazy_import(
+        "src.models.diffusion.adaln_preference", "AdaLNPreferenceDiffusion"
+    ),
     "PhotoBaselineDiffusion": _lazy_import(
         "src.models.diffusion.photo_baseline", "PhotoBaselineDiffusion"
     ),

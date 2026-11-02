@@ -50,14 +50,17 @@ class LegacySVRDenoiser(nn.Module):
     def image_condition(self, dino_features: Tensor) -> Tensor:
         return self.img_fc(dino_features)[:, None]
 
-    def forward(self, noisy_latent: Tensor, timestep: Tensor, condition: Tensor) -> Tensor:
+    def time_condition(self, timestep: Tensor) -> Tensor:
         # 与历史 sincos_embedding 的 dtype、sin/cos 顺序和 10000 周期一致。
         half = self.width // 2
         frequency = torch.exp(
             -math.log(10000) * torch.arange(half, dtype=timestep.dtype, device=timestep.device) / half,
         )
         phase = timestep[:, None].float() * frequency[None]
-        time = self.time_embed(torch.cat((phase.cos(), phase.sin()), -1))[:, None]
+        return self.time_embed(torch.cat((phase.cos(), phase.sin()), -1))[:, None]
+
+    def forward(self, noisy_latent: Tensor, timestep: Tensor, condition: Tensor) -> Tensor:
+        time = self.time_condition(timestep)
         latent = self.p_embed(noisy_latent)
         tokens = torch.cat((latent, condition.repeat(1, noisy_latent.shape[1], 1)), -1)
         return self.fc_out(self.net1(tokens + time))

@@ -1,0 +1,34 @@
+# Original photo DPO policy + zero delta image/time modulation; fixed photo310k reference.
+defaults:
+  - train_diffusion_preference_photo
+  - _self_
+
+model:
+  name: AdaLNPreferenceDiffusion
+  legacy_checkpoint: null
+  photo_checkpoint: null
+  init_preference_checkpoint: null
+  checkpoint: null
+  dino_repo: null
+  modulation_hidden_width: 256
+
+dataset:
+  pairs_manifest: ???
+  pairs_manifest_sha256: ???
+  validation_pairs_manifest: ???
+  validation_pairs_manifest_sha256: ???
+  cached_latent_root: ???
+  cache_root: ???
+  condition_data_root: ???
+
+trainer:
+  exp_name: diffusion_adaln_photo
+  devices: 8
+  batch_size: 8
+  precision: 32-true
+  learning_rate: 1.0e-5
+  max_steps: 10000000
+  checkpoint_every_n_train_steps: 1000
+  checkpoint_step_keep_last: 3
+  wandb:
+    name: photo_dpo_adaln
