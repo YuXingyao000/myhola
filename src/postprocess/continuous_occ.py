@@ -125,7 +125,7 @@ def soft_endpoint_pairs(shape):
     return np.array(sorted(relations), dtype=int).reshape(-1, 4)
 
 
-def _save_geometry(path, geometry, problem, uv):
+def _save_geometry(path, geometry, problem, uv, stage_points=None):
     arrays = {"uv": uv, "uv_reference": problem.uv_reference, "edge_faces": problem.edge_faces,
               "endpoint_pairs": problem.endpoint_pairs}
     for kind, splines, originals, observations in (
@@ -141,25 +141,48 @@ def _save_geometry(path, geometry, problem, uv):
                 for name, value in (("knots", axis.knots), ("degree", axis.degree),
                                     ("periodic_count", axis.periodic_count or 0)):
                     arrays[f"{prefix}_axis_{axis_id}_{name}"] = np.asarray(value)
+    if stage_points is not None:
+        arrays.update(stage_points)
     np.savez_compressed(path, **arrays)
 
 
-def refine_occ_geometry(shape, config, diagnostics_path):
+def _distance_summary(differences):
+    lengths = np.linalg.norm(np.concatenate([item.reshape(-1, 3) for item in differences]), axis=1)
+    return {"rms": float(np.sqrt(np.mean(lengths ** 2))),
+            "mean": float(np.mean(lengths)), "max": float(np.max(lengths))}
+
+
+def _cascade_diagnostics(initial, refined, observations, old_points, raw_points):
+    """Data residuals use the same fixed parameters; they are not closest distances."""
+    before = [spline.evaluate(obs.parameters) for spline, obs in zip(initial, observations)]
+    after = [spline.evaluate(obs.parameters) for spline, obs in zip(refined, observations)]
+    return {
+        "legacy_sample_displacement_from_raw": _distance_summary([old_points - raw_points]),
+        "initial_fit_residual_to_raw": _distance_summary([a - obs.xyz for a, obs in zip(before, observations)]),
+        "final_fit_residual_to_raw": _distance_summary([a - obs.xyz for a, obs in zip(after, observations)]),
+        "continuous_displacement_at_data_parameters": _distance_summary([a - b for a, b in zip(after, before)]),
+    }
+
+
+def refine_occ_geometry(shape, config, diagnostics_path, *, raw_face_points=None,
+                        raw_edge_points=None, endpoint_pairs=None):
     """Input shape already fitted once, with natural-edge replacement disabled."""
     started = time.monotonic()
     config = Config(**(config or {}))
     curves = [from_occ_curve(curve) for curve in shape.recon_geom_curves]
     surfaces = [from_occ_surface(surface) for surface in shape.recon_geom_faces]
     geometry = Geometry(curves, surfaces, np.empty((0, 3), dtype=np.float64))
-    curve_data = [curve_observation(curve, points) for curve, points in zip(shape.recon_geom_curves, shape.recon_edge_points)]
-    surface_data = [surface_observation(surface, points) for surface, points in zip(shape.recon_geom_faces, shape.recon_face_points)]
+    face_points = shape.recon_face_points if raw_face_points is None else raw_face_points
+    edge_points = shape.recon_edge_points if raw_edge_points is None else raw_edge_points
+    curve_data = [curve_observation(curve, points) for curve, points in zip(shape.recon_geom_curves, edge_points)]
+    surface_data = [surface_observation(surface, points) for surface, points in zip(shape.recon_geom_faces, face_points)]
     initialized = time.monotonic()
     owners = np.empty((len(curves), 2), dtype=int)
     for edge, a, b in shape.edge_face_connectivity:
         owners[edge] = a, b
     refined, uv, report, problem = refine(
         geometry, curve_data, surface_data, owners, np.full((len(curves), 2), -1, dtype=int),
-        config, endpoint_pairs=soft_endpoint_pairs(shape))
+        config, endpoint_pairs=soft_endpoint_pairs(shape) if endpoint_pairs is None else endpoint_pairs)
     shape.recon_geom_curves = [write_occ_curve(template, spline)
                               for template, spline in zip(shape.recon_geom_curves, refined.curves)]
     shape.recon_geom_faces = [write_occ_surface(template, spline)
@@ -174,8 +197,21 @@ def refine_occ_geometry(shape, config, diagnostics_path):
                   periodic_curve_count=sum(c.axes[0].periodic_count is not None for c in curves),
                   periodic_surface_axes=sum(a.periodic_count is not None for s in surfaces for a in s.axes),
                   natural_boundary_replacement=False, refitted_after_optimization=False)
+    stage_points = None
+    if raw_face_points is not None:
+        report.update(initial_geometry="legacy_optimized_then_fitted", data_reference="pre_legacy_raw_xyz",
+                      raw_initial_stage="post_legacy_fit_before_continuous",
+                      movement_box_reference="post_legacy_initial_poles; not total movement from raw",
+                      endpoint_relations="frozen pre-legacy soft pairs; no re-pairing after legacy",
+                      cascade={kind: _cascade_diagnostics(initial, final, observations, old, raw)
+                               for kind, initial, final, observations, old, raw in (
+                                   ("curve", curves, refined.curves, curve_data, shape.recon_edge_points, edge_points),
+                                   ("surface", surfaces, refined.surfaces, surface_data, shape.recon_face_points, face_points))})
+        stage_points = {"pre_legacy_face_points": face_points, "pre_legacy_edge_points": edge_points,
+                        "post_legacy_face_points": shape.recon_face_points,
+                        "post_legacy_edge_points": shape.recon_edge_points}
     path = Path(diagnostics_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
-    _save_geometry(path.with_suffix(".npz"), refined, problem, uv)
+    _save_geometry(path.with_suffix(".npz"), refined, problem, uv, stage_points)
     return shape.recon_geom_faces, shape.recon_topo_faces, shape.recon_geom_curves, shape.recon_topo_curves

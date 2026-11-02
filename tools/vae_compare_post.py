@@ -60,6 +60,7 @@ def execute_job(job: dict, status_path: Path) -> dict:
     started = time.monotonic()
     row = {"sample_id": job["sample_id"], "method": job["method"], "mode": job["mode"],
            "geometry_optimizer": job.get("geometry_optimizer", "legacy"),
+           "preserve_optimized_boundaries": job.get("preserve_optimized_boundaries", False),
            "post_policy": job.get("post_policy", "legacy"),
            "protocol_fingerprint": job["protocol_fingerprint"], "raw_sha256": job["raw_sha256"],
            "status": "running", "stage": "validate_raw", "process_pid": os.getpid(),
@@ -94,6 +95,8 @@ def execute_job(job: dict, status_path: Path) -> dict:
         if job.get("geometry_optimizer", "legacy") != "legacy":
             policy_arguments.update(geometry_optimizer=job["geometry_optimizer"],
                                     continuous_config=job.get("continuous_config"))
+        if job.get("preserve_optimized_boundaries", False):
+            policy_arguments["preserve_optimized_boundaries"] = True
         if job.get("post_policy", "legacy") != "legacy":
             policy_arguments.update({
                 "post_policy": job["post_policy"],
@@ -335,6 +338,10 @@ def load_reference_rows(reference_root: Path, comparison_root: Path, mode: str,
         raise ValueError(f"Missing reference protocol: {source_path}")
     if source.get("post_policy", "legacy") != protocol.get("post_policy", "legacy"):
         raise ValueError("Reference post_policy differs; compare post variants in separate roots")
+    for name, default in (("geometry_optimizer", "legacy"), ("continuous_config", None),
+                          ("preserve_optimized_boundaries", False)):
+        if source.get(name, default) != protocol.get(name, default):
+            raise ValueError(f"Reference {name} differs; compare post variants in separate roots")
     differences = [name for name in REFERENCE_CONTRACT_FIELDS
                    if name not in source or name not in protocol or source[name] != protocol[name]]
     if differences:
@@ -398,8 +405,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--workers", type=int, default=32)
     parser.add_argument("--timeout", type=float, default=180)
     parser.add_argument("--max-optimize-iter", type=int, default=200)
-    parser.add_argument("--geometry-optimizer", choices=("legacy", "continuous"), default="legacy")
+    parser.add_argument("--geometry-optimizer", choices=("legacy", "continuous", "legacy_continuous"), default="legacy")
     parser.add_argument("--continuous-config", type=Path, help="Explicit JSON overrides for continuous_geometry.Config")
+    parser.add_argument("--preserve-optimized-boundaries", action="store_true",
+                        help="Disable natural edge/wire replacement in optimized paths, including legacy")
     parser.add_argument("--original-test-count", type=int, default=2424)
     parser.add_argument("--summary-only", action="store_true")
     return parser
@@ -408,8 +417,8 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = build_parser().parse_args()
     continuous_config = json.loads(args.continuous_config.read_text()) if args.continuous_config else None
-    if args.continuous_config and args.geometry_optimizer != "continuous":
-        raise ValueError("--continuous-config requires --geometry-optimizer continuous")
+    if args.continuous_config and args.geometry_optimizer == "legacy":
+        raise ValueError("--continuous-config requires a continuous geometry optimizer")
     methods = comparison_methods(args.candidate_method, args.baseline_method)
     if args.methods is None:
         args.methods = [args.candidate_method] if args.reference_root is not None else list(methods)
@@ -448,11 +457,13 @@ def main() -> int:
     # for that path while making any new policy part of the resume fingerprint.
     if args.post_policy != "legacy":
         protocol["post_policy"] = args.post_policy
-    if args.geometry_optimizer == "continuous":
+    if args.geometry_optimizer != "legacy":
         from dataclasses import asdict
         from src.postprocess.continuous_geometry import Config
         continuous_config = asdict(Config(**(continuous_config or {})))
-        protocol.update(geometry_optimizer="continuous", continuous_config=continuous_config)
+        protocol.update(geometry_optimizer=args.geometry_optimizer, continuous_config=continuous_config)
+    if args.preserve_optimized_boundaries:
+        protocol["preserve_optimized_boundaries"] = True
     reference_rows = None
     if args.reference_root is not None:
         reference_rows, provenance = load_reference_rows(args.reference_root, args.comparison_root, args.mode, ids, protocol, baseline_method=args.baseline_method)
@@ -495,6 +506,7 @@ def main() -> int:
                         continue
                 jobs.append({"sample_id": sample_id, "method": method, "mode": args.mode,
                              "geometry_optimizer": args.geometry_optimizer, "continuous_config": continuous_config,
+                             "preserve_optimized_boundaries": args.preserve_optimized_boundaries,
                              "post_policy": args.post_policy, "timeout_seconds": args.timeout,
                              "raw_root": str(raw_root), "raw_sha256": raw_sha,
                              "post_root": str(args.comparison_root / "post" / args.mode / method),

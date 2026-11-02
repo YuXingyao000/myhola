@@ -222,6 +222,14 @@ def _optimize_shape_geometry(shape, is_ray, isdebug, use_cuda, v_max_optimize_it
         _save_optimized_debug_data(shape, debug_face_save_path)
 
 
+def _continuous_reference(shape):
+    """Freeze observations and soft endpoint relations before legacy alignment."""
+    from src.postprocess.continuous_occ import soft_endpoint_pairs
+    return {"raw_face_points": shape.recon_face_points.copy(),
+            "raw_edge_points": shape.recon_edge_points.copy(),
+            "endpoint_pairs": soft_endpoint_pairs(shape)}
+
+
 def _fit_occ_geometry(shape, fitting_policy="legacy", *, replace_natural_edges=True):
     recon_geom_faces = [create_surface(points) if fitting_policy == "legacy" else
                         create_surface(points, fitting_policy=fitting_policy)
@@ -499,7 +507,8 @@ def _try_save_complete_solid(trimmed_faces, output, report, flush, deadline):
 
 def _run_complete_post_path(data_root, output, folder_name, *, optimized, fitting_policy,
                             max_iterations, use_cuda, report, flush, deadline,
-                            geometry_optimizer="legacy", continuous_config=None):
+                            geometry_optimizer="legacy", continuous_config=None,
+                            preserve_optimized_boundaries=False):
     _check_post_deadline(deadline)
     output.mkdir(parents=True, exist_ok=True)
     shape = load_prediction_shape(Path(data_root) / folder_name / "data.npz")
@@ -508,8 +517,11 @@ def _run_complete_post_path(data_root, output, folder_name, *, optimized, fittin
     report["selected_edge_count"] = len(shape.recon_edge_points)
     report["stage"] = "optimization" if optimized else "fitting"
     flush()
-    continuous = optimized and geometry_optimizer == "continuous"
-    if optimized and not continuous:
+    continuous = optimized and geometry_optimizer in {"continuous", "legacy_continuous"}
+    cascade = optimized and geometry_optimizer == "legacy_continuous"
+    preserve_boundaries = optimized and (continuous or preserve_optimized_boundaries)
+    reference = _continuous_reference(shape) if cascade else {}
+    if optimized and (not continuous or cascade):
         _optimize_shape_geometry(shape, False, False, use_cuda, max_iterations, False, output / "debug_face_loop")
     _check_post_deadline(deadline)
     report["stage"] = "fitting"
@@ -519,15 +531,17 @@ def _run_complete_post_path(data_root, output, folder_name, *, optimized, fittin
         _fit_occ_geometry(shape, fitting_policy=fitting_policy, replace_natural_edges=False)
         report["stage"] = "continuous_optimization"
         flush()
-        faces, _, _, curves = refine_occ_geometry(shape, continuous_config, output / "continuous_geometry.json")
+        faces, _, _, curves = refine_occ_geometry(
+            shape, continuous_config, output / "continuous_geometry.json", **reference)
     else:
-        faces, _, _, curves = _fit_occ_geometry(shape, fitting_policy=fitting_policy)
+        faces, _, _, curves = _fit_occ_geometry(
+            shape, fitting_policy=fitting_policy, replace_natural_edges=not preserve_boundaries)
     report["periodic_edge_replacements"] = list(map(int, shape.replace_edge_idx))
     report["stage"] = "trimming"
     flush()
     trimmed = _build_complete_trimmed_faces(
         faces, curves, shape.edge_face_connectivity, report, flush, deadline,
-        allow_natural_boundary=not continuous)
+        allow_natural_boundary=not preserve_boundaries)
     if not report["complete_faces"]:
         report["status"] = "incomplete_faces"
         return False
@@ -554,7 +568,8 @@ def _promote_post_output(source, destination):
 def _construct_with_policy(data_root, out_root, folder_name, *, v_drop_num, is_ray, is_log,
                            is_optimize_geom, v_max_optimize_iter, isdebug, use_cuda,
                            from_scratch, is_save_data, post_policy, time_budget_seconds,
-                           deadline_monotonic, geometry_optimizer="legacy", continuous_config=None):
+                           deadline_monotonic, geometry_optimizer="legacy", continuous_config=None,
+                           preserve_optimized_boundaries=False):
     if post_policy not in POST_POLICIES:
         raise ValueError(f"Unknown post_policy: {post_policy}")
     if v_drop_num != 0:
@@ -576,6 +591,7 @@ def _construct_with_policy(data_root, out_root, folder_name, *, v_drop_num, is_r
         raise FileExistsError(f"Refusing to overwrite existing policy output: {output}")
     diagnostics = {"version": "post_policy_v1", "post_policy": post_policy,
                    "geometry_optimizer": geometry_optimizer,
+                   "preserve_optimized_boundaries": preserve_optimized_boundaries,
                    "status": "running", "chosen_path": None, "native_valid_solid": False,
                    "boundary_complete": None, "paths": [],
                    "shared_budget_seconds_at_entry": None if deadline_monotonic is None else
@@ -625,7 +641,8 @@ def _construct_with_policy(data_root, out_root, folder_name, *, v_drop_num, is_r
                         v_max_optimize_iter=v_max_optimize_iter, isdebug=isdebug,
                         use_cuda=use_cuda, from_scratch=from_scratch,
                         is_save_data=is_save_data, _fitting_policy=fitting_policy,
-                        geometry_optimizer=geometry_optimizer, continuous_config=continuous_config)
+                        geometry_optimizer=geometry_optimizer, continuous_config=continuous_config,
+                        preserve_optimized_boundaries=preserve_optimized_boundaries)
                     step = attempt_output / "recon_brep.step"
                     if step.is_file():
                         _, native = _read_native_post_step(step)
@@ -640,7 +657,8 @@ def _construct_with_policy(data_root, out_root, folder_name, *, v_drop_num, is_r
                         data_root, attempt_output, folder_name, optimized=optimized,
                         fitting_policy=fitting_policy, max_iterations=v_max_optimize_iter,
                         use_cuda=use_cuda, report=report, flush=flush, deadline=deadline_monotonic,
-                        geometry_optimizer=geometry_optimizer, continuous_config=continuous_config)
+                        geometry_optimizer=geometry_optimizer, continuous_config=continuous_config,
+                        preserve_optimized_boundaries=preserve_optimized_boundaries)
                 if accepted:
                     _promote_post_output(attempt_output, output)
                     diagnostics.update(status="accepted", chosen_path=label, native_valid_solid=True,
@@ -685,8 +703,9 @@ def construct_brep_for_sample(data_root, out_root, folder_name, v_drop_num=0,
                               isdebug=False, use_cuda=False, from_scratch=True,
                               is_save_data=False, *, post_policy="legacy",
                               time_budget_seconds=None, deadline_monotonic=None,
-                              _fitting_policy="legacy", geometry_optimizer="legacy", continuous_config=None):
-    if geometry_optimizer not in ("legacy", "continuous"):
+                              _fitting_policy="legacy", geometry_optimizer="legacy", continuous_config=None,
+                              preserve_optimized_boundaries=False):
+    if geometry_optimizer not in ("legacy", "continuous", "legacy_continuous"):
         raise ValueError(f"Unknown geometry optimizer: {geometry_optimizer}")
     if post_policy != "legacy":
         return _construct_with_policy(
@@ -696,7 +715,7 @@ def construct_brep_for_sample(data_root, out_root, folder_name, v_drop_num=0,
             use_cuda=use_cuda, from_scratch=from_scratch, is_save_data=is_save_data,
             post_policy=post_policy, time_budget_seconds=time_budget_seconds,
             deadline_monotonic=deadline_monotonic, geometry_optimizer=geometry_optimizer,
-            continuous_config=continuous_config)
+            continuous_config=continuous_config, preserve_optimized_boundaries=preserve_optimized_boundaries)
     disable_occ_log()
     # is_log = False
     # isdebug = False
@@ -726,8 +745,11 @@ def construct_brep_for_sample(data_root, out_root, folder_name, v_drop_num=0,
     _prepare_shape_topology(shape, debug_face_save_path, isdebug, is_save_data)
 
     # Optimize data
-    continuous = is_optimize_geom and geometry_optimizer == "continuous"
-    if is_optimize_geom and not continuous:
+    continuous = is_optimize_geom and geometry_optimizer in {"continuous", "legacy_continuous"}
+    cascade = is_optimize_geom and geometry_optimizer == "legacy_continuous"
+    preserve_boundaries = is_optimize_geom and (continuous or preserve_optimized_boundaries)
+    reference = _continuous_reference(shape) if cascade else {}
+    if is_optimize_geom and (not continuous or cascade):
         _optimize_shape_geometry(
                 shape, is_ray, isdebug, use_cuda, v_max_optimize_iter, is_save_data, debug_face_save_path)
 
@@ -737,12 +759,13 @@ def construct_brep_for_sample(data_root, out_root, folder_name, v_drop_num=0,
         from src.postprocess.continuous_occ import refine_occ_geometry
         _fit_occ_geometry(shape, fitting_policy=_fitting_policy, replace_natural_edges=False)
         recon_geom_faces, recon_topo_faces, recon_geom_curves, recon_topo_curves = refine_occ_geometry(
-            shape, continuous_config, out_sample_dir / "continuous_geometry.json")
+            shape, continuous_config, out_sample_dir / "continuous_geometry.json", **reference)
     elif _fitting_policy == "legacy":
-        recon_geom_faces, recon_topo_faces, recon_geom_curves, recon_topo_curves = _fit_occ_geometry(shape)
+        recon_geom_faces, recon_topo_faces, recon_geom_curves, recon_topo_curves = _fit_occ_geometry(
+            shape, replace_natural_edges=not preserve_boundaries)
     else:
         recon_geom_faces, recon_topo_faces, recon_geom_curves, recon_topo_curves = _fit_occ_geometry(
-            shape, fitting_policy=_fitting_policy)
+            shape, fitting_policy=_fitting_policy, replace_natural_edges=not preserve_boundaries)
 
     # Write separate faces
     v, f = get_separated_surface(shape.recon_topo_faces, v_precision1=0.1, v_precision2=0.2)
@@ -764,7 +787,7 @@ def construct_brep_for_sample(data_root, out_root, folder_name, v_drop_num=0,
 
             num_faces = len(faces)
             trimmed_faces = _build_trimmed_faces(faces, curves, connectivity,
-                                                allow_natural_boundary=not continuous)
+                                                allow_natural_boundary=not preserve_boundaries)
             valid_trimmed_faces = [face for face in trimmed_faces if face is not None]
             if len(valid_trimmed_faces) < 0.8 * num_faces:
                 continue
@@ -781,7 +804,7 @@ def construct_brep_for_sample(data_root, out_root, folder_name, v_drop_num=0,
     if not is_success:
         _write_compound_fallback(
                 out_sample_dir, folder_name, recon_geom_faces, recon_topo_faces, recon_topo_curves,
-                ori_shape.edge_face_connectivity, allow_natural_boundary=not continuous)
+                ori_shape.edge_face_connectivity, allow_natural_boundary=not preserve_boundaries)
     return time_records
 
 
@@ -791,7 +814,8 @@ def construct_brep_from_datanpz(data_root, out_root, folder_name, v_drop_num=0,
                                 isdebug=False, use_cuda=False, from_scratch=True,
                                 is_save_data=False, *, post_policy="legacy",
                                 time_budget_seconds=None, deadline_monotonic=None,
-                                geometry_optimizer="legacy", continuous_config=None):
+                                geometry_optimizer="legacy", continuous_config=None,
+                                preserve_optimized_boundaries=False):
     return construct_brep_for_sample(
             data_root, out_root, folder_name, v_drop_num=v_drop_num,
             is_ray=is_ray, is_log=is_log,
@@ -799,7 +823,8 @@ def construct_brep_from_datanpz(data_root, out_root, folder_name, v_drop_num=0,
             isdebug=isdebug, use_cuda=use_cuda, from_scratch=from_scratch,
             is_save_data=is_save_data, post_policy=post_policy,
             time_budget_seconds=time_budget_seconds, deadline_monotonic=deadline_monotonic,
-            geometry_optimizer=geometry_optimizer, continuous_config=continuous_config)
+            geometry_optimizer=geometry_optimizer, continuous_config=continuous_config,
+            preserve_optimized_boundaries=preserve_optimized_boundaries)
 
 
 def parse_args():
