@@ -132,6 +132,11 @@ class VaeComparePostTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "post_policy"):
             load_reference_rows(reference, current, "fit_only", ["a"],
                                 {**protocol, "post_policy": "recover_v1"})
+        for name, value in (("geometry_optimizer", "legacy_continuous"),
+                            ("continuous_config", {"iterations": 8}),
+                            ("preserve_optimized_boundaries", True)):
+            with self.subTest(field=name), self.assertRaisesRegex(ValueError, name):
+                load_reference_rows(reference, current, "fit_only", ["a"], {**protocol, name: value})
         for name in ("post_algorithm_files", "sampling", "timeout_seconds", "split_sha256", "data_root"):
             with self.subTest(field=name), self.assertRaisesRegex(ValueError, name):
                 load_reference_rows(reference, current, "fit_only", ["a"], {**protocol, name: "different"})
