@@ -87,6 +87,25 @@ def _build_strategy(cfg: DictConfig) -> DDPStrategy | str:
     )
 
 
+class StepIntervalCheckpoint(ModelCheckpoint):
+    """Step snapshots and a final last; short epochs must not trigger multi-GB writes."""
+
+    @property
+    def state_key(self) -> str:
+        # Preserve saved retention/path state when resuming pre-fix runs.
+        return "ModelCheckpoint" + super().state_key[len(type(self).__qualname__):]
+
+    def on_train_epoch_end(self, trainer, pl_module) -> None:
+        pass
+
+    def on_validation_end(self, trainer, pl_module) -> None:
+        pass
+
+    def on_train_end(self, trainer, pl_module) -> None:
+        if not self._should_skip_saving_checkpoint(trainer):
+            self._save_last_checkpoint(trainer, self._monitor_candidates(trainer))
+
+
 def _build_checkpoint_callbacks(cfg: DictConfig, run_dir: Path) -> list[ModelCheckpoint]:
     """Keep validation-ranked weights and optional fixed-step snapshots separately."""
     callbacks = [
@@ -108,7 +127,7 @@ def _build_checkpoint_callbacks(cfg: DictConfig, run_dir: Path) -> list[ModelChe
         keep = cfg.trainer.get("checkpoint_step_keep_last", -1)
         if isinstance(keep, bool) or not isinstance(keep, int) or keep == 0 or keep < -1:
             raise ValueError("checkpoint_step_keep_last must be -1 or a positive integer")
-        callbacks.append(ModelCheckpoint(
+        callbacks.append(StepIntervalCheckpoint(
             dirpath=str(run_dir / "weights" / "steps"),
             every_n_train_steps=interval,
             every_n_epochs=0,
@@ -116,8 +135,8 @@ def _build_checkpoint_callbacks(cfg: DictConfig, run_dir: Path) -> list[ModelChe
             monitor="step" if keep > 0 else None,
             mode="max",
             save_last=True,
-            # Also retain the final state when max_steps ends between snapshots.
-            save_on_train_epoch_end=True,
+            # on_train_end retains final state; epoch ends do not write snapshots.
+            save_on_train_epoch_end=False,
             filename="step={step:08d}",
             auto_insert_metric_name=False,
             enable_version_counter=cfg.trainer.checkpoint_enable_version_counter,
@@ -174,6 +193,13 @@ class UnifiedTrainer(pl.LightningModule):
             expected = cfg.dataset.get("provenance")
             if expected is not None and dict(expected) != provenance:
                 raise ValueError("Photo cache changed after prepare_run")
+            OmegaConf.update(cfg.dataset, "provenance", provenance, force_add=True)
+        if cfg.model.name == "AdaLNZeroPhotoDiffusion":
+            from src.datasets.photo import photo_gt_data_provenance
+            provenance = photo_gt_data_provenance(cfg.dataset)
+            expected = cfg.dataset.get("provenance")
+            if expected is not None and dict(expected) != provenance:
+                raise ValueError("Photo GT data changed after prepare_run")
             OmegaConf.update(cfg.dataset, "provenance", provenance, force_add=True)
         if cfg.model.name in {"PreferenceDiffusion", "AdaLNPreferenceDiffusion"}:
             from src.datasets.preference import preference_data_provenance
@@ -332,7 +358,15 @@ class UnifiedTrainer(pl.LightningModule):
         if cfg.model.name == "SpatialPhotoDiffusion":
             from src.models.diffusion.spatial_model import prepare_spatial_model_config
             prepare_spatial_model_config(cfg, model_cfg, str(resume) if has_resume else None)
+        if cfg.model.name == "AdaLNZeroPhotoDiffusion":
+            from src.models.diffusion.adaln_zero_photo import prepare_adaln_zero_model_config
+            prepare_adaln_zero_model_config(cfg, model_cfg, str(resume) if has_resume else None)
         self.model = build_model(model_cfg, cfg.condition)
+        if cfg.model.name == "AdaLNZeroPhotoDiffusion":
+            OmegaConf.update(cfg.model, "legacy_model_config", self.model.legacy_model_config, force_add=True)
+            if not model_cfg.restoring_checkpoint:
+                OmegaConf.update(cfg.model, "initialization", self.model.initialization, force_add=True)
+            self.save_hyperparameters(OmegaConf.to_container(cfg, resolve=True))
         if cfg.model.name == "SpatialPhotoDiffusion":
             OmegaConf.update(cfg.model, "legacy_model_config", self.model.legacy_model_config, force_add=True)
             self.save_hyperparameters(OmegaConf.to_container(cfg, resolve=True))
@@ -366,6 +400,11 @@ class UnifiedTrainer(pl.LightningModule):
             # Strict tensor loading cannot detect same-shape changes to heads,
             # dropout, or other saved architecture semantics.
             self.model.validate_complete_checkpoint(checkpoint)
+        if self.cfg.model.name == "AdaLNZeroPhotoDiffusion":
+            from src.models.diffusion.adaln_zero_photo import check_complete_checkpoint
+            check_complete_checkpoint(self.cfg.model, checkpoint)
+            if dict(self.cfg.dataset.provenance) != checkpoint["hyper_parameters"]["dataset"]["provenance"]:
+                raise ValueError("Cannot resume AdaLN-Zero with changed GT data/provenance")
 
     def _init_model_from_checkpoint(self):
         """Load model weights without restoring optimizer/trainer state."""
@@ -771,6 +810,9 @@ def main(cfg: DictConfig):
     if cfg.model.name == "PhotoBaselineDiffusion":
         from src.datasets.photo import photo_cache_provenance
         OmegaConf.update(cfg.dataset, "provenance", photo_cache_provenance(cfg.dataset), force_add=True)
+    if cfg.model.name == "AdaLNZeroPhotoDiffusion":
+        from src.datasets.photo import photo_gt_data_provenance
+        OmegaConf.update(cfg.dataset, "provenance", photo_gt_data_provenance(cfg.dataset), force_add=True)
     if cfg.model.name == "SpatialPhotoDiffusion":
         from src.datasets.spatial_photo import spatial_data_provenance
         OmegaConf.update(cfg.dataset, "provenance", spatial_data_provenance(cfg.dataset), force_add=True)
@@ -816,6 +858,7 @@ def main(cfg: DictConfig):
         precision=cfg.trainer.precision,
         accumulate_grad_batches=accumulation,
         check_val_every_n_epoch=cfg.trainer.check_val_every_n_epoch,
+        val_check_interval=cfg.trainer.val_check_interval,
         num_sanity_val_steps=cfg.trainer.num_sanity_val_steps,
         gradient_clip_algorithm="norm",
         gradient_clip_val=cfg.trainer.gradient_clip_val,
