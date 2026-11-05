@@ -82,6 +82,18 @@ affine LN 和 attention／FFN 残差，门为 `1+delta`，末层零初始化。
 AdaLN 权重；resume 只读自身 checkpoint，不重复初始化旧来源。
 协议与验证边界见 `/mnt/d/hola_research/diffusion/baseline_adaln_20261102/ARCHITECTURE.md`。
 
+`train_diffusion_adaln_zero_photo` 是独立的纯 GT 照片实验，模型为
+`AdaLNZeroPhotoDiffusion`；不加载偏好对或 reference。`adaln_zero.py` 保留原
+CLS256 + latent768 入口与 24 层主干，块内 LN 无 affine、dropout 为 0，
+每层 `1280→256→6144` 产生 shift/scale/gate，残差门直接乘且初值为 0。
+`init_photo_checkpoint` 从严格加载的健康 photo310k 复用参数，仅弃用 96 个
+块内 LN affine tensors；这不保持原函数，使用新 optimizer/run。完整 checkpoint
+及 resume 严格核对结构与数据 provenance，恢复时不再次读取初始化来源。
+`PhotoGTOnlyDataset` 训练读取原冻结 CLS/mean cache，validation 从独立
+`photo_gt_validation_v1` manifest 读取完整清单及在线照片；不使用 cache 内的
+validation100。协议见 `/mnt/d/hola_research/diffusion/adaln_zero_gt_20261104/ARCHITECTURE.md`。
+固定 step checkpoint 只在间隔及正常训练结束保存；短 epoch 不隐式触发多 GB 写盘。
+
 ## Face padding 与 topology 的共同契约
 
 - 默认 random padding 复制真实面并随机排列到 30 slots；mask 全为 true。`RandomFacePadder.postprocess()` 用 latent 距离阈值去重，面数由此间接产生。

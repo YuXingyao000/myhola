@@ -3,9 +3,11 @@
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from omegaconf import OmegaConf
 import pytorch_lightning as pl
+from pytorch_lightning.callbacks import ModelCheckpoint
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
@@ -22,6 +24,9 @@ class TinyTrainingModel(pl.LightningModule):
 
     def configure_optimizers(self):
         return torch.optim.SGD(self.parameters(), lr=0.01)
+
+    def validation_step(self, batch, batch_idx):
+        self.log("val/loss", self.layer(batch[0]).square().mean())
 
 
 class TrainingCheckpointTests(unittest.TestCase):
@@ -72,6 +77,9 @@ class TrainingCheckpointTests(unittest.TestCase):
             cfg = self.config(2)
             cfg.trainer.checkpoint_step_keep_last = 2
             callback = _build_checkpoint_callbacks(cfg, Path(directory))[1]
+            original = ModelCheckpoint(every_n_train_steps=2, every_n_epochs=0, monitor="step", mode="max",
+                                       save_on_train_epoch_end=True)
+            self.assertEqual(callback.state_key, original.state_key)
             trainer = pl.Trainer(accelerator="cpu", devices=1, max_steps=7, logger=False,
                                  callbacks=[callback], enable_model_summary=False,
                                  enable_progress_bar=False)
@@ -80,6 +88,31 @@ class TrainingCheckpointTests(unittest.TestCase):
             folder = Path(directory) / "weights/steps"
             self.assertEqual({p.name for p in folder.iterdir()},
                              {"step=00000004.ckpt", "step=00000006.ckpt", "last.ckpt"})
+            self.assertEqual(torch.load(folder / "last.ckpt", weights_only=False)["global_step"], 7)
+
+    def test_step_only_callback_skips_short_epochs_and_validation_but_saves_final(self):
+        with tempfile.TemporaryDirectory() as directory:
+            cfg = self.config(5)
+            callback = _build_checkpoint_callbacks(cfg, Path(directory))[1]
+            trainer = pl.Trainer(
+                accelerator="cpu", devices=1, max_steps=7, logger=False,
+                callbacks=[callback], enable_model_summary=False, enable_progress_bar=False,
+                check_val_every_n_epoch=None, val_check_interval=3, num_sanity_val_steps=0,
+            )
+            loader = DataLoader(TensorDataset(torch.ones(2, 1)), batch_size=1)
+            writes = []
+            original = callback._save_checkpoint
+
+            def record(current_trainer, path):
+                writes.append(current_trainer.global_step)
+                original(current_trainer, path)
+
+            with patch.object(callback, "_save_checkpoint", side_effect=record):
+                trainer.fit(TinyTrainingModel(), train_dataloaders=loader, val_dataloaders=loader)
+            # A named snapshot + last at step 5, then last on normal completion.
+            self.assertEqual(writes, [5, 5, 7])
+            folder = Path(directory) / "weights/steps"
+            self.assertEqual({p.name for p in folder.iterdir()}, {"step=00000005.ckpt", "last.ckpt"})
             self.assertEqual(torch.load(folder / "last.ckpt", weights_only=False)["global_step"], 7)
 
 
