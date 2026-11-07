@@ -201,7 +201,7 @@ class UnifiedTrainer(pl.LightningModule):
             if expected is not None and dict(expected) != provenance:
                 raise ValueError("Photo GT data changed after prepare_run")
             OmegaConf.update(cfg.dataset, "provenance", provenance, force_add=True)
-        if cfg.model.name in {"PreferenceDiffusion", "AdaLNPreferenceDiffusion"}:
+        if cfg.model.name in {"PreferenceDiffusion", "AdaLNPreferenceDiffusion", "AdaLNZeroPreferenceDiffusion"}:
             from src.datasets.preference import preference_data_provenance
             provenance = preference_data_provenance(cfg.dataset)
             expected = cfg.dataset.get("provenance")
@@ -361,7 +361,12 @@ class UnifiedTrainer(pl.LightningModule):
         if cfg.model.name == "AdaLNZeroPhotoDiffusion":
             from src.models.diffusion.adaln_zero_photo import prepare_adaln_zero_model_config
             prepare_adaln_zero_model_config(cfg, model_cfg, str(resume) if has_resume else None)
+        if cfg.model.name == "AdaLNZeroPreferenceDiffusion":
+            from src.models.diffusion.adaln_zero_preference import prepare_adaln_zero_preference_config
+            prepare_adaln_zero_preference_config(cfg, model_cfg, str(resume) if has_resume else None)
         self.model = build_model(model_cfg, cfg.condition)
+        if cfg.model.name == "AdaLNZeroPreferenceDiffusion":
+            self.save_hyperparameters(OmegaConf.to_container(cfg, resolve=True))
         if cfg.model.name == "AdaLNZeroPhotoDiffusion":
             OmegaConf.update(cfg.model, "legacy_model_config", self.model.legacy_model_config, force_add=True)
             if not model_cfg.restoring_checkpoint:
@@ -405,6 +410,11 @@ class UnifiedTrainer(pl.LightningModule):
             check_complete_checkpoint(self.cfg.model, checkpoint)
             if dict(self.cfg.dataset.provenance) != checkpoint["hyper_parameters"]["dataset"]["provenance"]:
                 raise ValueError("Cannot resume AdaLN-Zero with changed GT data/provenance")
+        if self.cfg.model.name == "AdaLNZeroPreferenceDiffusion":
+            from src.models.diffusion.adaln_zero_preference import check_complete_checkpoint
+            check_complete_checkpoint(self.cfg.model, checkpoint)
+            if dict(self.cfg.dataset.provenance) != checkpoint["hyper_parameters"]["dataset"]["provenance"]:
+                raise ValueError("Cannot resume AdaLN-Zero DPO with changed pair/GT provenance")
 
     def _init_model_from_checkpoint(self):
         """Load model weights without restoring optimizer/trainer state."""
@@ -802,7 +812,7 @@ def main(cfg: DictConfig):
     if evaluating:
         OmegaConf.update(cfg, "eval.output_dir", str(predictions_directory(cfg, Path(log_dir))))
         logger.info("Raw predictions will be saved to %s", cfg.eval.output_dir)
-    if cfg.model.name in {"PreferenceDiffusion", "AdaLNPreferenceDiffusion"}:
+    if cfg.model.name in {"PreferenceDiffusion", "AdaLNPreferenceDiffusion", "AdaLNZeroPreferenceDiffusion"}:
         from src.datasets.preference import preference_data_provenance
         OmegaConf.update(
             cfg.dataset, "provenance", preference_data_provenance(cfg.dataset), force_add=True,
