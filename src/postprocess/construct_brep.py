@@ -296,11 +296,15 @@ RECOVER_V1_PATHS = (("legacy", "legacy", True, "legacy", True, None),
 # split-face disabled so a periodic face bounded by two wrapping loops gets a seam.
 RECOVER_V2_PATHS = RECOVER_V1_PATHS + (("seam_roundtrip_optimized", "complete", True, "legacy", False, None),
                                        ("seam_roundtrip_fit_only", "complete", False, "legacy", False, None))
-# recover_v3 = recover_v2, then targeted endpoint repair (unambiguous vertex
-# clusters snapped together, dangling superfluous edges dropped) before fitting.
+# recover_v3 = recover_v2 without fit_score_v2_roundtrip_optimized (it produced
+# no accepted solid on validation3495 under recover_v3 and only spends shared
+# budget), then targeted endpoint repair (unambiguous vertex clusters snapped
+# together, endpoints attached to established corners, dangling superfluous
+# edges dropped) before fitting.
 ENDPOINT_REPAIR = EndpointRepairConfig()
-RECOVER_V3_PATHS = RECOVER_V2_PATHS + (("repair_roundtrip_fit_only", "complete", False, "legacy", False, ENDPOINT_REPAIR),
-                                       ("repair_roundtrip_optimized", "complete", True, "legacy", False, ENDPOINT_REPAIR))
+RECOVER_V3_PATHS = tuple(path for path in RECOVER_V2_PATHS if path[0] != "fit_score_v2_roundtrip_optimized") + (
+    ("repair_roundtrip_fit_only", "complete", False, "legacy", False, ENDPOINT_REPAIR),
+    ("repair_roundtrip_optimized", "complete", True, "legacy", False, ENDPOINT_REPAIR))
 RECOVERY_POLICIES = {"recover_v1": RECOVER_V1_PATHS, "recover_v2": RECOVER_V2_PATHS, "recover_v3": RECOVER_V3_PATHS}
 
 

@@ -13,6 +13,14 @@ It acts only where the relation is unambiguous:
 * clustered endpoints are moved onto the cluster centroid and the interior
   of the edge follows with a chord-length linear blend; unclustered endpoints
   do not move;
+* an endpoint left unpaired is attached to an already established cluster
+  when that cluster is topologically the corner the endpoint belongs to: in
+  each of the edge's two faces the cluster holds exactly one endpoint (the
+  partner), the cluster is within `max_gap`, the next candidate cluster is at
+  least `ambiguity_margin` farther, and the two ends of one edge never take
+  the same cluster (endpoints are attached closest first and each later one
+  is judged against the clusters as already extended); the cluster centroid
+  is not moved by the attached endpoint;
 * an open edge whose two ends are unpaired in both of its faces is dropped
   from the connectivity, as a superfluous boundary, when both faces keep at
   least two edges.
@@ -32,6 +40,7 @@ class EndpointRepairConfig:
     ambiguity_margin: float = 0.02
     small_gap: float = 0.01
     snap: bool = True
+    attach_dangling: bool = True
     drop_dangling: bool = True
     min_edges_per_face: int = 2
 
@@ -134,6 +143,70 @@ def build_vertex_clusters(edge_points, face_edge_adj, closed, config=EndpointRep
     return clusters, per_face, rejected
 
 
+def attach_dangling_endpoints(edge_points, face_edge_adj, edge_faces, clusters, per_face,
+                              config=EndpointRepairConfig()):
+    """Attach unpaired endpoints to the established cluster that is their corner.
+
+    `edge_faces` maps edge -> (face_i, face_j). Clusters are updated in place
+    (members only; the target centroid keeps the established corner). Returns
+    (attached, rejected) with the attached endpoints and rejection counts.
+    """
+    cluster_of = {m: c for c, cluster in enumerate(clusters) for m in cluster["members"]}
+    edges_of_face = [set(int(e) for e in edges) for edges in face_edge_adj]
+    # per cluster: how many member endpoints belong to each face's edges
+    face_count = []
+    for cluster in clusters:
+        counts = {}
+        for e, _ in cluster["members"]:
+            for f in edge_faces[e]:
+                counts[f] = counts.get(f, 0) + 1
+        face_count.append(counts)
+    dangling = sorted({end for info in per_face.values() for end in info["dangling"] if end not in cluster_of})
+    rejected = {"no_candidate": 0, "ambiguous": 0, "taken": 0}
+
+    def candidates(end):
+        e, k = end
+        p = edge_points[e][k]
+        found = []
+        for c, cluster in enumerate(clusters):
+            if any(m[0] == e for m in cluster["members"]):
+                continue
+            if any(face_count[c].get(f, 0) != 1 for f in edge_faces[e]):
+                continue
+            if not all(any(m[0] in edges_of_face[f] and m[0] != e for m in cluster["members"]) for f in edge_faces[e]):
+                continue
+            distance = float(np.linalg.norm(p - cluster["target"]))
+            if distance <= config.max_gap:
+                found.append((distance, c))
+        return sorted(found)
+
+    order = []
+    for end in dangling:
+        found = candidates(end)
+        if not found:
+            rejected["no_candidate"] += 1
+            continue
+        order.append((found[0][0], end))
+    attached = []
+    for _, end in sorted(order):
+        # Re-evaluate against the clusters as already extended: an earlier
+        # attachment of this edge's other end removes that cluster from the
+        # candidates, and a corner completed by another endpoint is no longer open.
+        found = candidates(end)
+        if not found:
+            rejected["taken"] += 1
+            continue
+        best, c = found[0]
+        if best > config.small_gap and len(found) > 1 and found[1][0] - best < config.ambiguity_margin:
+            rejected["ambiguous"] += 1
+            continue
+        clusters[c]["members"] = sorted(clusters[c]["members"] + [end])
+        for f in edge_faces[end[0]]:
+            face_count[c][f] = face_count[c].get(f, 0) + 1
+        attached.append(end)
+    return attached, rejected
+
+
 def dangling_edges(per_face, edge_face_connectivity, closed):
     """Open edges whose two ends are unpaired in both of their faces."""
     dangling_in = {}
@@ -191,6 +264,16 @@ def repair_endpoints(shape, config=EndpointRepairConfig()):
     diagnostics["num_pairs"] = sum(len(info["pairs"]) for info in per_face.values())
     diagnostics["num_dangling_endpoints"] = sum(len(info["dangling"]) for info in per_face.values())
     diagnostics["rejected_clusters"] = rejected
+
+    if config.attach_dangling and clusters:
+        edge_faces = {int(e): (int(a), int(b)) for e, a, b in shape.edge_face_connectivity}
+        attached, attach_rejected = attach_dangling_endpoints(
+            shape.recon_edge_points, shape.face_edge_adj, edge_faces, clusters, per_face, config)
+        attached_set = set(attached)
+        for info in per_face.values():
+            info["dangling"] = [end for end in info["dangling"] if end not in attached_set]
+        diagnostics["num_attached_endpoints"] = len(attached)
+        diagnostics["attach_rejected"] = attach_rejected
 
     if config.drop_dangling:
         drop = []

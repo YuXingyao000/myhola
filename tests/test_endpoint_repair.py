@@ -12,6 +12,7 @@ from src.postprocess import construct_brep as post
 from src.postprocess.decoded_prediction import interpolation_face_points
 from src.postprocess.endpoint_repair import (
     EndpointRepairConfig,
+    attach_dangling_endpoints,
     build_vertex_clusters,
     pair_face_endpoints,
     repair_endpoints,
@@ -127,6 +128,60 @@ class EndpointRepairTests(unittest.TestCase):
         self.assertEqual(faces.shape, shape.recon_face_points.shape)
         self.assertTrue(np.isfinite(edges).all() and np.isfinite(faces).all())
 
+    def test_endpoint_short_of_an_established_corner_is_attached(self):
+        # e1, e2 meet exactly at the origin (cluster); e0 falls 0.15 short and a
+        # distractor edge in each of its faces makes nearest-neighbour pairing ambiguous.
+        e0 = segment((0.15, 0, 0), (1, 0, 0))
+        e1 = segment((0, 0, 0), (0, 1, 0))
+        e2 = segment((0, 0, 0), (0, 0, 1))
+        e3 = segment((0.15, 0.16, 0), (0.6, 0.16, 0))
+        e4 = segment((0.15, 0, 0.16), (0.6, 0, 0.16))
+        shape = make_shape([e0, e1, e2, e3, e4], [[0, 0, 2], [1, 0, 1], [2, 1, 2], [3, 0, 3], [4, 2, 4]])
+        plain = EndpointRepairConfig(attach_dangling=False)
+        _, clusters = repair_endpoints(make_shape([e0, e1, e2, e3, e4],
+                                                  [[0, 0, 2], [1, 0, 1], [2, 1, 2], [3, 0, 3], [4, 2, 4]]), plain)
+        self.assertEqual([c["members"] for c in clusters], [[(1, 0), (2, 0)]])
+
+        diagnostics, clusters = repair_endpoints(shape)
+        self.assertEqual(diagnostics["num_attached_endpoints"], 1)
+        self.assertEqual(clusters[0]["members"], [(0, 0), (1, 0), (2, 0)])
+        np.testing.assert_allclose(clusters[0]["target"], [0, 0, 0], atol=1e-7)
+        np.testing.assert_allclose(shape.recon_edge_points[0][0], [0, 0, 0], atol=1e-6)
+        np.testing.assert_allclose(shape.recon_edge_points[0][-1], [1, 0, 0], atol=1e-6)
+        np.testing.assert_allclose(shape.recon_edge_points[3][0], [0.15, 0.16, 0], atol=1e-6)
+        self.assertEqual(diagnostics["dropped_edges"], [])
+
+    def test_two_ends_of_a_tiny_edge_take_different_corners(self):
+        points = np.stack([segment((0, 0, 0), (0, 1, 0)), segment((0, 0, 0), (0, 0, 1)),
+                           segment((0.05, 0, 0), (0.05, 1, 0)), segment((0.05, 0, 0), (0.05, 0, 1)),
+                           segment((0.01, 0, 0), (0.03, 0, 0))])
+        edge_faces = {0: (0, 1), 1: (1, 2), 2: (0, 3), 3: (3, 2), 4: (0, 2)}
+        face_edge_adj = [[0, 2, 4], [0, 1], [1, 3, 4], [2, 3]]
+        clusters = [{"members": [(0, 0), (1, 0)], "target": np.array([0.0, 0, 0]), "diameter": 0.0},
+                    {"members": [(2, 0), (3, 0)], "target": np.array([0.05, 0, 0]), "diameter": 0.0}]
+        per_face = {0: {"pairs": [], "dangling": [(4, 0), (4, -1)]}, 2: {"pairs": [], "dangling": [(4, 0), (4, -1)]},
+                    1: {"pairs": [], "dangling": []}, 3: {"pairs": [], "dangling": []}}
+        attached, rejected = attach_dangling_endpoints(points, face_edge_adj, edge_faces, clusters, per_face)
+        self.assertEqual(sorted(attached), [(4, -1), (4, 0)])
+        self.assertEqual(clusters[0]["members"], [(0, 0), (1, 0), (4, 0)])
+        self.assertEqual(clusters[1]["members"], [(2, 0), (3, 0), (4, -1)])
+        self.assertEqual(rejected["ambiguous"], 0)
+
+    def test_attach_requires_one_partner_per_face(self):
+        points = np.stack([segment((0, 0, 0), (0, 1, 0)), segment((0, 0, 0), (0, 0, 1)),
+                           segment((0.02, 0, 0), (1, 0, 0))])
+        # The cluster already holds two endpoints of face 0; a third from face 0 cannot join.
+        edge_faces = {0: (0, 1), 1: (0, 2), 2: (0, 3)}
+        face_edge_adj = [[0, 1, 2], [0], [1], [2]]
+        clusters = [{"members": [(0, 0), (1, 0)], "target": np.array([0.0, 0, 0]), "diameter": 0.0}]
+        per_face = {0: {"pairs": [], "dangling": [(2, 0)]}, 3: {"pairs": [], "dangling": [(2, 0)]},
+                    1: {"pairs": [], "dangling": []}, 2: {"pairs": [], "dangling": []}}
+        attached, rejected = attach_dangling_endpoints(points, face_edge_adj, edge_faces, clusters, per_face)
+        self.assertEqual(attached, [])
+        self.assertEqual(rejected["no_candidate"], 1)
+        self.assertEqual(clusters[0]["members"], [(0, 0), (1, 0)])
+
+
     def test_recover_v3_appends_repair_paths_after_seam_paths(self):
         original_construct = post.construct_brep_for_sample
         seen = []
@@ -143,9 +198,9 @@ class EndpointRepairTests(unittest.TestCase):
                 patch.object(post, "_run_complete_post_path", complete):
             original_construct("unused", directory, "sample", post_policy="recover_v3")
             diagnostics = json.loads((Path(directory) / "sample/post_diagnostics.json").read_text())
-        self.assertEqual(seen[-4:], [("seam_roundtrip_optimized", False, False), ("seam_roundtrip_fit_only", False, False),
-                                     ("repair_roundtrip_fit_only", False, True), ("repair_roundtrip_optimized", False, True)])
-        self.assertEqual(len(seen), 7)
+        self.assertEqual(seen, [("roundtrip_optimized", True, False), ("roundtrip_fit_only", True, False),
+                                ("seam_roundtrip_optimized", False, False), ("seam_roundtrip_fit_only", False, False),
+                                ("repair_roundtrip_fit_only", False, True), ("repair_roundtrip_optimized", False, True)])
         self.assertEqual(diagnostics["status"], "no_accepted_solid")
         self.assertTrue(diagnostics["paths"][-1]["endpoint_repair_enabled"])
 

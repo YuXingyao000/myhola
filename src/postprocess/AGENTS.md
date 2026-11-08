@@ -89,7 +89,7 @@ occ_topology
 
 `recover_v2` 在上述四条之后再加两条：`seam_roundtrip_optimized`、`seam_roundtrip_fit_only`，即 `complete` 路径加 `split_face=False`。
 
-`recover_v3` 再加两条定向端点修复路径 `repair_roundtrip_fit_only`、`repair_roundtrip_optimized`（`endpoint_repair.py`，`split_face=False`）：在半边选择之后、拟合之前，按面把端点互为最近、距离 ≤ 0.2、第二候选至少远 0.02 的配对并成顶点簇，簇内端点精确挪到簇心、边内部按弧长线性过渡；两张面里都两头悬空的开边视为多余边从连接中剔除。optimized 变体把簇传给 `geometry_optimization.optimize(vertex_clusters=...)`，用簇心项替换历史三面角点项和逐步最近邻项，边面 Chamfer 项不变。配不上的端点不动，不读 GT。
+`recover_v3` = `recover_v2` 去掉 `fit_score_v2_roundtrip_optimized`（validation3495 上零救回，只消耗共享预算），再加两条定向端点修复路径 `repair_roundtrip_fit_only`、`repair_roundtrip_optimized`（`endpoint_repair.py`，`split_face=False`）：在半边选择之后、拟合之前，(1) 按面把端点互为最近、距离 ≤ 0.2、第二候选至少远 0.02 的配对并成顶点簇；(2) 仍悬空的端点挂到已成立的簇上，条件是该簇在这条边的两张面里各恰好有一个端点、距离 ≤ 0.2、次优簇至少远 0.02，按距离从近到远处理，同一条边两端不进同一簇，簇心不因挂入而移动；(3) 簇内端点精确挪到簇心、边内部按弧长线性过渡；(4) 两张面里都两头悬空的开边视为多余边从连接中剔除。optimized 变体把簇传给 `geometry_optimization.optimize(vertex_clusters=...)`，用簇心项替换历史三面角点项和逐步最近邻项，边面 Chamfer 项不变。配不上的端点不动，不读 GT。
 
 各路径从同一原始预测和相同 Python／NumPy RNG 状态开始，不是把上一路结果继续优化。首个满足对应路径验收条件的结果即停止：都须通过原生 solid 检查，`complete` 还要求 roundtrip 后面数相同、wire 数不减少。恢复路径共用预算；生产评估的进程超时还由外层执行器约束，不把额外 fallback 当作免费操作。容差顺序、随机尝试、drop、拟合评分和自然修复均属于算法行为。
 
