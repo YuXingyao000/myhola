@@ -7,7 +7,8 @@
 | 文件 | 职责 |
 |---|---|
 | `decoded_prediction.py` | NPZ 读取、表示适配、半边筛选／去重与边重编号、邻接与角点软关系；`Shape` 保存单样本各阶段状态 |
-| `geometry_optimization.py` | 拟合前采样点优化：每边三轴缩放和平移、每面平移 |
+| `geometry_optimization.py` | 拟合前采样点优化：每边三轴缩放和平移、每面平移；可选顶点簇项 |
+| `endpoint_repair.py` | 恢复路径里的定向端点修复：按面配对端点、并成顶点簇、精确贴合、剔除两头悬空的多余边 |
 | `occ_fit.py` | 点阵拟合 B-spline 曲面／曲线、既有周期转换、周期面自然边替换 |
 | `occ_topology.py` | curve → wire → trimmed face → sewing／solid，含自然环修复和 compound fallback |
 | `construct_brep.py` | 调度上述阶段、候选／恢复路径、预算检查及文件输出；主入口 `construct_brep_for_sample` |
@@ -73,6 +74,7 @@ occ_topology
 - `create_surface` 拟合一般 B-spline，并用原有闭合启发式尝试周期转换；它不是解析圆柱分类器。周期性不等于圆柱类型，局部圆柱面也不必周期闭合。
 - **保留两处不同的自然边界修复。** `replace_periodic_face_edges` 在拟合后替换相似的共享 TopoDS edge；`create_trimmed_face_from_wire` 在既有条件下用拟合面的完整自然 wire 构面。它们都受周期性、边数和自然 wire 等条件控制，不能在“整理代码”中静默关闭。
 - 周期接缝可以在一个自然环中出现两次有向使用；wire 数量变化不能单独判为孔丢失。普通面的缺边／开环检查仍需保留。
+- **split-face 与 seam（2026-11-07）。** 周期曲面上两个各自绕周期方向一圈的闭合环（圆柱侧面的两端）必须由 seam 边连成一个 wire 才能成面。`ShapeFix_Face` 默认的 `FixSplitFace` 会在 `Perform()` 里先把这种面拆成两张，随后显式的 `FixMissingSeam()` 无事可做；历史代码因此把一端边界丢掉。`create_trimmed_face_from_wire(..., split_face=False)` 关闭拆面，让 `FixMissingSeam` 补 seam，诊断记 `seam_added`；此时环数 2→1 是完整边界，不按 `wire_count_decreased_during_face_fix` 拒绝。默认 `split_face=True` 保持历史行为，`recover_v2` 的两条 seam 路径用 `False`。失败机制与 169 件重放见 [失败阶段记录](/mnt/d/hola_research/postprocess_failure_stages_20261105/README.md)。
 - `complete` 构造路径会复制 OCC 对象以隔离逐面修复，再进行缝合。共享输入边 ID 不保证中途所有 TopoDS 对象身份相同；最终需要核对几何、边界与 solid 合法性。
 - 后续若研究拟合后的连续优化，应显式说明如何传递优化后的曲线、曲面、UV／pcurve及自然修复接口。不能只因“保留优化曲线”就关闭修复，也不能把间隙下降直接写成可组环／可裁剪的保证。OCC API 变化须在现有环境验证实际调用链。
 
@@ -84,6 +86,10 @@ occ_topology
 2. `complete` optimized：完整面覆盖、STEP roundtrip 检查。
 3. `complete` fit-only：从原始预测重新拟合，跳过拟合前优化。
 4. `fit_score_v2` 的 `complete` optimized。
+
+`recover_v2` 在上述四条之后再加两条：`seam_roundtrip_optimized`、`seam_roundtrip_fit_only`，即 `complete` 路径加 `split_face=False`。
+
+`recover_v3` 再加两条定向端点修复路径 `repair_roundtrip_fit_only`、`repair_roundtrip_optimized`（`endpoint_repair.py`，`split_face=False`）：在半边选择之后、拟合之前，按面把端点互为最近、距离 ≤ 0.2、第二候选至少远 0.02 的配对并成顶点簇，簇内端点精确挪到簇心、边内部按弧长线性过渡；两张面里都两头悬空的开边视为多余边从连接中剔除。optimized 变体把簇传给 `geometry_optimization.optimize(vertex_clusters=...)`，用簇心项替换历史三面角点项和逐步最近邻项，边面 Chamfer 项不变。配不上的端点不动，不读 GT。
 
 各路径从同一原始预测和相同 Python／NumPy RNG 状态开始，不是把上一路结果继续优化。首个满足对应路径验收条件的结果即停止：都须通过原生 solid 检查，`complete` 还要求 roundtrip 后面数相同、wire 数不减少。恢复路径共用预算；生产评估的进程超时还由外层执行器约束，不把额外 fallback 当作免费操作。容差顺序、随机尝试、drop、拟合评分和自然修复均属于算法行为。
 
@@ -101,4 +107,4 @@ occ_topology
 - module 改名在 `tools/migrate_checkpoint.py` 登记元数据路径迁移；本次 `shape.py` → `decoded_prediction.py` 不改变神经网络参数、optimizer 或 latent cache。旧评估有源码指纹时应新开 run，不改写历史协议／哈希。
 - 组织重构核对阶段顺序、候选选择及索引等价，再运行相关测试：`tests/test_shared_boundary_post.py`、`tests/test_occ_fit.py`、`tests/test_post_policies.py`、`tests/test_vae_compare_post.py`。尤其保留周期面完整自然环、真实拟合与普通开环拒绝用例。
 - 一次性等价性脚本和结果写 `/mnt/d/hola_research/<主题>/`；小样本／单元检查不冒充完整合法率复现。当前整理记录在 [postprocess_organization_20261105](/mnt/d/hola_research/postprocess_organization_20261105/)。
-- 维护本文件与 README，不新增 `CLAUDE.md`；不在整理任务中混入拟合、容差、端点或裁剪算法实验。
+- 维护本文件与 README；`CLAUDE.md` 只是 Claude Code 的入口摘要，算法约定写在这里。不在整理任务中混入拟合、容差、端点或裁剪算法实验。
