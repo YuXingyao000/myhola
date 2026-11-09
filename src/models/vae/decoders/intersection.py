@@ -41,6 +41,7 @@ class AttnIntersection(nn.Module):
         dim_in: int,
         hidden_dim: int,
         num_layers: int,
+        dim_out: int | None = None,
     ) -> None:
         super().__init__()
         self.num_layers = num_layers
@@ -50,7 +51,7 @@ class AttnIntersection(nn.Module):
             hidden_dim, 8, dim_feedforward=2048, dropout=0.1,
             batch_first=True, norm_first=True)
         self.layers = ModuleList([copy.deepcopy(layer) for _ in range(num_layers)])
-        self.attn_proj_out = nn.Linear(hidden_dim, dim_in * 2)
+        self.attn_proj_out = nn.Linear(hidden_dim, dim_in * 2 if dim_out is None else dim_out)
 
         self.pos_encoding = nn.Parameter(torch.randn(1, 2, hidden_dim))
 
@@ -253,7 +254,7 @@ class IntersectionDecoder(nn.Module):
         geometry_heads_cfg: dict | None = None,
     ):
         super().__init__()
-        self.face_dim = legacy.face_feature_dim
+        self.face_dim = legacy.decoder_face_dim
         self.edge_dim = legacy.edge_feature_dim
         self.chunk_size = int(cfg["candidate_chunk_size"])
         self.checkpoint_candidates = bool(cfg["checkpoint_candidates"])
@@ -420,7 +421,7 @@ class IntersectionDecoder(nn.Module):
         shared = self.shared_curve(edges[canonical], edges[reciprocal])  # [K,64]
         condition = None
         if self.curve_conditioning_enabled:
-            owner_features = faces[pairs.indices[canonical]]  # [K,2,32]
+            owner_features = faces[pairs.indices[canonical]]  # [K,2,decoder_face_dim]
             condition = torch.cat((shared, owner_features.flatten(1)), dim=-1)
         geometry = self._decode_edges(shared, condition)  # one CNN call per curve
         inverse = torch.empty(len(edges), device=edges.device, dtype=torch.long)
@@ -444,7 +445,7 @@ class IntersectionDecoder(nn.Module):
         return stage, shared[inverse]
 
     def forward(self, face_latents: Tensor, face_counts: Tensor) -> RefinementOutput:
-        # Packed [sum_faces, face_dim] latents; candidate pairs stay within objects.
+        # Packed [sum_faces, latent_dim]; the Transformer expands to decoder_face_dim.
         face_counts = face_counts.to(device=face_latents.device)
         pairs = enumerate_candidate_pairs(face_counts)
 

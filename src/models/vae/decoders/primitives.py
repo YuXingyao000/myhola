@@ -260,7 +260,7 @@ class CurveConditionedUVPathHead(UVPathHead):
     def forward(
         self, edges: Tensor, shared: Tensor, faces: Tensor, owners: Tensor, curves: Tensor,
     ) -> Tensor:
-        # [h:64, g:64, owner F:32] + each decoded XYZ -> [P,16,2].
+        # [h:edge_dim, g:edge_dim, owner F:face_dim] + XYZ -> [P,16,2].
         if not len(edges):
             zero = (edges.sum() + shared.sum() + faces.sum() + curves.sum()) * 0
             for parameter in self.parameters():

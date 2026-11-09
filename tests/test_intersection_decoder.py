@@ -28,6 +28,7 @@ class TinyLegacy(nn.Module):
     def __init__(self):
         super().__init__()
         self.face_feature_dim = 4
+        self.decoder_face_dim = 4
         self.edge_feature_dim = 8
         self.in_channels = 6
         self.face_attn_proj_in2 = nn.Linear(4, 8)

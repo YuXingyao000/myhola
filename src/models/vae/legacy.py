@@ -66,6 +66,9 @@ class AutoEncoder(BaseVAE):
         self.with_intersection = v_conf["with_intersection"]
         self.face_feature_dim = self.latent_channels * 2 * 2
         self.edge_feature_dim = self.face_feature_dim * 2
+        # The latent/encoder width and the decoder's working width are separate.
+        decoder_face_dim = v_conf.get("decoder_face_dim")
+        self.decoder_face_dim = self.face_feature_dim if decoder_face_dim is None else int(decoder_face_dim)
 
         self.num_gat_layers = int(v_conf["num_gat_layers"])
         self.bottleneck_dim = int(v_conf["bottleneck_dim"])
@@ -97,14 +100,15 @@ class AutoEncoder(BaseVAE):
         )
 
         self.inter = AttnIntersection(
-            self.face_feature_dim, self.intersection_dim, self.intersection_layers
+            self.decoder_face_dim, self.intersection_dim, self.intersection_layers,
+            dim_out=self.edge_feature_dim,
         )
         self.classifier = nn.Linear(self.edge_feature_dim, 1)
 
         self.face_points_decoder = self._make_face_points_decoder(point_decoder_blocks)
         self.edge_points_decoder = self._make_edge_points_decoder(point_decoder_blocks)
         self.face_center_scale_decoder = self._make_bbox_decoder(
-            self.face_feature_dim, int(v_conf["face_bbox_decoder_blocks"])
+            self.decoder_face_dim, int(v_conf["face_bbox_decoder_blocks"])
         )
         self.edge_center_scale_decoder = self._make_bbox_decoder(
             self.edge_feature_dim, int(v_conf["edge_bbox_decoder_blocks"])
@@ -291,7 +295,7 @@ class AutoEncoder(BaseVAE):
         )
 
         self.face_attn_proj_in2 = nn.Linear(self.face_feature_dim, bd)
-        self.face_attn_proj_out2 = nn.Linear(bd, self.face_feature_dim)
+        self.face_attn_proj_out2 = nn.Linear(bd, self.decoder_face_dim)
         layer2 = nn.TransformerEncoderLayer(
             bd, self.nhead, dim_feedforward=2048, dropout=0.1,
             batch_first=True, norm_first=True,
@@ -302,7 +306,7 @@ class AutoEncoder(BaseVAE):
         hidden_channels = self.hidden_channels
         layers = [Rearrange("b (n h w) -> b n h w", h=2, w=2)]
         self._append_decoder_stage(
-            layers, 2, self.latent_channels, hidden_channels, (2, 2), block_count
+            layers, 2, self.decoder_face_dim // 4, hidden_channels, (2, 2), block_count
         )
         layers.append(
             nn.ConvTranspose2d(hidden_channels, hidden_channels // 2, kernel_size=2, stride=2)
