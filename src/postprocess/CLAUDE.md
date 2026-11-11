@@ -45,7 +45,7 @@ construct_brep  legacy 路径写 STEP 后重读检查；recover_v1 再依次 com
 
 | 项 | 数值 | 来源 |
 |---|---|---|
-| 最好流程 | `roles_best7885` + `recover_v3` + 180 s：**3327/3495（95.19%）**，对 recover_v1 基线 3189（91.24%）救回 138、退步 0 | `/mnt/d/hola_research/postprocess_failure_stages_20261105/README.md` |
+| 最好流程 | `roles_best7885` + `recover_v4` + 180 s：**3341/3495（95.59%）**，对 `recover_v3` 的 3327（95.19%）救回 14、退步 0；`recover_v3` 对 recover_v1 基线 3189（91.24%）救回 138、退步 0 | `/mnt/d/hola_research/postprocess_two_level_repair_20261110/README.md`、`/mnt/d/hola_research/postprocess_failure_stages_20261105/README.md` |
 | 本目录代码状态 | 2026-11-05 回退到该 91.24% 流程的 11 个文件哈希（见 `continuous_postprocess/ROLLBACK_20261105.md`），再做了纯搬动整理（`postprocess_organization_20261105/`）；2026-11-07 加入 `recover_v2`（见下） | 全量结果见研究目录 README |
 | 失败 306 件 | trimming 299、solid 构造 4、native/boundary 拒绝 3；其中 222 件 face-pair 拓扑全对 | 同上 REPORT |
 | 合法输出来源 | legacy optimized 3114、roundtrip_optimized 30、roundtrip_fit_only 45（recover_v1 基线逐件 `chosen_path`） | 同上运行的 `post_diagnostics.json` |
@@ -79,6 +79,8 @@ construct_brep  legacy 路径写 STEP 后重读检查；recover_v1 再依次 com
 306 件失败按 `post_diagnostics.json` 分成四类（`/mnt/d/hola_research/postprocess_failure_stages_20261105/`）：环闭合但 `ShapeFix_Face` 合并了环 169 件、边接不上 104 件、面检查不过 20 件、缝不上 12 件。第一类的机制：圆柱侧面这类周期曲面两端各一个闭合环，需要 seam 边连成一个 wire；`ShapeFix_Face` 默认 `FixSplitFace` 在 `Perform()` 里先把面拆成两张，显式 `FixMissingSeam()` 再也补不上。`create_trimmed_face_from_wire(..., split_face=False)` 关掉拆面即可；重放在 169 件里救回 98 件、另救回 3 件 open_wire。`recover_v2` = `recover_v1` 四条路径之后追加 `seam_roundtrip_optimized`、`seam_roundtrip_fit_only`，只对前四条都失败的样本生效。边接不上的 104 件里，25 件是角点缺口 0.08–0.2（优化可拉拢）、15 件是面里多了一条错边（剔边规则）、64 件边缺失或严重错误（模型侧）。
 
 `recover_v3`（11-07/08）= `recover_v2` 去掉零救回的 fit-score-v2 路径，再追加两条定向端点修复路径（`endpoint_repair.py`：面内互为最近且无歧义的端点配对 → 跨面顶点簇 → 悬空端点挂到拓扑一致的已成立角点（两张面里各恰好一个端点、≤ 0.2、无歧义）→ 精确贴合；两头悬空的多余边剔除；optimized 变体用簇心项替换旧角点项和最近邻项）。在 recover_v2 剩余 201 件上救回 33 件。11-07 对悬空端点的检查否定了"二价端点"假设：70 个悬空端点全在某个角点 0.2 以内，形态是边够不到已成立的角点、微小边把角点挤满、或面太小缺口与面同量级；前两种由挂角点规则处理，第三种不碰。
+
+`recover_v4`（11-10）= `recover_v3` 的修复路径改成先紧后松两档。原来的单一距离上限 0.2 拆成 `pair_gap`（两个悬空端点配对）和 `attach_gap`（悬空端点挂到已成立角点）：紧档 0.05／不设上限，松档都不设上限。依据是全量扫描：放开上限的收益几乎全来自挂角点（它有拓扑依据，角点在边自己的线上），并错角点主要来自放开配对；上限从 0.05 到不设限，救回数单调上升，没有“只有 0.2 才好”的峰。validation3495 上 3327 → 3341，退步 0；GT 输入不变（3439）。松档救回的 4 件合法但与 GT 有出入，报告合法率时要同时看几何指标。GT 往返、剩余失败的去向、decoder 倾向与未进生产的候选（OCC 侧修复、置信度重试）见 `/mnt/d/hola_research/postprocess_remaining_failures_20261110/README.md`。
 
 ## 现在的优化方向（研究判断，尚未实现）
 

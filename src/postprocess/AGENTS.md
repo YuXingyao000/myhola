@@ -89,7 +89,11 @@ occ_topology
 
 `recover_v2` 在上述四条之后再加两条：`seam_roundtrip_optimized`、`seam_roundtrip_fit_only`，即 `complete` 路径加 `split_face=False`。
 
-`recover_v3` = `recover_v2` 去掉 `fit_score_v2_roundtrip_optimized`（validation3495 上零救回，只消耗共享预算），再加两条定向端点修复路径 `repair_roundtrip_fit_only`、`repair_roundtrip_optimized`（`endpoint_repair.py`，`split_face=False`）：在半边选择之后、拟合之前，(1) 按面把端点互为最近、距离 ≤ 0.2、第二候选至少远 0.02 的配对并成顶点簇；(2) 仍悬空的端点挂到已成立的簇上，条件是该簇在这条边的两张面里各恰好有一个端点、距离 ≤ 0.2、次优簇至少远 0.02，按距离从近到远处理，同一条边两端不进同一簇，簇心不因挂入而移动；(3) 簇内端点精确挪到簇心、边内部按弧长线性过渡；(4) 两张面里都两头悬空的开边视为多余边从连接中剔除。optimized 变体把簇传给 `geometry_optimization.optimize(vertex_clusters=...)`，用簇心项替换历史三面角点项和逐步最近邻项，边面 Chamfer 项不变。配不上的端点不动，不读 GT。
+`recover_v3` = `recover_v2` 去掉 `fit_score_v2_roundtrip_optimized`（validation3495 上零救回，只消耗共享预算），再加两条定向端点修复路径 `repair_roundtrip_fit_only`、`repair_roundtrip_optimized`（`endpoint_repair.py`，`split_face=False`）：在半边选择之后、拟合之前，(1) 按面把端点互为最近、距离 ≤ `pair_gap`（0.2）、第二候选至少远 0.02 的配对并成顶点簇；(2) 仍悬空的端点挂到已成立的簇上，条件是该簇在这条边的两张面里各恰好有一个端点、距离 ≤ `attach_gap`（0.2）、次优簇至少远 0.02，按距离从近到远处理，同一条边两端不进同一簇，簇心不因挂入而移动；(3) 簇内端点精确挪到簇心、边内部按弧长线性过渡；(4) 两张面里都两头悬空的开边视为多余边从连接中剔除。optimized 变体把簇传给 `geometry_optimization.optimize(vertex_clusters=...)`，用簇心项替换历史三面角点项和逐步最近邻项，边面 Chamfer 项不变。配不上的端点不动，不读 GT。
+
+`recover_v4`（2026-11-10）= `recover_v3` 的五条非修复路径不变，把单一档位的两条修复路径换成先紧后松的两档、共四条：`repair_tight_roundtrip_fit_only`、`repair_tight_roundtrip_optimized`、`repair_loose_roundtrip_fit_only`、`repair_loose_roundtrip_optimized`。`EndpointRepairConfig` 的距离上限分成两个，`None` 表示不设上限：`pair_gap` 管面内两个悬空端点的配对和簇直径，`attach_gap` 管悬空端点挂到已成立的簇。两者的依据不同：配对只凭“离得近”就断定两个端点是同一顶点，所以紧档取 decoder 端点噪声的量级（`pair_gap=0.05`）；挂角点有拓扑依据——簇在这条边的两张面里各恰好有一个端点，即它同时在两张面上、也就在这条边自己的线上，沿线多远都成立，所以紧档起就不设上限（`attach_gap=None`）。松档两个上限都不设，只靠互为最近、歧义间隔和拓扑检查。先通过验收的路径即停止，多数样本用的是改动最小的一次。`recover_v3` 保持两个上限都是 0.2，用于复现既有结果。
+
+`roles_best7885` 在固定 validation3495 上：`recover_v3` 3327 → `recover_v4` **3341（95.59%）**，救回 14、退步 0；GT 采样点当输入时两者同为 3439。救回的 14 件里紧档 10 件（对照 GT，端点基本都回到正确位置），松档 4 件（合法，但各有 6–28 个端点离 GT 超过 0.05，其中 `00118873` 的边 CD² 为 3.6e-2）；松档同时保住了 `recover_v3` 已救回、配对缺口在 0.05–0.2 之间的 3 件。阈值扫描、两步各自的贡献和逐件结果见 [记录](/mnt/d/hola_research/postprocess_two_level_repair_20261110/README.md)。
 
 各路径从同一原始预测和相同 Python／NumPy RNG 状态开始，不是把上一路结果继续优化。首个满足对应路径验收条件的结果即停止：都须通过原生 solid 检查，`complete` 还要求 roundtrip 后面数相同、wire 数不减少。恢复路径共用预算；生产评估的进程超时还由外层执行器约束，不把额外 fallback 当作免费操作。容差顺序、随机尝试、drop、拟合评分和自然修复均属于算法行为。
 

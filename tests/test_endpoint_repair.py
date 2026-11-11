@@ -181,6 +181,58 @@ class EndpointRepairTests(unittest.TestCase):
         self.assertEqual(rejected["no_candidate"], 1)
         self.assertEqual(clusters[0]["members"], [(0, 0), (1, 0)])
 
+    def far_corner_shape(self):
+        # e1, e2 meet exactly at the origin; e0 lies on its own line but stops 0.4 short of it.
+        shape = self.corner_shape()
+        shape.recon_edge_points[0] = segment((0.4, 0, 0), (1, 0, 0))
+        return shape
+
+    def test_default_caps_leave_a_far_corner_alone(self):
+        shape = self.far_corner_shape()
+        diagnostics, clusters = repair_endpoints(shape)
+        self.assertEqual([c["members"] for c in clusters], [[(1, 0), (2, 0)]])
+        self.assertEqual(diagnostics["num_attached_endpoints"], 0)
+        np.testing.assert_allclose(shape.recon_edge_points[0][0], [0.4, 0, 0], atol=1e-6)
+
+    def test_attach_without_distance_cap_reaches_a_far_corner(self):
+        shape = self.far_corner_shape()
+        diagnostics, clusters = repair_endpoints(shape, post.ENDPOINT_REPAIR_TIGHT)
+        self.assertEqual(diagnostics["num_attached_endpoints"], 1)
+        self.assertEqual(clusters[0]["members"], [(0, 0), (1, 0), (2, 0)])
+        # The established corner stays where it was; only the attached end moves, along its own line.
+        np.testing.assert_allclose(clusters[0]["target"], [0, 0, 0], atol=1e-7)
+        np.testing.assert_allclose(shape.recon_edge_points[0][0], [0, 0, 0], atol=1e-6)
+        np.testing.assert_allclose(shape.recon_edge_points[0][-1], [1, 0, 0], atol=1e-6)
+        np.testing.assert_allclose(shape.recon_edge_points[0][:, 1:], 0, atol=1e-6)
+        self.assertIsNone(diagnostics["config"]["attach_gap"])
+        json.dumps(diagnostics, allow_nan=False)
+
+    def test_pair_gap_caps_pairing_but_not_attachment(self):
+        # corner_shape: e0 is 0.1 short. The default pairs it (corner moves to the mean of the three
+        # ends); the tight level refuses that pair and attaches the end to the untouched corner.
+        paired = self.corner_shape()
+        _, clusters = repair_endpoints(paired)
+        np.testing.assert_allclose(clusters[0]["target"], [0.1 / 3, 0, 0], atol=1e-6)
+        tight = self.corner_shape()
+        diagnostics, clusters = repair_endpoints(tight, post.ENDPOINT_REPAIR_TIGHT)
+        self.assertEqual(diagnostics["num_attached_endpoints"], 1)
+        np.testing.assert_allclose(clusters[0]["target"], [0, 0, 0], atol=1e-7)
+        for edge in range(3):
+            np.testing.assert_allclose(tight.recon_edge_points[edge][0], [0, 0, 0], atol=1e-6)
+        capped = self.corner_shape()
+        diagnostics, clusters = repair_endpoints(capped, EndpointRepairConfig(pair_gap=0.05, attach_gap=0.05))
+        self.assertEqual([c["members"] for c in clusters], [[(1, 0), (2, 0)]])
+        np.testing.assert_allclose(capped.recon_edge_points[0][0], [0.1, 0, 0], atol=1e-6)
+
+    def test_no_pair_cap_pairs_distant_mutual_neighbours(self):
+        # Two free ends 0.5 apart with no third candidate: only the loose level calls them one vertex.
+        e0 = segment((0, 0, 0), (-1, 0, 0))
+        e1 = segment((0.5, 0, 0), (0.5, 1, 0))
+        points, closed = np.stack([e0, e1]), np.zeros(2, bool)
+        for config in (EndpointRepairConfig(), post.ENDPOINT_REPAIR_TIGHT):
+            self.assertEqual(pair_face_endpoints(points, [0, 1], closed, config)[0], [])
+        pairs, _ = pair_face_endpoints(points, [0, 1], closed, post.ENDPOINT_REPAIR_LOOSE)
+        self.assertEqual([(a, b) for a, b, _ in pairs], [((0, 0), (1, 0))])
 
     def test_recover_v3_appends_repair_paths_after_seam_paths(self):
         original_construct = post.construct_brep_for_sample
@@ -203,6 +255,39 @@ class EndpointRepairTests(unittest.TestCase):
                                 ("repair_roundtrip_fit_only", False, True), ("repair_roundtrip_optimized", False, True)])
         self.assertEqual(diagnostics["status"], "no_accepted_solid")
         self.assertTrue(diagnostics["paths"][-1]["endpoint_repair_enabled"])
+
+    def test_recover_v4_probes_tight_repair_before_loose(self):
+        original_construct = post.construct_brep_for_sample
+        seen = []
+
+        def legacy(data_root, out_root, sample_id, **kwargs):
+            Path(out_root, sample_id).mkdir(parents=True, exist_ok=True)
+
+        def complete(*args, report, split_face=True, endpoint_repair=None, **kwargs):
+            seen.append((report["label"], kwargs["optimized"], split_face, endpoint_repair))
+            report["status"] = "incomplete_faces"
+            return False
+
+        with tempfile.TemporaryDirectory() as directory, patch.object(post, "construct_brep_for_sample", legacy), \
+                patch.object(post, "_run_complete_post_path", complete):
+            original_construct("unused", directory, "sample", post_policy="recover_v4")
+            diagnostics = json.loads((Path(directory) / "sample/post_diagnostics.json").read_text())
+        tight, loose = post.ENDPOINT_REPAIR_TIGHT, post.ENDPOINT_REPAIR_LOOSE
+        self.assertEqual(seen, [("roundtrip_optimized", True, True, None), ("roundtrip_fit_only", False, True, None),
+                                ("seam_roundtrip_optimized", True, False, None),
+                                ("seam_roundtrip_fit_only", False, False, None),
+                                ("repair_tight_roundtrip_fit_only", False, False, tight),
+                                ("repair_tight_roundtrip_optimized", True, False, tight),
+                                ("repair_loose_roundtrip_fit_only", False, False, loose),
+                                ("repair_loose_roundtrip_optimized", True, False, loose)])
+        self.assertEqual((tight.pair_gap, tight.attach_gap), (0.05, None))
+        self.assertEqual((loose.pair_gap, loose.attach_gap), (None, None))
+        # recover_v3 keeps its single level with both caps at 0.2.
+        self.assertEqual((post.ENDPOINT_REPAIR.pair_gap, post.ENDPOINT_REPAIR.attach_gap), (0.2, 0.2))
+        self.assertEqual([path[0] for path in post.RECOVER_V3_PATHS][-2:],
+                         ["repair_roundtrip_fit_only", "repair_roundtrip_optimized"])
+        self.assertEqual(diagnostics["status"], "no_accepted_solid")
+        self.assertEqual([path["label"] for path in diagnostics["paths"]][0], "legacy")
 
 
 if __name__ == "__main__":

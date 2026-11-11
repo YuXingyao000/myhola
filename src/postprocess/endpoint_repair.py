@@ -4,11 +4,11 @@ Runs only inside recovery paths, after half-edge selection and before fitting.
 It acts only where the relation is unambiguous:
 
 * inside each face, two endpoints of different edges are paired when they are
-  mutual nearest neighbours, closer than `max_gap`, and the second-nearest
+  mutual nearest neighbours, closer than `pair_gap`, and the second-nearest
   candidate of either endpoint is at least `ambiguity_margin` farther
   (tiny gaps below `small_gap` are accepted without the margin test);
 * pairs are merged across faces into vertex clusters; a cluster is kept when
-  its diameter is within `max_gap`, no edge contributes both ends to it, and
+  its diameter is within `pair_gap`, no edge contributes both ends to it, and
   it has at least two members;
 * clustered endpoints are moved onto the cluster centroid and the interior
   of the edge follows with a chord-length linear blend; unclustered endpoints
@@ -16,7 +16,7 @@ It acts only where the relation is unambiguous:
 * an endpoint left unpaired is attached to an already established cluster
   when that cluster is topologically the corner the endpoint belongs to: in
   each of the edge's two faces the cluster holds exactly one endpoint (the
-  partner), the cluster is within `max_gap`, the next candidate cluster is at
+  partner), the cluster is within `attach_gap`, the next candidate cluster is at
   least `ambiguity_margin` farther, and the two ends of one edge never take
   the same cluster (endpoints are attached closest first and each later one
   is judged against the clusters as already extended); the cluster centroid
@@ -24,6 +24,13 @@ It acts only where the relation is unambiguous:
 * an open edge whose two ends are unpaired in both of its faces is dropped
   from the connectivity, as a superfluous boundary, when both faces keep at
   least two edges.
+
+The two distance caps are separate because the evidence differs. Pairing two
+free ends asserts that they are one vertex with nothing but closeness behind
+it, so `pair_gap` stays at the scale of the decoder's endpoint noise. An
+attachment is backed by topology: a corner holding one endpoint in each of the
+edge's two faces lies on both faces, hence on the edge's own line, at any
+distance along it. `None` disables a cap; the remaining tests then decide.
 
 No GT is read. The returned diagnostics describe every decision.
 """
@@ -36,13 +43,18 @@ import numpy as np
 
 @dataclass(frozen=True)
 class EndpointRepairConfig:
-    max_gap: float = 0.2
+    pair_gap: float | None = 0.2
+    attach_gap: float | None = 0.2
     ambiguity_margin: float = 0.02
     small_gap: float = 0.01
     snap: bool = True
     attach_dangling: bool = True
     drop_dangling: bool = True
     min_edges_per_face: int = 2
+
+
+def _cap(gap):
+    return np.inf if gap is None else gap
 
 
 def _face_endpoints(edge_points, edge_ids, closed):
@@ -68,7 +80,7 @@ def pair_face_endpoints(edge_points, edge_ids, closed, config=EndpointRepairConf
 
     def unambiguous(i, j):
         best = dist[i, j]
-        if not np.isfinite(best) or best > config.max_gap:
+        if not np.isfinite(best) or best > _cap(config.pair_gap):
             return False
         if best <= config.small_gap:
             return True
@@ -135,7 +147,7 @@ def build_vertex_clusters(edge_points, face_edge_adj, closed, config=EndpointRep
             continue
         xyz = np.array([edge_points[e][k] for e, k in members])
         diameter = float(np.max(np.linalg.norm(xyz[:, None] - xyz[None], axis=-1)))
-        if diameter > config.max_gap:
+        if diameter > _cap(config.pair_gap):
             rejected["diameter"] += 1
             continue
         clusters.append({"members": sorted(members), "target": xyz.mean(axis=0), "diameter": diameter})
@@ -176,7 +188,7 @@ def attach_dangling_endpoints(edge_points, face_edge_adj, edge_faces, clusters, 
             if not all(any(m[0] in edges_of_face[f] and m[0] != e for m in cluster["members"]) for f in edge_faces[e]):
                 continue
             distance = float(np.linalg.norm(p - cluster["target"]))
-            if distance <= config.max_gap:
+            if distance <= _cap(config.attach_gap):
                 found.append((distance, c))
         return sorted(found)
 

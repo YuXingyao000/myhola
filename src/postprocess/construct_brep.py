@@ -285,7 +285,7 @@ def _write_compound_fallback(out_sample_dir, folder_name, recon_geom_faces, reco
         print(f"Failed to construct solid in {folder_name}")
 
 
-POST_POLICIES = ("legacy", "roundtrip_retry", "fit_score_v2", "recover_v1", "recover_v2", "recover_v3")
+POST_POLICIES = ("legacy", "roundtrip_retry", "fit_score_v2", "recover_v1", "recover_v2", "recover_v3", "recover_v4")
 
 # (label, implementation, optimized, fitting_policy, split_face, endpoint_repair)
 RECOVER_V1_PATHS = (("legacy", "legacy", True, "legacy", True, None),
@@ -305,7 +305,20 @@ ENDPOINT_REPAIR = EndpointRepairConfig()
 RECOVER_V3_PATHS = tuple(path for path in RECOVER_V2_PATHS if path[0] != "fit_score_v2_roundtrip_optimized") + (
     ("repair_roundtrip_fit_only", "complete", False, "legacy", False, ENDPOINT_REPAIR),
     ("repair_roundtrip_optimized", "complete", True, "legacy", False, ENDPOINT_REPAIR))
-RECOVERY_POLICIES = {"recover_v1": RECOVER_V1_PATHS, "recover_v2": RECOVER_V2_PATHS, "recover_v3": RECOVER_V3_PATHS}
+# recover_v4 = recover_v3 with its single repair level (both caps 0.2) replaced by
+# two probes, tight first: pairing two free ends is capped at the decoder's
+# endpoint-noise scale while attachment to an established corner has no distance
+# cap; then no distance cap at all. The first accepted path wins, so a sample
+# takes the least intervention that yields a valid solid.
+ENDPOINT_REPAIR_TIGHT = EndpointRepairConfig(pair_gap=0.05, attach_gap=None)
+ENDPOINT_REPAIR_LOOSE = EndpointRepairConfig(pair_gap=None, attach_gap=None)
+RECOVER_V4_PATHS = tuple(path for path in RECOVER_V3_PATHS if path[5] is None) + (
+    ("repair_tight_roundtrip_fit_only", "complete", False, "legacy", False, ENDPOINT_REPAIR_TIGHT),
+    ("repair_tight_roundtrip_optimized", "complete", True, "legacy", False, ENDPOINT_REPAIR_TIGHT),
+    ("repair_loose_roundtrip_fit_only", "complete", False, "legacy", False, ENDPOINT_REPAIR_LOOSE),
+    ("repair_loose_roundtrip_optimized", "complete", True, "legacy", False, ENDPOINT_REPAIR_LOOSE))
+RECOVERY_POLICIES = {"recover_v1": RECOVER_V1_PATHS, "recover_v2": RECOVER_V2_PATHS, "recover_v3": RECOVER_V3_PATHS,
+                     "recover_v4": RECOVER_V4_PATHS}
 
 
 class PostBudgetExceeded(TimeoutError):
