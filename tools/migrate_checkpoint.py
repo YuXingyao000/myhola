@@ -48,6 +48,10 @@ LAYOUT_20261030 = [
 MIGRATIONS = [
     {"version": "2026-10-30-layout", "strings": LAYOUT_20261030, "prefixes": []},
     {"version": "2026-10-30-curve-head-roles", "optional": "curve_head_mode"},
+    {"version": "2026-11-05-postprocess-decoded-prediction", "strings": [
+        ("src.postprocess.shape", "src.postprocess.decoded_prediction"),
+        ("src/postprocess/shape.py", "src/postprocess/decoded_prediction.py"),
+    ], "prefixes": []},
 ]
 
 

@@ -4,7 +4,11 @@ from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge, BRepBuilderAPI_Make
 from OCC.Core.BRepExtrema import BRepExtrema_DistShapeShape
 from OCC.Core.GeomAPI import GeomAPI_PointsToBSpline, GeomAPI_PointsToBSplineSurface
 from OCC.Core.TColgp import TColgp_Array1OfPnt, TColgp_Array2OfPnt
+from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_WIRE
 from OCC.Core.gp import gp_Pnt
+
+from src.common.occ_utils import get_primitives
+from src.postprocess.occ_topology import check_edges_similarity
 
 from src.postprocess.constants import (
     CONTINUITY,
@@ -189,3 +193,33 @@ def create_edge(points, use_variational_smoothing=USE_VARIATIONAL_SMOOTHING, *, 
         approx_edge = fit_edge(u_points_array, ROUGH_FITTING_TOLERANCE, use_variational_smoothing=False)
 
     return approx_edge
+
+
+def replace_periodic_face_edges(shape, is_replace_edge=False, connected_tolerance=0.1):
+    """Replace eligible shared OCC edges with a periodic face's natural edges."""
+    shape.clinder_face_idx = []
+    shape.replace_edge_idx = []
+    if not is_replace_edge:
+        return
+
+    for face_idx, geom_face in enumerate(shape.recon_geom_faces):
+        face_edges_idx_list = shape.face_edge_adj[face_idx]
+        topo_face = shape.recon_topo_faces[face_idx]
+        if ((geom_face.IsUPeriodic() or geom_face.IsVPeriodic()) and len(face_edges_idx_list) == 2
+                and len(get_primitives(topo_face, TopAbs_WIRE)) == 1):
+            shape.clinder_face_idx.append(face_idx)
+            face_edge_from_geom_face = get_primitives(topo_face, TopAbs_EDGE)
+            for edge_idx in face_edges_idx_list:
+                recon_topo_edge = shape.recon_topo_curves[edge_idx]
+                near_edge_from_geom_face = []
+                for edge_from_geom_face in face_edge_from_geom_face:
+                    is_similar, dis = check_edges_similarity(recon_topo_edge, edge_from_geom_face)
+                    if is_similar:
+                        near_edge_from_geom_face.append((edge_from_geom_face, dis))
+                if len(near_edge_from_geom_face) == 0:
+                    continue
+                if len(near_edge_from_geom_face) > 1:
+                    near_edge_from_geom_face = sorted(near_edge_from_geom_face, key=lambda x: x[1])
+                shape.recon_topo_curves[edge_idx] = near_edge_from_geom_face[0][0]
+                shape.replace_edge_idx.append(edge_idx)
+    pass

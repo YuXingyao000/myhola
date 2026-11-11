@@ -33,7 +33,7 @@ from src.postprocess.constants import CONNECT_TOLERANCE, TRANSFER_PRECISION
 from src.postprocess.debug import Colors, export_edges
 from src.postprocess.geometry_optimization import optimize
 from src.postprocess.mesh import get_separated_surface
-from src.postprocess.occ_fit import create_edge, create_surface
+from src.postprocess.occ_fit import create_edge, create_surface, replace_periodic_face_edges
 from src.postprocess.occ_topology import (
     create_trimmed_face_from_wire,
     create_wire_from_unordered_edges,
@@ -42,8 +42,8 @@ from src.postprocess.occ_topology import (
     get_tolerance,
     copy_occ_shapes,
 )
-from src.postprocess.shape import Shape
-from src.preprocess.shared_boundaries import SHARED_BOUNDARY_REPRESENTATION, shared_prediction_diagnostics
+from src.postprocess import decoded_prediction
+from src.preprocess.shared_boundaries import SHARED_BOUNDARY_REPRESENTATION
 
 import ray
 import argparse
@@ -51,58 +51,6 @@ import trimesh
 from tqdm import tqdm
 
 import time
-
-
-def load_prediction_shape(v_filename):
-    # specify the key to get the face points, edge points and edge_face_connectivity in data.npz
-    # data_npz = np.load(os.path.join(data_root, folder_name, 'data.npz'), allow_pickle=True)['arr_0'].item()
-    with np.load(v_filename, allow_pickle=True) as data_npz:
-        representation = data_npz["representation"].item() if "representation" in data_npz else "legacy_half_edges"
-        confidence = None
-        if representation == SHARED_BOUNDARY_REPRESENTATION:
-            face_points = data_npz["pred_face"]
-            edge_points = data_npz["pred_edge"]
-            edge_face_connectivity = data_npz["pred_edge_face_connectivity"]
-            confidence = data_npz["pred_edge_confidence"]
-            if face_points.ndim != 4 or face_points.shape[-1] != 3 or len(face_points) == 0 or not np.isfinite(face_points).all():
-                raise ValueError(f"{v_filename}: shared_boundary_v1 requires finite nonempty pred_face [F,U,V,3]")
-            shared_prediction_diagnostics(len(face_points), edge_points, edge_face_connectivity, confidence)
-        elif representation != "legacy_half_edges":
-            raise ValueError(f"{v_filename}: unknown representation {representation!r}")
-        elif 'sample_points_faces' in data_npz and 'edge_face_connectivity' in data_npz:
-            face_points = data_npz['sample_points_faces']  # Face sample points (num_faces*20*20*3)
-            edge_points = data_npz['sample_points_lines']  # Edge sample points (num_lines*20*3)
-            edge_face_connectivity = data_npz['edge_face_connectivity']  # (num_intersection, (id_edge, id_face1, id_face2))
-        elif 'pred_face' in data_npz and 'pred_edge_face_connectivity' in data_npz:
-            face_points = data_npz['pred_face']
-            edge_points = data_npz['pred_edge']
-            edge_face_connectivity = data_npz['pred_edge_face_connectivity']
-        elif 'pred_face' in data_npz and 'face_edge_adj' in data_npz:
-            face_points = data_npz['pred_face'].astype(np.float32)
-            edge_points = data_npz['pred_edge'].astype(np.float32)
-            face_edge_adj = data_npz['face_edge_adj']
-            edge_face_connectivity = []
-            N = face_points.shape[0]
-            for i in range(N):
-                for j in range(i + 1, N):
-                    intersection = list(set(face_edge_adj[i]).intersection(set(face_edge_adj[j])))
-                    if len(intersection) > 0:
-                        edge_face_connectivity.append([intersection[0], i, j])
-            edge_face_connectivity = np.array(edge_face_connectivity)
-
-        else:
-            raise ValueError(f"Unknown data npz format {v_filename}")
-
-    face_points = face_points[..., :3]
-    edge_points = edge_points[..., :3]
-    shape = Shape(face_points, edge_points, edge_face_connectivity, False)
-    shape.representation = representation
-    shape.edge_confidence = confidence
-    return shape
-
-
-def get_data(v_filename):
-    return load_prediction_shape(v_filename)
 
 
 def enumerate_candidate_shapes(num_drop, v_faces, v_curves, v_conn):
@@ -237,7 +185,7 @@ def _fit_occ_geometry(shape, fitting_policy="legacy"):
     shape.recon_topo_faces = [item for item in recon_topo_faces]
     shape.recon_geom_curves = [item for item in recon_geom_curves]
     shape.recon_topo_curves = [item for item in recon_topo_curves]
-    shape.replace_periodic_face_edges(is_replace_edge=True)
+    replace_periodic_face_edges(shape, is_replace_edge=True)
     recon_topo_curves = [item for item in shape.recon_topo_curves]
     return recon_geom_faces, recon_topo_faces, recon_geom_curves, recon_topo_curves
 
@@ -497,7 +445,7 @@ def _run_complete_post_path(data_root, output, folder_name, *, optimized, fittin
                             max_iterations, use_cuda, report, flush, deadline):
     _check_post_deadline(deadline)
     output.mkdir(parents=True, exist_ok=True)
-    shape = load_prediction_shape(Path(data_root) / folder_name / "data.npz")
+    shape = decoded_prediction.load_prediction_shape(Path(data_root) / folder_name / "data.npz")
     report["input_face_count"] = len(shape.recon_face_points)
     _prepare_shape_topology(shape, output / "debug_face_loop", False, False)
     report["selected_edge_count"] = len(shape.recon_edge_points)
@@ -702,7 +650,7 @@ def construct_brep_for_sample(data_root, out_root, folder_name, v_drop_num=0,
                 f"{Colors.GREEN}############################# Processing {folder_name} #############################{Colors.RESET}")
 
     # Prepare the data
-    shape = load_prediction_shape(os.path.join(data_root, folder_name, 'data.npz'))
+    shape = decoded_prediction.load_prediction_shape(os.path.join(data_root, folder_name, 'data.npz'))
     _prepare_shape_topology(shape, debug_face_save_path, isdebug, is_save_data)
 
     # Optimize data

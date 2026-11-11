@@ -1,14 +1,65 @@
+"""Decoded XYZ predictions: loading, boundary selection, indices and sample state.
+
+No neural latent decoding or OCC construction happens here. The existing
+selection rules and array order are preserved for downstream B-Rep construction.
+"""
+
 from itertools import combinations
 
 import numpy as np
 import torch
-from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_WIRE
 
-from src.common.occ_utils import get_primitives
 from src.postprocess.constants import INTERPOLATION_PRECISION
 from src.postprocess.distance import ChamferDistance
-from src.postprocess.occ_topology import check_edges_similarity
 from src.preprocess.shared_boundaries import SHARED_BOUNDARY_REPRESENTATION, shared_prediction_diagnostics
+
+
+def load_prediction_shape(v_filename):
+    # specify the key to get the face points, edge points and edge_face_connectivity in data.npz
+    # data_npz = np.load(os.path.join(data_root, folder_name, 'data.npz'), allow_pickle=True)['arr_0'].item()
+    with np.load(v_filename, allow_pickle=True) as data_npz:
+        representation = data_npz["representation"].item() if "representation" in data_npz else "legacy_half_edges"
+        confidence = None
+        if representation == SHARED_BOUNDARY_REPRESENTATION:
+            face_points = data_npz["pred_face"]
+            edge_points = data_npz["pred_edge"]
+            edge_face_connectivity = data_npz["pred_edge_face_connectivity"]
+            confidence = data_npz["pred_edge_confidence"]
+            if face_points.ndim != 4 or face_points.shape[-1] != 3 or len(face_points) == 0 or not np.isfinite(face_points).all():
+                raise ValueError(f"{v_filename}: shared_boundary_v1 requires finite nonempty pred_face [F,U,V,3]")
+            shared_prediction_diagnostics(len(face_points), edge_points, edge_face_connectivity, confidence)
+        elif representation != "legacy_half_edges":
+            raise ValueError(f"{v_filename}: unknown representation {representation!r}")
+        elif 'sample_points_faces' in data_npz and 'edge_face_connectivity' in data_npz:
+            face_points = data_npz['sample_points_faces']  # Face sample points (num_faces*20*20*3)
+            edge_points = data_npz['sample_points_lines']  # Edge sample points (num_lines*20*3)
+            edge_face_connectivity = data_npz['edge_face_connectivity']  # (num_intersection, (id_edge, id_face1, id_face2))
+        elif 'pred_face' in data_npz and 'pred_edge_face_connectivity' in data_npz:
+            face_points = data_npz['pred_face']
+            edge_points = data_npz['pred_edge']
+            edge_face_connectivity = data_npz['pred_edge_face_connectivity']
+        elif 'pred_face' in data_npz and 'face_edge_adj' in data_npz:
+            face_points = data_npz['pred_face'].astype(np.float32)
+            edge_points = data_npz['pred_edge'].astype(np.float32)
+            face_edge_adj = data_npz['face_edge_adj']
+            edge_face_connectivity = []
+            N = face_points.shape[0]
+            for i in range(N):
+                for j in range(i + 1, N):
+                    intersection = list(set(face_edge_adj[i]).intersection(set(face_edge_adj[j])))
+                    if len(intersection) > 0:
+                        edge_face_connectivity.append([intersection[0], i, j])
+            edge_face_connectivity = np.array(edge_face_connectivity)
+
+        else:
+            raise ValueError(f"Unknown data npz format {v_filename}")
+
+    face_points = face_points[..., :3]
+    edge_points = edge_points[..., :3]
+    shape = Shape(face_points, edge_points, edge_face_connectivity, False)
+    shape.representation = representation
+    shape.edge_confidence = confidence
+    return shape
 
 
 _SKIP_FACE_PAIR = object()
@@ -76,14 +127,14 @@ def interpolation_face_points(face, is_use_cuda=False, precision=INTERPOLATION_P
 class Shape:
     """预测 BRep 的中间状态容器。
 
-    该类是单个样本的唯一状态容器。字段被 `construct_brep.py` 和历史数据脚本
-    直接读取，因此这里不拆成多个类，也不修改字段名、构造参数和方法副作用。
+    读取和边筛选集中在本模块；拟合及自然边替换在 `occ_fit.py`。
+    `construct_brep.py` 按阶段更新同一个状态对象，保持面、边及连接索引一致。
 
     生命周期：
     1. 初始化后持有网络预测的 face/edge/connectivity。
     2. 拓扑预处理后生成 openness、face_edge_adj、pair1/is_end_point。
     3. OCC 拟合后由调用方补充 recon_geom_* 和 recon_topo_* 字段。
-    4. 周期面处理可能替换 recon_topo_curves 中的部分 edge。
+    4. `occ_fit.replace_periodic_face_edges` 可能更新共享的 recon_topo_curves。
     """
 
     def __init__(self, v_face_point, v_edge_points, v_connectivity, is_use_cuda=True):
@@ -382,34 +433,3 @@ class Shape:
                 if edge_idx in self.face_edge_adj[face_idx2]:
                     self.face_edge_adj[face_idx2].remove(edge_idx)
         self.remove_edge_idx_new.extend(np.unique(remove_edges_idx_real))
-
-    def replace_periodic_face_edges(self, is_replace_edge=False, connected_tolerance=0.1):
-        self.clinder_face_idx = []
-        self.replace_edge_idx = []
-        if not is_replace_edge:
-            return
-
-        for face_idx, geom_face in enumerate(self.recon_geom_faces):
-            face_edges_idx_list = self.face_edge_adj[face_idx]
-            topo_face = self.recon_topo_faces[face_idx]
-            if ((geom_face.IsUPeriodic() or geom_face.IsVPeriodic()) and len(face_edges_idx_list) == 2
-                    and len(get_primitives(topo_face, TopAbs_WIRE)) == 1):
-                self.clinder_face_idx.append(face_idx)
-                face_edge_from_geom_face = get_primitives(topo_face, TopAbs_EDGE)
-                for edge_idx in face_edges_idx_list:
-                    recon_topo_edge = self.recon_topo_curves[edge_idx]
-                    near_edge_from_geom_face = []
-                    for edge_from_geom_face in face_edge_from_geom_face:
-                        is_similar, dis = check_edges_similarity(recon_topo_edge, edge_from_geom_face)
-                        if is_similar:
-                            near_edge_from_geom_face.append((edge_from_geom_face, dis))
-                    if len(near_edge_from_geom_face) == 0:
-                        continue
-                    if len(near_edge_from_geom_face) > 1:
-                        near_edge_from_geom_face = sorted(near_edge_from_geom_face, key=lambda x: x[1])
-                    self.recon_topo_curves[edge_idx] = near_edge_from_geom_face[0][0]
-                    self.replace_edge_idx.append(edge_idx)
-        pass
-
-    def build_geom(self, is_replace_edge=False, connected_tolerance=0.1):
-        return self.replace_periodic_face_edges(is_replace_edge, connected_tolerance)

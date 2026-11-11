@@ -6,8 +6,8 @@ import unittest
 import numpy as np
 
 from src.preprocess.shared_boundaries import SHARED_BOUNDARY_REPRESENTATION
-from src.postprocess.construct_brep import _prepare_shape_topology, load_prediction_shape
-from src.postprocess.shape import Shape
+from src.postprocess.construct_brep import _prepare_shape_topology
+from src.postprocess.decoded_prediction import Shape, load_prediction_shape
 from tests.test_shared_boundaries import make_boundary_arrays
 
 
