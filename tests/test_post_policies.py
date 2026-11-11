@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import numpy as np
 from OCC.Core.BRep import BRep_Tool
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeFace, BRepBuilderAPI_MakePolygon, BRepBuilderAPI_MakeWire
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeFace, BRepBuilderAPI_MakePolygon, BRepBuilderAPI_MakeWire
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
 from OCC.Core.Geom import Geom_Plane
 from OCC.Core.Interface import Interface_Static
@@ -159,6 +159,66 @@ class PostPolicyTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "optimized policy"):
             post.construct_brep_for_sample("unused", "unused", "sample", is_optimize_geom=False,
                                            post_policy="recover_v1")
+
+
+    def test_periodic_face_with_two_wrapping_loops_gets_a_seam_without_face_split(self):
+        angles = np.linspace(0, 2 * np.pi, 16)
+        heights = np.linspace(0, 1, 16)
+        points = np.array([[[np.cos(a), np.sin(a), h] for a in angles] for h in heights])
+        surface = create_surface(points)
+        natural = BRepBuilderAPI_MakeFace(surface, 1e-6).Face()
+        rims = [topods.Edge(edge) for edge in get_primitives(natural, TopAbs_EDGE)
+                if get_edge_length(topods.Edge(edge)) > 2]
+        self.assertEqual(len(rims), 2)
+        # Split one rim into four arcs so the two-equal-edges natural-loop rule does not apply.
+        curve, first, last = BRep_Tool.Curve(rims[1])
+        arcs = [BRepBuilderAPI_MakeEdge(curve, first + (last - first) * k / 4, first + (last - first) * (k + 1) / 4).Edge()
+                for k in range(4)]
+        edges = [rims[0], *arcs]
+        top = BRepBuilderAPI_MakeWire()
+        for arc in arcs:
+            top.Add(arc)
+        wires = [BRepBuilderAPI_MakeWire(rims[0]).Wire(), top.Wire()]
+        self.assertTrue(all(wire.Closed() for wire in wires))
+
+        split = {}
+        self.assertIsNone(create_trimmed_face_from_wire(surface, list(edges), list(wires), .002,
+                                                        require_all_wires=True, diagnostics=split))
+        self.assertEqual(split["rejection"], "wire_count_decreased_during_face_fix")
+        self.assertFalse(split["seam_added"])
+
+        seam = {}
+        face = create_trimmed_face_from_wire(surface, list(edges), list(wires), .002,
+                                             require_all_wires=True, diagnostics=seam, split_face=False)
+        self.assertIsNotNone(face)
+        self.assertTrue(seam["seam_added"])
+        self.assertFalse(seam["natural_wire_replacement"])
+        self.assertEqual(seam["final_wire_count"], 1)
+        self.assertTrue(seam["boundary_complete"])
+        occurrences = sum(len(get_primitives(wire, TopAbs_EDGE)) for wire in get_primitives(face, TopAbs_WIRE))
+        self.assertGreaterEqual(occurrences, len(edges) + 2)
+
+    def test_recover_v2_runs_recover_v1_paths_then_seam_paths(self):
+        original_construct = post.construct_brep_for_sample
+        seen = []
+
+        def legacy(data_root, out_root, sample_id, **kwargs):
+            Path(out_root, sample_id).mkdir(parents=True, exist_ok=True)
+
+        def complete(*args, report, split_face=True, **kwargs):
+            seen.append((report["label"], split_face))
+            report["status"] = "incomplete_faces"
+            return False
+
+        with tempfile.TemporaryDirectory() as directory, patch.object(post, "construct_brep_for_sample", legacy), \
+                patch.object(post, "_run_complete_post_path", complete):
+            original_construct("unused", directory, "sample", post_policy="recover_v2")
+            diagnostics = json.loads((Path(directory) / "sample/post_diagnostics.json").read_text())
+        self.assertEqual(seen, [("roundtrip_optimized", True), ("roundtrip_fit_only", True),
+                               ("fit_score_v2_roundtrip_optimized", True),
+                               ("seam_roundtrip_optimized", False), ("seam_roundtrip_fit_only", False)])
+        self.assertEqual(diagnostics["status"], "no_accepted_solid")
+        self.assertEqual([p["label"] for p in diagnostics["paths"]][0], "legacy")
 
 
 if __name__ == "__main__":

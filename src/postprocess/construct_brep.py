@@ -31,6 +31,7 @@ from src.eval.metrics.validity import check_step_valid_soild, save_step_file
 
 from src.postprocess.constants import CONNECT_TOLERANCE, TRANSFER_PRECISION
 from src.postprocess.debug import Colors, export_edges
+from src.postprocess.endpoint_repair import EndpointRepairConfig, repair_endpoints
 from src.postprocess.geometry_optimization import optimize
 from src.postprocess.mesh import get_separated_surface
 from src.postprocess.occ_fit import create_edge, create_surface, replace_periodic_face_edges
@@ -150,7 +151,8 @@ def _prepare_shape_topology(shape, debug_face_save_path, isdebug, is_save_data):
         _save_initial_debug_data(shape, debug_face_save_path)
 
 
-def _optimize_shape_geometry(shape, is_ray, isdebug, use_cuda, v_max_optimize_iter, is_save_data, debug_face_save_path):
+def _optimize_shape_geometry(shape, is_ray, isdebug, use_cuda, v_max_optimize_iter, is_save_data, debug_face_save_path,
+                             vertex_clusters=None):
     interpolation_face = []
     for item in shape.interpolation_face:
         interpolation_face.append(item)
@@ -159,12 +161,14 @@ def _optimize_shape_geometry(shape, is_ray, isdebug, use_cuda, v_max_optimize_it
         shape.recon_face_points, shape.recon_edge_points = optimize(
                 interpolation_face, shape.recon_edge_points, shape.recon_face_points,
                 shape.edge_face_connectivity, shape.is_end_point, shape.pair1,
-                shape.face_edge_adj, v_islog=isdebug, v_max_iter=v_max_optimize_iter, use_cuda=use_cuda)
+                shape.face_edge_adj, v_islog=isdebug, v_max_iter=v_max_optimize_iter, use_cuda=use_cuda,
+                vertex_clusters=vertex_clusters)
     else:
         shape.recon_face_points, shape.recon_edge_points = optimize(
                 shape.interpolation_face, shape.recon_edge_points, shape.recon_face_points,
                 shape.edge_face_connectivity, shape.is_end_point, shape.pair1,
-                shape.face_edge_adj, v_islog=False, v_max_iter=v_max_optimize_iter, use_cuda=use_cuda)
+                shape.face_edge_adj, v_islog=False, v_max_iter=v_max_optimize_iter, use_cuda=use_cuda,
+                vertex_clusters=vertex_clusters)
 
     if is_save_data:
         _save_optimized_debug_data(shape, debug_face_save_path)
@@ -281,7 +285,40 @@ def _write_compound_fallback(out_sample_dir, folder_name, recon_geom_faces, reco
         print(f"Failed to construct solid in {folder_name}")
 
 
-POST_POLICIES = ("legacy", "roundtrip_retry", "fit_score_v2", "recover_v1")
+POST_POLICIES = ("legacy", "roundtrip_retry", "fit_score_v2", "recover_v1", "recover_v2", "recover_v3", "recover_v4")
+
+# (label, implementation, optimized, fitting_policy, split_face, endpoint_repair)
+RECOVER_V1_PATHS = (("legacy", "legacy", True, "legacy", True, None),
+                    ("roundtrip_optimized", "complete", True, "legacy", True, None),
+                    ("roundtrip_fit_only", "complete", False, "legacy", True, None),
+                    ("fit_score_v2_roundtrip_optimized", "complete", True, "fit_score_v2", True, None))
+# recover_v2 = recover_v1, then the same complete paths with ShapeFix_Face's
+# split-face disabled so a periodic face bounded by two wrapping loops gets a seam.
+RECOVER_V2_PATHS = RECOVER_V1_PATHS + (("seam_roundtrip_optimized", "complete", True, "legacy", False, None),
+                                       ("seam_roundtrip_fit_only", "complete", False, "legacy", False, None))
+# recover_v3 = recover_v2 without fit_score_v2_roundtrip_optimized (it produced
+# no accepted solid on validation3495 under recover_v3 and only spends shared
+# budget), then targeted endpoint repair (unambiguous vertex clusters snapped
+# together, endpoints attached to established corners, dangling superfluous
+# edges dropped) before fitting.
+ENDPOINT_REPAIR = EndpointRepairConfig()
+RECOVER_V3_PATHS = tuple(path for path in RECOVER_V2_PATHS if path[0] != "fit_score_v2_roundtrip_optimized") + (
+    ("repair_roundtrip_fit_only", "complete", False, "legacy", False, ENDPOINT_REPAIR),
+    ("repair_roundtrip_optimized", "complete", True, "legacy", False, ENDPOINT_REPAIR))
+# recover_v4 = recover_v3 with its single repair level (both caps 0.2) replaced by
+# two probes, tight first: pairing two free ends is capped at the decoder's
+# endpoint-noise scale while attachment to an established corner has no distance
+# cap; then no distance cap at all. The first accepted path wins, so a sample
+# takes the least intervention that yields a valid solid.
+ENDPOINT_REPAIR_TIGHT = EndpointRepairConfig(pair_gap=0.05, attach_gap=None)
+ENDPOINT_REPAIR_LOOSE = EndpointRepairConfig(pair_gap=None, attach_gap=None)
+RECOVER_V4_PATHS = tuple(path for path in RECOVER_V3_PATHS if path[5] is None) + (
+    ("repair_tight_roundtrip_fit_only", "complete", False, "legacy", False, ENDPOINT_REPAIR_TIGHT),
+    ("repair_tight_roundtrip_optimized", "complete", True, "legacy", False, ENDPOINT_REPAIR_TIGHT),
+    ("repair_loose_roundtrip_fit_only", "complete", False, "legacy", False, ENDPOINT_REPAIR_LOOSE),
+    ("repair_loose_roundtrip_optimized", "complete", True, "legacy", False, ENDPOINT_REPAIR_LOOSE))
+RECOVERY_POLICIES = {"recover_v1": RECOVER_V1_PATHS, "recover_v2": RECOVER_V2_PATHS, "recover_v3": RECOVER_V3_PATHS,
+                     "recover_v4": RECOVER_V4_PATHS}
 
 
 class PostBudgetExceeded(TimeoutError):
@@ -345,7 +382,7 @@ def _save_step_checked(step_path, shape):
     return float(tolerance)
 
 
-def _build_complete_trimmed_faces(faces, curves, connectivity, report, flush, deadline):
+def _build_complete_trimmed_faces(faces, curves, connectivity, report, flush, deadline, split_face=True):
     """Keep the legacy tolerance order, but isolate every face trial."""
     adjacency = _build_face_edge_adjacency(len(faces), connectivity)
     result = []
@@ -372,7 +409,8 @@ def _build_complete_trimmed_faces(faces, curves, connectivity, report, flush, de
                 attempt["assembled_edge_occurrences"] = sum(
                     len(get_primitives(wire, TopAbs_EDGE)) for wire in wires)
                 accepted = create_trimmed_face_from_wire(
-                    surface, edges, wires, tolerance, require_all_wires=True, diagnostics=attempt)
+                    surface, edges, wires, tolerance, require_all_wires=True, diagnostics=attempt,
+                    split_face=split_face)
                 if (accepted is not None and not attempt["natural_wire_replacement"] and
                         attempt["assembled_edge_occurrences"] < len(edge_ids)):
                     attempt["rejection"] = "edge_omitted_during_wire_assembly"
@@ -391,6 +429,9 @@ def _build_complete_trimmed_faces(faces, curves, connectivity, report, flush, de
     report["complete_faces"] = report["used_face_count"] == len(faces)
     report["natural_wire_replacement_count"] = sum(
         item["attempts"][item["accepted_attempt"]].get("natural_wire_replacement", False)
+        for item in report["faces"] if item["accepted_attempt"] is not None)
+    report["seam_added_count"] = sum(
+        item["attempts"][item["accepted_attempt"]].get("seam_added", False)
         for item in report["faces"] if item["accepted_attempt"] is not None)
     flush()
     return result
@@ -442,17 +483,25 @@ def _try_save_complete_solid(trimmed_faces, output, report, flush, deadline):
 
 
 def _run_complete_post_path(data_root, output, folder_name, *, optimized, fitting_policy,
-                            max_iterations, use_cuda, report, flush, deadline):
+                            max_iterations, use_cuda, report, flush, deadline, split_face=True,
+                            endpoint_repair=None):
     _check_post_deadline(deadline)
     output.mkdir(parents=True, exist_ok=True)
     shape = decoded_prediction.load_prediction_shape(Path(data_root) / folder_name / "data.npz")
     report["input_face_count"] = len(shape.recon_face_points)
     _prepare_shape_topology(shape, output / "debug_face_loop", False, False)
     report["selected_edge_count"] = len(shape.recon_edge_points)
+    vertex_clusters = None
+    if endpoint_repair is not None:
+        report["stage"] = "endpoint_repair"
+        flush()
+        report["endpoint_repair"], vertex_clusters = repair_endpoints(shape, endpoint_repair)
+        report["used_edge_count"] = len(shape.edge_face_connectivity)
     report["stage"] = "optimization" if optimized else "fitting"
     flush()
     if optimized:
-        _optimize_shape_geometry(shape, False, False, use_cuda, max_iterations, False, output / "debug_face_loop")
+        _optimize_shape_geometry(shape, False, False, use_cuda, max_iterations, False, output / "debug_face_loop",
+                                 vertex_clusters=vertex_clusters)
     _check_post_deadline(deadline)
     report["stage"] = "fitting"
     flush()
@@ -461,7 +510,7 @@ def _run_complete_post_path(data_root, output, folder_name, *, optimized, fittin
     report["stage"] = "trimming"
     flush()
     trimmed = _build_complete_trimmed_faces(
-        faces, curves, shape.edge_face_connectivity, report, flush, deadline)
+        faces, curves, shape.edge_face_connectivity, report, flush, deadline, split_face=split_face)
     if not report["complete_faces"]:
         report["status"] = "incomplete_faces"
         return False
@@ -493,15 +542,15 @@ def _construct_with_policy(data_root, out_root, folder_name, *, v_drop_num, is_r
         raise ValueError(f"Unknown post_policy: {post_policy}")
     if v_drop_num != 0:
         raise ValueError("Explicit post policies require drop_num=0 and full face coverage")
-    if post_policy == "recover_v1" and not is_optimize_geom:
-        raise ValueError("recover_v1 is an optimized policy; fit-only is its explicit third path")
+    if post_policy in RECOVERY_POLICIES and not is_optimize_geom:
+        raise ValueError(f"{post_policy} is an optimized policy; fit-only is its explicit third path")
     started = time.monotonic()
     if time_budget_seconds is not None:
         if not np.isfinite(time_budget_seconds) or time_budget_seconds <= 0:
             raise ValueError("time_budget_seconds must be finite and positive")
         budget_deadline = started + float(time_budget_seconds)
         deadline_monotonic = min(deadline_monotonic, budget_deadline) if deadline_monotonic is not None else budget_deadline
-    if deadline_monotonic is None and post_policy == "recover_v1":
+    if deadline_monotonic is None and post_policy in RECOVERY_POLICIES:
         deadline_monotonic = started + 180.0
     output = Path(out_root) / folder_name
     output.mkdir(parents=True, exist_ok=True)
@@ -519,19 +568,16 @@ def _construct_with_policy(data_root, out_root, folder_name, *, v_drop_num, is_r
         _write_post_diagnostics(diagnostics_path, diagnostics)
 
     flush()
-    if post_policy == "recover_v1":
-        paths = [("legacy", "legacy", True, "legacy"),
-                 ("roundtrip_optimized", "complete", True, "legacy"),
-                 ("roundtrip_fit_only", "complete", False, "legacy"),
-                 ("fit_score_v2_roundtrip_optimized", "complete", True, "fit_score_v2")]
+    if post_policy in RECOVERY_POLICIES:
+        paths = list(RECOVERY_POLICIES[post_policy])
     elif post_policy == "fit_score_v2":
-        paths = [("fit_score_v2", "legacy", is_optimize_geom, "fit_score_v2")]
+        paths = [("fit_score_v2", "legacy", is_optimize_geom, "fit_score_v2", True, None)]
     else:
-        paths = [("roundtrip_retry", "complete", is_optimize_geom, "legacy")]
+        paths = [("roundtrip_retry", "complete", is_optimize_geom, "legacy", True, None)]
     random_state = random.getstate()
     numpy_state = np.random.get_state()
     try:
-        for label, implementation, optimized, fitting_policy in paths:
+        for label, implementation, optimized, fitting_policy, split_face, endpoint_repair in paths:
             _check_post_deadline(deadline_monotonic)
             # Fixed paths each start from identical raw arrays and RNG state.
             random.setstate(random_state)
@@ -546,6 +592,7 @@ def _construct_with_policy(data_root, out_root, folder_name, *, v_drop_num, is_r
                 attempt_output = output
             report = {"label": label, "implementation": implementation,
                       "optimized": optimized, "fitting_policy": fitting_policy,
+                      "split_face": split_face, "endpoint_repair_enabled": endpoint_repair is not None,
                       "output_dir": str(attempt_output), "status": "running",
                       "native_valid_solid": False, "boundary_complete": None}
             diagnostics["paths"].append(report)
@@ -571,7 +618,8 @@ def _construct_with_policy(data_root, out_root, folder_name, *, v_drop_num, is_r
                     accepted = _run_complete_post_path(
                         data_root, attempt_output, folder_name, optimized=optimized,
                         fitting_policy=fitting_policy, max_iterations=v_max_optimize_iter,
-                        use_cuda=use_cuda, report=report, flush=flush, deadline=deadline_monotonic)
+                        use_cuda=use_cuda, report=report, flush=flush, deadline=deadline_monotonic,
+                        split_face=split_face, endpoint_repair=endpoint_repair)
                 if accepted:
                     _promote_post_output(attempt_output, output)
                     diagnostics.update(status="accepted", chosen_path=label, native_valid_solid=True,

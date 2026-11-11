@@ -12,6 +12,8 @@ construct_brep.py                       调度入口：construct_brep_for_sample
     +-- decoded_prediction.py           读取 → 半边筛选／边重编号 → 邻接／角点关系
     |       load_prediction_shape       Shape 保存本样本的数组与中间状态
     |
+    +-- endpoint_repair.py              恢复路径可选：端点配对 → 顶点簇 → 精确贴合／剔多余边
+    |
     +-- geometry_optimization.py        可选拟合前优化：整条边缩放／平移、整张面平移
     |
     +-- occ_fit.py                     B-spline surface / curve 拟合
@@ -61,7 +63,7 @@ construct_brep_for_sample(
 )
 ```
 
-该示例说明接口，不替代正式评估的 seed、清单、进程超时和溯源配置。`recover_v1` 从同一原始预测依次尝试 legacy optimized、complete optimized、complete fit-only、fit-score-v2 optimized；首个满足该路径验收条件的结果即停止，共用预算。都须通过原生 solid 检查，complete 路径还检查 roundtrip 后面数相同、wire 数不减少。各路径不会在前一路结果上接着优化。输出使用新目录。
+该示例说明接口，不替代正式评估的 seed、清单、进程超时和溯源配置。`recover_v1` 从同一原始预测依次尝试 legacy optimized、complete optimized、complete fit-only、fit-score-v2 optimized；`recover_v2` 在其后追加两条关闭 `ShapeFix_Face` 拆面、让 `FixMissingSeam` 为周期面补 seam 的 complete 路径（optimized、fit-only），只对前四条都失败的样本生效；`recover_v3` 去掉零救回的 fit-score-v2 路径，再追加两条定向端点修复路径（`endpoint_repair.py`：无歧义的端点配对并成顶点簇，悬空端点挂到拓扑一致的已成立角点，精确贴合，剔除两头悬空的多余边），只对前五条都失败的样本生效；`recover_v4` 把这两条修复路径换成先紧后松的两档共四条（紧档：两个悬空端点配对的距离上限取 0.05，挂到已成立角点不设距离上限；松档：都不设上限），其余路径与 `recover_v3` 相同；首个满足该路径验收条件的结果即停止，共用预算。都须通过原生 solid 检查，complete 路径还检查 roundtrip 后面数相同、wire 数不减少。各路径不会在前一路结果上接着优化。输出使用新目录。
 
 ## 输出与判定
 

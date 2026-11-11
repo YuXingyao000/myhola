@@ -34,7 +34,14 @@ def apply_offset_batch(tensor, offsets):
 def optimize(
         v_interpolation_face, recon_edge_points, recon_face_points,
         edge_face_connectivity, is_end_point, pair1,
-        face_edge_adj, v_islog=True, v_max_iter=1000, use_cuda=True):
+        face_edge_adj, v_islog=True, v_max_iter=1000, use_cuda=True, vertex_clusters=None):
+    """Pre-fit optimization of edge scale/shift and face shift.
+
+    `vertex_clusters` (from `endpoint_repair.build_vertex_clusters`) replaces the
+    historical three-face corner term and the per-iteration nearest-endpoint term
+    with one term pulling each clustered endpoint to its cluster centroid; the
+    edge-to-face term is unchanged. Without it the legacy behaviour is untouched.
+    """
     device = torch.device('cuda') if torch.cuda.is_available() and use_cuda else torch.device('cpu')
     interpolation_face = []
     for item in v_interpolation_face:
@@ -48,6 +55,16 @@ def optimize(
     idx = np.zeros_like(is_end_point).astype(np.int64)
     idx[is_end_point] = 15
     idx = torch.from_numpy(idx).to(device)
+    cluster_edge = cluster_end = cluster_id = None
+    if vertex_clusters:
+        last = edge_points.shape[1] - 1
+        members = [(e, last if k == -1 else k, c)
+                   for c, cluster in enumerate(vertex_clusters) for e, k in cluster["members"]]
+        cluster_edge = torch.tensor([m[0] for m in members], device=device)
+        cluster_end = torch.tensor([m[1] for m in members], device=device)
+        cluster_id = torch.tensor([m[2] for m in members], device=device)
+        cluster_count = torch.zeros(len(vertex_clusters), device=device).index_add_(
+            0, cluster_id, torch.ones(len(members), device=device))
 
     edge_st = nn.Parameter(
             torch.tensor([1, 1, 1, 0, 0, 0], dtype=torch.float32, device=device).unsqueeze(0).repeat(edge_points.shape[0], 1))
@@ -84,7 +101,13 @@ def optimize(
                 batch_reduction=None, point_reduction="sum", bidirectional=False)
         adj_distance_loss = (dis_matrix1 + dis_matrix2 + 1e-2 * (dis_matrix1 - dis_matrix2).abs()).mean()
 
-        if pair1 is None:
+        if cluster_edge is not None:
+            corners = transformed_edges[cluster_edge, cluster_end]  # [M,3]
+            centroid = torch.zeros(len(vertex_clusters), 3, device=device).index_add_(
+                0, cluster_id, corners) / cluster_count[:, None]
+            corners_loss = torch.linalg.norm(corners - centroid[cluster_id], dim=-1).mean()
+            wire_connected_loss = torch.zeros_like(adj_distance_loss)
+        elif pair1 is None:
             corners_loss = torch.zeros_like(adj_distance_loss)
         else:
             corners = transformed_edges[pair1, idx]
@@ -93,7 +116,9 @@ def optimize(
                            torch.linalg.norm(corners[:, 0] - corners[:, 2], dim=-1)
             corners_loss = (corners_loss / 3).mean()
 
-        if len(face_edge_adj) == 0:
+        if cluster_edge is not None:
+            pass
+        elif len(face_edge_adj) == 0:
             wire_connected_loss = torch.zeros_like(adj_distance_loss)
         else:
             max_length = max(len(face_edge_idx) for face_edge_idx in face_edge_adj)
