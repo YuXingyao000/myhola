@@ -78,4 +78,4 @@ from src.postprocess.geometry_optimization import *
 from src.postprocess.mesh import *
 from src.postprocess.occ_fit import *
 from src.postprocess.occ_topology import *
-from src.postprocess.shape import *
+from src.postprocess.decoded_prediction import Shape, interpolation_face_points

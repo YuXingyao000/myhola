@@ -9,7 +9,7 @@
 - 所有训练入口默认使用 `${IMG2BREP_RUNS_ROOT:-/mnt/d/hola_runs}/<exp_name>/<UTC 时间戳>`。`trainer.run_dir` 指定完整路径；续训／测试显式提供 `trainer.resume_from_checkpoint`，恢复原 run。`trainer.output_dir` 始终表示输出根，不被 Hydra 改写成 run。运行目录和逐对象 NPZ 合同分别由 `common/run_management.py`、`common/prediction_export.py` 管理。
 - `models/__init__.py`：`build_model`；主模型在 `models/vae/` 与 `models/diffusion/model.py`。旧 `models/diffusion*.py` 兼容导出已删除。
 - `inference.py`：独立推理工具，手工配置已切到逐层 image cross-attention，单图输入为 `[B,3,224,224]`。权重通过 `load_diffusion_state_dict` 加载，保留独立指定的 VAE，严格检查其余 key；仍需核对训练时的完整配置，不能认为手写默认值完整复现任意 run。
-- `evaluate.py`：`python -m src.evaluate`；`postprocess/` 完成 OCC B-Rep 构造。
+- `evaluate.py`：`python -m src.evaluate`；`postprocess/` 完成解码后预测整理与 OCC B-Rep 构造，阶段、索引及周期修复约定见 [postprocess/AGENTS.md](postprocess/AGENTS.md)。
 - 行为配置归属 `configs/model/`、`dataset/`、`condition/`、`trainer/`、`datagen/`（偏好对生成）；不要复活已移除的 `model.py`、`diffusion_model.py`、`train_diffusion.py` 入口。
 
 ## VAE：表示与解码

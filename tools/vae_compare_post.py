@@ -38,7 +38,7 @@ METHODS = ("legacy", "joint")
 CANDIDATE_METHODS = ("joint", "intersection", "local", "conditioned", "point_feedback",
                      "encoder_edge_value", "encoder_gat_control")
 BASELINE_METHODS = ("legacy", "intersection", "conditioned", "encoder_gat_control")
-POST_POLICIES = ("legacy", "roundtrip_retry", "fit_score_v2", "recover_v1")
+POST_POLICIES = ("legacy", "roundtrip_retry", "fit_score_v2", "recover_v1", "recover_v2", "recover_v3", "recover_v4")
 
 
 def comparison_methods(candidate_method="joint", baseline_method="legacy"):

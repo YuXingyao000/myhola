@@ -203,15 +203,23 @@ def copy_occ_shapes(shapes):
 
 
 def create_trimmed_face_from_wire(geom_face, face_edges, wire_list, connected_tolerance,
-                                  *, require_all_wires=False, diagnostics=None):
+                                  *, require_all_wires=False, diagnostics=None, split_face=True):
+    """Trim `geom_face` with the assembled wires.
+
+    `split_face=True` keeps the historical ShapeFix_Face behaviour, whose default
+    FixSplitFace splits a periodic surface bounded by two loops that each wrap the
+    periodic direction before the explicit FixMissingSeam() can join them with a
+    seam. `split_face=False` lets FixMissingSeam add that seam; the resulting
+    single wire is then the complete boundary, not a lost loop.
+    """
     if diagnostics is not None:
         diagnostics.update(input_wire_count=len(wire_list), natural_wire_replacement=False,
-                           accepted_wire_count=0, skipped_wires=[], boundary_complete=False)
+                           accepted_wire_count=0, skipped_wires=[], boundary_complete=False,
+                           seam_added=False)
     topo_face = BRepBuilderAPI_MakeFace(geom_face, 1e-6).Face()
     is_debug = False
-    if len(wire_list) == 6:
-        pass
-    if (geom_face.IsUPeriodic() or geom_face.IsVPeriodic()) and len(get_primitives(topo_face, TopAbs_WIRE)) == 1 and len(face_edges) == 2:
+    periodic = geom_face.IsUPeriodic() or geom_face.IsVPeriodic()
+    if periodic and len(get_primitives(topo_face, TopAbs_WIRE)) == 1 and len(face_edges) == 2:
         length_edge1 = get_edge_length(face_edges[0])
         length_edge2 = get_edge_length(face_edges[1])
         if abs(length_edge1 - length_edge2) < 0.01:
@@ -259,6 +267,7 @@ def create_trimmed_face_from_wire(geom_face, face_edges, wire_list, connected_to
     if len(fixed_wire_list) == 0:
         return None
 
+    seam_added = False
     try:
         face_fixer.FixWireTool().SetModifyGeometryMode(True)
         face_fixer.FixWireTool().SetMaxTolerance(connected_tolerance)
@@ -271,6 +280,7 @@ def create_trimmed_face_from_wire(geom_face, face_edges, wire_list, connected_to
         face_fixer.SetMaxTolerance(connected_tolerance)
         face_fixer.SetFixOrientationMode(True)
         face_fixer.SetFixMissingSeamMode(False)
+        face_fixer.SetFixSplitFaceMode(split_face)
         face_fixer.SetFixWireMode(True)
         face_fixer.SetFixLoopWiresMode(False)
         face_fixer.SetFixIntersectingWiresMode(False)
@@ -279,7 +289,7 @@ def create_trimmed_face_from_wire(geom_face, face_edges, wire_list, connected_to
         face_fixer.Perform()
 
         face_fixer.FixOrientation()
-        face_fixer.FixMissingSeam()
+        seam_added = bool(face_fixer.FixMissingSeam())
         face_fixer.FixIntersectingWires()
         face_fixer.FixOrientation()
 
@@ -290,6 +300,8 @@ def create_trimmed_face_from_wire(geom_face, face_edges, wire_list, connected_to
     if face_occ.IsNull():
         return None
     face_occ = set_tolerance(face_occ, connected_tolerance)
+    if diagnostics is not None:
+        diagnostics["seam_added"] = seam_added
 
     if require_all_wires or diagnostics is not None:
         final_wire_count = len(get_primitives(face_occ, TopAbs_WIRE))
@@ -297,7 +309,10 @@ def create_trimmed_face_from_wire(geom_face, face_edges, wire_list, connected_to
             diagnostics["final_wire_count"] = final_wire_count
         # A known full natural loop replaces the original input loops before
         # this comparison; it is not mistaken for an unexplained lost hole.
-        if require_all_wires and final_wire_count < len(fixed_wire_list):
+        # A seam joining two wrapping loops of a periodic face into one wire
+        # is likewise a complete boundary, not a lost loop.
+        seam_joined = seam_added and periodic and final_wire_count == 1
+        if require_all_wires and final_wire_count < len(fixed_wire_list) and not seam_joined:
             if diagnostics is not None:
                 diagnostics["rejection"] = "wire_count_decreased_during_face_fix"
             return (None)

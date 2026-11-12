@@ -229,6 +229,8 @@ class PreferenceDiffusion(nn.Module):
             "preference_accuracy": (logits.detach() > 0).float().mean(),
             "winner_mse": policy_winner.detach().mean(),
             "loser_mse": policy_loser.detach().mean(),
+            "reference_winner_mse": reference_winner.mean(),
+            "reference_loser_mse": reference_loser.mean(),
             "total_loss": ddpm_loss + self.preference_weight * preference_loss,
         })
         return self._add_geometry(result, noisy_gt, gt_prediction, gt_timestep, batch, v_test)
