@@ -4,7 +4,7 @@
     python tools/migrate_checkpoint.py OLD.ckpt INIT.ckpt --curve-head-mode independent
 
 Every entry of MIGRATIONS is applied once, in order, and recorded in
-checkpoint["hola_migrations"]. Tensor values are never changed:
+checkpoint["hola_migrations"]. Layout/rename migrations leave tensor values unchanged:
   strings   ordered (old, new) substring replacements in every non-tensor
             field (hyper_parameters, callbacks, loops), e.g. dataset.name
             and paths that resume compares against the current config;
@@ -15,6 +15,8 @@ The output is a new file; the source checkpoint is never overwritten.
 Add a new version for every rename and list it in AGENTS.md.
 Optional curve-head migration clones the old CNN/bbox values into independent
 heads. Its result is initialization-only: optimizer/training state is removed.
+Decoder widening repeats face channels and partitions consumer weights, retaining
+the initial prediction to floating-point tolerance. It also starts a new run.
 """
 from __future__ import annotations
 
@@ -48,10 +50,7 @@ LAYOUT_20261030 = [
 MIGRATIONS = [
     {"version": "2026-10-30-layout", "strings": LAYOUT_20261030, "prefixes": []},
     {"version": "2026-10-30-curve-head-roles", "optional": "curve_head_mode"},
-    {"version": "2026-11-05-postprocess-decoded-prediction", "strings": [
-        ("src.postprocess.shape", "src.postprocess.decoded_prediction"),
-        ("src/postprocess/shape.py", "src/postprocess/decoded_prediction.py"),
-    ], "prefixes": []},
+    {"version": "2026-11-09-decoder-face-width", "optional": "decoder_face_dim"},
 ]
 
 
@@ -124,23 +123,124 @@ def split_curve_heads(checkpoint: dict, mode: str) -> int:
     return len(copies)
 
 
-def migrate(checkpoint: dict, curve_head_mode: str | None = None) -> list[str]:
+def _repeat_face_inputs(weight, segments, repeats):
+    """Expand each face segment independently; other concatenated inputs stay put."""
+    # Per-element cyclic shares break replica symmetry while summing to one.
+    # Four-way widening uses exactly representable binary coefficients.
+    shares = ([14 / 64, 15 / 64, 17 / 64, 18 / 64] if repeats == 4 else
+              [i / sum(range(1, repeats + 1)) for i in range(1, repeats + 1)])
+    shares = weight.new_tensor(shares)
+    result = []
+    for part, (_, expand) in zip(weight.split([n for n, _ in segments], dim=1), segments):
+        if expand:
+            rows = torch.arange(part.shape[0], device=part.device).reshape(-1, *([1] * (part.ndim - 1)))
+            columns = torch.arange(part[0].numel(), device=part.device).reshape(1, *part.shape[1:])
+            phase = rows + columns
+            result.extend(part * shares[(phase + copy) % repeats] for copy in range(repeats))
+        else:
+            result.append(part)
+    return torch.cat(result, dim=1)
+
+
+def widen_decoder_faces(checkpoint: dict, target_dim: int) -> int:
+    """Widen decoder faces only; latent, encoder and all edge widths are retained."""
+    state = checkpoint["state_dict"]
+    model = checkpoint["hyper_parameters"]["model"]
+    if model.get("intersection", {}).get("kind", "legacy") not in {"legacy", "conditional_attention"}:
+        raise ValueError("Decoder-width migration supports legacy/conditional attention; local attention needs its own mapping")
+    root = "model.decoder." if "model.decoder.face_features.output_projection.weight" in state else "decoder."
+    source_dim = state[root + "face_features.output_projection.weight"].shape[0]
+    if target_dim <= source_dim or target_dim % source_dim:
+        raise ValueError("Decoder widening requires a larger integer multiple of the source face width")
+    bbox_hidden = state[root + "face_geometry.bbox_decoder.0.conv1.weight"].shape[0]
+    cnn_hidden = state[root + "face_geometry.points_decoder.1.conv1.weight"].shape[0]
+    if bbox_hidden in {source_dim, target_dim} or cnn_hidden in {source_dim // 4, target_dim // 4}:
+        raise ValueError("This width changes the face ResBlock shortcut structure; a different migration is required")
+    repeats = target_dim // source_dim
+    edge_dim = state[root + "classifier.weight"].shape[1]
+    inputs = {
+        "face_geometry.points_decoder.1.conv1.weight": [(source_dim // 4, True)],
+        "face_geometry.points_decoder.1.downsample.0.weight": [(source_dim // 4, True)],
+        "face_geometry.bbox_decoder.0.conv1.weight": [(source_dim, True)],
+        "face_geometry.bbox_decoder.0.downsample.0.weight": [(source_dim, True)],
+        "inter.attn_proj_in.weight": [(source_dim, True)],
+    }
+    if root + "inter.reference_uv_head.layers.0.weight" in state:
+        inputs["inter.reference_uv_head.layers.0.weight"] = [(source_dim, True)] * 2
+    if root + "refiner.face_delta.weight" in state:
+        hidden = state[root + "refiner.face_delta.weight"].shape[1]
+        geometry = state[root + "refiner.geometry_read.pool_projection.weight"].shape[0]
+        inputs["refiner.relation_encoder.0.weight"] = [
+            (edge_dim + geometry, False), (source_dim, True), (source_dim, True), (2 * hidden, False),
+        ]
+        inputs["refiner.face_update.0.weight"] = [(source_dim, True), (hidden, False)]
+    if root + "edge_geometry.conditioning.projection.0.weight" in state:
+        inputs["edge_geometry.conditioning.projection.0.weight"] = [
+            (edge_dim, False), (source_dim, True), (source_dim, True),
+        ]
+    if root + "uv_boundary.context.0.weight" in state:
+        inputs["uv_boundary.context.0.weight"] = (
+            [(2 * edge_dim, False), (source_dim, True)]
+            if model.get("shared_curve", {}).get("enabled", False) else
+            [(edge_dim, False), (source_dim, True), (source_dim, True)]
+        )
+    if root + "curve_point_feedback.point_encoder.0.weight" in state:
+        inputs["curve_point_feedback.point_encoder.0.weight"] = [
+            (17 + edge_dim, False), (source_dim, True), (source_dim, True),
+        ]
+    changed = {}
+    for key, segments in inputs.items():
+        changed[root + key] = _repeat_face_inputs(state[root + key], segments, repeats)
+    for layer in ("face_features.output_projection", "refiner.face_delta"):
+        for kind in ("weight", "bias"):
+            key = root + layer + "." + kind
+            if key in state:
+                value = state[key]
+                changed[key] = value.repeat(repeats, *([1] * (value.ndim - 1)))
+    state.update(changed)
+    model["decoder_face_dim"] = target_dim
+    source_initializers = {}
+    for key in list(model):
+        if key == "checkpoint" or (key.startswith("init_") and key.endswith("checkpoint")):
+            if model[key]:
+                source_initializers[key] = model[key]
+            model[key] = None
+    if "restoring_checkpoint" in model:
+        model["restoring_checkpoint"] = False
+    checkpoint["initialization_only"] = {
+        "reason": "Decoder face width changed; initialize a new optimizer/run.",
+        "source_epoch": checkpoint.get("epoch"), "source_global_step": checkpoint.get("global_step"),
+        "source_decoder_face_dim": source_dim, "target_decoder_face_dim": target_dim,
+        "input_partition": "cyclic per-element unequal shares; four-way [14,15,17,18]/64",
+        "changed_tensors": list(changed),
+        "source_initializers": source_initializers,
+    }
+    for key in ("optimizer_states", "lr_schedulers", "loops", "callbacks"):
+        checkpoint.pop(key, None)
+    return len(changed)
+
+
+def migrate(checkpoint: dict, curve_head_mode: str | None = None, decoder_face_dim: int | None = None) -> list[str]:
     applied = list(checkpoint.get("hola_migrations", []))
     report = []
+    options = {"curve_head_mode": curve_head_mode, "decoder_face_dim": decoder_face_dim}
     for migration in MIGRATIONS:
-        if migration.get("optional") and curve_head_mode is None:
+        option = migration.get("optional")
+        if option and options[option] is None:
             continue
         if migration["version"] in applied:
-            if migration.get("optional"):
-                saved_mode = checkpoint["hyper_parameters"]["model"]["geometry_heads"]["curve_mode"]
-                if saved_mode != curve_head_mode:
+            if option:
+                model = checkpoint["hyper_parameters"]["model"]
+                saved_mode = model["geometry_heads"]["curve_mode"] if option == "curve_head_mode" else model["decoder_face_dim"]
+                if saved_mode != options[option]:
                     raise ValueError(f"Checkpoint was already migrated to {saved_mode!r}")
             report.append(f"{migration['version']}: already applied")
             continue
-        if migration.get("optional"):
-            count = split_curve_heads(checkpoint, curve_head_mode)
+        if option:
+            count = (split_curve_heads(checkpoint, curve_head_mode) if option == "curve_head_mode"
+                     else widen_decoder_faces(checkpoint, decoder_face_dim))
             applied.append(migration["version"])
-            report.append(f"{migration['version']}: {count} cloned tensors; initialization only")
+            report.append(f"{migration['version']}: {count} migrated tensors; initialization only")
             continue
         changes = []
         for field in list(checkpoint):
@@ -160,12 +260,13 @@ def main() -> int:
     parser.add_argument("target", type=Path)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--curve-head-mode", choices=("teacher_split", "independent"))
+    parser.add_argument("--decoder-face-dim", type=int)
     args = parser.parse_args()
     if args.target.exists():
         parser.error(f"Refusing to overwrite {args.target}")
     checkpoint = torch.load(args.source, map_location="cpu", weights_only=False, mmap=True)
-    print("\n".join(migrate(checkpoint, args.curve_head_mode)))
-    if args.curve_head_mode:
+    print("\n".join(migrate(checkpoint, args.curve_head_mode, args.decoder_face_dim)))
+    if args.curve_head_mode or args.decoder_face_dim:
         checkpoint["initialization_only"]["source_checkpoint"] = str(args.source.resolve())
     if not args.dry_run:
         args.target.parent.mkdir(parents=True, exist_ok=True)

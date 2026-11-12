@@ -9,6 +9,8 @@ face_bbox_decoder_blocks: 7
 edge_bbox_decoder_blocks: 7
 kl_reduction: sum
 freeze_encoder: true
+# null retains the encoder/latent width. Independent decoder-width experiment.
+decoder_face_dim: null
 init_legacy_checkpoint: null
 init_refinement_checkpoint: null
 init_curve_feedback_checkpoint: null

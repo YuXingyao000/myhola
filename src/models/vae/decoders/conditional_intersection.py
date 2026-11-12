@@ -162,7 +162,7 @@ class ConditionalIntersectionLayer(nn.Module):
 
 
 class ConditionalIntersection(nn.Module):
-    """[N,32] faces + [N,96,16,16] maps + [P,2] pairs -> [P,64] edges.
+    """[N,face_dim] faces + [N,96,16,16] maps + [P,2] pairs -> [P,edge_dim].
 
     Each legacy parameter retains its name and value. The local memory starts
     at zero, giving the old eval output (up to floating-point summation). It
@@ -188,7 +188,7 @@ class ConditionalIntersection(nn.Module):
         ])
 
     def _inputs(self, faces: Tensor, local: Tensor, pairs: Tensor) -> tuple[Tensor, ...]:
-        projected = self.attn_proj_in(faces)  # [N, 32] -> [N, 512]
+        projected = self.attn_proj_in(faces)  # [N, face_dim] -> [N, 512]
         query = projected[pairs[:, 0], None] + self.pos_encoding[:, 0:1]
         memory = self.spatial_memory(projected + self.pos_encoding[:, 1], local)
         reference = self.reference_uv_head(faces[pairs])  # [P, 1, 2], fixed across layers
