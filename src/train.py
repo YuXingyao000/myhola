@@ -821,7 +821,7 @@ def main(cfg: DictConfig):
     if evaluating:
         OmegaConf.update(cfg, "eval.output_dir", str(predictions_directory(cfg, Path(log_dir))))
         logger.info("Raw predictions will be saved to %s", cfg.eval.output_dir)
-    if cfg.model.name in {"PreferenceDiffusion", "AdaLNPreferenceDiffusion"}:
+    if cfg.model.name in {"PreferenceDiffusion", "AdaLNPreferenceDiffusion", "AdaLNZeroPreferenceDiffusion"}:
         from src.datasets.preference import preference_data_provenance
         OmegaConf.update(
             cfg.dataset, "provenance", preference_data_provenance(cfg.dataset), force_add=True,

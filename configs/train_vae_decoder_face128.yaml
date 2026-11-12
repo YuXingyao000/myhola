@@ -1,0 +1,18 @@
+defaults:
+  - train_vae_curve_head_roles
+  - _self_
+
+# Initialize from an explicitly widened roles_best7885 checkpoint; new Adam/run.
+# Only decoder face features expand. Latent32, edge64, losses and precision stay fixed.
+trainer:
+  exp_name: decoder_face_width/face128
+  num_threads: 2
+  log_every_n_steps: 10
+  wandb:
+    name: vae-decoder-face128-latent32
+
+model:
+  decoder_face_dim: 128
+  checkpoint: ${oc.env:IMG2BREP_DECODER_FACE_CHECKPOINT}
+  freeze_encoder: false
+  trainable_scope: all

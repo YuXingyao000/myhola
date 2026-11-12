@@ -1,0 +1,68 @@
+# Complete GT AdaLN-Zero -> same-weight reference; offline photo pairs + GT MSE.
+defaults:
+  - trainer: default
+  - _self_
+
+model:
+  name: AdaLNZeroPreferenceDiffusion
+  stage: diffusion
+  init_adaln_checkpoint: null
+  checkpoint: null
+  modulation_hidden_width: 256
+  beta_dpo: 20.0
+  preference_weight: 1.0
+  dino_repo: null
+  legacy_source_cache: null
+
+condition: null
+
+dataset:
+  name: src.datasets.photo_preference.PhotoPreferenceDataset
+  model_source: photo
+  pairs_manifest: ???
+  pairs_manifest_sha256: ???
+  validation_pairs_manifest: ???
+  validation_pairs_manifest_sha256: ???
+  cached_latent_root: ???
+  cache_root: ???
+  condition_data_root: ???
+  train_dataset: src/preprocess/splits/deduplicated_deepcad_training_7_30.txt
+  val_dataset: src/preprocess/splits/deduplicated_deepcad_validation_7_30.txt
+  epoch_scale_factor: 1
+
+trainer:
+  exp_name: diffusion_adaln_zero_dpo
+  devices: 7
+  batch_size: 64
+  learning_rate: 1.0e-5
+  precision: 32-true
+  max_steps: 10000000
+  seed: 42
+  num_threads: 4
+  num_workers: 2
+  prefetch_factor: 4
+  ddp_find_unused_parameters: false
+  ddp_gradient_as_bucket_view: true
+  sync_train_step_loss: false
+  diffusion_validation_inference: false
+  check_val_every_n_epoch: null
+  val_check_interval: 625
+  checkpoint_every_n_train_steps: 625
+  checkpoint_step_keep_last: 3
+  wandb:
+    name: photo_adaln_zero_80k_dpo
+
+eval:
+  enabled: false
+  output_dir: null
+
+hydra:
+  run:
+    dir: ${brep_run_dir:${trainer.output_dir},${trainer.exp_name},${trainer.run_dir},${trainer.resume_from_checkpoint}}
+  output_subdir: metadata/hydra
+  job_logging:
+    handlers:
+      file:
+        filename: ${brep_log_file:${hydra.runtime.output_dir}}
+  job:
+    chdir: false
