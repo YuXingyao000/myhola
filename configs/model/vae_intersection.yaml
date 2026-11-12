@@ -105,6 +105,7 @@ loss_weights:
   xyz_weight: 1.0
   incidence_weight: 0.1
   twin_weight: 0.1
+  corner_weight: 0.0
   uv_weight: 0.0
   uv_anchor_weight: 0.0
   geometry_tolerance: 1.0e-5

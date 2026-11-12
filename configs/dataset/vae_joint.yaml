@@ -6,3 +6,5 @@ name: AutoEncoder_joint_dataset
 boundary_reciprocal_tolerance: 0.01
 boundary_closed_tolerance: 1.0e-5
 boundary_allow_closed_phase: true
+# Offline native STEP labels; no OCC work in the data loader.
+vertex_group_root: null
