@@ -10,6 +10,7 @@ import torch.nn.functional as F
 
 from ..geometry import closest_polyline_points, closest_surface_points
 from ..state import DecoderStage, PrimitiveGeometry, RefinementOutput
+from .corner import corner_consistency
 
 
 @dataclass
@@ -88,6 +89,7 @@ class IntersectionLoss(nn.Module):
         self.xyz_weight             = float(cfg.get("xyz_weight", 1.0))
         self.incidence_weight       = float(cfg.get("incidence_weight", 0.1))
         self.twin_weight            = float(cfg.get("twin_weight", 0.1))
+        self.corner_weight          = float(cfg.get("corner_weight", 0.0))
         self.geometry_tolerance     = float(cfg.get("geometry_tolerance", 1e-5))
         self.geometry_chunk_size    = int(cfg.get("geometry_chunk_size", 32))
 
@@ -277,6 +279,18 @@ class IntersectionLoss(nn.Module):
         if self.uv_boundary_enabled:
             losses.update(self._uv_boundary(output, refined_batch, targets))
             weights.update({"uv": self.uv_weight, "uv_anchor": self.uv_anchor_weight})
+        if self.corner_weight:
+            labels = batch["corner_targets"]
+            edge_to_candidate = torch.full(
+                (len(batch["edge_points"]),), -1, device=targets.edge_ids.device, dtype=torch.long,
+            )
+            edge_to_candidate[targets.edge_ids] = targets.candidate_rows
+            losses.update(corner_consistency(
+                output.refined.edge_geometry.points, edge_to_candidate, labels, len(batch["face_counts"]),
+            ))
+            weights["corner"] = self.corner_weight
+            losses["corner_group_count"] = losses["corner"].new_tensor(len(labels["group_objects"]))
+            losses["corner_pair_count"] = losses["corner"].new_tensor(len(labels["pairs"]))
         weighted.update({f"weighted_{name}": weight * losses[name] for name, weight in weights.items()})
         losses.update(weighted)
         losses["total_loss"] = torch.stack(tuple(weighted.values())).sum()

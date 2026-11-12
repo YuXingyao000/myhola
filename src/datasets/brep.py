@@ -26,6 +26,8 @@ from PIL import Image
 
 from src.preprocess.rotations import NUM_CUBE24_VIEWS, cube24_rotation_matrix
 from src.preprocess.shared_boundaries import build_shared_boundary_targets, validate_legacy_geometry
+from src.preprocess.vertex_groups import load_vertex_groups
+from src.datasets.vertex_groups import collate_corner_targets
 from src.preprocess.edge_uv import load_edge_uv_sidecar, sha256_file
 from src.preprocess.uv_curve_targets import load_uv_curve_targets
 from src.models.diffusion.image_loading import load_image_view
@@ -520,20 +522,32 @@ class AutoEncoder_joint_dataset(AutoEncoder_dataset3):
                     or any(char not in "0123456789abcdef" for char in digest)):
                 raise ValueError("UV curve targets require uv_curve_target_parameters_sha256 (64 lowercase hex)")
             self.uv_curve_target_parameters_sha256 = digest
-        self._uv_source_fingerprints = {}
+        self._source_fingerprints = {}
+        vertex_root = v_conf.get("vertex_group_root")
+        if vertex_root is not None and not str(vertex_root).strip():
+            raise ValueError("vertex_group_root must be an explicit directory or null")
+        self.vertex_group_root = Path(vertex_root) if vertex_root is not None else None
+        if self.vertex_group_root is not None:
+            for sample_id in self.data_folders:
+                path = self.vertex_group_root / sample_id / "vertex_groups.npz"
+                if not path.is_file():
+                    raise FileNotFoundError(f"VAE sample {sample_id!r}: missing vertex sidecar {path}")
 
-    def _load_uv_curve_supervision(self, sample_id, target):
-        """Load original-chart labels; rigid augmentation leaves UV unchanged."""
+    def _source_sha256(self, sample_id):
         source_path = self.root / sample_id / "data.npz"
         stat = source_path.stat()
         stamp = (stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns)
-        cached = self._uv_source_fingerprints.get(sample_id)
+        cached = self._source_fingerprints.get(sample_id)
         if cached is None or cached[0] != stamp:
             cached = (stamp, sha256_file(source_path))
-            self._uv_source_fingerprints[sample_id] = cached
+            self._source_fingerprints[sample_id] = cached
+        return cached[1]
+
+    def _load_uv_curve_supervision(self, sample_id, target):
+        """Load original-chart labels; rigid augmentation leaves UV unchanged."""
         labels = load_uv_curve_targets(
             self.uv_curve_target_root / sample_id / "uv_curve_targets.npz",
-            source_sha256=cached[1],
+            source_sha256=self._source_sha256(sample_id),
             face_pairs=target["face_pairs"],
             source_edge_ids=target["source_edge_ids"],
             expected_parameters_sha256=self.uv_curve_target_parameters_sha256,
@@ -574,6 +588,11 @@ class AutoEncoder_joint_dataset(AutoEncoder_dataset3):
             )
             if self.uv_curve_target_root is not None:
                 self._load_uv_curve_supervision(sample_id, target)
+            if self.vertex_group_root is not None:
+                target.update(load_vertex_groups(
+                    self.vertex_group_root / sample_id / "vertex_groups.npz",
+                    source_sha256=self._source_sha256(sample_id), connectivity=item[7].numpy(),
+                ))
         except Exception as exc:
             raise ValueError(f"joint VAE sample {sample_id!r}: {exc}") from exc
         return item + ({key: torch.from_numpy(value) for key, value in target.items()},)
@@ -589,6 +608,10 @@ class AutoEncoder_joint_dataset(AutoEncoder_dataset3):
             encoder_items.append(tuple(original))
         result = AutoEncoder_dataset3.collate_fn(encoder_items)
         result["boundary_targets"] = [item[-1] for item in batch]
+        if "corner_pairs" in result["boundary_targets"][0]:
+            result["corner_targets"] = collate_corner_targets(
+                result["boundary_targets"], [len(item[2]) for item in batch],
+            )
         return result
 
 

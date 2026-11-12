@@ -1,0 +1,22 @@
+defaults:
+  - train_vae_decoder_face128
+  - _self_
+
+# Same network and all existing weights. Only Final cross-curve corners change.
+# Initialize a new run from an explicitly selected compatible checkpoint.
+# Keep the current face128 working features. For a roles32 checkpoint,
+# explicitly set model.decoder_face_dim=32; latent32/edge64 stay unchanged.
+trainer:
+  exp_name: vertex_group_supervision/final_corner
+  wandb:
+    name: vae-final-corner-native-vertices
+
+model:
+  checkpoint: ${oc.env:IMG2BREP_VERTEX_CHECKPOINT}
+  freeze_encoder: false
+  trainable_scope: all
+  loss_weights:
+    corner_weight: 1.0
+
+dataset:
+  vertex_group_root: ${oc.env:IMG2BREP_VERTEX_GROUP_ROOT}

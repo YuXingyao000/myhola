@@ -57,6 +57,8 @@ mean初始化近等价，随机重参数采样分布不等价。sum KL系数5e-7
 旧32维latent缓存和diffusion不兼容，后续评估必须各自Encoder编码。完整层级与验证边界见
 [ASCII架构](/mnt/d/hola_research/latent_expansion/ARCHITECTURE.md)，未训练的实现不算有效性证据。
 
+2026-11-12 可选Final角点监督：`train_vae_vertex_groups`沿用curve-head-roles结构，仅将`loss_weights.corner_weight`从默认0设为1；`dataset.vertex_group_root`读取离线原生STEP顶点标签。`losses/corner.py`对同一native顶点、不同canonical曲线的首末XYZ计算L1，按端点对→角点→对象→batch平均（无角点对象贡献0）。`corner_gap`是同口径欧氏距离诊断。单闭合边自身首尾不进入跨边项；不新增Teacher/Coarse损失，Final的正常上游梯度仍保留。该项没有模型参数，旧checkpoint可严格加载；32/128 Decoder面宽均支持，选择128权重时需显式配置宽度。未启动正式训练或证明收益。固定validation端点误差与相同后处理下valid rate确定去留后，删除失败项或固定有效配置。完整记录见`/mnt/d/hola_research/vertex_group_supervision/ARCHITECTURE.md`。
+
 ## Diffusion：实际数据流
 
 1. `datasets/brep.py:Diffusion_dataset` 读取 cache 并完成 padding；`models/diffusion/latents.py:LatentProvider` 取 mean，或用 std 采样。非 cache 分支调用冻结 VAE 再由 padder 打包。
