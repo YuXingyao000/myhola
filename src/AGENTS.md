@@ -96,6 +96,16 @@ CLS256 + latent768 入口与 24 层主干，块内 LN 无 affine、dropout 为 0
 validation100。协议见 `/mnt/d/hola_research/diffusion/adaln_zero_gt_20261104/ARCHITECTURE.md`。
 固定 step checkpoint 只在间隔及正常训练结束保存；短 epoch 不隐式触发多 GB 写盘。
 
+`train_diffusion_controlnet_photo` 在完整纯 GT AdaLN checkpoint 上训练局部图像控制支路。
+`controlnet.py` 冻结完整原主干，并深拷贝对应的24层作为连续控制状态；每层用latent作Q、
+DINO patches作K/V，经零初始化Linear注入同序主干slots。原CLS concat与已学AdaLN门保留。
+`controlnet_photo.py` 只训练GT epsilon MSE；初始化用`model.init_adaln_checkpoint`，完整新权重
+用`model.checkpoint`，续训用`trainer.resume_from_checkpoint`，后两者不再读取原初始化文件。
+`PhotoGTImageDataset` 使用原latent cache、逐图哈希和独立完整validation manifest，CLS/patch
+由同一次在线DINO前向取得。新旧数据provenance分层保存；旧模型不能作为新结构直接resume。
+正式batch必须显式指定；冻结主干后续计算仍需向控制残差反传。模型不内置VAE/OCC，
+`load_controlnet_photo`与`sample_latents`提供严格加载及原DDPM1000采样接口。
+
 ## Face padding 与 topology 的共同契约
 
 - 默认 random padding 复制真实面并随机排列到 30 slots；mask 全为 true。`RandomFacePadder.postprocess()` 用 latent 距离阈值去重，面数由此间接产生。

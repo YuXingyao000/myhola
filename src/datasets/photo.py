@@ -176,3 +176,51 @@ class PhotoGTOnlyDataset(Dataset):
                 "gt_latent": random_duplicate_padding(torch.from_numpy(stats[:, :32].copy()))}
 
     collate_fn = staticmethod(default_collate)
+
+
+def photo_gt_image_provenance(config: dict) -> dict:
+    """沿用完整 GT 来源，用原 cache 的逐图哈希绑定在线 RGB。"""
+    gt = photo_gt_data_provenance(config)
+    root = Path(config["cache_root"]).resolve()
+    manifest = json.loads((root / "manifest.json").read_text())
+    inputs = root / "inputs.jsonl"
+    digest = sha256_file(inputs)
+    if digest != manifest["inputs_sha256"]:
+        raise ValueError("Photo training inputs manifest changed")
+    return {"version": "photo_gt_images_v1", "gt": gt,
+            "inputs_manifest": str(inputs), "inputs_sha256": digest}
+
+
+class PhotoGTImageDataset(PhotoGTOnlyDataset):
+    """原 GT latent 与同图 RGB；CLS/patch 由模型一次在线编码。"""
+
+    def __init__(self, training_mode: str, config: dict):
+        provenance = photo_gt_image_provenance(config)
+        if config.get("provenance") is not None and dict(config["provenance"]) != provenance:
+            raise ValueError("Online photo GT data changed after run preparation")
+        super().__init__(training_mode, {**config, "provenance": provenance["gt"]})
+        self.provenance = provenance
+        self.transform = photo_transform()
+        self.image_root = Path(config["condition_data_root"])
+        if self.training:
+            records = [json.loads(line) for line in Path(provenance["inputs_manifest"]).read_text().splitlines()]
+            records = sorted((r for r in records if r["split"] == "training"), key=lambda r: r["index"])
+            if ([r["id"] for r in records] != self.ids or
+                    [r["index"] for r in records] != list(range(len(self.ids)))):
+                raise ValueError("Online photo records must match GT cache IDs and order")
+            self.photo_hashes = [r["photo_sha256"] for r in records]
+
+    def __getitem__(self, index: int) -> dict:
+        if not self.training:
+            return super().__getitem__(index)
+        item = self.cache[index]
+        index %= len(self.ids)
+        payload = (self.image_root / self.ids[index] / "real_photo.npz").read_bytes()
+        if hashlib.sha256(payload).hexdigest() != self.photo_hashes[index]:
+            raise ValueError(f"Training photo differs from GT source: {self.ids[index]}")
+        with np.load(io.BytesIO(payload), allow_pickle=False) as data:
+            image = data["flux"]
+        if image.shape != (512, 512, 3) or image.dtype != np.uint8:
+            raise ValueError(f"Invalid flux photo: {self.ids[index]}")
+        return {"v_prefix": item["v_prefix"], "gt_latent": item["gt_latent"],
+                "gt_image": self.transform(image)}

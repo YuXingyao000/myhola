@@ -1,0 +1,61 @@
+# Complete AdaLN checkpoint -> frozen backbone + trainable RGB patch ControlNet.
+defaults:
+  - trainer: default
+  - _self_
+
+model:
+  name: ControlNetPhotoDiffusion
+  stage: diffusion
+  architecture_version: adaln_patch_control_v1
+  init_adaln_checkpoint: null
+  backbone_config: null
+  dino_repo: null
+  legacy_source_cache: null
+  checkpoint: null
+
+condition: null
+
+dataset:
+  name: src.datasets.photo.PhotoGTImageDataset
+  cache_root: ???
+  validation_manifest: ???
+  condition_data_root: ???
+  train_dataset: ???
+  val_dataset: ???
+  epoch_scale_factor: 1
+
+trainer:
+  exp_name: diffusion_controlnet_photo
+  devices: 7
+  batch_size: ???  # Select explicitly after measuring the new branch's memory use.
+  learning_rate: 1.0e-5
+  precision: 32-true
+  max_steps: 10000000
+  num_threads: 4
+  num_workers: 2
+  prefetch_factor: 4
+  ddp_find_unused_parameters: false
+  ddp_gradient_as_bucket_view: true
+  sync_train_step_loss: false
+  diffusion_validation_inference: false
+  check_val_every_n_epoch: null
+  val_check_interval: 1000
+  checkpoint_every_n_train_steps: 5000
+  checkpoint_step_keep_last: 3
+  wandb:
+    name: photo_gt_adaln_controlnet
+
+eval:
+  enabled: false
+  output_dir: null
+
+hydra:
+  run:
+    dir: ${brep_run_dir:${trainer.output_dir},${trainer.exp_name},${trainer.run_dir},${trainer.resume_from_checkpoint}}
+  output_subdir: metadata/hydra
+  job_logging:
+    handlers:
+      file:
+        filename: ${brep_log_file:${hydra.runtime.output_dir}}
+  job:
+    chdir: false
