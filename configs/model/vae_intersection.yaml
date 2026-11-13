@@ -49,6 +49,12 @@ encoder_edge_value:
   enabled: false
   hidden_dim: 64
 
+# One fixed-role curve exchange before the unchanged GAT; Teacher keeps E0.
+# Remove if paired validation shows no benefit; otherwise fix the winning setting.
+encoder_coedge:
+  enabled: false
+  hidden_dim: 128
+
 # Legacy remains the default so existing refinement checkpoints load strictly.
 intersection:
   kind: legacy

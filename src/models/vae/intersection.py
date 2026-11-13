@@ -92,7 +92,7 @@ class AutoEncoder_intersection(BaseVAE):
                     **face_encoder_cfg,
                 )
         self.face_feature_dim = legacy.face_feature_dim
-        self.encoder = HolisticEncoder(legacy, edge_value_cfg)
+        self.encoder = HolisticEncoder(legacy, edge_value_cfg, cfg.get("encoder_coedge"))
         self.posterior = FacePosterior(legacy)
         self.decoder = IntersectionDecoder(
             legacy, cfg["refinement"], intersection_cfg,

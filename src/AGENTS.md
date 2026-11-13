@@ -59,6 +59,14 @@ mean初始化近等价，随机重参数采样分布不等价。sum KL系数5e-7
 
 2026-11-12 可选Final角点监督：`train_vae_vertex_groups`沿用curve-head-roles结构，仅将`loss_weights.corner_weight`从默认0设为1；`dataset.vertex_group_root`读取离线原生STEP顶点标签。`losses/corner.py`对同一native顶点、不同canonical曲线的首末XYZ计算L1，按端点对→角点→对象→batch平均（无角点对象贡献0）。`corner_gap`是同口径欧氏距离诊断。单闭合边自身首尾不进入跨边项；不新增Teacher/Coarse损失，Final的正常上游梯度仍保留。该项没有模型参数，旧checkpoint可严格加载；32/128 Decoder面宽均支持，选择128权重时需显式配置宽度。未启动正式训练或证明收益。固定validation端点误差与相同后处理下valid rate确定去留后，删除失败项或固定有效配置。完整记录见`/mnt/d/hola_research/vertex_group_supervision/ARCHITECTURE.md`。
 
+2026-11-13 Encoder coedge实验：`train_vae_coedge_encoder`在原Edge CNN后加一次
+`vae/coedge.py:CoedgeFeatureFusion`，按self/previous/next/mate拼接64维边特征与方向标志，
+260→128→64残差（末层零初始化）。融合结果仅给原GAT；Teacher仍读取原CNN特征。
+Decoder、GAT、posterior及loss保持。`dataset.coedge_topology_root`读取离线native loop
+的seam消除/合并链收缩索引，batch按raw edge ID偏移，不在loader中调用OCC。
+默认关闭；只在全量缓存审计和strict迁移/真实batch验证后启动A/B。结构及运行状态见
+`/mnt/d/hola_research/coedge_encoder/`；新Encoder训练后旧latent cache不默认兼容。
+
 ## Diffusion：实际数据流
 
 1. `datasets/brep.py:Diffusion_dataset` 读取 cache 并完成 padding；`models/diffusion/latents.py:LatentProvider` 取 mean，或用 std 采样。非 cache 分支调用冻结 VAE 再由 padder 打包。

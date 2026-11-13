@@ -28,6 +28,8 @@ from src.preprocess.rotations import NUM_CUBE24_VIEWS, cube24_rotation_matrix
 from src.preprocess.shared_boundaries import build_shared_boundary_targets, validate_legacy_geometry
 from src.preprocess.vertex_groups import load_vertex_groups
 from src.datasets.vertex_groups import collate_corner_targets
+from src.datasets.coedge import collate_coedge_topology
+from src.preprocess.coedge_topology import load_coedge_topology
 from src.preprocess.edge_uv import load_edge_uv_sidecar, sha256_file
 from src.preprocess.uv_curve_targets import load_uv_curve_targets
 from src.models.diffusion.image_loading import load_image_view
@@ -532,6 +534,15 @@ class AutoEncoder_joint_dataset(AutoEncoder_dataset3):
                 path = self.vertex_group_root / sample_id / "vertex_groups.npz"
                 if not path.is_file():
                     raise FileNotFoundError(f"VAE sample {sample_id!r}: missing vertex sidecar {path}")
+        coedge_root = v_conf.get("coedge_topology_root")
+        if coedge_root is not None and not str(coedge_root).strip():
+            raise ValueError("coedge_topology_root must be an explicit directory or null")
+        self.coedge_topology_root = Path(coedge_root) if coedge_root is not None else None
+        if self.coedge_topology_root is not None:
+            for sample_id in self.data_folders:
+                path = self.coedge_topology_root / sample_id / "coedge_topology.npz"
+                if not path.is_file():
+                    raise FileNotFoundError(f"VAE sample {sample_id!r}: missing coedge sidecar {path}")
 
     def _source_sha256(self, sample_id):
         source_path = self.root / sample_id / "data.npz"
@@ -593,6 +604,11 @@ class AutoEncoder_joint_dataset(AutoEncoder_dataset3):
                     self.vertex_group_root / sample_id / "vertex_groups.npz",
                     source_sha256=self._source_sha256(sample_id), connectivity=item[7].numpy(),
                 ))
+            if self.coedge_topology_root is not None:
+                target.update(load_coedge_topology(
+                    self.coedge_topology_root / sample_id / "coedge_topology.npz",
+                    source_sha256=self._source_sha256(sample_id), connectivity=item[7].numpy(),
+                ))
         except Exception as exc:
             raise ValueError(f"joint VAE sample {sample_id!r}: {exc}") from exc
         return item + ({key: torch.from_numpy(value) for key, value in target.items()},)
@@ -612,6 +628,10 @@ class AutoEncoder_joint_dataset(AutoEncoder_dataset3):
             result["corner_targets"] = collate_corner_targets(
                 result["boundary_targets"], [len(item[2]) for item in batch],
             )
+        if "coedge_neighbors" in result["boundary_targets"][0]:
+            result.update(collate_coedge_topology(
+                result["boundary_targets"], [len(item[2]) for item in batch],
+            ))
         return result
 
 

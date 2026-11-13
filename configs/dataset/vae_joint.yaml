@@ -8,3 +8,5 @@ boundary_closed_tolerance: 1.0e-5
 boundary_allow_closed_phase: true
 # Offline native STEP labels; no OCC work in the data loader.
 vertex_group_root: null
+# Optional native-loop quotient; only used by the Encoder coedge experiment.
+coedge_topology_root: null

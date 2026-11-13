@@ -10,6 +10,8 @@ from torch_geometric.nn import GATv2Conv
 from torch_geometric.utils import add_self_loops, remove_self_loops
 from torch_scatter import scatter_mean
 
+from .coedge import CoedgeFeatureFusion
+
 
 class UVFaceEncoder(nn.Module):
     """Encode a 16 x 16 XYZ/normal grid without intermediate spatial pooling.
@@ -185,7 +187,8 @@ class EdgeValueGATv2Conv(GATv2Conv):
 
 
 class HolisticEncoder(nn.Module):
-    def __init__(self, legacy: nn.Module, edge_value_cfg: Mapping | None = None):
+    def __init__(self, legacy: nn.Module, edge_value_cfg: Mapping | None = None,
+                 coedge_cfg: Mapping | None = None):
         super().__init__()
         self.in_channels = legacy.in_channels
         self.face_coords = legacy.face_coords
@@ -218,6 +221,13 @@ class HolisticEncoder(nn.Module):
                              if key.startswith("value_net.")}
                     replacement.load_state_dict({**layer.state_dict(), **fresh}, strict=True)
                     self.graph_face_edge[index] = replacement
+        self.coedge_fusion = None
+        if (coedge_cfg or {}).get("enabled", False):
+            # Preserve subsequent decoder initialization, dropout and sampling RNG.
+            with torch.random.fork_rng(devices=[]):
+                self.coedge_fusion = CoedgeFeatureFusion(
+                    legacy.face_feature_dim * 2, int(coedge_cfg.get("hidden_dim", 128)),
+                )
 
     def fuse_graph(self, faces: Tensor, edges: Tensor, connectivity: Tensor) -> Tensor:
         edge_index = connectivity[:, 1:].T
@@ -250,7 +260,8 @@ class HolisticEncoder(nn.Module):
         hidden = self.face_attn_proj_in(faces)
         hidden = self.face_attn(hidden, batch["attn_mask"])
         faces = faces + self.face_attn_proj_out(hidden)
-        faces = self.fuse_graph(faces, edges, batch["edge_face_connectivity"])
+        graph_edges = self.coedge_fusion(edges, batch) if self.coedge_fusion is not None else edges
+        faces = self.fuse_graph(faces, graph_edges, batch["edge_face_connectivity"])
         faces = self.fuse_global(faces, batch["face_counts"])
         return {"face_features": faces, "edge_features": edges}
 

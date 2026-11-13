@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import sys
 
 import torch
 
@@ -51,6 +52,7 @@ MIGRATIONS = [
     {"version": "2026-10-30-layout", "strings": LAYOUT_20261030, "prefixes": []},
     {"version": "2026-10-30-curve-head-roles", "optional": "curve_head_mode"},
     {"version": "2026-11-09-decoder-face-width", "optional": "decoder_face_dim"},
+    {"version": "2026-11-13-encoder-coedge", "optional": "encoder_coedge_hidden_dim"},
 ]
 
 
@@ -220,10 +222,46 @@ def widen_decoder_faces(checkpoint: dict, target_dim: int) -> int:
     return len(changed)
 
 
-def migrate(checkpoint: dict, curve_head_mode: str | None = None, decoder_face_dim: int | None = None) -> list[str]:
+def add_encoder_coedge(checkpoint: dict, hidden_dim: int) -> int:
+    """Add a zero-output curve residual while keeping all original tensors."""
+    from src.models.vae.coedge import CoedgeFeatureFusion
+
+    state = checkpoint["state_dict"]
+    root = "model.encoder." if "model.encoder.graph_face_edge.0.lin_edge.weight" in state else "encoder."
+    edge_dim = state[root + "graph_face_edge.0.lin_edge.weight"].shape[1]
+    if any(key.startswith(root + "coedge_fusion.") for key in state):
+        raise ValueError("Source already contains coedge fusion; load its matching configuration")
+    with torch.random.fork_rng(devices=[]):
+        torch.manual_seed(42)
+        module = CoedgeFeatureFusion(edge_dim, hidden_dim)
+    added = {root + "coedge_fusion." + key: value for key, value in module.state_dict().items()}
+    state.update(added)
+    model = checkpoint["hyper_parameters"]["model"]
+    model["encoder_coedge"] = {"enabled": True, "hidden_dim": hidden_dim}
+    source_initializers = {}
+    for key in list(model):
+        if key == "checkpoint" or (key.startswith("init_") and key.endswith("checkpoint")):
+            if model[key]:
+                source_initializers[key] = model[key]
+            model[key] = None
+    model["restoring_checkpoint"] = False
+    checkpoint["initialization_only"] = {
+        "reason": "New Encoder coedge parameters; initialize a new optimizer/run.",
+        "source_epoch": checkpoint.get("epoch"), "source_global_step": checkpoint.get("global_step"),
+        "added_tensors": list(added), "source_initializers": source_initializers,
+        "initialization_seed": 42,
+    }
+    for key in ("optimizer_states", "lr_schedulers", "loops", "callbacks"):
+        checkpoint.pop(key, None)
+    return len(added)
+
+
+def migrate(checkpoint: dict, curve_head_mode: str | None = None, decoder_face_dim: int | None = None,
+            encoder_coedge_hidden_dim: int | None = None) -> list[str]:
     applied = list(checkpoint.get("hola_migrations", []))
     report = []
-    options = {"curve_head_mode": curve_head_mode, "decoder_face_dim": decoder_face_dim}
+    options = {"curve_head_mode": curve_head_mode, "decoder_face_dim": decoder_face_dim,
+               "encoder_coedge_hidden_dim": encoder_coedge_hidden_dim}
     for migration in MIGRATIONS:
         option = migration.get("optional")
         if option and options[option] is None:
@@ -231,14 +269,17 @@ def migrate(checkpoint: dict, curve_head_mode: str | None = None, decoder_face_d
         if migration["version"] in applied:
             if option:
                 model = checkpoint["hyper_parameters"]["model"]
-                saved_mode = model["geometry_heads"]["curve_mode"] if option == "curve_head_mode" else model["decoder_face_dim"]
+                saved_mode = (model["geometry_heads"]["curve_mode"] if option == "curve_head_mode"
+                              else model["decoder_face_dim"] if option == "decoder_face_dim"
+                              else model["encoder_coedge"]["hidden_dim"])
                 if saved_mode != options[option]:
                     raise ValueError(f"Checkpoint was already migrated to {saved_mode!r}")
             report.append(f"{migration['version']}: already applied")
             continue
         if option:
             count = (split_curve_heads(checkpoint, curve_head_mode) if option == "curve_head_mode"
-                     else widen_decoder_faces(checkpoint, decoder_face_dim))
+                     else widen_decoder_faces(checkpoint, decoder_face_dim) if option == "decoder_face_dim"
+                     else add_encoder_coedge(checkpoint, encoder_coedge_hidden_dim))
             applied.append(migration["version"])
             report.append(f"{migration['version']}: {count} migrated tensors; initialization only")
             continue
@@ -255,18 +296,22 @@ def migrate(checkpoint: dict, curve_head_mode: str | None = None, decoder_face_d
 
 
 def main() -> int:
+    # Direct script invocation must import this checkout, not another editable install.
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("source", type=Path)
     parser.add_argument("target", type=Path)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--curve-head-mode", choices=("teacher_split", "independent"))
     parser.add_argument("--decoder-face-dim", type=int)
+    parser.add_argument("--encoder-coedge-hidden-dim", type=int)
     args = parser.parse_args()
     if args.target.exists():
         parser.error(f"Refusing to overwrite {args.target}")
     checkpoint = torch.load(args.source, map_location="cpu", weights_only=False, mmap=True)
-    print("\n".join(migrate(checkpoint, args.curve_head_mode, args.decoder_face_dim)))
-    if args.curve_head_mode or args.decoder_face_dim:
+    print("\n".join(migrate(checkpoint, args.curve_head_mode, args.decoder_face_dim,
+                           args.encoder_coedge_hidden_dim)))
+    if args.curve_head_mode or args.decoder_face_dim or args.encoder_coedge_hidden_dim:
         checkpoint["initialization_only"]["source_checkpoint"] = str(args.source.resolve())
     if not args.dry_run:
         args.target.parent.mkdir(parents=True, exist_ok=True)
