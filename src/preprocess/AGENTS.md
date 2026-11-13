@@ -12,6 +12,7 @@
 | `rotations.py` | cube24 旋转约定：`rotation_id=0` 是 identity；latent、条件图、adjacency、visibility 共用 |
 | `shared_boundaries.py` | 共享边界监督目标与预测诊断（`AutoEncoder_joint_dataset`、评估都依赖） |
 | `extract_vertex_groups.py`、`vertex_groups.py` | 离线从保存的STEP顶点身份生成端点分组sidecar；纯NumPy读取与跨曲线端点对，训练时不依赖OCC |
+| `extract_coedge_topology.py`、`coedge_topology.py` | 离线从原生wire构造prev/next/mate，显式消除seam并收缩连续face-pair链到原NPZ row；纯NumPy loader供Encoder使用 |
 | `edge_uv.py`、`extract_edge_uv.py`、`uv_curve_targets.py` | 边 UV 监督数据（`edge_uv_root`）与 UV 曲线目标；生成命令见 `tools/generate_uv_curve_targets.py` |
 | `model_lists.py` | 读取 8 位 ID 清单（去重保序、拒绝非法 ID） |
 | `splits/` | 固定清单：`deduplicated_deepcad_{training,validation,testing}_7_30.txt`、`deepcad_v7_contract_{train,validation,test}.txt`（VAE 合同审计 accepted，validation 3495 件）、`deepcad_v7_validation100.txt` |
@@ -45,6 +46,7 @@
 - 闭合曲线保留原始首末采样，端点距离用 `boundary_closed_tolerance` 判断；匹配可循环对齐前 `L-1` 点。互反检查先比较正／反序；配置允许时，对闭合曲线再用双向顶点到折线距离。阈值均为输入全局 XYZ 单位。
 - 缺失、seam、覆盖不全及不一致的目标带 sample ID 报错；零边界合法，容量溢出由模型报错，禁止静默截断或过滤。
 - 可选`vertex_group_root/{id}/vertex_groups.npz`用于Final角点一致性：STEP面先与NPZ的16×16网格匹配；按face pair找回原生边链，再将保留曲线首末绑定到原生顶点。取实际`i<j`行及原始edge ID/方向；多段合并内部顶点没有输出槽，seam不补作预测边，单闭合边首尾不构成跨曲线角点对。绑定不唯一的端点为-1并记录，不扩大容差强配。
+- 可选`coedge_topology_root/{id}/coedge_topology.npz`为Encoder提供原raw edge顺序的`previous/next/mate`与采样方向±1。native seam消除必须走`next(mate(seam))`，不能简单过滤而把周期面的不同边界环接在一起；同face-pair仅收缩连续原生链，出现多个loop位置时报错。曲线方向依据已确定原生链核对，不用近邻定义拓扑。逐件沿用已核验vertex sidecar的面容差与NPZ/STEP摘要；训练不调用OCC，不改原NPZ、Teacher或预测槽。生成器`python -m src.preprocess.extract_coedge_topology`支持显式`--resume`，只复用摘要、参数和索引核验通过的缓存；失败留在报告，不删CAD或自环回退。协议见`/mnt/d/hola_research/coedge_encoder/SPEC.md`。
 - 顶点sidecar按NPZ摘要、canonical行与schema核验；旋转保留索引，collate分别偏移raw edge ID和group ID。`python -m src.preprocess.extract_vertex_groups --data-root ... --split ... --output-root ...`生成新目录并保留逐件失败；该目录不是现有NPZ的替代。算法、100件审阅与训练接线见`/mnt/d/hola_research/vertex_group_supervision/`。
 - 训练清单使用经完整审计的 accepted IDs（`splits/deepcad_v7_contract_*.txt`），审计记录在 `/mnt/d/hola_research/joint_boundary/validation/`；对照方法使用同一清单。
 - VAE 同时支持标准与旧字段名，但矛盾配置必须报错；新配置使用 `raw_data_root`、`epoch_scale_factor`、`condition_name`。
