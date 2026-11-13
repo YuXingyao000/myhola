@@ -129,6 +129,7 @@ VAE 与 diffusion 内部结构的进一步整理另行讨论；目录内说明�
 | `2026-10-30-layout` | `dataset.name` 等 module 路径、split 清单路径、`/mnt/d/python/checkpoints/` → `/mnt/d/hola_runs/`；state_dict 键不变 |
 | `2026-10-30-curve-head-roles` | 显式 `--curve-head-mode teacher_split/independent`，复制原边 CNN/bbox 到独立 teacher/coarse 头，保留 final 与 conditioning；清除 optimizer/loop 状态，仅供新 run 初始化，禁止 resume |
 | `2026-11-09-decoder-face-width` | 显式 `--decoder-face-dim 128`，仅扩 Decoder 面特征及其消费接口，latent/edge 不变；复制输出通道并以循环份额分配输入权重；清除旧初始化路径及 optimizer/loop 状态，仅供新 run 初始化 |
+| `2026-11-13-encoder-coedge` | 显式 `--encoder-coedge-hidden-dim 128`，只新增末层零初始化的Encoder边拓扑融合；全部旧参数保持，新run/optimizer，不可resume旧模型 |
 
 之后每次改 module／属性名：在 `MIGRATIONS` 追加一个版本（state_dict 前缀映射 + 字符串映射），在上表登记，并在 PR 的“Checkpoint／数据兼容”一栏说明。纯改名保持参数注册顺序，optimizer state 才能继续使用。其他已知限制：preference 生成、photo baseline 等记录了源码路径哈希的旧运行，在新路径下不能续跑，需新开 run；datagen step1／step4 记录脚本路径，旧位置启动的 run 同样不能在此续跑。
 
