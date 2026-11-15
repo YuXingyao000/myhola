@@ -169,6 +169,8 @@ class ConditionalIntersection(nn.Module):
     does not preserve train-time dropout realizations after 1 -> 256 keys.
     """
 
+    memory_side = 1
+
     def __init__(self, legacy_inter: nn.Module, local_channels: int, cfg: Mapping):
         super().__init__()
         self.attn_proj_in = legacy_inter.attn_proj_in
@@ -204,7 +206,7 @@ class ConditionalIntersection(nn.Module):
             face_features, local_features, pair_indices,
         )
         for layer in self.layers:
-            query, _ = layer(query, reference_position, memory, grid_position, pair_indices[:, 1])
+            query, _ = layer(query, reference_position, memory, grid_position, pair_indices[:, self.memory_side])
         return self.attn_proj_out(query[:, 0])  # [P, 512] -> [P, 64]
 
     @torch.no_grad()
@@ -222,7 +224,7 @@ class ConditionalIntersection(nn.Module):
         else:
             for index, layer in enumerate(self.layers[:layer_index + 1]):
                 query, weights = layer(
-                    query, reference_position, memory, grid_position, pair_indices[:, 1],
+                    query, reference_position, memory, grid_position, pair_indices[:, self.memory_side],
                     return_attention=index == layer_index,
                 )
         return {"reference_uv": reference, "attention": weights,

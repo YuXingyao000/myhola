@@ -18,6 +18,7 @@ from .primitives import (
 )
 from .refinement import CurvePointFeedback, IntersectionRefiner
 from .conditional_intersection import ConditionalIntersection
+from .owner_boundary import OwnerIntersection, OwnerBoundaryExchange
 
 if TYPE_CHECKING:
     from ..legacy import AutoEncoder_light
@@ -274,7 +275,7 @@ class IntersectionDecoder(nn.Module):
             raise ValueError("Per-half-edge point feedback would break shared curve geometry.")
         if self.curve_conditioning_enabled and (
             not self.refinement_enabled
-            or (intersection_cfg or {}).get("kind", "legacy") not in {"legacy", "conditional_attention"}
+            or (intersection_cfg or {}).get("kind", "legacy") not in {"legacy", "conditional_attention", "owner_attention"}
         ):
             raise ValueError("Curve conditioning requires legacy/conditional intersection with refinement enabled.")
         if self.curve_point_feedback_enabled and not self.curve_conditioning_enabled:
@@ -306,8 +307,9 @@ class IntersectionDecoder(nn.Module):
         self.intersection_kind = str(intersection_cfg.get("kind", "legacy"))
         if self.intersection_kind == "legacy":
             self.inter = legacy.inter
-        elif self.intersection_kind == "conditional_attention":
-            self.inter = ConditionalIntersection(
+        elif self.intersection_kind in {"conditional_attention", "owner_attention"}:
+            inter_class = OwnerIntersection if self.intersection_kind == "owner_attention" else ConditionalIntersection
+            self.inter = inter_class(
                 legacy.inter, self.face_geometry.local_feature_channels, intersection_cfg,
             )
         elif self.intersection_kind == "local_attention":
@@ -320,7 +322,11 @@ class IntersectionDecoder(nn.Module):
         self.classifier = legacy.classifier
         self.refiner = (
             IntersectionRefiner(self.face_dim, self.edge_dim, cfg)
-            if self.refinement_enabled else None
+            if self.refinement_enabled and self.intersection_kind != "owner_attention" else None
+        )
+        self.boundary_exchange = (
+            OwnerBoundaryExchange(self.face_dim, self.edge_dim, cfg)
+            if self.intersection_kind == "owner_attention" else None
         )
         # Default-off registers no new state keys in historical checkpoints.
         self.curve_point_feedback = (
@@ -414,6 +420,7 @@ class IntersectionDecoder(nn.Module):
 
     def _decode_shared_stage(
         self, faces: Tensor, edges: Tensor, pairs: CandidatePairs,
+        face_geometry: PrimitiveGeometry | None = None,
     ) -> tuple[DecoderStage, Tensor]:
         # P directed candidates -> K=P/2 shared curves -> P half-edge views.
         canonical = (pairs.indices[:, 0] < pairs.indices[:, 1]).nonzero().flatten()
@@ -435,7 +442,7 @@ class IntersectionDecoder(nn.Module):
 
         stage = DecoderStage(
             face_features=faces, edge_features=edges,
-            face_geometry=self.face_geometry(faces),
+            face_geometry=self.face_geometry(faces) if face_geometry is None else face_geometry,
             edge_geometry=PrimitiveGeometry(
                 local_points=expand(geometry.local_points),
                 center_scale=geometry.center_scale[inverse], points=expand(geometry.points),
@@ -451,9 +458,9 @@ class IntersectionDecoder(nn.Module):
 
         # The original Transformer runs once. No geometry/GT enters this stage.
         faces = self.face_features(face_latents, face_counts)
-        if self.intersection_kind in {"local_attention", "conditional_attention"}:
+        if self.intersection_kind in {"local_attention", "conditional_attention", "owner_attention"}:
             coarse_faces, local_features = self.face_geometry.forward_with_local_features(faces)
-            if self.intersection_kind == "conditional_attention":
+            if self.intersection_kind in {"conditional_attention", "owner_attention"}:
                 edges = self.inter(faces, local_features, pairs.indices)
             else:
                 edges = self.inter(faces, local_features, coarse_faces.points, pairs.indices)
@@ -465,7 +472,20 @@ class IntersectionDecoder(nn.Module):
             coarse = self._decode_stage(faces, edges, pairs, edge_head=self.coarse_edge_geometry)
 
         shared_features = None
-        if self.refiner is None:
+        if self.boundary_exchange is not None:
+            final_faces, final_edges = self.boundary_exchange(coarse, pairs)
+            # Differences below are diagnostics, not predicted residual heads.
+            delta_face, delta_edge = final_faces - faces, final_edges - edges
+            final_geometry = coarse.face_geometry if self.boundary_exchange.readout_mode == "direct" else None
+            if self.shared_curve_enabled:
+                refined, shared_features = self._decode_shared_stage(
+                    final_faces, final_edges, pairs, face_geometry=final_geometry,
+                )
+            else:
+                refined = self._decode_stage(
+                    final_faces, final_edges, pairs, face_geometry=final_geometry, condition_curves=True,
+                )
+        elif self.refiner is None:
             delta_face, delta_edge = torch.zeros_like(faces), torch.zeros_like(edges)
             refined = coarse
             if self.coarse_edge_geometry is not None and not self.shared_curve_enabled:
@@ -479,7 +499,7 @@ class IntersectionDecoder(nn.Module):
                 refined = self._decode_stage(
                     faces + delta_face, edges + delta_edge, pairs, condition_curves=True,
                 )
-        if self.shared_curve_enabled and self.refiner is None:
+        if self.shared_curve_enabled and self.refiner is None and self.boundary_exchange is None:
             refined, shared_features = self._decode_shared_stage(faces, edges, pairs)
 
         if self.curve_point_feedback is not None:
