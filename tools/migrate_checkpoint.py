@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import sys
 
 import torch
 
@@ -51,6 +52,7 @@ MIGRATIONS = [
     {"version": "2026-10-30-layout", "strings": LAYOUT_20261030, "prefixes": []},
     {"version": "2026-10-30-curve-head-roles", "optional": "curve_head_mode"},
     {"version": "2026-11-09-decoder-face-width", "optional": "decoder_face_dim"},
+    {"version": "2026-11-15-owner-boundary", "optional": "owner_readout"},
 ]
 
 
@@ -220,10 +222,73 @@ def widen_decoder_faces(checkpoint: dict, target_dim: int) -> int:
     return len(changed)
 
 
-def migrate(checkpoint: dict, curve_head_mode: str | None = None, decoder_face_dim: int | None = None) -> list[str]:
+def add_owner_boundary(checkpoint: dict, readout: str) -> int:
+    """Explicit conditional->owner migration, identical common initialization."""
+    from copy import deepcopy
+    from src.models.vae import AutoEncoder_intersection
+
+    model_cfg = deepcopy(checkpoint["hyper_parameters"]["model"])
+    if model_cfg["intersection"]["kind"] != "conditional_attention":
+        raise ValueError("Owner-boundary initialization requires a conditional-attention checkpoint")
+    state = checkpoint["state_dict"]
+    prefix = "model." if "model.decoder.classifier.weight" in state else ""
+    source = {key.removeprefix(prefix): value for key, value in state.items()}
+    for key in model_cfg:
+        if key == "checkpoint" or (key.startswith("init_") and key.endswith("checkpoint")):
+            model_cfg[key] = None
+    model_cfg.update(freeze_encoder=False, mode="train", restoring_checkpoint=False)
+    # Validate the COMPLETE source before allowing the planned module removal.
+    with torch.random.fork_rng(devices=[]):
+        torch.manual_seed(42)
+        original = AutoEncoder_intersection(model_cfg)
+        original.load_state_dict(source, strict=True)
+        del original
+        model_cfg["intersection"]["kind"] = "owner_attention"
+        model_cfg["refinement"].update(owner_readout=readout, owner_num_heads=4)
+        torch.manual_seed(42)
+        target = AutoEncoder_intersection(model_cfg)
+    migrated, used, added, renamed = {}, set(), [], {}
+    fresh_prefixes = ("decoder.inter.pair_query.", "decoder.inter.query_projection.",
+                      "decoder.boundary_exchange.attention.", "decoder.boundary_exchange.direct_readout.")
+    for key, initial in target.state_dict().items():
+        old_key = key.replace("decoder.boundary_exchange.writeback.", "decoder.refiner.")
+        old_key = old_key.replace("decoder.boundary_exchange.", "decoder.refiner.")
+        if old_key in source:
+            migrated[prefix + key] = source[old_key]
+            used.add(old_key)
+            if old_key != key:
+                renamed[old_key] = key
+        elif key.startswith(fresh_prefixes):
+            migrated[prefix + key] = initial
+            added.append(key)
+        else:
+            raise ValueError(f"Unplanned missing owner-boundary parameter: {key}")
+    removed = sorted(source.keys() - used)
+    removable = ("decoder.refiner.relation_encoder.", "decoder.refiner.edge_delta.",
+                 "decoder.refiner.face_update.", "decoder.refiner.face_delta.")
+    if any(not key.startswith(removable) for key in removed):
+        raise ValueError(f"Unplanned removed parameters: {removed}")
+    target.load_state_dict({k.removeprefix(prefix): v for k, v in migrated.items()}, strict=True)
+    checkpoint["state_dict"] = migrated
+    checkpoint["hyper_parameters"]["model"] = model_cfg
+    checkpoint["initialization_only"] = {
+        "reason": "Owner boundary exchange changes the decoder function; new optimizer/run.",
+        "source_epoch": checkpoint.get("epoch"), "source_global_step": checkpoint.get("global_step"),
+        "initialization_seed": 42, "owner_readout": readout,
+        "added_tensors": added, "renamed_tensors": renamed, "removed_tensors": removed,
+        "reference_chart": "First owner; retained ReferenceUVHead receives reversed face inputs.",
+    }
+    for key in ("optimizer_states", "lr_schedulers", "loops", "callbacks"):
+        checkpoint.pop(key, None)
+    return len(added) + len(renamed) + len(removed)
+
+
+def migrate(checkpoint: dict, curve_head_mode: str | None = None, decoder_face_dim: int | None = None,
+            owner_readout: str | None = None) -> list[str]:
     applied = list(checkpoint.get("hola_migrations", []))
     report = []
-    options = {"curve_head_mode": curve_head_mode, "decoder_face_dim": decoder_face_dim}
+    options = {"curve_head_mode": curve_head_mode, "decoder_face_dim": decoder_face_dim,
+               "owner_readout": owner_readout}
     for migration in MIGRATIONS:
         option = migration.get("optional")
         if option and options[option] is None:
@@ -231,14 +296,17 @@ def migrate(checkpoint: dict, curve_head_mode: str | None = None, decoder_face_d
         if migration["version"] in applied:
             if option:
                 model = checkpoint["hyper_parameters"]["model"]
-                saved_mode = model["geometry_heads"]["curve_mode"] if option == "curve_head_mode" else model["decoder_face_dim"]
+                saved_mode = (model["geometry_heads"]["curve_mode"] if option == "curve_head_mode"
+                              else model["decoder_face_dim"] if option == "decoder_face_dim"
+                              else model["refinement"]["owner_readout"])
                 if saved_mode != options[option]:
                     raise ValueError(f"Checkpoint was already migrated to {saved_mode!r}")
             report.append(f"{migration['version']}: already applied")
             continue
         if option:
             count = (split_curve_heads(checkpoint, curve_head_mode) if option == "curve_head_mode"
-                     else widen_decoder_faces(checkpoint, decoder_face_dim))
+                     else widen_decoder_faces(checkpoint, decoder_face_dim) if option == "decoder_face_dim"
+                     else add_owner_boundary(checkpoint, owner_readout))
             applied.append(migration["version"])
             report.append(f"{migration['version']}: {count} migrated tensors; initialization only")
             continue
@@ -255,18 +323,21 @@ def migrate(checkpoint: dict, curve_head_mode: str | None = None, decoder_face_d
 
 
 def main() -> int:
+    # Direct invocation must import this checkout, not another editable install.
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("source", type=Path)
     parser.add_argument("target", type=Path)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--curve-head-mode", choices=("teacher_split", "independent"))
     parser.add_argument("--decoder-face-dim", type=int)
+    parser.add_argument("--owner-readout", choices=("direct", "residual"))
     args = parser.parse_args()
     if args.target.exists():
         parser.error(f"Refusing to overwrite {args.target}")
     checkpoint = torch.load(args.source, map_location="cpu", weights_only=False, mmap=True)
-    print("\n".join(migrate(checkpoint, args.curve_head_mode, args.decoder_face_dim)))
-    if args.curve_head_mode or args.decoder_face_dim:
+    print("\n".join(migrate(checkpoint, args.curve_head_mode, args.decoder_face_dim, args.owner_readout)))
+    if args.curve_head_mode or args.decoder_face_dim or args.owner_readout:
         checkpoint["initialization_only"]["source_checkpoint"] = str(args.source.resolve())
     if not args.dry_run:
         args.target.parent.mkdir(parents=True, exist_ok=True)

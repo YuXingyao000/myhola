@@ -1,0 +1,14 @@
+defaults:
+  - train_vae_owner_boundary_direct
+  - _self_
+
+# Identical common trunk; replace direct readout with relation/face/edge writes.
+# Migration: tools/migrate_checkpoint.py SOURCE INIT --owner-readout residual.
+trainer:
+  exp_name: owner_boundary/residual
+  wandb:
+    name: vae-owner-boundary-residual
+
+model:
+  refinement:
+    owner_readout: residual

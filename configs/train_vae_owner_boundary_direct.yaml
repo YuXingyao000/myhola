@@ -1,0 +1,25 @@
+defaults:
+  - train_vae_vertex_groups
+  - _self_
+
+# Full VAE training; same retained Teacher/Coarse/Final heads and all losses.
+# Migration: tools/migrate_checkpoint.py SOURCE INIT --owner-readout direct.
+trainer:
+  exp_name: owner_boundary/direct
+  devices: 4
+  batch_size: 8
+  accumulate_grad_batches: 4
+  max_steps: 10000
+  max_time: null
+  wandb:
+    name: vae-owner-boundary-direct
+
+model:
+  checkpoint: ${oc.env:IMG2BREP_OWNER_CHECKPOINT}
+  freeze_encoder: false
+  trainable_scope: all
+  intersection:
+    kind: owner_attention
+  refinement:
+    owner_readout: direct
+    owner_num_heads: 4
