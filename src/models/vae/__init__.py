@@ -11,6 +11,7 @@ _MODELS = {
     "AutoEncoder_light": ".legacy",
     "AutoEncoder_light_exp": ".legacy",
     "AutoEncoder_intersection": ".intersection",
+    "AutoEncoder_boundary": ".boundary",
     "AutoEncoder_joint": ".joint",
     "AutoEncoder_uv_intersection": ".uv_intersection_training",
 }

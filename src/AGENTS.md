@@ -14,6 +14,8 @@
 
 ## VAE：表示与解码
 
+2026-11-17 简化边界实验：`train_vae_boundary_basic/endpoints` 使用 `AutoEncoder_boundary`，全量训练 Encoder/posterior/Decoder。面工作特征恢复32、边64；Pair MLP替代原Intersection，GeometryRead和同面attention后直接读出边特征，不修改面。Coarse/Final复用一个曲线CNN+bbox，Teacher单独复制。端点版在128维同面状态后展开start/end，使用一层4头attention，共用end→start评分矩阵、反向读其转置，Value分开；Vertex辅助头监督GT采样端点。无feature matching、UV、conditioning、shared XYZ或旧Refiner。`src/datasets/boundary.py`只给loss提供已审计的native previous/next，不向Decoder传GT；现有49975件coedge缓存方向均为+1。两版同源初始化公共tensor一致，端点版最终读出初始忽略新增端点通道，以保持初始曲线输出。协议与ASCII架构见 `/mnt/d/hola_research/boundary_face32_20261117/ARCHITECTURE.md`；实现检查不代表训练有效。对照结束后保留有效版本并删除失败入口。
+
 2026-10-18起使用 `models/vae/` 包，具体结构见 [说明](/mnt/d/hola_research/vae_structure/README.md)。`BaseVAE`约定编码、采样、解码与forward接口，但允许各版本不同的参数和返回结构；主类在legacy/intersection/joint三个文件。组件在encoders/decoders、监督在losses、权重迁移在checkpoints、投影在geometry。旧模块导入仍兼容，旧日期记录中的 `vae.py`／`blocks.py` 为历史位置，不据此继续往旧文件堆代码。
 
 模型按根指南的“实验代码与架构记录”约定编写：不在各层重复 shape/type/device/finite 检查，不另建 validator 隐藏这些检查。`forward` 用简短形状注释展示真实计算；实际 mask、空候选、精度转换照常保留。实验整体的层级结构、张量职责、配置和实现 hash 放在主题 `ARCHITECTURE.md` 的 ASCII 图中，与代码执行解耦。当前 UV 实验见 [架构快照](/mnt/d/hola_research/uv_boundary/ARCHITECTURE.md)。

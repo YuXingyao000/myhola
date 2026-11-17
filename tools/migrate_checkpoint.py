@@ -51,6 +51,7 @@ MIGRATIONS = [
     {"version": "2026-10-30-layout", "strings": LAYOUT_20261030, "prefixes": []},
     {"version": "2026-10-30-curve-head-roles", "optional": "curve_head_mode"},
     {"version": "2026-11-09-decoder-face-width", "optional": "decoder_face_dim"},
+    {"version": "2026-11-17-boundary-face32", "optional": "boundary_variant"},
 ]
 
 
@@ -220,11 +221,80 @@ def widen_decoder_faces(checkpoint: dict, target_dim: int) -> int:
     return len(changed)
 
 
-def migrate(checkpoint: dict, curve_head_mode: str | None = None, decoder_face_dim: int | None = None) -> list[str]:
+def initialize_boundary(checkpoint: dict, variant: str, seed: int) -> int:
+    """Strict original HoLa -> face32 boundary model, independent Teacher copy."""
+    from omegaconf import OmegaConf
+    from src.models.vae.legacy import AutoEncoder_light
+    from src.models.vae.boundary import AutoEncoder_boundary
+
+    config_dir = Path(__file__).resolve().parents[1] / 'configs/model'
+    cfg = OmegaConf.to_container(OmegaConf.merge(
+        OmegaConf.load(config_dir / 'vae_light.yaml'), OmegaConf.load(config_dir / 'vae_boundary.yaml'),
+    ), resolve=True)
+    cfg.pop('defaults', None)
+    cfg['checkpoint'] = None
+    cfg['boundary']['endpoints'] = variant == 'endpoints'
+    source = {key.removeprefix('model.'): value for key, value in checkpoint['state_dict'].items()}
+    original = AutoEncoder_light({**cfg, 'checkpoint': None})
+    original.load_state_dict(source, strict=True)
+    del original
+    with torch.random.fork_rng(devices=[]):
+        torch.manual_seed(seed)
+        target = AutoEncoder_boundary(cfg)
+    state = target.state_dict()
+    mapping = {
+        'encoder.': '',
+        'posterior.projection.': 'gaussian_proj.',
+        'decoder.face_features.input_projection.': 'face_attn_proj_in2.',
+        'decoder.face_features.backbone.': 'face_attn2.',
+        'decoder.face_features.output_projection.': 'face_attn_proj_out2.',
+        'decoder.face_geometry.points_decoder.': 'face_points_decoder.',
+        'decoder.face_geometry.bbox_decoder.': 'face_center_scale_decoder.',
+        'decoder.edge_geometry.points_decoder.': 'edge_points_decoder.',
+        'decoder.edge_geometry.bbox_decoder.': 'edge_center_scale_decoder.',
+        'decoder.teacher_geometry.points_decoder.': 'edge_points_decoder.',
+        'decoder.teacher_geometry.bbox_decoder.': 'edge_center_scale_decoder.',
+        'decoder.classifier.': 'classifier.',
+    }
+    reused = set()
+    count = 0
+    for key in state:
+        for new, old in mapping.items():
+            if key.startswith(new):
+                source_key = old + key[len(new):]
+                state[key] = source[source_key].clone()
+                reused.add(source_key)
+                count += 1
+                break
+    dropped = sorted(set(source) - reused)
+    if any(not key.startswith('inter.') for key in dropped):
+        raise ValueError(f'Unexpected original parameters omitted: {dropped}')
+    target.load_state_dict(state, strict=True)
+    checkpoint['state_dict'] = {'model.' + key: value for key, value in state.items()}
+    checkpoint.setdefault('hyper_parameters', {})['model'] = cfg
+    for key in ('optimizer_states', 'lr_schedulers', 'loops', 'callbacks'):
+        checkpoint.pop(key, None)
+    checkpoint['epoch'] = checkpoint['global_step'] = 0
+    checkpoint['initialization_only'] = {'reason': 'face32 boundary architecture', 'variant': variant,
+                                       'seed': seed, 'reused_tensors': count, 'dropped_original_keys': dropped}
+    return count
+
+
+def migrate(checkpoint: dict, curve_head_mode: str | None = None, decoder_face_dim: int | None = None,
+            boundary_variant: str | None = None, seed: int = 42) -> list[str]:
     applied = list(checkpoint.get("hola_migrations", []))
     report = []
     options = {"curve_head_mode": curve_head_mode, "decoder_face_dim": decoder_face_dim}
     for migration in MIGRATIONS:
+        if migration.get('optional') == 'boundary_variant':
+            if boundary_variant is None:
+                continue
+            if migration['version'] in applied:
+                raise ValueError('Boundary initialization requires an original HoLa checkpoint')
+            count = initialize_boundary(checkpoint, boundary_variant, seed)
+            applied.append(migration['version'])
+            report.append(f"{migration['version']}: {count} reused tensors; initialization only")
+            continue
         option = migration.get("optional")
         if option and options[option] is None:
             continue
@@ -261,12 +331,16 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--curve-head-mode", choices=("teacher_split", "independent"))
     parser.add_argument("--decoder-face-dim", type=int)
+    parser.add_argument('--boundary-variant', choices=('basic', 'endpoints'))
+    parser.add_argument('--seed', type=int, default=42)
     args = parser.parse_args()
+    if args.boundary_variant and (args.curve_head_mode or args.decoder_face_dim):
+        parser.error('Boundary migration requires an original HoLa checkpoint')
     if args.target.exists():
         parser.error(f"Refusing to overwrite {args.target}")
     checkpoint = torch.load(args.source, map_location="cpu", weights_only=False, mmap=True)
-    print("\n".join(migrate(checkpoint, args.curve_head_mode, args.decoder_face_dim)))
-    if args.curve_head_mode or args.decoder_face_dim:
+    print("\n".join(migrate(checkpoint, args.curve_head_mode, args.decoder_face_dim, args.boundary_variant, args.seed)))
+    if args.curve_head_mode or args.decoder_face_dim or args.boundary_variant:
         checkpoint["initialization_only"]["source_checkpoint"] = str(args.source.resolve())
     if not args.dry_run:
         args.target.parent.mkdir(parents=True, exist_ok=True)
