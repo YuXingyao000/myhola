@@ -1,0 +1,15 @@
+defaults:
+  - train_vae_boundary_basic
+  - _self_
+
+trainer:
+  exp_name: boundary_face32/endpoints
+  wandb:
+    name: vae-boundary-face32-endpoints
+
+model:
+  boundary:
+    endpoints: true
+
+dataset:
+  endpoint_topology_root: ${oc.env:IMG2BREP_COEDGE_ROOT}

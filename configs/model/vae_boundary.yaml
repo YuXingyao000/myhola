@@ -1,0 +1,43 @@
+defaults:
+  - vae_light
+  - _self_
+
+name: AutoEncoder_boundary
+primitive_blocks_per_stage: 1
+point_decoder_blocks_per_stage: 1
+face_bbox_decoder_blocks: 7
+edge_bbox_decoder_blocks: 7
+kl_reduction: sum
+decoder_face_dim: 32
+freeze_encoder: false
+trainable_scope: all
+edge_threshold: 0.5
+
+boundary:
+  width: 128
+  geometry_dim: 64
+  geometry_chunk_size: 32
+  candidate_chunk_size: 64
+  heads: 4
+  # Compare the two configs, then retain the useful architecture only.
+  endpoints: false
+
+# No edge-feature objective. Independent teacher CNN/bbox are trained normally.
+# Face losses are counted once; Coarse and Final share one curve CNN/bbox.
+loss_weights:
+  face_local: 1.0
+  face_bbox: 1.0
+  edge_local: 1.0
+  edge_bbox: 1.0
+  classification: 0.1
+  coarse_edge_local: 0.25
+  coarse_edge_bbox: 0.25
+  coarse_classification: 0.1
+  teacher_local: 1.0
+  teacher_bbox: 1.0
+  face_xyz: 1.0
+  edge_xyz: 1.0
+  corner: 1.0
+  kl_loss: 1.0
+  endpoint_connection: 0.01
+  endpoint_vertex: 1.0

@@ -1,0 +1,51 @@
+defaults:
+  - trainer: default
+  - dataset: vae_joint
+  - model: vae_boundary
+  - condition: none
+  - _self_
+
+trainer:
+  exp_name: boundary_face32/basic
+  devices: 8
+  batch_size: 8
+  accumulate_grad_batches: 2
+  learning_rate: 2.0e-5
+  max_steps: 10000
+  max_epochs: 1000
+  max_time: null
+  num_workers: 2
+  num_threads: 2
+  cudnn_benchmark: false
+  checkpoint_enable_version_counter: false
+  checkpoint_every_n_train_steps: 500
+  checkpoint_step_keep_last: 2
+  log_every_n_steps: 10
+  wandb:
+    name: vae-boundary-face32-basic
+
+dataset:
+  name: src.datasets.boundary.BoundaryDataset
+  is_aug: 1
+  vertex_group_root: ${oc.env:IMG2BREP_VERTEX_GROUP_ROOT}
+  endpoint_topology_root: null
+
+model:
+  checkpoint: ${oc.env:IMG2BREP_BOUNDARY_CHECKPOINT}
+
+eval:
+  enabled: false
+  output_dir: null
+  num_samples: 100
+  post_process: false
+
+hydra:
+  run:
+    dir: ${brep_run_dir:${trainer.output_dir},${trainer.exp_name},${trainer.run_dir},${trainer.resume_from_checkpoint}}
+  output_subdir: metadata/hydra
+  job_logging:
+    handlers:
+      file:
+        filename: ${brep_log_file:${hydra.runtime.output_dir}}
+  job:
+    chdir: false

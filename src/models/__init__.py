@@ -33,6 +33,7 @@ def _lazy_import(module_path: str, class_name: str):
 # ---------------------------------------------------------------------------
 
 _MODEL_LOADERS: Dict[str, Any] = {
+    "AutoEncoder_boundary": _lazy_import("src.models.vae", "AutoEncoder_boundary"),
     "AutoEncoder_uv_intersection": _lazy_import(
         "src.models.vae", "AutoEncoder_uv_intersection"
     ),
