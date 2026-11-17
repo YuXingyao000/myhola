@@ -39,7 +39,8 @@ class AutoEncoder_boundary(AutoEncoder_intersection):
 
     def forward(self, batch, v_test=False):
         encoding = self.encode(batch, v_test)
-        latents, kl, statistics = self.sample(encoding['face_features'], v_is_test=v_test)
+        # Validation uses the posterior mean without enabling prediction export.
+        latents, kl, statistics = self.sample(encoding['face_features'], v_is_test=v_test or not self.training)
         prediction = self.decode(latents, batch['face_counts'])
         teacher = self.decoder.decode_teacher(encoding['edge_features'])
         losses = self.criterion(prediction, batch, teacher, kl)
