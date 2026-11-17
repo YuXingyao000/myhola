@@ -66,6 +66,9 @@ _MODEL_LOADERS: Dict[str, Any] = {
     "ControlNetPhotoDiffusion": _lazy_import(
         "src.models.diffusion.controlnet_photo", "ControlNetPhotoDiffusion"
     ),
+    "ControlNetPreferenceDiffusion": _lazy_import(
+        "src.models.diffusion.controlnet_preference", "ControlNetPreferenceDiffusion"
+    ),
     "PhotoBaselineDiffusion": _lazy_import(
         "src.models.diffusion.photo_baseline", "PhotoBaselineDiffusion"
     ),
