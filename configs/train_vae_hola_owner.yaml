@@ -1,0 +1,35 @@
+defaults:
+  - train_vae
+  - override model: vae_light
+  - _self_
+
+trainer:
+  exp_name: hola_owner_exchange
+  devices: 8
+  batch_size: 8
+  accumulate_grad_batches: 2
+  learning_rate: 2.0e-5
+  max_steps: 10000
+  num_workers: 2
+  num_threads: 2
+  log_every_n_steps: 10
+  sync_train_step_loss: false
+  cudnn_benchmark: false
+  float32_matmul_precision: highest
+  cudnn_allow_tf32: false
+  checkpoint_enable_version_counter: false
+  checkpoint_every_n_train_steps: 500
+  checkpoint_step_keep_last: 2
+
+dataset:
+  is_aug: 1
+
+model:
+  name: AutoEncoder_hola_owner
+  init_hola_checkpoint: null
+  pair_chunk_size: 256
+  owner_exchange:
+    width: 128
+    geometry_dim: 64
+    heads: 4
+    geometry_chunk_size: 32
