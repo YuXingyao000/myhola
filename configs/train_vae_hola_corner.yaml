@@ -1,0 +1,20 @@
+defaults:
+  - train_vae_hola_owner
+  - _self_
+
+trainer:
+  exp_name: hola_corner_exchange
+
+dataset:
+  name: src.datasets.hola_corner.HolaCornerDataset
+  corner_topology_root: ${oc.env:IMG2BREP_COEDGE_ROOT}
+
+model:
+  name: AutoEncoder_hola_corner
+  corner_exchange:
+    width: 128
+    face_chunk_size: 16
+  corner_loss_weights:
+    connection: 0.01
+    endpoint: 1.0
+    join: 1.0
