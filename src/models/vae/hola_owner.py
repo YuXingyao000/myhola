@@ -88,7 +88,11 @@ class AutoEncoder_hola_owner(AutoEncoder_light):
         bbox = self.edge_center_scale_decoder(h)
         coarse_xyz = local[..., :3].float() * bbox[:, None, 3:].float() + bbox[:, None, :3].float()
         geometry = self.owner_exchange.geometry(coarse_xyz, surfaces, pairs)
-        return h, logits, geometry
+        return h, logits, geometry, coarse_xyz
+
+    def _exchange_candidates(self, h, geometry, logits, coarse_xyz, pairs, slots,
+                             face_count, max_length, result):
+        return self.owner_exchange(h, geometry, logits, pairs, slots, face_count, max_length)
 
     def _intersect_faces(self, faces, encoding, batch, result, kept_faces):
         if kept_faces is not None:
@@ -107,10 +111,12 @@ class AutoEncoder_hola_owner(AutoEncoder_light):
             else:
                 values = self._candidate_geometry(faces, surfaces, group)
             chunks.append(values)
-        h, logits, geometry = (torch.cat(parts) for parts in zip(*chunks))
+        h, logits, geometry, coarse_xyz = (torch.cat(parts) for parts in zip(*chunks))
         offsets = [part[0].expand(len(part)) for part in ids.split(counts)]
         slots = pairs[:, 1] - torch.cat(offsets)[pairs[:, 0]]
-        final = self.owner_exchange(h, geometry, logits, pairs, slots, len(faces), max(counts))
+        final = self._exchange_candidates(
+            h, geometry, logits, coarse_xyz, pairs, slots, len(faces), max(counts), result,
+        )
 
         if batch is None:
             probabilities = logits.float().sigmoid()
@@ -127,6 +133,7 @@ class AutoEncoder_hola_owner(AutoEncoder_light):
         lookup[pairs[:, 0], pairs[:, 1]] = torch.arange(len(pairs), device=faces.device)
         gt_edge, owner, neighbor = batch['edge_face_connectivity'].unbind(1)
         positive = lookup[owner, neighbor]
+        result['candidate_slots'] = slots[positive]
         neg_owner, neg_neighbor = batch['zero_positions'].unbind(1)
         negative = lookup[neg_owner, neg_neighbor]
         predictions = torch.cat((logits[positive], logits[negative]))

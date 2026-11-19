@@ -14,6 +14,8 @@
 
 ## VAE：表示与解码
 
+`train_vae_hola_corner` 在上述原版 HoLa + owner-exchange 上追加一次同面端点共同消息，模块见 `models/vae/hola_corner.py`。原曲线头继续输出有向半边；新增读出为零初始化残差。`datasets/hola_corner.py` 仅附加原生 coedge previous/next 标签，不改变原几何、增广或 Encoder 输入。GT 只用于原始接续分数 CE、最终 XYZ 端点锚定及接续间隙 loss。完整 checkpoint/resume 与 owner 路径相同；发布权重通过 `init_hola_checkpoint` 严格加载。详见 `/mnt/d/hola_research/hola_corner_exchange_20261120/ARCHITECTURE.md`。本版以相同 10000 步预算比较整套交流+监督，不宣称仅凭此对照可分离新增 loss 的贡献；验证无收益后删除专用配置及模块。
+
 `train_vae_hola_owner` 从原 HoLa light 权重全量训练。原 Intersection 的有向输出同时接唯一的 classifier 和原版 edge feature loss。新增模块只给几何解码提供同属一个面的边界消息，最终拼接读出初始为 [I,0]。Teacher、粗曲线与最终有向半边共用原 CNN/bbox。训练用原 sampled BCE、原重建和 KL，不使用角点或端点损失。新跑用 `model.init_hola_checkpoint`，完整模型加载用 `model.checkpoint`，续训用 trainer 的 resume。实验与逐点对齐结果见 `/mnt/d/hola_research/hola_owner_exchange_20261118/`。
 
 2026-10-18起使用 `models/vae/` 包，具体结构见 [说明](/mnt/d/hola_research/vae_structure/README.md)。`BaseVAE`约定编码、采样、解码与forward接口，但允许各版本不同的参数和返回结构；主类在legacy/intersection/joint三个文件。组件在encoders/decoders、监督在losses、权重迁移在checkpoints、投影在geometry。旧模块导入仍兼容，旧日期记录中的 `vae.py`／`blocks.py` 为历史位置，不据此继续往旧文件堆代码。
