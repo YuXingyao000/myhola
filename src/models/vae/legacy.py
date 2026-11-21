@@ -536,14 +536,20 @@ class AutoEncoder(BaseVAE):
         intersected_edge_feature = self._intersect_faces(
             face_latents, v_encoding_result, v_data, decoding_results, deduplicate_face_id,
         )
-        decoding_results["edge_points_local"] = self.edge_points_decoder(intersected_edge_feature)
-        decoding_results["edge_center_scale"] = self.edge_center_scale_decoder(intersected_edge_feature)
-        if "edge_features" in v_encoding_result:
-            decoding_results["edge_points_local1"] = self.edge_points_decoder(v_encoding_result["edge_features"])
-            decoding_results["edge_center_scale1"] = self.edge_center_scale_decoder(v_encoding_result["edge_features"])
+        self._decode_edges(intersected_edge_feature, v_encoding_result, v_data, decoding_results)
 
         decoding_results["face_latents"] = v_encoding_result["face_latents"]
         return decoding_results
+
+    def _decode_edges(self, features, encoding, batch, result):
+        result["edge_points_local"] = self.edge_points_decoder(features)
+        result["edge_center_scale"] = self.edge_center_scale_decoder(features)
+        if "edge_features" in encoding:
+            result["edge_points_local1"] = self.edge_points_decoder(encoding["edge_features"])
+            result["edge_center_scale1"] = self.edge_center_scale_decoder(encoding["edge_features"])
+
+    def _loss_metrics(self, result, batch):
+        return {}
 
     def _intersect_faces(self, face_latents, v_encoding_result, v_data, decoding_results, kept_faces):
         if v_data is None:
@@ -632,6 +638,7 @@ class AutoEncoder(BaseVAE):
         decoding_result["kl_loss"] = kl_loss
         loss = self.loss(decoding_result, v_data)
         loss["total_loss"] = sum(loss.values())
+        loss.update(self._loss_metrics(decoding_result, v_data))
         data = {}
         if v_test:
             pred_data = self.decode(encoding_result)

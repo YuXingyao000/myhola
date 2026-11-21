@@ -49,6 +49,14 @@ class TrainingCheckpointTests(unittest.TestCase):
             with self.subTest(interval=interval), self.assertRaisesRegex(ValueError, "positive integer"):
                 _build_checkpoint_callbacks(self.config(interval), Path("unused"))
 
+    def test_explicit_geometry_monitor(self):
+        cfg = self.config(None)
+        cfg.trainer.checkpoint_monitor = 'val/edge_xyz'
+        with tempfile.TemporaryDirectory() as directory:
+            callback = _build_checkpoint_callbacks(cfg, Path(directory))[0]
+        self.assertEqual(callback.monitor, 'val/edge_xyz')
+        self.assertEqual(callback.mode, 'min')
+
     def test_final_last_saved_between_step_intervals_without_validation(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
