@@ -14,6 +14,17 @@
 
 ## VAE：表示与解码
 
+`train_vae_hola_octree` 在小 owner 模型上仅替换有向半边的局部 XYZ 读出：
+`models/vae/decoders/octree.py` 用共享的 768 维、4 个 MLP block 做 12 层子格分类及归一化叶内偏移。
+Encoder、面头、原 Intersection/classifier、owner 和 bbox 保留；Teacher/coarse/final 共用曲线主干与新坐标头。
+`init_hola_checkpoint` 先严格加载发布权重，再将最后 Conv1d 切为原方向三通道并新增坐标头；旧 XYZ 三通道删除。
+没有旧属性重命名；完整 octree checkpoint 必须同配置严格加载，旧 optimizer 不能 resume 到新架构。
+训练标签在增强/归一化后即时生成，GT 前缀只进入坐标分类监督；coarse GeometryRead 始终读取自由解码几何。
+validation/test 的 XYZ、端点与内部点误差均来自自己的预测路径，最佳权重按 `val/edge_xyz` 保存。
+新头/bbox/坐标还原用 FP32，主干沿用 AMP。全量训练会改变 latent 语义，旧 cache/diffusion 不默认兼容。
+结构、loss、比较预算及删除条件见 `/mnt/d/hola_research/hola_owner_octree_20261121/ARCHITECTURE.md`；
+固定 validation 比较无收益后删除专用模型/配置，新开关不进入其他 VAE 默认路径。
+
 `train_vae_hola_owner` 从原 HoLa light 权重全量训练。原 Intersection 的有向输出同时接唯一的 classifier 和原版 edge feature loss。新增模块只给几何解码提供同属一个面的边界消息，最终拼接读出初始为 [I,0]。Teacher、粗曲线与最终有向半边共用原 CNN/bbox。训练用原 sampled BCE、原重建和 KL，不使用角点或端点损失。新跑用 `model.init_hola_checkpoint`，完整模型加载用 `model.checkpoint`，续训用 trainer 的 resume。实验与逐点对齐结果见 `/mnt/d/hola_research/hola_owner_exchange_20261118/`。
 
 2026-10-18起使用 `models/vae/` 包，具体结构见 [说明](/mnt/d/hola_research/vae_structure/README.md)。`BaseVAE`约定编码、采样、解码与forward接口，但允许各版本不同的参数和返回结构；主类在legacy/intersection/joint三个文件。组件在encoders/decoders、监督在losses、权重迁移在checkpoints、投影在geometry。旧模块导入仍兼容，旧日期记录中的 `vae.py`／`blocks.py` 为历史位置，不据此继续往旧文件堆代码。

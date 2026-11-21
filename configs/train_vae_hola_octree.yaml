@@ -1,0 +1,23 @@
+defaults:
+  - train_vae_hola_owner
+  - _self_
+
+trainer:
+  exp_name: hola_owner_octree
+  devices: 7
+  batch_size: 8
+  accumulate_grad_batches: 2
+  max_steps: 10000
+  checkpoint_monitor: val/edge_xyz
+
+model:
+  name: AutoEncoder_hola_octree
+  pair_chunk_size: 256
+  octree:
+    depth: 12
+    width: 768
+    blocks: 4
+    checkpoint_levels: true
+  coordinate_loss_weights:
+    path: 1.0
+    offset: 1.0

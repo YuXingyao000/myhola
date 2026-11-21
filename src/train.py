@@ -111,7 +111,7 @@ def _build_checkpoint_callbacks(cfg: DictConfig, run_dir: Path) -> list[ModelChe
     callbacks = [
         ModelCheckpoint(
             dirpath=str(run_dir / "weights"),
-            monitor="val/loss",
+            monitor=cfg.trainer.get("checkpoint_monitor", "val/loss"),
             mode="min",
             save_top_k=3,
             save_last=True,
@@ -232,7 +232,7 @@ class UnifiedTrainer(pl.LightningModule):
         model_cfg = OmegaConf.create(OmegaConf.to_container(cfg.model, resolve=True))
         resume = cfg.trainer.resume_from_checkpoint
         has_resume = resume and str(resume).lower() not in {"none", "null"}
-        if cfg.model.name == "AutoEncoder_hola_owner":
+        if cfg.model.name in {"AutoEncoder_hola_owner", "AutoEncoder_hola_octree"}:
             if cfg.trainer.init_from_checkpoint:
                 raise ValueError("Use model.init_hola_checkpoint, model.checkpoint or full resume")
             if has_resume:
