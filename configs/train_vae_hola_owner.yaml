@@ -28,6 +28,7 @@ model:
   name: AutoEncoder_hola_owner
   init_hola_checkpoint: null
   pair_chunk_size: 256
+  geometry_classifier: null
   owner_exchange:
     width: 128
     geometry_dim: 64

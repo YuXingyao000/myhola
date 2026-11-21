@@ -3,7 +3,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from src.models.vae.hola_owner import AutoEncoder_hola_owner, OwnerBoundaryExchange
+from src.models.vae.hola_owner import AutoEncoder_hola_owner, FaceGeometryRead, OwnerBoundaryExchange
 
 
 def test_identity_then_messages_only_from_same_owner():
@@ -51,6 +51,7 @@ def routing_model():
     model.edge_points_decoder = nn.Sequential(nn.Linear(4, 12), nn.Unflatten(-1, (4, 3)))
     model.edge_center_scale_decoder = nn.Linear(4, 4)
     model.owner_exchange = OwnerBoundaryExchange(4, 8, 3, 2, 2)
+    model.face_geometry_read = None
     model.pair_chunk_size = 2
     model.runtime_mode = 'train'
     model.trainable_scope = 'all'
@@ -149,3 +150,49 @@ def test_no_selected_edges_skips_geometry_and_exchange():
     assert not calls
     assert result['pred_edge_face_connectivity'].shape == (0, 3)
     assert not result['pred_face_adj'].any()
+
+
+def test_geometry_classifier_initial_identity_then_bce_reaches_surfaces():
+    model, faces, _ = routing_model()
+    model.eval()
+    reader = FaceGeometryRead(4, 8, 2, 16)
+    model.face_geometry_read = reader
+    original_weight = model.classifier.weight.detach().clone()
+    model.classifier = nn.Linear(12, 1, bias=False)
+    with torch.no_grad():
+        model.classifier.weight.zero_()
+        model.classifier.weight[:, :4].copy_(original_weight)
+    surfaces = torch.randn(4, 2, 2, 3, requires_grad=True)
+    pairs = torch.tensor([[0, 1], [1, 0]])
+    h, logits = model._candidate_features(faces, pairs, reader.encode(surfaces))
+    torch.testing.assert_close(logits, (h @ original_weight.T).squeeze(-1), atol=0, rtol=0)
+    F.binary_cross_entropy_with_logits(logits, torch.tensor([1., 0.])).backward()
+    assert model.classifier.weight.grad[:, 4:].abs().sum() > 0
+    assert surfaces.grad.count_nonzero() == 0
+
+    model.zero_grad(set_to_none=True)
+    surfaces.grad = None
+    with torch.no_grad():
+        model.classifier.weight[:, 4:].fill_(0.1)
+    _, logits = model._candidate_features(faces, pairs, reader.encode(surfaces))
+    F.binary_cross_entropy_with_logits(logits, torch.tensor([1., 0.])).backward()
+    assert surfaces.grad[:2].abs().sum() > 0
+    assert surfaces.grad[2:].count_nonzero() == 0
+    assert reader.query_projection.weight.grad.abs().sum() > 0
+    assert reader.attention.in_proj_weight.grad.abs().sum() > 0
+
+
+def test_geometry_read_respects_order_and_face_reindexing():
+    torch.manual_seed(42)
+    reader = FaceGeometryRead(4, 8, 2, 16).eval()
+    h = torch.randn(1, 4).expand(2, -1)
+    surfaces = torch.randn(3, 2, 2, 3)
+    pairs = torch.tensor([[0, 1], [1, 0]])
+    tokens = reader.encode(surfaces)
+    g = reader(h, tokens, pairs)
+    assert not torch.allclose(g[0], g[1])
+    permutation = torch.tensor([2, 0, 1])
+    inverse = permutation.argsort()
+    torch.testing.assert_close(g, reader(h, reader.encode(surfaces[permutation]), inverse[pairs]))
+    # Encoding/reading is per sample, with no dependence on UV flattening order.
+    torch.testing.assert_close(g, reader(h, tokens.flip(1), pairs))

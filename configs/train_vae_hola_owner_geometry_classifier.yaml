@@ -1,0 +1,14 @@
+defaults:
+  - train_vae_hola_owner_selected_wide
+  - _self_
+
+trainer:
+  exp_name: hola_owner_geometry_classifier
+  devices: 8
+  batch_size: 7
+
+model:
+  geometry_classifier:
+    width: 512
+    heads: 8
+    fusion_dim: 1024
