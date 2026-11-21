@@ -9,6 +9,32 @@ from .decoders.refinement import GeometryRead
 from .legacy import AutoEncoder_light
 
 
+class FaceGeometryRead(nn.Module):
+    """One ordered relation queries 256 XYZ tokens on each predicted surface."""
+
+    def __init__(self, edge_dim, width, heads, fusion_dim):
+        super().__init__()
+        self.point_encoder = nn.Sequential(
+            nn.Linear(3, width), nn.SiLU(), nn.Linear(width, width), nn.SiLU(),
+        )
+        self.query_projection = nn.Linear(edge_dim, width)
+        self.attention = nn.MultiheadAttention(width, heads, batch_first=True)
+        self.fusion = nn.Sequential(
+            nn.Linear(2 * width, fusion_dim), nn.SiLU(),
+            nn.Linear(fusion_dim, width), nn.SiLU(),
+        )
+
+    def encode(self, surfaces):
+        return self.point_encoder(surfaces.flatten(1, 2))
+
+    def forward(self, h, tokens, pairs):
+        query = self.query_projection(h).unsqueeze(1)
+        owner, neighbor = tokens[pairs[:, 0]], tokens[pairs[:, 1]]
+        first, _ = self.attention(query, owner, owner, need_weights=False)
+        second, _ = self.attention(query, neighbor, neighbor, need_weights=False)
+        return self.fusion(torch.cat((first.squeeze(1), second.squeeze(1)), dim=-1))
+
+
 class OwnerBoundaryAttention(nn.Module):
     """Selected directed (i,j) boundaries with owner i share one sequence."""
 
@@ -67,6 +93,16 @@ class AutoEncoder_hola_owner(AutoEncoder_light):
         super().__init__({**cfg, 'checkpoint': cfg.get('init_hola_checkpoint')})
         self.owner_exchange = OwnerBoundaryExchange(self.edge_feature_dim, **cfg['owner_exchange'])
         self.pair_chunk_size = int(cfg['pair_chunk_size'])
+        geometry_cfg = cfg.get('geometry_classifier')
+        self.face_geometry_read = None
+        if geometry_cfg:
+            self.face_geometry_read = FaceGeometryRead(self.edge_feature_dim, **geometry_cfg)
+            original_classifier = self.classifier
+            self.classifier = nn.Linear(self.edge_feature_dim + geometry_cfg['width'], 1)
+            with torch.no_grad():
+                self.classifier.weight.zero_()
+                self.classifier.weight[:, :self.edge_feature_dim].copy_(original_classifier.weight)
+                self.classifier.bias.copy_(original_classifier.bias)
         self._load_checkpoint(cfg.get('checkpoint'))
         self._apply_runtime_mode()
 
@@ -80,10 +116,14 @@ class AutoEncoder_hola_owner(AutoEncoder_light):
                 return super().forward(v_data, v_test=True)
         return super().forward(v_data)
 
-    def _candidate_features(self, faces, pairs):
+    def _candidate_features(self, faces, pairs, geometry_tokens=None):
         pair_tokens = self._add_intersection_training_noise(faces[pairs])
         h = self.inter(pair_tokens)                                 # [P,64], ordered
-        logits = self.classifier(h).squeeze(-1)                     # one classifier
+        classifier_input = h
+        if geometry_tokens is not None:
+            geometry = self.face_geometry_read(h, geometry_tokens, pairs)
+            classifier_input = torch.cat((h, geometry), dim=-1)
+        logits = self.classifier(classifier_input).squeeze(-1)       # one classifier
         return h, logits
 
     def _selected_geometry(self, h, surfaces, pairs):
@@ -98,6 +138,12 @@ class AutoEncoder_hola_owner(AutoEncoder_light):
                 result[key] = result[key][kept_faces]
         local, bbox = result['face_points_local'], result['face_center_scale']
         surfaces = local[..., :3].float() * bbox[:, None, None, 3:].float() + bbox[:, None, None, :3].float()
+        geometry_tokens = None
+        if self.face_geometry_read is not None:
+            if self.training and torch.is_grad_enabled():
+                geometry_tokens = checkpoint(self.face_geometry_read.encode, surfaces, use_reentrant=False)
+            else:
+                geometry_tokens = self.face_geometry_read.encode(surfaces)
         counts = batch['face_counts'].tolist() if batch is not None else [len(faces)]
         ids = torch.arange(len(faces), device=faces.device)
         # Reproduce the original inference meshgrid, including the diagonal.
@@ -105,9 +151,9 @@ class AutoEncoder_hola_owner(AutoEncoder_light):
         chunks = []
         for group in pairs.split(self.pair_chunk_size):
             if self.training and torch.is_grad_enabled():
-                values = checkpoint(self._candidate_features, faces, group, use_reentrant=False)
+                values = checkpoint(self._candidate_features, faces, group, geometry_tokens, use_reentrant=False)
             else:
-                values = self._candidate_features(faces, group)
+                values = self._candidate_features(faces, group, geometry_tokens)
             chunks.append(values)
         h, logits = (torch.cat(parts) for parts in zip(*chunks))
 

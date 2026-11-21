@@ -18,6 +18,8 @@
 
 2026-11-21 owner 筛选修正：先计算候选的 h/classifier，训练按 GT 半边行、推理按 p>0.5 选取，再进行粗曲线解码、GeometryRead 和同面交流。训练 BCE 仍覆盖原采样负例；低置信 GT 正边仍接受几何监督。选中来源保留 log(p.detach()) 软权重及空消息，填充槽不贡献消息。classifier 仍只读 h，读取预测面几何的分类器尚未实现。参数键及宽度不变，但旧 owner checkpoint 在新代码上的交流语义已改变，不能作为原 run 的无变化 resume；历史运行继续使用其冻结源码。新行为及验证记录见 `/mnt/d/hola_research/hola_owner_selected_20261121/`。
 
+同日后续已确认的分类实验：`train_vae_hola_owner_selected_wide` 为仅修正筛选的大 owner（W/G=1024），`train_vae_hola_owner_geometry_classifier` 在其上启用 `model.geometry_classifier`（默认null）。预测面还原到零件坐标，逐点3→512→512；原h经64→512作为query，分别读取两侧256个XYZ tokens（共享1层8头MHA），concat→1024→1024→512产生g，再以唯一Linear(576,1)分类。h对应64列继承原classifier，新列为0；原HoLa严格初始化先于扩展，完整权重需匹配配置严格加载。分类前无粗曲线；选边后的owner保持不变。新BCE路径允许回传面CNN，owner的概率路由继续detach。两组均全量训练10000步、有效batch112；新架构/运行证据见 `/mnt/d/hola_research/hola_owner_geometry_classifier_20261121/`。固定预算validation比较后，若分类及下游有效性无收益则删除此分支；若保留则固定获胜配置并清理失败选项。
+
 2026-10-18起使用 `models/vae/` 包，具体结构见 [说明](/mnt/d/hola_research/vae_structure/README.md)。`BaseVAE`约定编码、采样、解码与forward接口，但允许各版本不同的参数和返回结构；主类在legacy/intersection/joint三个文件。组件在encoders/decoders、监督在losses、权重迁移在checkpoints、投影在geometry。旧模块导入仍兼容，旧日期记录中的 `vae.py`／`blocks.py` 为历史位置，不据此继续往旧文件堆代码。
 
 模型按根指南的“实验代码与架构记录”约定编写：不在各层重复 shape/type/device/finite 检查，不另建 validator 隐藏这些检查。`forward` 用简短形状注释展示真实计算；实际 mask、空候选、精度转换照常保留。实验整体的层级结构、张量职责、配置和实现 hash 放在主题 `ARCHITECTURE.md` 的 ASCII 图中，与代码执行解耦。当前 UV 实验见 [架构快照](/mnt/d/hola_research/uv_boundary/ARCHITECTURE.md)。
