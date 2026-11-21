@@ -10,7 +10,7 @@ from .legacy import AutoEncoder_light
 
 
 class OwnerBoundaryAttention(nn.Module):
-    """All directed (i,j) candidates with the same owner i share one sequence."""
+    """Selected directed (i,j) boundaries with owner i share one sequence."""
 
     def __init__(self, width, heads):
         super().__init__()
@@ -80,15 +80,17 @@ class AutoEncoder_hola_owner(AutoEncoder_light):
                 return super().forward(v_data, v_test=True)
         return super().forward(v_data)
 
-    def _candidate_geometry(self, faces, surfaces, pairs):
+    def _candidate_features(self, faces, pairs):
         pair_tokens = self._add_intersection_training_noise(faces[pairs])
         h = self.inter(pair_tokens)                                 # [P,64], ordered
         logits = self.classifier(h).squeeze(-1)                     # one classifier
+        return h, logits
+
+    def _selected_geometry(self, h, surfaces, pairs):
         local = self.edge_points_decoder(h)
         bbox = self.edge_center_scale_decoder(h)
         coarse_xyz = local[..., :3].float() * bbox[:, None, 3:].float() + bbox[:, None, :3].float()
-        geometry = self.owner_exchange.geometry(coarse_xyz, surfaces, pairs)
-        return h, logits, geometry
+        return self.owner_exchange.geometry(coarse_xyz, surfaces, pairs)
 
     def _intersect_faces(self, faces, encoding, batch, result, kept_faces):
         if kept_faces is not None:
@@ -103,37 +105,47 @@ class AutoEncoder_hola_owner(AutoEncoder_light):
         chunks = []
         for group in pairs.split(self.pair_chunk_size):
             if self.training and torch.is_grad_enabled():
-                values = checkpoint(self._candidate_geometry, faces, surfaces, group, use_reentrant=False)
+                values = checkpoint(self._candidate_features, faces, group, use_reentrant=False)
             else:
-                values = self._candidate_geometry(faces, surfaces, group)
+                values = self._candidate_features(faces, group)
             chunks.append(values)
-        h, logits, geometry = (torch.cat(parts) for parts in zip(*chunks))
-        offsets = [part[0].expand(len(part)) for part in ids.split(counts)]
-        slots = pairs[:, 1] - torch.cat(offsets)[pairs[:, 0]]
-        final = self.owner_exchange(h, geometry, logits, pairs, slots, len(faces), max(counts))
+        h, logits = (torch.cat(parts) for parts in zip(*chunks))
 
         if batch is None:
             probabilities = logits.float().sigmoid()
-            active = probabilities > 0.5
-            selected = pairs[active]
-            edge_ids = torch.arange(len(selected), device=faces.device)
-            result['pred_face_adj'] = active
+            selected = probabilities > 0.5
+            edge_ids = torch.arange(int(selected.sum()), device=faces.device)
+            result['pred_face_adj'] = selected
             result['pred_face_adj_prob'] = probabilities
-            result['pred_edge_face_connectivity'] = torch.cat((edge_ids[:, None], selected), dim=-1)
-            return final[active]
+            result['pred_edge_face_connectivity'] = torch.cat((edge_ids[:, None], pairs[selected]), dim=-1)
+        else:
+            # As in HoLa, GT rows supervise geometry even if the classifier misses them.
+            lookup = pairs.new_full((len(faces), len(faces)), -1)
+            lookup[pairs[:, 0], pairs[:, 1]] = torch.arange(len(pairs), device=faces.device)
+            gt_edge, owner, neighbor = batch['edge_face_connectivity'].unbind(1)
+            selected = lookup[owner, neighbor]
+            neg_owner, neg_neighbor = batch['zero_positions'].unbind(1)
+            negative = lookup[neg_owner, neg_neighbor]
+            predictions = torch.cat((logits[selected], logits[negative]))
+            targets = torch.cat((torch.ones_like(logits[selected]), torch.zeros_like(logits[negative])))
+            result['loss_edge'] = F.binary_cross_entropy_with_logits(predictions, targets)
+            result['loss_edge_feature'] = self.loss_fn(h[selected], encoding['edge_features'][gt_edge].detach())
 
-        # Only here are GT rows selected, after the complete owner exchange.
-        lookup = pairs.new_full((len(faces), len(faces)), -1)
-        lookup[pairs[:, 0], pairs[:, 1]] = torch.arange(len(pairs), device=faces.device)
-        gt_edge, owner, neighbor = batch['edge_face_connectivity'].unbind(1)
-        positive = lookup[owner, neighbor]
-        neg_owner, neg_neighbor = batch['zero_positions'].unbind(1)
-        negative = lookup[neg_owner, neg_neighbor]
-        predictions = torch.cat((logits[positive], logits[negative]))
-        targets = torch.cat((torch.ones_like(logits[positive]), torch.zeros_like(logits[negative])))
-        result['loss_edge'] = F.binary_cross_entropy_with_logits(predictions, targets)
-        result['loss_edge_feature'] = self.loss_fn(h[positive], encoding['edge_features'][gt_edge].detach())
-        return final[positive]
+        # Rejected rows never reach the coarse curve head or the exchange.
+        h, logits, pairs = h[selected], logits[selected], pairs[selected]
+        if len(h) == 0:
+            return h
+        geometry_chunks = []
+        for features, group in zip(h.split(self.pair_chunk_size), pairs.split(self.pair_chunk_size)):
+            if self.training and torch.is_grad_enabled():
+                geometry = checkpoint(self._selected_geometry, features, surfaces, group, use_reentrant=False)
+            else:
+                geometry = self._selected_geometry(features, surfaces, group)
+            geometry_chunks.append(geometry)
+        geometry = torch.cat(geometry_chunks)
+        offsets = [part[0].expand(len(part)) for part in ids.split(counts)]
+        slots = pairs[:, 1] - torch.cat(offsets)[pairs[:, 0]]
+        return self.owner_exchange(h, geometry, logits, pairs, slots, len(faces), max(counts))
 
     def decode_latents(self, face_latents):
         pred = self.decode({'face_latents': face_latents}, v_deduplicated=True)
