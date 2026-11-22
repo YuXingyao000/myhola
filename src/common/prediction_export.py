@@ -44,7 +44,7 @@ def vae_prediction_items(prefixes, recon_data: dict, loss_dict: dict) -> list[di
     item = {key: value for key, value in recon_data.items() if key in {
         "pred_face", "pred_edge", "gt_face", "gt_edge", "pred_face_adj", "gt_face_adj",
         "pred_edge_face_connectivity", "gt_edge_face_connectivity", "cached_latent_stats",
-        "pred_face_adj_prob", "pred_edge_confidence",
+        "pred_face_adj_prob", "pred_edge_confidence", "pred_endpoint_same_vertex",
     }}
     for key in ("face_coords", "edge_coords"):
         if key in loss_dict:

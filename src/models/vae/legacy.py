@@ -461,6 +461,9 @@ class AutoEncoder(BaseVAE):
         timer = time.time()
         return timer
 
+    def _encoder_edge_attributes(self, edge_features, batch):
+        return edge_features[batch['edge_face_connectivity'][:, 0]]
+
     def encode(self, v_data, v_test):
         face_points = rearrange(v_data["face_points"][..., :self.in_channels], 'b h w n -> b n h w').contiguous()
         edge_points = rearrange(v_data["edge_points"][..., :self.in_channels], 'b h n -> b n h').contiguous()
@@ -477,7 +480,7 @@ class AutoEncoder(BaseVAE):
         edge_face_connectivity = v_data["edge_face_connectivity"]
         x = fused_face_features
         edge_index = edge_face_connectivity[:, 1:].permute(1, 0)
-        edge_attr = edge_features[edge_face_connectivity[:, 0]]
+        edge_attr = self._encoder_edge_attributes(edge_features, v_data)
         for layer in self.graph_face_edge:
             if isinstance(layer, GATv2Conv):
                 x = layer(x, edge_index, edge_attr) + x
@@ -632,9 +635,12 @@ class AutoEncoder(BaseVAE):
         decoding_result["kl_loss"] = kl_loss
         loss = self.loss(decoding_result, v_data)
         loss["total_loss"] = sum(loss.values())
+        loss.update(decoding_result.get('loss_diagnostics', {}))
         data = {}
         if v_test:
             pred_data = self.decode(encoding_result)
+            if 'pred_endpoint_same_vertex' in pred_data:
+                data['pred_endpoint_same_vertex'] = pred_data['pred_endpoint_same_vertex'].detach().cpu().numpy()
 
             num_faces = v_data["face_points"].shape[0]
             face_adj = torch.zeros((num_faces, num_faces), dtype=bool, device=loss["total_loss"].device)
