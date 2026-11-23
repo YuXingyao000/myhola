@@ -14,6 +14,17 @@
 
 ## VAE：表示与解码
 
+`train_vae_pcurve` 是原生 next/pcurve 表示实验，入口模型 `AutoEncoder_pcurve`，数据类
+`src.datasets.native_pcurve.NativePcurveDataset`。从发布的 HoLa light 权重严格初始化，
+删除旧三维边 CNN/bbox、teacher 和 edge-feature loss；新增关系 Encoder、next Decoder、
+pcurve Decoder 均为宽512、四个 FFN。保留面采样网格，用固定 Torch 样条矩阵连续化；
+同面角点按 next 共享 UV，跨面仅用相容 loss，不宣称精确拼合或合法 solid。
+训练几何使用 GT next，关系头另用 CE 和缺边/假边 NULL 样本；推理只能从 latent
+预测候选及 next，未匹配必须明确失败。候选数由训练集原生多重边上限确定，seam 保留
+两次使用，不从 GT 读取推理边数。原生数据/旧 latent cache 不可混用。完整结构、
+参数统计、数据误差底线和训练状态见 `/mnt/d/hola_research/brep_decoder_rethink_20261123/`。
+
+
 2026-10-18起使用 `models/vae/` 包，具体结构见 [说明](/mnt/d/hola_research/vae_structure/README.md)。`BaseVAE`约定编码、采样、解码与forward接口，但允许各版本不同的参数和返回结构；主类在legacy/intersection/joint三个文件。组件在encoders/decoders、监督在losses、权重迁移在checkpoints、投影在geometry。旧模块导入仍兼容，旧日期记录中的 `vae.py`／`blocks.py` 为历史位置，不据此继续往旧文件堆代码。
 
 模型按根指南的“实验代码与架构记录”约定编写：不在各层重复 shape/type/device/finite 检查，不另建 validator 隐藏这些检查。`forward` 用简短形状注释展示真实计算；实际 mask、空候选、精度转换照常保留。实验整体的层级结构、张量职责、配置和实现 hash 放在主题 `ARCHITECTURE.md` 的 ASCII 图中，与代码执行解耦。当前 UV 实验见 [架构快照](/mnt/d/hola_research/uv_boundary/ARCHITECTURE.md)。

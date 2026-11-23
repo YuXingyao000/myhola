@@ -12,6 +12,7 @@
 | `rotations.py` | cube24 旋转约定：`rotation_id=0` 是 identity；latent、条件图、adjacency、visibility 共用 |
 | `shared_boundaries.py` | 共享边界监督目标与预测诊断（`AutoEncoder_joint_dataset`、评估都依赖） |
 | `extract_vertex_groups.py`、`vertex_groups.py` | 离线从保存的STEP顶点身份生成端点分组sidecar；纯NumPy读取与跨曲线端点对，训练时不依赖OCC |
+| `native_pcurve.py` | 完整 native coedge/next/mate/UV 导出，包括 seam 和多重边；显式新输出根，复用并核验已审阅的面匹配容差。保留原生 XYZ/UV，不用几何残差阈值静默删样本；误差底线另存字段 |
 | `edge_uv.py`、`extract_edge_uv.py`、`uv_curve_targets.py` | 边 UV 监督数据（`edge_uv_root`）与 UV 曲线目标；生成命令见 `tools/generate_uv_curve_targets.py` |
 | `model_lists.py` | 读取 8 位 ID 清单（去重保序、拒绝非法 ID） |
 | `splits/` | 固定清单：`deduplicated_deepcad_{training,validation,testing}_7_30.txt`、`deepcad_v7_contract_{train,validation,test}.txt`（VAE 合同审计 accepted，validation 3495 件）、`deepcad_v7_validation100.txt` |

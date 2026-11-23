@@ -1,0 +1,49 @@
+defaults:
+  - train_vae
+  - override model: vae_light
+  - _self_
+
+model:
+  name: AutoEncoder_pcurve
+  init_hola_checkpoint: null
+  trainable_scope: all
+  pcurve:
+    width: 512
+    depth: 4
+    controls: 16
+    # Must cover the native training set; set explicitly from export statistics.
+    max_slots: ???
+    pair_chunk_size: 128
+    drop_probability: 0.1
+    false_ratio: 0.1
+    loss_weights:
+      face_local: 1.0
+      face_bbox: 1.0
+      classification: 0.1
+      next_relation: 0.1
+      pcurve_uv: 1.0
+      edge_xyz: 1.0
+      mate_compatibility: 1.0
+      kl_loss: 1.0
+
+dataset:
+  name: src.datasets.native_pcurve.NativePcurveDataset
+  is_aug: 1
+
+trainer:
+  exp_name: vae_pcurve_next
+  devices: 8
+  batch_size: 8
+  accumulate_grad_batches: 2
+  learning_rate: 2.0e-5
+  max_steps: 50000
+  num_workers: 2
+  num_threads: 2
+  log_every_n_steps: 10
+  sync_train_step_loss: false
+  cudnn_benchmark: false
+  float32_matmul_precision: highest
+  cudnn_allow_tf32: false
+  checkpoint_enable_version_counter: false
+  checkpoint_every_n_train_steps: 2000
+  checkpoint_step_keep_last: 3
