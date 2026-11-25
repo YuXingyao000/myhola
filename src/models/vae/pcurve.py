@@ -177,6 +177,10 @@ class AutoEncoder_pcurve(AutoEncoder_light):
             "mate_compatibility": compatibility,
             "kl_loss": kl,
         }
+        if self.loss_weights.get("pcurve_gt_surface", 0.0) > 0:
+            # Only the predicted UV can move this trace; GT geometry is fixed.
+            gt_trace = self.splines.evaluate(data["face_points"][..., :3].detach(), data["owner"], uv)
+            losses["pcurve_gt_surface"] = F.l1_loss(gt_trace, reference)
         weighted = {f"weighted_{k}": v * self.loss_weights.get(k, 1.0) for k, v in losses.items()}
         total = sum(weighted.values())
         with torch.no_grad():

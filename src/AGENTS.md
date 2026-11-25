@@ -24,6 +24,13 @@ pcurve Decoder 均为宽512、四个 FFN。保留面采样网格，用固定 Tor
 两次使用，不从 GT 读取推理边数。原生数据/旧 latent cache 不可混用。完整结构、
 参数统计、数据误差底线和训练状态见 `/mnt/d/hola_research/brep_decoder_rethink_20261123/`。
 
+`train_vae_pcurve_gt_surface` 仅增加 `pcurve_gt_surface` 监督：预测 UV 在固定 GT
+曲面上求值后，与原生 GT 三维边界计算 L1；默认基线权重为0，本配置为1。
+该项回传 UV 预测路径和共享骨干，不经过预测面 CNN/bbox 的坐标输出。
+保留原 UV、面、edge XYZ、mate、next、分类和KL损失；网络参数、推理和数据格式不变。
+训练/验证可用 GT 曲面作为监督目标，latent-only 推理不读取 GT。
+结构与运行记录见 `/mnt/d/hola_research/brep_decoder_rethink_20261123/gt_surface_supervision_20261125/`。
+
 
 2026-10-18起使用 `models/vae/` 包，具体结构见 [说明](/mnt/d/hola_research/vae_structure/README.md)。`BaseVAE`约定编码、采样、解码与forward接口，但允许各版本不同的参数和返回结构；主类在legacy/intersection/joint三个文件。组件在encoders/decoders、监督在losses、权重迁移在checkpoints、投影在geometry。旧模块导入仍兼容，旧日期记录中的 `vae.py`／`blocks.py` 为历史位置，不据此继续往旧文件堆代码。
 

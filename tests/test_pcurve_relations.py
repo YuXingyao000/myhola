@@ -60,6 +60,29 @@ def test_null_scores_receive_supervision_for_missing_targets():
     assert end.grad[1] < 0 and start.grad[0] < 0
 
 
+def test_fixed_gt_surface_loss_moves_uv_without_updating_surface_outputs():
+    geometry = SplineGeometry()
+    t = torch.linspace(0, 1, 16)
+    v, u = torch.meshgrid(t, t, indexing="ij")
+    gt_grid = torch.stack([2 * u, 3 * v, torch.zeros_like(u)], -1)[None].requires_grad_()
+    pred_grid = (gt_grid.detach() + 0.25).requires_grad_()
+    poles = torch.full((1, 16, 2), 0.4, requires_grad=True)
+    owner = torch.tensor([0])
+    uv, _ = geometry(pred_grid, owner, poles)
+    target_uv = torch.full_like(uv, 0.3)
+    target_xyz = geometry.evaluate(gt_grid.detach(), owner, target_uv)
+    gt_trace = geometry.evaluate(gt_grid.detach(), owner, uv)
+    loss = torch.nn.functional.l1_loss(gt_trace, target_xyz)
+    assert torch.allclose(loss, torch.tensor(1.0 / 6.0), atol=2e-6)
+    loss.backward()
+    assert gt_grid.grad is None and pred_grid.grad is None
+    assert torch.isfinite(poles.grad).all() and (poles.grad > 0).all()
+    # The original prediction path remains differentiable through the surface.
+    _, pred_xyz = geometry(pred_grid, owner, poles)
+    pred_xyz.square().mean().backward()
+    assert pred_grid.grad is not None and pred_grid.grad.abs().sum() > 0
+
+
 def test_native_loader_and_batch_preserve_seam_uses_and_relation_offsets(tmp_path):
     import numpy as np
     from src.datasets.native_pcurve import NativePcurveDataset

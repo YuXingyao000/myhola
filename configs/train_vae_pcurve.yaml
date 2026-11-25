@@ -22,6 +22,7 @@ model:
       classification: 0.1
       next_relation: 0.1
       pcurve_uv: 1.0
+      pcurve_gt_surface: 0.0
       edge_xyz: 1.0
       mate_compatibility: 1.0
       kl_loss: 1.0

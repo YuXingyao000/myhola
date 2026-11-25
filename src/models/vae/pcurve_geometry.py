@@ -41,12 +41,19 @@ class SplineGeometry(nn.Module):
     def surface_controls(self, grid):
         return torch.einsum("av,fvuc,bu->fabc", self.grid_inverse, grid.float(), self.grid_inverse)
 
-    def forward(self, grid, owner, curve_controls):
-        # Stable FP32 polynomial evaluation; never replace out-of-chart UV by zero.
+    def evaluate(self, grid, owner, uv):
+        # Gradients pass through queried UV even when grid is a fixed GT target.
         with torch.autocast(grid.device.type, enabled=False):
-            uv = torch.einsum("mk,hkc->hmc", self.curve_basis, curve_controls.float())
+            uv = uv.float()
             poles = self.surface_controls(grid)[owner]
             bu = basis(uv[..., 0], self.surface_knots)
             bv = basis(uv[..., 1], self.surface_knots)
             xyz = torch.einsum("hma,hmb,habc->hmc", bv, bu, poles)
+        return xyz
+
+    def forward(self, grid, owner, curve_controls):
+        # Stable FP32 polynomial evaluation; never replace out-of-chart UV by zero.
+        with torch.autocast(grid.device.type, enabled=False):
+            uv = torch.einsum("mk,hkc->hmc", self.curve_basis, curve_controls.float())
+        xyz = self.evaluate(grid, owner, uv)
         return uv, xyz

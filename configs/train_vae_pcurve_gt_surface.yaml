@@ -1,0 +1,11 @@
+defaults:
+  - train_vae_pcurve
+  - _self_
+
+model:
+  pcurve:
+    loss_weights:
+      pcurve_gt_surface: 1.0
+
+trainer:
+  exp_name: vae_pcurve_gt_surface
