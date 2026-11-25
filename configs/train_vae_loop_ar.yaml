@@ -1,0 +1,53 @@
+defaults:
+  - train_vae
+  - override model: vae_light
+  - _self_
+
+model:
+  name: AutoEncoder_loop_ar
+  init_hola_checkpoint: null
+  trainable_scope: all
+  loop_ar:
+    width: 512
+    depth: 4
+    encoder_layers: 4
+    controls: 16
+    # Native train maximum is 75; capacity includes close/end events.
+    max_events: 128
+    face_chunk_size: 128
+    mate_drop_probability: 0.1
+    loss_weights:
+      face_local: 1.0
+      face_bbox: 1.0
+      boundary_event: 0.1
+      mate_relation: 0.1
+      pcurve_uv: 1.0
+      pcurve_gt_surface: 1.0
+      edge_xyz: 1.0
+      mate_compatibility: 1.0
+      kl_loss: 1.0
+
+dataset:
+  name: src.datasets.loop_pcurve.LoopPcurveDataset
+  max_events: ${model.loop_ar.max_events}
+  is_aug: 1
+
+trainer:
+  exp_name: vae_loop_ar
+  devices: 8
+  batch_size: 48
+  accumulate_grad_batches: 1
+  learning_rate: 2.0e-5
+  max_steps: -1
+  max_epochs: 138
+  num_workers: 8
+  num_threads: 2
+  ddp_find_unused_parameters: false
+  log_every_n_steps: 10
+  sync_train_step_loss: false
+  cudnn_benchmark: false
+  float32_matmul_precision: highest
+  cudnn_allow_tf32: false
+  checkpoint_enable_version_counter: false
+  checkpoint_every_n_train_steps: 2000
+  checkpoint_step_keep_last: 3

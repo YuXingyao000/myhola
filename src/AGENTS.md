@@ -14,6 +14,16 @@
 
 ## VAE：表示与解码
 
+`train_vae_loop_ar` 是按面自回归边界实验，模型 `AutoEncoder_loop_ar`，数据类
+`src.datasets.loop_pcurve.LoopPcurveDataset`。Encoder 按 GT next 编码有序环；Decoder
+复用发布 Intersection 的8层512维Transformer，但改为事件前缀读取所属面空间特征，
+生成 EDGE/CLOSE/END，事件直接定义 next；随后对称评分与一般图匹配得到 mate。
+不再枚举面对或使用旧存在性classifier。允许same-owner seam，未匹配或序列超长
+明确失败，不强制补边。保留pcurve共享UV角点、GT曲面监督和软跨面相容。
+常规训练/val是teacher forcing及GT mate条件，不是自由生成准确率；推理只读latent。
+新模型严格复用发布HoLa部分权重，不能resume旧pcurve权重，旧latent cache不兼容。
+实现/容量/参数与训练记录：`/mnt/d/hola_research/brep_decoder_rethink_20261123/loop_ar_20261125/`。
+
 `train_vae_pcurve` 是原生 next/pcurve 表示实验，入口模型 `AutoEncoder_pcurve`，数据类
 `src.datasets.native_pcurve.NativePcurveDataset`。从发布的 HoLa light 权重严格初始化，
 删除旧三维边 CNN/bbox、teacher 和 edge-feature loss；新增关系 Encoder、next Decoder、

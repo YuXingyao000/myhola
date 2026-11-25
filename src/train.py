@@ -232,7 +232,7 @@ class UnifiedTrainer(pl.LightningModule):
         model_cfg = OmegaConf.create(OmegaConf.to_container(cfg.model, resolve=True))
         resume = cfg.trainer.resume_from_checkpoint
         has_resume = resume and str(resume).lower() not in {"none", "null"}
-        if cfg.model.name == "AutoEncoder_pcurve":
+        if cfg.model.name in {"AutoEncoder_pcurve", "AutoEncoder_loop_ar"}:
             if cfg.trainer.init_from_checkpoint:
                 raise ValueError("Use model.init_hola_checkpoint, model.checkpoint or full resume")
             if has_resume:
