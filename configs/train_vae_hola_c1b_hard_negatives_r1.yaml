@@ -1,0 +1,14 @@
+# C1b: hard negatives always present but not repeated (hard_negative_repeat 1).
+# C1 with repeat 3 cut false edges by 43% but raised missed true edges by about half, mostly in complex
+# CADs whose true edges look like near pairs. This run keeps every vertex-contact and near pair in the
+# negative set at each step without extra weight, to see whether the false-edge reduction survives
+# while the missed edges return to the control's level. Everything else equals C1 and the control.
+defaults:
+  - train_vae_hola_c1_hard_negatives
+  - _self_
+
+trainer:
+  exp_name: hola_c1b_hard_negatives_r1
+
+dataset:
+  hard_negative_repeat: 1
