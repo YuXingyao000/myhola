@@ -1,0 +1,16 @@
+# C2c: reader-only training (as C2b) but with C1's hard-negative sampling.
+# C2b trained the pair contact reader under the control's uniform negative sampling, where the hard pairs
+# are 6% of negatives and 95% of them are already classified correctly, so the reader received almost no
+# signal and ended up as a near-constant offset. Here every vertex-contact and near pair is in the negative
+# set (repeat 3) while everything but the reader stays frozen at the released weights. Any change in the
+# false-edge rates is attributable to the reader seeing the two faces' contact geometry.
+defaults:
+  - train_vae_hola_c2b_reader_only
+  - _self_
+
+trainer:
+  exp_name: hola_c2c_reader_hardneg
+
+dataset:
+  hard_negative_root: ???
+  hard_negative_repeat: 3
