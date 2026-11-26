@@ -16,6 +16,8 @@
 
 `train_vae_hola_owner` 从原 HoLa light 权重全量训练。原 Intersection 的有向输出同时接唯一的 classifier 和原版 edge feature loss。新增模块只给几何解码提供同属一个面的边界消息，最终拼接读出初始为 [I,0]。Teacher、粗曲线与最终有向半边共用原 CNN/bbox。训练用原 sampled BCE、原重建和 KL，不使用角点或端点损失。新跑用 `model.init_hola_checkpoint`，完整模型加载用 `model.checkpoint`，续训用 trainer 的 resume。实验与逐点对齐结果见 `/mnt/d/hola_research/hola_owner_exchange_20261118/`。
 
+保留的大 owner 入口为 `train_vae_hola_owner_wide`：width/geometry_dim 均为1024，其他结构和8卡×每卡8×累积2、lr=2e-5、10000步预算沿用小 owner。所有候选先参与交流，之后才选取监督／输出行；不要用已归档的 selected-owner 或 geometry-classifier 实验覆盖同名类。2026-11-26 的 PR/worktree 整理记录与归档索引见 `/mnt/d/hola_research/pr_worktree_audit_20261126/`。
+
 2026-10-18起使用 `models/vae/` 包，具体结构见 [说明](/mnt/d/hola_research/vae_structure/README.md)。`BaseVAE`约定编码、采样、解码与forward接口，但允许各版本不同的参数和返回结构；主类在legacy/intersection/joint三个文件。组件在encoders/decoders、监督在losses、权重迁移在checkpoints、投影在geometry。旧模块导入仍兼容，旧日期记录中的 `vae.py`／`blocks.py` 为历史位置，不据此继续往旧文件堆代码。
 
 模型按根指南的“实验代码与架构记录”约定编写：不在各层重复 shape/type/device/finite 检查，不另建 validator 隐藏这些检查。`forward` 用简短形状注释展示真实计算；实际 mask、空候选、精度转换照常保留。实验整体的层级结构、张量职责、配置和实现 hash 放在主题 `ARCHITECTURE.md` 的 ASCII 图中，与代码执行解耦。当前 UV 实验见 [架构快照](/mnt/d/hola_research/uv_boundary/ARCHITECTURE.md)。

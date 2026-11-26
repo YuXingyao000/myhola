@@ -1,0 +1,13 @@
+# Retained 2026-11-20 large owner: all candidates exchange before selection.
+# Architecture and budget match the recorded run; initialization stays explicit.
+defaults:
+  - train_vae_hola_owner
+  - _self_
+
+trainer:
+  exp_name: hola_owner_exchange_wide
+
+model:
+  owner_exchange:
+    width: 1024
+    geometry_dim: 1024
