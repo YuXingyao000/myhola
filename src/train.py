@@ -232,6 +232,12 @@ class UnifiedTrainer(pl.LightningModule):
         model_cfg = OmegaConf.create(OmegaConf.to_container(cfg.model, resolve=True))
         resume = cfg.trainer.resume_from_checkpoint
         has_resume = resume and str(resume).lower() not in {"none", "null"}
+        if cfg.model.name == "AutoEncoder_pcurve_input":
+            if cfg.trainer.init_from_checkpoint:
+                raise ValueError("Use model.init_hola_checkpoint or strict model.checkpoint / trainer resume")
+            if has_resume:
+                model_cfg.init_hola_checkpoint = None
+                model_cfg.checkpoint = None
         if cfg.model.name == "AutoEncoder_joint":
             if cfg.trainer.init_from_checkpoint:
                 raise ValueError(
@@ -514,7 +520,7 @@ class UnifiedTrainer(pl.LightningModule):
         dataset = self.dataset_cls("validation", self.cfg.dataset)
         return DataLoader(
             dataset,
-            batch_size=max(1, self.batch_size // 2),
+            batch_size=self.cfg.trainer.get("validation_batch_size") or max(1, self.batch_size // 2),
             shuffle=False,
             collate_fn=self.dataset_cls.collate_fn,
             num_workers=self.num_workers,
@@ -543,9 +549,13 @@ class UnifiedTrainer(pl.LightningModule):
     # ------------------------------------------------------------------
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(
+        optimizer_cls = {"adam": torch.optim.Adam, "adamw": torch.optim.AdamW}[
+            self.cfg.trainer.get("optimizer", "adam")
+        ]
+        optimizer = optimizer_cls(
             (parameter for parameter in self.model.parameters() if parameter.requires_grad),
             lr=self.learning_rate,
+            weight_decay=self.cfg.trainer.get("weight_decay", 0.0),
         )
         return optimizer
 
