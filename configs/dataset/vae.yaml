@@ -2,6 +2,9 @@ name: AutoEncoder_dataset3
 raw_data_root: ???
 # Optional versioned edge/owner UV labels; geometry remains in raw_data_root.
 edge_uv_root: null
+# Optional per-CAD hard negatives for the edge classifier (src.preprocess.hard_negatives); training only.
+hard_negative_root: null
+hard_negative_repeat: 3
 train_dataset: ???
 val_dataset: ???
 test_dataset: ???

@@ -1,0 +1,16 @@
+# C1: the frozen-encoder control recipe with hard negatives for the edge classifier.
+# Only the dataset's negative sampling changes: every ordered face pair of a CAD that shares a
+# vertex without an edge, or comes within 0.05 without sharing a vertex, is in the negative set
+# `hard_negative_repeat` times; the rest of the E negatives are drawn uniformly as before.
+# Labels, positives, negative count, model, loss and optimizer are identical to the control.
+defaults:
+  - train_vae_hola_frozen_encoder_control
+  - _self_
+
+trainer:
+  exp_name: hola_c1_hard_negatives
+
+dataset:
+  # Built by: python -m src.preprocess.hard_negatives ... --output-root <root>
+  hard_negative_root: ???
+  hard_negative_repeat: 3

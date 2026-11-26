@@ -27,6 +27,7 @@ from PIL import Image
 from src.preprocess.rotations import NUM_CUBE24_VIEWS, cube24_rotation_matrix
 from src.preprocess.shared_boundaries import build_shared_boundary_targets, validate_legacy_geometry
 from src.preprocess.vertex_groups import load_vertex_groups
+from src.preprocess.hard_negatives import compose_negatives, load_hard_negatives
 from src.datasets.vertex_groups import collate_corner_targets
 from src.preprocess.edge_uv import load_edge_uv_sidecar, sha256_file
 from src.preprocess.uv_curve_targets import load_uv_curve_targets
@@ -264,6 +265,17 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
                 if not sidecar.is_file():
                     raise FileNotFoundError(f"VAE sample {item!r}: missing UV sidecar {sidecar}")
 
+        # Optional hard negatives for the edge classifier (training only): every ordered pair that
+        # shares a vertex or comes close without sharing an edge enters the negative set `repeat` times.
+        hard_root = v_conf.get("hard_negative_root")
+        self.hard_negative_root = Path(hard_root) if hard_root is not None and v_training_mode == "training" else None
+        self.hard_negative_repeat = int(v_conf.get("hard_negative_repeat", 3))
+        if self.hard_negative_root is not None:
+            for item in self.data_folders:
+                sidecar = self.hard_negative_root / item / "hard_negatives.npz"
+                if not sidecar.is_file():
+                    raise FileNotFoundError(f"VAE sample {item!r}: missing hard-negative sidecar {sidecar}")
+
         # Check cond data
         if len(self.condition) > 0:
             data_folders = []
@@ -381,7 +393,11 @@ class AutoEncoder_dataset3(torch.utils.data.Dataset):
         edge_face_connectivity = edge_face_connectivity[edge_face_connectivity[:, 1] != edge_face_connectivity[:, 2]]
 
         zero_positions = torch.from_numpy(data_npz['zero_positions'])
-        if zero_positions.shape[0] > edge_face_connectivity.shape[0]:
+        if self.hard_negative_root is not None:
+            hard = load_hard_negatives(self.hard_negative_root / folder_path / "hard_negatives.npz")
+            zero_positions = torch.from_numpy(compose_negatives(
+                data_npz['zero_positions'], hard, edge_face_connectivity.shape[0], self.hard_negative_repeat))
+        elif zero_positions.shape[0] > edge_face_connectivity.shape[0]:
             index = np.random.choice(zero_positions.shape[0], edge_face_connectivity.shape[0], replace=False)
             zero_positions = zero_positions[index]
 
