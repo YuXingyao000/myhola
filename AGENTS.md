@@ -27,7 +27,7 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 
 | 位置 | 内容 | 写入规则 |
 |---|---|---|
-| `/mnt/d/python` | 代码仓库（GitHub `YuXingyao000/myhola`），唯一长期分支 `main` | 只经 PR 合入 |
+| `/mnt/d/python` | 代码仓库（GitHub `YuXingyao000/myhola`），唯一分支 `main` | 直接提交到 `main`，不开 PR |
 | `/mnt/d/hola_research/` | 研究记录（独立 git 仓库）：每个主题一个目录，`PLAN.md`、`README.md`／`NOTE.md`、`ARCHITECTURE.md`、一次性分析脚本；原 `checkpoints/` 记录与 `experiments/` 历史都在这里 | 新计划、审计、结果都写这里，不写进代码仓库 |
 | `/mnt/d/hola_runs/` | 训练与评估运行目录（权重、日志、缓存），原 `checkpoints/<exp>/...` 同路径迁入 | `trainer.output_dir` 默认 `${IMG2BREP_RUNS_ROOT:-/mnt/d/hola_runs}` |
 | `/mnt/d/hola_archive/20261030/` | 整理时迁出的旧产物：`outputs_brepnet_diffusion/`、`claude_try/`、旧 datagen 输出、Depth Anything 等 | 只读 |
@@ -35,7 +35,7 @@ FLUX 编辑图属于**合成真实感图像**，不能直接称为实拍数据�
 
 整理前的完整状态在各分支 tag `archive/pre-cleanup-20261030/*`，整理计划与过程见 `/mnt/d/hola_research/repo_cleanup_20261030/`。
 
-**分支与审阅。** `main` 是唯一长期分支，5090 同步只跟 `main`。每个任务一个短期分支和 GitHub PR，1–3 天内 squash 合并；纯文件移动与逻辑修改分成不同 PR；PR 按 `.github/pull_request_template.md` 写清为什么、改了什么、如何验证、删了什么、新增开关及其删除条件、审阅指引。worktree 只给并行 agent 用：一个 agent 一个 worktree 一个 PR，合并后删除。训练从打了 tag 的提交启动（`run/<exp>/<date>`），不为跑实验保留长期分支。
+**分支与提交。** `main` 是唯一分支，直接在 `main` 上提交；2026-11-26 起不再开短期分支、PR 或 worktree（用户决定：这是实验仓库，流程开销不值；并行工作按目录分开，data、VAE、diffusion 各归各）。提交说明代替 PR 描述，写清为什么、改了什么、如何验证、删了什么、新增开关及其删除条件；纯文件移动与逻辑修改分成不同提交。5090（142）同步只跟 `main`：本机 post-commit 钩子把 `main` 推到 142 的 `/mnt/d/python`，接收端要求 142 的检出已在 `main` 且没有本地修改或未跟踪文件，否则拒收并在 `.git/hola-sync/status.json` 记 `blocked`；142 没有 GitHub 密钥，不能从 GitHub 拉。训练从提交后的 `main` 启动，run 的 metadata 记录提交 sha。
 
 **5090 同步。** 主工作区 `/mnt/d/python` 有提交后后台同步，Git 增量推送且只允许目标当前同名分支快进；详情见 `/mnt/d/hola_research/server_migration/deployment_20261016/code_sync/README.md`。提交完成不等于同步成功，报告前核对 `.git/hola-sync/status.json` 与 HEAD。目标有修改、分叉或分支不一致时保留并处理原因，不 force push/reset，不整目录覆盖 `.git`。数据、权重走独立迁移。
 
@@ -78,7 +78,7 @@ VAE 与 diffusion 内部结构的进一步整理另行讨论；目录内说明�
 | `tools/check_repo.py layout` | 顶层目录白名单；`npz/npy/ckpt/pth/png/jpg/zip/blend/ply/step/jsonl/csv` 等数据或二进制文件不进 git（仅 vendored LFD 评估脚本与 `docs/` 例外） |
 | `tools/check_repo.py dead` | `src` 中每个模块必须能从入口、带 `__main__` 的 CLI、`tools/` 或 `tests/` 到达；没人用的模块直接删除，靠 git 历史找回 |
 | import-linter（`pyproject.toml`） | `src` 不得导入 `tools/`、`tests/`；分层：入口 > eval／preference > postprocess > models > datasets > preprocess > common；`datagen` 与训练栈互不导入。`ignore_imports` 只列整理时遗留的已知债务，修一条删一条，不许新增 |
-| ruff | 目前只开真实错误（语法、未定义名）；扩大规则或全仓格式化单独开 PR |
+| ruff | 目前只开真实错误（语法、未定义名）；扩大规则或全仓格式化单独提交 |
 | check-added-large-files | 单文件不超过 1MB |
 
 检查之外，agent 写代码时遵守（这些是此前代码里反复出现的问题）：
@@ -86,7 +86,7 @@ VAE 与 diffusion 内部结构的进一步整理另行讨论；目录内说明�
 - **不留兼容层**：改名、移动模块时一次改完所有调用点，不新增 re-export 包装或别名模块；checkpoint 兼容只走 `tools/migrate_checkpoint.py` 的版本化映射。
 - **一次性脚本不进包**：诊断、审计、对照、可视化脚本放在 `/mnt/d/hola_research/<主题>/`，与记录在一起；只有被反复使用、有测试的工具才进 `tools/`。
 - **不新增 shell 包装与机器路径**：实验差异写成 config 或 Hydra override；不在代码里写 `/mnt/...`、代理地址等机器相关常量（默认路径用环境变量或 config）。
-- **实验开关有删除条件**：新增开关的 PR 写明默认值与“什么证据出现时删除”；主题结束时一并清理，不让 `enabled: false` 的分支长期堆积。
+- **实验开关有删除条件**：新增开关的提交说明写明默认值与“什么证据出现时删除”；主题结束时一并清理，不让 `enabled: false` 的分支长期堆积。
 - **数据不进仓库**：图片、权重、缓存、逐对象结果写到 `/mnt/d/data`、`/mnt/d/hola_runs` 或研究记录；仓库内只留固定 split 清单与 prompt 这类协议文件。
 - **测试不写仓库目录**：临时文件用 `tmp_path`／`tempfile`；不依赖研究记录里的脚本或绝对数据路径。
 
@@ -130,7 +130,7 @@ VAE 与 diffusion 内部结构的进一步整理另行讨论；目录内说明�
 | `2026-10-30-curve-head-roles` | 显式 `--curve-head-mode teacher_split/independent`，复制原边 CNN/bbox 到独立 teacher/coarse 头，保留 final 与 conditioning；清除 optimizer/loop 状态，仅供新 run 初始化，禁止 resume |
 | `2026-11-09-decoder-face-width` | 显式 `--decoder-face-dim 128`，仅扩 Decoder 面特征及其消费接口，latent/edge 不变；复制输出通道并以循环份额分配输入权重；清除旧初始化路径及 optimizer/loop 状态，仅供新 run 初始化 |
 
-之后每次改 module／属性名：在 `MIGRATIONS` 追加一个版本（state_dict 前缀映射 + 字符串映射），在上表登记，并在 PR 的“Checkpoint／数据兼容”一栏说明。纯改名保持参数注册顺序，optimizer state 才能继续使用。其他已知限制：preference 生成、photo baseline 等记录了源码路径哈希的旧运行，在新路径下不能续跑，需新开 run；datagen step1／step4 记录脚本路径，旧位置启动的 run 同样不能在此续跑。
+之后每次改 module／属性名：在 `MIGRATIONS` 追加一个版本（state_dict 前缀映射 + 字符串映射），在上表登记，并在提交说明里写明 checkpoint／数据兼容。纯改名保持参数注册顺序，optimizer state 才能继续使用。其他已知限制：preference 生成、photo baseline 等记录了源码路径哈希的旧运行，在新路径下不能续跑，需新开 run；datagen step1／step4 记录脚本路径，旧位置启动的 run 同样不能在此续跑。
 
 ## 架构讨论必须处理的问题
 
@@ -194,4 +194,4 @@ VAE 与 diffusion 内部结构的进一步整理另行讨论；目录内说明�
 
 GT best-of-K 是 oracle 指标，不能当作可用的单次输出质量；同时说明实际选择策略。原始解码质量与修复后的质量分开。比较 agent 与神经模型时，记录各自可用的工具和修复预算。
 
-不要提交数据集、checkpoint、生成模型、W&B token 或机器凭证。PythonOCC 7.8.1 API 具有版本敏感性，改签名必须验证调用链。保留历史产物，简短提交说明目标；实验 PR 附数据假设、协议、结果与笔记链接。
+不要提交数据集、checkpoint、生成模型、W&B token 或机器凭证。PythonOCC 7.8.1 API 具有版本敏感性，改签名必须验证调用链。保留历史产物，简短提交说明目标；实验提交附数据假设、协议、结果与笔记链接。

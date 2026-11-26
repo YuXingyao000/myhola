@@ -10,7 +10,7 @@
 
 ## 仓库形态（2026-10-30 整理后）
 
-- 唯一长期分支 `main`；任务用短期分支 + PR。旧 worktree（`python_uv_train`、`python_curve_eval`、`python_room_generation`）的分支已合并或归档到 tag `archive/pre-cleanup-20261030/*`，不要在其上继续开发。
+- 唯一分支 `main`，直接在 `main` 上提交；不开短期分支、PR 或 worktree（2026-11-26 起，用户决定：这是实验仓库，提交说明写清为什么、改了什么、怎么验证即可）。旧 worktree（`python_uv_train`、`python_curve_eval`、`python_room_generation`）的分支已合并或归档到 tag `archive/pre-cleanup-20261030/*`，不要在其上继续开发。
 - 代码直接在 `src/` 下：`train.py`、`inference.py`、`evaluate.py`，以及 `common/ preprocess/ datagen/ datasets/ preference/ models/{vae,diffusion}/ postprocess/ eval/`。旧 `src/brepnet/...` 路径的对照表在 `AGENTS.md`。
 - 运行目录默认 `${IMG2BREP_RUNS_ROOT:-/mnt/d/hola_runs}/<exp_name>/<UTC 时间戳>/`；整理前的 checkpoint 先用 `tools/migrate_checkpoint.py` 迁移再 resume。
 - 当前状态：最好的 VAE 来源是 shared curve + UV best42471，validation 原生合法 3180/3495（90.99%）；近几轮（latent_expansion、shared_curve_uv、conditional_intersection）合法率都停在约 91%，失败多卡在裁剪面阶段（见 `/mnt/d/hola_research/uv_intersection/`、`conditional_intersection/`）。Diffusion 侧仍使用原版 HoLa AE 与 32 维 latent cache；换 VAE 需要重编码 cache 并重训 diffusion。
