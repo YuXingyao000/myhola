@@ -208,6 +208,12 @@ class UnifiedTrainer(pl.LightningModule):
             if expected is not None and dict(expected) != provenance:
                 raise ValueError("Online photo GT data changed after prepare_run")
             OmegaConf.update(cfg.dataset, "provenance", provenance, force_add=True)
+        if cfg.model.name == "ControlNetPreferenceDiffusion":
+            from src.datasets.photo_preference import photo_preference_image_provenance
+            provenance = photo_preference_image_provenance(cfg.dataset)
+            if cfg.dataset.get("provenance") is not None and dict(cfg.dataset.provenance) != provenance:
+                raise ValueError("Online preference data changed after prepare_run")
+            OmegaConf.update(cfg.dataset, "provenance", provenance, force_add=True)
         if cfg.model.name in {"PreferenceDiffusion", "AdaLNPreferenceDiffusion"}:
             from src.datasets.preference import preference_data_provenance
             provenance = preference_data_provenance(cfg.dataset)
@@ -377,7 +383,12 @@ class UnifiedTrainer(pl.LightningModule):
         if cfg.model.name == "ControlNetPhotoDiffusion":
             from src.models.diffusion.controlnet_photo import prepare_controlnet_model_config
             prepare_controlnet_model_config(cfg, model_cfg, str(resume) if has_resume else None)
+        if cfg.model.name == "ControlNetPreferenceDiffusion":
+            from src.models.diffusion.controlnet_preference import prepare_controlnet_preference_config
+            prepare_controlnet_preference_config(cfg, model_cfg, str(resume) if has_resume else None)
         self.model = build_model(model_cfg, cfg.condition)
+        if cfg.model.name == "ControlNetPreferenceDiffusion":
+            self.save_hyperparameters(OmegaConf.to_container(cfg, resolve=True))
         if cfg.model.name == "ControlNetPhotoDiffusion":
             OmegaConf.update(cfg.model, "backbone_config", self.model.backbone_config, force_add=True)
             OmegaConf.update(cfg.model, "initialization", self.model.initialization, force_add=True)
@@ -430,6 +441,11 @@ class UnifiedTrainer(pl.LightningModule):
             check_controlnet_checkpoint(self.cfg.model, checkpoint)
             if dict(self.cfg.dataset.provenance) != checkpoint["hyper_parameters"]["dataset"]["provenance"]:
                 raise ValueError("Cannot resume ControlNet with changed photo GT data/provenance")
+        if self.cfg.model.name == "ControlNetPreferenceDiffusion":
+            from src.models.diffusion.controlnet_preference import check_complete_checkpoint
+            check_complete_checkpoint(self.cfg.model, checkpoint)
+            if dict(self.cfg.dataset.provenance) != checkpoint["hyper_parameters"]["dataset"]["provenance"]:
+                raise ValueError("Cannot resume ControlNet DPO with changed pair/GT/image provenance")
 
     def _init_model_from_checkpoint(self):
         """Load model weights without restoring optimizer/trainer state."""
@@ -841,6 +857,9 @@ def main(cfg: DictConfig):
     if cfg.model.name == "ControlNetPhotoDiffusion":
         from src.datasets.photo import photo_gt_image_provenance
         OmegaConf.update(cfg.dataset, "provenance", photo_gt_image_provenance(cfg.dataset), force_add=True)
+    if cfg.model.name == "ControlNetPreferenceDiffusion":
+        from src.datasets.photo_preference import photo_preference_image_provenance
+        OmegaConf.update(cfg.dataset, "provenance", photo_preference_image_provenance(cfg.dataset), force_add=True)
     if cfg.model.name == "SpatialPhotoDiffusion":
         from src.datasets.spatial_photo import spatial_data_provenance
         OmegaConf.update(cfg.dataset, "provenance", spatial_data_provenance(cfg.dataset), force_add=True)
