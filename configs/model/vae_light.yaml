@@ -19,4 +19,6 @@ intersection_layers: 8
 intersection_noise_std: 0.0
 trainable_scope: all
 trainable_module_prefixes: [inter, classifier]
+# True keeps the loaded encoder and posterior fixed (eval, no grad); only the decoder trains.
+freeze_encoder: false
 loss: l1

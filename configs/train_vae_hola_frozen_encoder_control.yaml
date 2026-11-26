@@ -1,0 +1,41 @@
+# Decoder-only continued training of the released HoLa VAE: the ruler for decoder changes.
+# Recipe copied from the 2026-11-19 legacy control (train_vae_hola_owner with model.name=AutoEncoder_light):
+# 8 GPUs x 8 per GPU x accumulate 2 = 128 objects per update, Adam 2e-5, 10k updates, bf16-mixed backbone.
+# Differences from that control: the encoder and posterior are frozen, validation decodes the posterior
+# mean (vae_validation_inference) instead of a sampled latent, and every 1k-step snapshot is kept.
+defaults:
+  - train_vae
+  - override model: vae_light
+  - _self_
+
+trainer:
+  exp_name: hola_frozen_encoder_control
+  devices: 8
+  batch_size: 8
+  accumulate_grad_batches: 2
+  learning_rate: 2.0e-5
+  optimizer: adam
+  weight_decay: 0.0
+  max_steps: 10000
+  num_workers: 2
+  num_threads: 2
+  log_every_n_steps: 10
+  sync_train_step_loss: false
+  cudnn_benchmark: false
+  float32_matmul_precision: highest
+  cudnn_allow_tf32: false
+  checkpoint_enable_version_counter: false
+  checkpoint_every_n_train_steps: 1000
+  checkpoint_step_keep_last: -1
+  vae_validation_inference: true
+  validation_batch_size: 1
+  seed: 42
+
+dataset:
+  is_aug: 1
+
+model:
+  name: AutoEncoder_light
+  # Released HoLa DeepCAD weights, e.g. /mnt/d/data/ae_checkpoints/1119_deepcad_aug1_11k.ckpt
+  checkpoint: ???
+  freeze_encoder: true

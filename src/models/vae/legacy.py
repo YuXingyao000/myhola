@@ -5,6 +5,7 @@ in one place. Module attributes intentionally retain historical state_dict names
 """
 from __future__ import annotations
 
+from contextlib import nullcontext
 import copy
 import time
 
@@ -46,6 +47,8 @@ class AutoEncoder(BaseVAE):
         "kl_reduction": "sum",
         "checkpoint": None,
         "mode": "train",
+        # Keep the loaded encoder and posterior fixed; only the decoder trains.
+        "freeze_encoder": False,
     }
 
     @staticmethod
@@ -61,6 +64,7 @@ class AutoEncoder(BaseVAE):
         self.hidden_channels = int(v_conf["hidden_channels"])
         self.latent_channels = int(v_conf["latent_channels"])
         self.runtime_mode = v_conf["mode"]
+        self.freeze_encoder = bool(v_conf["freeze_encoder"])
         self.norm = v_conf["norm"]
         self.in_channels = v_conf["in_channels"]
         self.with_intersection = v_conf["with_intersection"]
@@ -130,7 +134,20 @@ class AutoEncoder(BaseVAE):
 
         self.loss_fn = nn.L1Loss() if v_conf["loss"] == "l1" else nn.MSELoss()
         self._load_checkpoint(v_conf["checkpoint"])
+        if self.freeze_encoder:
+            for module in self._encoder_modules():
+                module.requires_grad_(False)
+                module.eval()
         self._apply_runtime_mode()
+
+    def _encoder_modules(self):
+        """Everything from the sampled geometry up to and including the posterior."""
+        return [
+            self.face_coords, self.edge_coords,
+            self.face_attn_proj_in, self.face_attn, self.face_attn_proj_out,
+            self.graph_face_edge, self.global_feature1, self.global_feature2,
+            self.gaussian_proj,
+        ]
 
     def _load_checkpoint(self, checkpoint_path):
         if checkpoint_path is None:
@@ -158,6 +175,9 @@ class AutoEncoder(BaseVAE):
         super().train(mode)
         if self.runtime_mode == "frozen_inference":
             super().train(False)
+        if self.freeze_encoder:
+            for module in self._encoder_modules():
+                module.eval()
         return self
 
     def _append_encoder_stage(
@@ -625,8 +645,9 @@ class AutoEncoder(BaseVAE):
         return loss
 
     def forward(self, v_data, v_test=False):
-        encoding_result = self.encode(v_data, v_test)
-        face_latents, kl_loss, cached_latent_stats = self.sample(encoding_result["face_features"], v_is_test=v_test)
+        with torch.no_grad() if self.freeze_encoder else nullcontext():
+            encoding_result = self.encode(v_data, v_test)
+            face_latents, kl_loss, cached_latent_stats = self.sample(encoding_result["face_features"], v_is_test=v_test)
         encoding_result["face_latents"] = face_latents
         decoding_result = self.decode(encoding_result, v_data)
         decoding_result["kl_loss"] = kl_loss
