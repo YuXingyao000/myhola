@@ -1,0 +1,16 @@
+# C2b: train only the pair contact reader, everything else frozen at the released weights.
+# The C2 run at the control recipe (2e-5, all decoder weights trainable) left the zero-initialised reader
+# nearly inert after 10k steps (its output barely depended on the geometry it reads). This stage asks the
+# direct question: given the released classifier, can a reader that sees the two faces' contact geometry
+# move the edge decision on vertex-contact and near pairs? Only the reader's 21.8K parameters train,
+# at a learning rate suited to a fresh module; the dataset, negatives and loss are the control's.
+defaults:
+  - train_vae_hola_c2_pair_contact
+  - _self_
+
+trainer:
+  exp_name: hola_c2b_reader_only
+  learning_rate: 1.0e-3
+
+model:
+  trainable_scope: pair_contact_reader
