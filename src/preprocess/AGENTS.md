@@ -14,6 +14,7 @@
 | `extract_vertex_groups.py`、`vertex_groups.py` | 离线从保存的STEP顶点身份生成端点分组sidecar；纯NumPy读取与跨曲线端点对，训练时不依赖OCC |
 | `extract_coedge_topology.py`、`coedge_topology.py` | 离线从原生wire构造prev/next/mate，显式消除seam并收缩连续face-pair链到原NPZ row；纯NumPy loader供Encoder使用 |
 | `edge_uv.py`、`extract_edge_uv.py`、`uv_curve_targets.py` | 边 UV 监督数据（`edge_uv_root`）与 UV 曲线目标；生成命令见 `tools/generate_uv_curve_targets.py` |
+| `native_pcurve.py` | 从原生 STEP 导出含 seam 的 `native_pcurve_v4`，供仅修改 Encoder 的 pcurve 输入方案使用；核对原 face 顺序与源摘要，不替换原三维训练目标 |
 | `model_lists.py` | 读取 8 位 ID 清单（去重保序、拒绝非法 ID） |
 | `splits/` | 固定清单：`deduplicated_deepcad_{training,validation,testing}_7_30.txt`、`deepcad_v7_contract_{train,validation,test}.txt`（VAE 合同审计 accepted，validation 3495 件）、`deepcad_v7_validation100.txt` |
 

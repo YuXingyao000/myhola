@@ -75,6 +75,21 @@ python -m src.train --config-name train_diffusion_layerwise_svr \
 | `train_vae_shared_curve_uv` | 32D shared curve + UV，需对应 sidecar 与初始化来源 |
 | `train_vae_uv_intersection*` | UV intersection 实验，按各自架构快照使用 |
 
+### 当前保留的 VAE 代码入口
+
+保留方案集中在 `main`；下表中的模型独立选择，不会互相叠加。模型训练状态和质量结论以各自运行记录为准。
+
+| 方案 | 训练配置 | 主要源码 |
+|---|---|---|
+| 原 HoLa light | `train_vae`，显式 `model=vae_light` | [legacy.py](src/models/vae/legacy.py) |
+| 小 owner | [train_vae_hola_owner.yaml](configs/train_vae_hola_owner.yaml) | [hola_owner.py](src/models/vae/hola_owner.py) |
+| 保留的大 owner，width/geometry_dim=1024 | [train_vae_hola_owner_wide.yaml](configs/train_vae_hola_owner_wide.yaml) | 同一 owner 实现，所有候选先交流、之后选边 |
+| 仅 Encoder 增加 pcurve 输入 | [train_vae_pcurve_input.yaml](configs/train_vae_pcurve_input.yaml) | [pcurve_input.py](src/models/vae/pcurve_input.py)、[Dataset](src/datasets/pcurve_input.py) |
+
+pcurve 输入使用 `native_pcurve_v4` sidecar；生成器是 [native_pcurve.py](src/preprocess/native_pcurve.py)，原生 coedge 数据工具是 [extract_coedge_topology.py](src/preprocess/extract_coedge_topology.py)。这些离线工具不改变原始 NPZ。
+
+2026-11-26 整理时，弃用的结构实验保存于 `archive/pr-consolidation-20261126/pr-<编号>` tag，对应 PR 已关闭归档。权重和评估数据保留；复现旧实验使用对应 tag 与 run 的 metadata，不用当前同名文件猜测旧结构。完整索引在 `/mnt/d/hola_research/pr_worktree_audit_20261126/README.md`。
+
 历史 `train_diffusion_white` / `train_diffusion_real` 的 `is_overfit=true`，后者验证 photo ratio 仍为 0，使用前核对配置；`baseline` 文件名也不自动代表旧网络。AE checkpoint 必须与 cache 同源。
 
 新运行默认写入 `${IMG2BREP_RUNS_ROOT:-/mnt/d/hola_runs}/<exp_name>/<UTC timestamp>/`。已有 `hola_runs`、`hola_research`、`hola_archive` 目录保留；新启动使用 `IMG2BREP_RUNS_ROOT`，原 `HOLA_RUNS_ROOT` 需更新。`trainer.output_dir` 是根目录，`trainer.run_dir` 是完整 run 路径。

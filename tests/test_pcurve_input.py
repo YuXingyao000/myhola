@@ -122,16 +122,20 @@ def test_optimizer_defaults_unchanged_and_explicit_published_adamw():
         assert optimizer.param_groups[0]["weight_decay"] == decay
 
 
-def test_resume_does_not_reopen_published_initialization(tmp_path):
+@pytest.mark.parametrize("config_name", ["train_vae_pcurve_input", "train_vae_hola_owner_wide"])
+def test_resume_does_not_reopen_published_initialization(tmp_path, config_name):
     from hydra import compose, initialize_config_dir
     from pathlib import Path
     with initialize_config_dir(version_base=None, config_dir=str(Path(__file__).resolve().parents[1] / "configs")):
-        cfg = compose(config_name="train_vae_pcurve_input", overrides=[
+        overrides = [
             f"trainer.run_dir={tmp_path}", "trainer.resume_from_checkpoint=owned.ckpt",
             "model.init_hola_checkpoint=absent.ckpt", "dataset.raw_data_root=unused",
-            "dataset.pcurve_input_root=unused", "dataset.train_dataset=unused",
+            "dataset.train_dataset=unused",
             "dataset.val_dataset=unused", "dataset.test_dataset=unused",
-        ])
+        ]
+        if config_name == "train_vae_pcurve_input":
+            overrides.append("dataset.pcurve_input_root=unused")
+        cfg = compose(config_name=config_name, overrides=overrides)
     observed = []
     def build(config, condition):
         observed.append(copy.deepcopy(config))
