@@ -1,0 +1,43 @@
+defaults:
+  - train_vae
+  - override model: vae_light
+  - _self_
+
+model:
+  name: AutoEncoder_pcurve_input
+  init_hola_checkpoint: null
+  pcurve_input:
+    width: 512
+    curve_depth: 4
+    layers: 4
+    heads: 8
+    dropout: 0.1
+
+dataset:
+  name: src.datasets.pcurve_input.PcurveInputDataset
+  pcurve_input_root: ???
+  is_aug: 1
+
+trainer:
+  exp_name: vae_encoder_pcurve_input
+  devices: 8
+  batch_size: 48
+  validation_batch_size: 1
+  num_workers: 8
+  num_threads: 2
+  accumulate_grad_batches: 1
+  optimizer: adamw
+  weight_decay: 0.01
+  learning_rate: 1.0e-4
+  precision: 32-true
+  float32_matmul_precision: medium
+  gradient_clip_val: 0.5
+  seed: 0
+  cudnn_benchmark: false
+  max_epochs: 500
+  check_val_every_n_epoch: 1
+  vae_validation_inference: true
+  checkpoint_every_n_train_steps: 10000
+  checkpoint_enable_version_counter: false
+  ddp_find_unused_parameters: false
+  ddp_gradient_as_bucket_view: true

@@ -63,6 +63,8 @@ mean初始化近等价，随机重参数采样分布不等价。sum KL系数5e-7
 
 2026-11-12 可选Final角点监督：`train_vae_vertex_groups`沿用curve-head-roles结构，仅将`loss_weights.corner_weight`从默认0设为1；`dataset.vertex_group_root`读取离线原生STEP顶点标签。`losses/corner.py`对同一native顶点、不同canonical曲线的首末XYZ计算L1，按端点对→角点→对象→batch平均（无角点对象贡献0）。`corner_gap`是同口径欧氏距离诊断。单闭合边自身首尾不进入跨边项；不新增Teacher/Coarse损失，Final的正常上游梯度仍保留。该项没有模型参数，旧checkpoint可严格加载；32/128 Decoder面宽均支持，选择128权重时需显式配置宽度。未启动正式训练或证明收益。固定validation端点误差与相同后处理下valid rate确定去留后，删除失败项或固定有效配置。完整记录见`/mnt/d/hola_research/vertex_group_supervision/ARCHITECTURE.md`。
 
+2026-11-26 Encoder pcurve输入实验：`train_vae_pcurve_input` / `AutoEncoder_pcurve_input`只在原light Encoder的GAT后增加原生UV曲线输入。每条16点pcurve编码512维；每面query读取自身多条curve KV，4层cross-attention（8heads、FFN2048），零初始化512→32残差加回；原global/posterior/Decoder/teacher及9项loss不变。`PcurveInputDataset`保留legacy几何/负例，native_pcurve_v4只提供UV/owner（含seam），检查源NPZ hash，不替换三维边GT。新增21,066,784参数，全量训练；`init_hola_checkpoint`严格加载发布权重，完整checkpoint/resume严格加载且不重开旧来源。配置对齐发布版AdamW/lr1e-4/wd.01/FP32/8×48；新trainer optimizer默认仍Adam/wd0。完整结构、数据与实际训练状态见 `/mnt/d/hola_research/encoder_pcurve_input_20261126/ARCHITECTURE.md` 和 README；不据预检宣称研究收益。
+
 ## Diffusion：实际数据流
 
 1. `datasets/brep.py:Diffusion_dataset` 读取 cache 并完成 padding；`models/diffusion/latents.py:LatentProvider` 取 mean，或用 std 采样。非 cache 分支调用冻结 VAE 再由 padder 打包。

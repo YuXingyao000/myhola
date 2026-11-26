@@ -9,6 +9,9 @@ persistent_workers: true
 ddp_find_unused_parameters: true
 ddp_gradient_as_bucket_view: false
 batch_size: 32
+validation_batch_size: null
+optimizer: adam
+weight_decay: 0.0
 learning_rate: 1.0e-4
 max_epochs: 1000000
 max_steps: -1
