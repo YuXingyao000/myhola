@@ -21,6 +21,7 @@ from src.datasets.brep import denormalize_coord1112
 from src.models.blocks import ResBlockXD
 from .base import BaseVAE
 from .decoders.intersection import AttnIntersection
+from .decoders.pair_contact import PairContactReader
 
 
 class AutoEncoder(BaseVAE):
@@ -49,6 +50,9 @@ class AutoEncoder(BaseVAE):
         "mode": "train",
         # Keep the loaded encoder and posterior fixed; only the decoder trains.
         "freeze_encoder": False,
+        # The edge classifier also reads the contact geometry of the pair's two decoded faces.
+        "pair_contact_reader": False,
+        "pair_contact_width": 32,
     }
 
     @staticmethod
@@ -108,6 +112,10 @@ class AutoEncoder(BaseVAE):
             dim_out=self.edge_feature_dim,
         )
         self.classifier = nn.Linear(self.edge_feature_dim, 1)
+        self.pair_contact_reader = (
+            PairContactReader(self.edge_feature_dim, width=int(v_conf["pair_contact_width"]))
+            if v_conf["pair_contact_reader"] else None
+        )
 
         self.face_points_decoder = self._make_face_points_decoder(point_decoder_blocks)
         self.edge_points_decoder = self._make_edge_points_decoder(point_decoder_blocks)
@@ -158,7 +166,16 @@ class AutoEncoder(BaseVAE):
             key[len("model."):] if key.startswith("model.") else key: value
             for key, value in state_dict.items()
         }
-        self.load_state_dict(weights)
+        # A checkpoint saved without the pair contact reader may initialise a model that has one:
+        # the reader keeps its zero-output initialisation. Every other key must match exactly.
+        result = self.load_state_dict(weights, strict=False)
+        reader_keys = {key for key in self.state_dict() if key.startswith("pair_contact_reader.")}
+        missing = sorted(set(result.missing_keys) - reader_keys)
+        if missing or result.unexpected_keys:
+            raise RuntimeError(
+                f"Checkpoint {checkpoint_path} does not match the model: "
+                f"missing {missing}, unexpected {sorted(result.unexpected_keys)}"
+            )
 
     def _apply_runtime_mode(self):
         if self.runtime_mode == "train":
@@ -575,7 +592,7 @@ class AutoEncoder(BaseVAE):
             feature_pair = face_latents[indexes]
 
             feature_pair = self.inter(feature_pair)
-            pred = self.classifier(feature_pair)[...,0]
+            pred = self.classifier(self._classifier_input(feature_pair, decoding_results, kept_faces, indexes))[...,0]
             pred_labels = torch.sigmoid(pred) > 0.5
 
             intersected_edge_feature = feature_pair[pred_labels]
@@ -592,7 +609,8 @@ class AutoEncoder(BaseVAE):
 
             feature_pair = self._add_intersection_training_noise(feature_pair)
             feature_pair = self.inter(feature_pair)
-            pred = self.classifier(feature_pair)
+            pairs = torch.cat((edge_face_connectivity[:, 1:], v_zero_positions), dim=0)
+            pred = self.classifier(self._classifier_input(feature_pair, decoding_results, kept_faces, pairs))
 
             gt_labels = torch.ones_like(pred)
             gt_labels[id_false_start:] = 0
@@ -608,6 +626,21 @@ class AutoEncoder(BaseVAE):
             decoding_results["loss_edge"] = loss_edge
 
         return intersected_edge_feature
+
+    def _classifier_input(self, feature_pair, decoding_results, kept_faces, pairs):
+        """The pair feature, plus the contact geometry of the two decoded faces when the reader is on.
+
+        The decoded faces are detached: the classifier learns to read them, the face decoder is
+        not pulled towards making pairs easier to classify. Edge geometry keeps using feature_pair.
+        """
+        if self.pair_contact_reader is None:
+            return feature_pair
+        faces = denormalize_coord1112(
+            decoding_results["face_points_local"], decoding_results["face_center_scale"]
+        ).detach()
+        if kept_faces is not None:
+            faces = faces[kept_faces]
+        return feature_pair + self.pair_contact_reader(faces, pairs)
 
     def loss(self, v_decoding_result, v_data):
         # Loss

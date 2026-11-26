@@ -1,0 +1,15 @@
+# C2: the frozen-encoder control recipe plus a pair contact reader for the edge classifier.
+# For every candidate face pair the classifier also sees the contact geometry of the two decoded
+# faces (distance and normal agreement maps, detached). The reader's output projection starts at
+# zero, so step 0 equals the released model; only the classifier decision reads it, edge geometry
+# decoding is unchanged. Dataset, loss, optimizer and the frozen encoder are identical to the control.
+defaults:
+  - train_vae_hola_frozen_encoder_control
+  - _self_
+
+trainer:
+  exp_name: hola_c2_pair_contact
+
+model:
+  pair_contact_reader: true
+  pair_contact_width: 32
