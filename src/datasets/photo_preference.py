@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import io
 import json
 from pathlib import Path
 
@@ -9,7 +11,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, default_collate
 
-from src.datasets.photo import PhotoFeatureDataset, photo_cache_provenance
+from src.datasets.photo import PhotoFeatureDataset, photo_cache_provenance, photo_transform
 from src.datasets.preference import PreferenceDataset, random_duplicate_padding, read_split, sha256_file
 from src.preference.source import load_condition
 
@@ -145,3 +147,58 @@ class PhotoPreferenceDataset(Dataset):
                 "gt_image": load_condition(self.config, identity)}
 
     collate_fn = staticmethod(default_collate)
+
+
+def photo_preference_image_provenance(config: dict) -> dict:
+    """旧偏好对保持来源身份；在线 RGB 绑定到生成缓存的逐图哈希。"""
+    from src.datasets.preference import preference_data_provenance
+
+    preference = preference_data_provenance(config)
+    root = Path(config["cache_root"]).resolve()
+    manifest = json.loads((root / "manifest.json").read_text())
+    inputs = root / "inputs.jsonl"
+    digest = sha256_file(inputs)
+    if digest != manifest["inputs_sha256"]:
+        raise ValueError("Photo preference input manifest changed")
+    return {"version": "photo_preference_images_v1", "preference": preference,
+            "inputs_manifest": str(inputs), "inputs_sha256": digest,
+            "condition_data_root": str(Path(config["condition_data_root"]).resolve())}
+
+
+class PhotoPreferenceImageDataset(PhotoPreferenceDataset):
+    """相同 GT/pair 抽样，返回 RGB 供冻结 DINO 同时提取 CLS 与 patches。"""
+
+    def __init__(self, training_mode: str, config: dict):
+        provenance = photo_preference_image_provenance(config)
+        if config.get("provenance") is not None and dict(config["provenance"]) != provenance:
+            raise ValueError("Online preference data changed after run preparation")
+        super().__init__(training_mode, {**config, "provenance": provenance["preference"]})
+        self.provenance = provenance
+        self.transform = photo_transform()
+        self.image_root = Path(config["condition_data_root"])
+        if self.training:
+            records = [json.loads(line) for line in Path(provenance["inputs_manifest"]).read_text().splitlines()]
+            records = sorted((r for r in records if r["split"] == "training"), key=lambda r: r["index"])
+            if ([r["id"] for r in records] != self.gt.ids or
+                    [r["index"] for r in records] != list(range(len(self.gt.ids)))):
+                raise ValueError("Online preference photos must match the GT cache order")
+            self.photo_hashes = {r["id"]: r["photo_sha256"] for r in records}
+
+    def _image(self, identity: str) -> torch.Tensor:
+        payload = (self.image_root / identity / "real_photo.npz").read_bytes()
+        if hashlib.sha256(payload).hexdigest() != self.photo_hashes[identity]:
+            raise ValueError(f"Preference photo differs from its source: {identity}")
+        with np.load(io.BytesIO(payload), allow_pickle=False) as data:
+            image = data["flux"]
+        if image.shape != (512, 512, 3) or image.dtype != np.uint8:
+            raise ValueError(f"Invalid flux photo: {identity}")
+        return self.transform(image)
+
+    def __getitem__(self, index: int) -> dict:
+        item = super().__getitem__(index)
+        if self.training:
+            item.pop("image_features")
+            item.pop("pair_image_features")
+            item["gt_image"] = self._image(item["v_prefix"])
+            item["pair_image"] = self._image(item["pair_image_id"])
+        return item

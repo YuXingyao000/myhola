@@ -36,6 +36,7 @@ _MODEL_LOADERS: Dict[str, Any] = {
     "AutoEncoder_pcurve_input": _lazy_import(
         "src.models.vae.pcurve_input", "AutoEncoder_pcurve_input"
     ),
+    "AutoEncoder_hola_owner": _lazy_import("src.models.vae.hola_owner", "AutoEncoder_hola_owner"),
     "AutoEncoder_uv_intersection": _lazy_import(
         "src.models.vae", "AutoEncoder_uv_intersection"
     ),
@@ -68,6 +69,9 @@ _MODEL_LOADERS: Dict[str, Any] = {
     ),
     "ControlNetPhotoDiffusion": _lazy_import(
         "src.models.diffusion.controlnet_photo", "ControlNetPhotoDiffusion"
+    ),
+    "ControlNetPreferenceDiffusion": _lazy_import(
+        "src.models.diffusion.controlnet_preference", "ControlNetPreferenceDiffusion"
     ),
     "PhotoBaselineDiffusion": _lazy_import(
         "src.models.diffusion.photo_baseline", "PhotoBaselineDiffusion"
