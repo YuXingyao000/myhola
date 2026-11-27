@@ -16,7 +16,7 @@
 | `edge_uv.py`、`extract_edge_uv.py`、`uv_curve_targets.py` | 边 UV 监督数据（`edge_uv_root`）与 UV 曲线目标；生成命令见 `tools/generate_uv_curve_targets.py` |
 | `native_pcurve.py` | 从原生 STEP 导出含 seam 的 `native_pcurve_v4`，供仅修改 Encoder 的 pcurve 输入方案使用；核对原 face 顺序与源摘要，不替换原三维训练目标 |
 | `model_lists.py` | 读取 8 位 ID 清单（去重保序、拒绝非法 ID） |
-| `splits/` | 固定清单：`deduplicated_deepcad_{training,validation,testing}_7_30.txt`、`deepcad_v7_contract_{train,validation,test}.txt`（VAE 合同审计 accepted，validation 3495 件）、`deepcad_v7_validation100.txt` |
+| `splits/` | 固定清单：`deduplicated_deepcad_{training,validation,testing}_7_30.txt`、`deepcad_v7_contract_{train,validation,test}.txt`（VAE 合同审计 accepted，validation 3495 件）、`deepcad_v7_validation100.txt`；ABC：`abc_v8_{training,validation,testing}_7_100.txt`（2026-11-27；单 solid、7 到 100 面、原抽取器规则、事后筛上限 100；全体几何去重，归一化面网格 CD < 1e-3 视为同一件，跨集重复删 val/test 份；老 `deduplicated_abc_*_brepnet` 的成员关系保留，新增 64 到 100 面零件按子桶分层固定种子划分；147,997 / 7,713 / 7,636 件，数据在 `/mnt/d/data/abc_v7/<id>/`，构造脚本与去重记录在 `/mnt/d/hola_research/abc_v8_lists_20261127/`）。老 ABC 清单在 train 与 val/test 之间有约三成几何完全相同的零件，不要再用它们评估 |
 
 相关工具：`tools/audit_deepcad_v7_dataset.py`（资产与字段审计）、`tools/filter_deepcad_v7_lists.py`（完整性筛单，先 `--dry-run`）。数据根、缓存根、输出与报告目录均显式传入；报告写到 `/mnt/d/hola_research/<主题>/`，工具拒绝向代码仓库写入报告／派生清单。旧 `generate_model_lists.py` 使用 DeepCAD v6／Euler64 协议，已删除；当前 cube24 数据使用 v7 筛单工具。它们不认证图像与 CAD 几何配对。`docs/rotation_cleanup.md` 含 identity 在 18 的旧约定，不能照单执行，当前语义以 `rotations.py` 为准。
 
