@@ -101,7 +101,15 @@ def main(argv: list[str] | None = None) -> None:
                         break
                     ready, _ = ray.wait(list(pending), num_returns=1)
                     for task in ready:
-                        record(pending.pop(task), ray.get(task))
+                        model_id = pending.pop(task)
+                        try:
+                            ok = ray.get(task)
+                        except (ray.exceptions.WorkerCrashedError, ray.exceptions.RayTaskError) as exc:
+                            # OCC can segfault on a part (frequent above 60 faces); the worker dies, the run must not.
+                            with (args.output_root / "error.txt").open("a", encoding="utf-8") as f:
+                                f.write(f"{model_id}: worker crashed: {str(exc).splitlines()[0]}\n")
+                            ok = False
+                        record(model_id, ok)
             finally:
                 ray.shutdown()
     manifest.update(status="completed", succeeded=succeeded, failed=len(model_ids) - succeeded)
